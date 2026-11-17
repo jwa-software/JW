@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 From jwa Require Import Algebra.AbelianGroup.
 From jwa Require Import Algebra.Monoid.

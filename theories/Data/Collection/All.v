@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Umbrella for [jwa.Data.Collection]: re-exports every collection type and
  * every interface they answer to, so a client imports them with

@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Umbrella for the whole library: [From jwa Require Import All] brings in
  * every layer except [Assumption], whose axioms are opted into separately

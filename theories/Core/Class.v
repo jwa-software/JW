@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Instance resolution looks up a hint database named [typeclass_instances],
  * and [class_tactics.ml] expects it to already exist rather than creating it.

@@ -1,4 +1,4 @@
-; Copyright (c) 2026 Junzhe Wang, licensed under the MIT License.
+; Copyright (c) Junzhe Wang, licensed under the MIT License.
 
 ; The bottom layer: the tactic language every other layer writes its proofs
 ; in. It depends on no theory of this tree, only on Ltac2, the one installed

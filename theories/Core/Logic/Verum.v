@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Verum is the true proposition, with [I] its one proof. [discriminate]
  * looks both of these up by registered name and reports
