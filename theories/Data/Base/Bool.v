@@ -109,6 +109,29 @@ Proof.
   match b with | | end; simpl in |- *; quod idem est.
 Qed.
 
+Module de_morgan. (* negation.de_morgan *)
+
+(* An equation both ways, where [Negation.de_morgan.conjunction] holds one way
+ * only: a [Bool] is already decided.
+ *)
+(* negation.de_morgan.conjunction *)
+Theorem conjunction
+  : forall (b1 : Bool) (b2 : Bool) . ! (b1 && b2) = ! b1 || ! b2.
+Proof.
+  intros b1 b2.
+  match b1 with | | end; match b2 with | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* negation.de_morgan.disjunction *)
+Theorem disjunction
+  : forall (b1 : Bool) (b2 : Bool) . ! (b1 || b2) = ! b1 && ! b2.
+Proof.
+  intros b1 b2.
+  match b1 with | | end; match b2 with | | end; simpl in |- *; quod idem est.
+Qed.
+
+End de_morgan. (* negation.de_morgan *)
+
 End negation. (* negation *)
 
 Module conjunction. (* conjunction *)

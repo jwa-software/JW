@@ -1029,7 +1029,7 @@ Qed.
 Module left. (* addition.left *)
 
 (* addition.left.identity *)
-  Theorem identity : forall (x : Rational) . Zero + x = x.
+Theorem identity : forall (x : Rational) . Zero + x = x.
 Proof.
   intro x.
   simpl add in |- *.
@@ -1110,7 +1110,7 @@ End left. (* addition.left *)
 Module right. (* addition.right *)
 
 (* addition.right.identity *)
-  Theorem identity : forall (x : Rational) . x + Zero = x.
+Theorem identity : forall (x : Rational) . x + Zero = x.
 Proof.
   intro x.
   simpl add in |- *.
@@ -1577,7 +1577,7 @@ End left. (* multiplication.left *)
 Module right. (* multiplication.right *)
 
 (* multiplication.right.identity *)
-  Theorem identity : forall (x : Rational) . x * One = x.
+Theorem identity : forall (x : Rational) . x * One = x.
 Proof.
   intro x.
   leibniz (multiplication.commutativity x One) in |- *.

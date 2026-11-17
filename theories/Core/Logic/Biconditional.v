@@ -37,7 +37,7 @@ Theorem transitivity
   : forall {P : Prop} {Q : Prop} {R : Prop} .
       (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  intros P Q C.
+  intros P Q R.
   intro hpq.
   intro hqr.
   match hpq with | pq qp end.
