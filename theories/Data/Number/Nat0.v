@@ -3274,11 +3274,17 @@ Qed.
 
 End multiplication. (* gcd.multiplication *)
 
+(* [gcd] with its [+] taken off. [gcd a (+ q)] is never [0], so the [0] arm
+ * is never taken; it answers [Nat.One], not [q], so that the arm reads the
+ * same whatever the arguments, which [recurrence] needs.
+ *)
 (* [Nat0 -> Nat -> Nat] *)
 (* gcd.nat *)
-Definition nat :=
-  fun (a : Nat0) (q : Nat) .
-    (WellFounded.recursion euclid.nat.step (a, q)).
+Definition nat := fun (a : Nat0) (q : Nat) .
+  match gcd a (+ q) with
+  | 0   => Nat.One
+  | + g => g
+  end.
 
 Module nat. (* gcd.nat *)
 
@@ -3288,14 +3294,7 @@ Theorem zero
 Proof.
   intros a q e.
   simpl gcd.nat in |- *.
-  leibniz (WellFounded.recursion.unfolding
-             euclid.nat.extensionality (a, q)) in |- *.
-  simpl euclid.nat.step in |- *.
-  let b := division.remainder.boundedness a q in |- *.
-  let proof b := &b.
-  extro &b.
-  leibniz e in |- *.
-  intros b.
+  leibniz (gcd.recurrence a q), e, (gcd.zero (+ q)) in |- *.
   simpl in |- *.
   quod idem est.
 Qed.
@@ -3307,16 +3306,7 @@ Theorem recurrence
 Proof.
   intros a q r e.
   simpl gcd.nat in |- *.
-  leibniz (WellFounded.recursion.unfolding euclid.nat.extensionality (a, q)) in |- *.
-  simpl euclid.nat.step in |- *.
-  let b
-    := division.remainder.boundedness a q in |- *.
-  let proof b
-    := &b.
-  extro &b.
-  leibniz e in |- *.
-  intros b.
-  simpl in |- *.
+  leibniz (gcd.recurrence a q), e in |- *.
   quod idem est.
 Qed.
 
