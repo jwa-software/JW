@@ -1,8 +1,10 @@
 (* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
 
+From jwa Require Import Algebra.AbelianGroup.
 From jwa Require Import Algebra.AbelianMonoid.
 From jwa Require Import Algebra.Cancellative.
 From jwa Require Import Algebra.Commutative.
+From jwa Require Import Algebra.Group.
 From jwa Require Import Algebra.Monoid.
 From jwa Require Import Algebra.Semigroup.
 From jwa Require Import Algebra.Semiring.
@@ -2953,6 +2955,17 @@ Proof.
     quod idem est.
 Qed.
 
+(* [Group.inverse] for [^^], whose inverse is the identity: both of its sides
+ * are [irreflexivity], as in [Bool.sejunction.inverse].
+ *)
+(* sejunction.inverse *)
+Theorem inverse
+  : forall (n : BinWithZero) . (n ^^ n = 0) /\ (n ^^ n = 0).
+Proof.
+  intros n.
+  divide et impera; ipso (sejunction.irreflexivity n).
+Qed.
+
 End sejunction. (* sejunction *)
 
 Module shift. (* shift *)
@@ -3239,3 +3252,45 @@ Instance BinWithZero_semiring
    ; Semiring.monoid         := BinWithZero_mul_monoid
    ; Semiring.distributivity := BinWithZero.multiplication.distributivity.over.addition
    ; Semiring.annihilation   := BinWithZero.multiplication.annihilation |}.
+
+(* The bitwise operators, as [Bool] declares them. [&&] is a semigroup and no
+ * more: [0] annihilates it, and its identity would need every bit set, which
+ * no number of this type has. So there is no [Ring] here as [Bool] has.
+ *)
+Instance BinWithZero_and_semigroup
+  : Semigroup BinWithZero.and :=
+  {| Semigroup.associativity := BinWithZero.conjunction.associativity |}.
+
+Instance BinWithZero_or_monoid
+  : Monoid BinWithZero.or BinWithZero.Zero :=
+  {| Monoid.semigroup      :=
+       {| Semigroup.associativity := BinWithZero.disjunction.associativity |}
+   ; Monoid.identity       := BinWithZero.disjunction.identity |}.
+
+Instance BinWithZero_xor_monoid
+  : Monoid BinWithZero.xor BinWithZero.Zero :=
+  {| Monoid.semigroup      :=
+       {| Semigroup.associativity := BinWithZero.sejunction.associativity |}
+   ; Monoid.identity       := BinWithZero.sejunction.identity |}.
+
+Instance BinWithZero_and_commutative
+  : Commutative BinWithZero.and :=
+  {| Commutative.commutativity := BinWithZero.conjunction.commutativity |}.
+
+Instance BinWithZero_or_commutative
+  : Commutative BinWithZero.or :=
+  {| Commutative.commutativity := BinWithZero.disjunction.commutativity |}.
+
+Instance BinWithZero_xor_commutative
+  : Commutative BinWithZero.xor :=
+  {| Commutative.commutativity := BinWithZero.sejunction.commutativity |}.
+
+Instance BinWithZero_xor_group
+  : Group BinWithZero.xor BinWithZero.Zero (fun (n : BinWithZero) . n) :=
+  {| Group.monoid  := BinWithZero_xor_monoid
+   ; Group.inverse := BinWithZero.sejunction.inverse |}.
+
+Instance BinWithZero_xor_abelian_group
+  : AbelianGroup BinWithZero.xor BinWithZero.Zero (fun (n : BinWithZero) . n) :=
+  {| AbelianGroup.group       := BinWithZero_xor_group
+   ; AbelianGroup.commutative := BinWithZero_xor_commutative |}.
