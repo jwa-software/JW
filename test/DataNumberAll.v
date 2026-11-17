@@ -43,6 +43,27 @@ Definition data_number_all_delivers_gcd_recurrence
       = Nat0.gcd (Nat0.Positive q) (Nat0.modulo a q)
   := Nat0.gcd.recurrence.
 
+(* The gcds and [Rational] evaluate, checked by reflexivity: if either gcd
+ * stops reducing, every [Rational] stops with it, and these fail.
+ *)
+Definition data_number_all_delivers_gcd_computes
+  : Nat0.gcd 6%n0 4%n0 = 2%n0
+  := Identity.reflexivity _.
+
+Definition data_number_all_delivers_gcd_nat_computes
+  : Nat0.gcd.nat 6%n0 4%n = 2%n
+  := Identity.reflexivity _.
+
+Definition data_number_all_delivers_rational_make_computes
+  : Rational.numerator (Rational.make 6%z 4%n) = 3%z
+    /\ Rational.denominator (Rational.make 6%z 4%n) = 2%n
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_number_all_delivers_rational_addition_computes
+  : Rational.numerator (Rational.add (Rational.make 1%z 2%n) (Rational.make 1%z 3%n)) = 5%z
+    /\ Rational.denominator (Rational.add (Rational.make 1%z 2%n) (Rational.make 1%z 3%n)) = 6%n
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
 Definition data_number_all_delivers_gcd_divisibility
   : forall (b : Nat0) (a : Nat0) .
       Nat0.Divides (Nat0.gcd a b) a
