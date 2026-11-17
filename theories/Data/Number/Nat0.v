@@ -19,7 +19,6 @@ From jwa Require Import Dialect.Simpl.
 From jwa Require Import Relation.Accessible.
 From jwa Require Import Relation.Antisymmetric.
 From jwa Require Import Relation.Descent.
-From jwa Require Import Relation.Induced.
 From jwa Require Import Relation.Order.PartialOrder.
 From jwa Require Import Relation.Reflexive.
 From jwa Require Import Relation.Transitive.
@@ -2447,213 +2446,28 @@ End product. (* modulo.product *)
 
 End modulo. (* modulo *)
 
-Local Open Scope jwa_product_scope.
-
-Module euclid. (* euclid *)
-
-(* euclid.well_founded *)
-Instance well_founded
-  : WellFounded (Induced (<) pi_2) :=
-  WellFounded.induced (<) (@Product.second Nat0 Nat0)
-    {| WellFounded.accessibility := order.strict.wellfoundedness |}.
-
-Local Open Scope jwa_type_scope.
-
-(* [forall (x : Nat0 * Nat0) .
- * (forall (y : Nat0 * Nat0) . Induced (<) pi_2 y x -> Nat0) -> Nat0]
+(* Euclid's algorithm with fuel, so that it is structural and evaluates: each
+ * call strips a [Successor]. From [gcd] the second argument never exceeds the
+ * fuel, so at fuel [One] it is [+ One], and [+ q] is the right answer there.
  *)
-(* euclid.step *)
-Definition step
-  : Descent.Step (Induced (<) pi_2) (fun (_ : Nat0 * Nat0) . Nat0)
-  :=
-  fun (x : Nat0 * Nat0)
-    (recurse : forall (y : Nat0 * Nat0) . Induced (<) pi_2 y x -> Nat0) .
-    match x with
-    (* [b = 0] answers [a].
-     * [b = + b'] does not answer with the product [((+ b'), (a %. b'))],
-     * it calls [recurse] there with it and answers with the number that comes back.
-     * The product is where the next question is, not the answer.
-     *)
-    | (a, b) =>
-        match b with
-        | 0 =>
-            fun (_ : forall (y : Nat0 * Nat0) . Induced (<) pi_2 y (a, 0) -> Nat0) . a
-        | + b' =>
-            fun (recurse : forall (y : Nat0 * Nat0) . Induced (<) pi_2 y (a, + b') -> Nat0) .
-              (recurse
-                ((+ b'), (a %. b'))
-                (Induced.introduction (division.remainder.boundedness a b')))
-        end
-    end recurse.
-
-(* euclid.extensionality *)
-Lemma extensionality : Descent.Extensional euclid.step.
-Proof.
-  (* [x : Nat0 * Nat0]
-   * [f : forall (y : Nat0 * Nat0) . Induced (<) pi_2 y x -> Nat0]
-   * [g : forall (y : Nat0 * Nat0) . Induced (<) pi_2 y x -> Nat0]
-   * [h : forall (y : Nat0 * Nat0) (r : Induced (<) pi_2 y x) . f y r = g y r]
-   * :
-   * [|- step x f = step x g]
-   *)
-  intros x f g h.
-
-  (* [|- step (a, b) f = step (a, b) g] *)
-  match x with | a b end.
-
-  match b with | | b' end.
-
-  (* b destructed as 0 : [|- step (a, 0) f = step (a, 0) g] *)
-  {
-    (* [|- a = a] *)
-    simpl in |- *.
-    quod idem est.
-  }
-
-  (* b destructed as + b' : [|- step (a, + b') f = step (a, + b') g] *)
-  {
-    (* [|- f ((+ b'), (a %. b')) (Induced.introduction (division.remainder.boundedness a b'))
-     *  = g ((+ b'), (a %. b')) (Induced.introduction (division.remainder.boundedness a b'))]
-     *)
-    simpl euclid.step in |- *.
-
-    (* The context gains [bound := division.remainder.boundedness a b'],
-     * of type [(a %. b') < + b']
-     * :
-     * [|- f ((+ b'), (a %. b')) (Induced.introduction bound)
-     *  = g ((+ b'), (a %. b')) (Induced.introduction bound)]
-     *)
-    let bound
-      : (a %. b') < + b'
-      := division.remainder.boundedness a b'
-      in |- *.
-
-    (* The context gains [y := ((+ b'), (a %. b'))]
-     * :
-     * [|- f y (Induced.introduction bound)
-     *  = g y (Induced.introduction bound)]
-     *)
-    let y
-      : Nat0 * Nat0
-      := ((+ b'), (a %. b'))
-      in |- *.
-
-    (* The context gains [x := (a, + b')], and [f], [g] and [h] fold to it:
-     * [f : forall (y : Nat0 * Nat0) . Induced (<) pi_2 y x -> Nat0]
-     * [g : forall (y : Nat0 * Nat0) . Induced (<) pi_2 y x -> Nat0]
-     * [h : forall (y : Nat0 * Nat0) (r : Induced (<) pi_2 y x) . f y r = g y r]
-     *)
-    let x := (a, + b') in *.
-
-    (* The context gains [r := Induced.introduction bound],
-     * of type [Induced (<) pi_2 y x]
-     * :
-     * [|- f y r = g y r]
-     *)
-    let r
-      : Induced (<) pi_2 y x
-      := Induced.introduction bound
-      in |- *.
-
-    (* [H : forall (r : Induced (<) pi_2 y x) . f y r = g y r] *)
-    let proof H := h y.
-
-    ipso (modus ponens H, r).
-  }
-Qed.
-
-Local Close Scope jwa_type_scope.
-
-Module nat. (* euclid.nat *)
-
-(* euclid.nat.well_founded *)
-Instance well_founded
-  : WellFounded (Induced (<)%n (@Product.second Nat0 Nat)) :=
-  WellFounded.induced (<)%n (@Product.second Nat0 Nat)
-    Nat_less_than_well_founded.
-
-(* The inner [return] carries the bound rather than an equation, so the
- * branch for a positive remainder has [(+ r) < + q] already in hand.
- *)
-(* [forall (p : Product Nat0 Nat) .
- *    (forall (s : Product Nat0 Nat) .
- *       Induced (<)%n (@Product.second Nat0 Nat) s p -> Nat) ->
- *    Nat]
- *)
-(* euclid.nat.step *)
-Definition step
-  : Descent.Step
-      (Induced (<)%n (@Product.second Nat0 Nat))
-      (fun (_ : Product Nat0 Nat) . Nat)
-  :=
-  fun (p : Product Nat0 Nat)
-    (recurse : forall (s : Product Nat0 Nat) .
-                 Induced (<)%n (@Product.second Nat0 Nat) s p -> Nat) .
-    match p as t
-      return ((forall (s : Product Nat0 Nat) .
-                 Induced (<)%n (@Product.second Nat0 Nat) s t -> Nat) -> Nat)
-    with
-    | (a, q) =>
-        fun (descend : forall (s : Product Nat0 Nat) .
-                       Induced (<)%n (@Product.second Nat0 Nat) s (a, q) -> Nat) .
-          match (a %. q) as m
-          return (m < (+ q) -> Nat)
-          with
-          | 0 => fun (_ : 0 < (+ q)) . q
-          | + r =>
-              fun (h : (+ r) < (+ q)) .
-                descend ((+ q), r)
-                  (Induced.introduction
-                    (f := @Product.second Nat0 Nat) (y := ((+ q), r)) (x := (a, q))
-                    (Biconditional.forward.elimination (positive.order.embedding r q) h))
-          end (division.remainder.boundedness a q)
-    end recurse.
-
-(* euclid.nat.extensionality *)
-Lemma extensionality : Descent.Extensional euclid.nat.step.
-Proof.
-  intros p f g h.
-  match p with | a q end.
-  simpl euclid.nat.step in |- *.
-  let b := division.remainder.boundedness a q in |- *.
-  let proof b := &b.
-  extro &b.
-  match (a %. q) with
-  |
-  | r
+(* [Nat -> Nat0 -> Nat0 -> Nat0] *)
+Fixpoint gcd_with_fuel (fuel : Nat) (a : Nat0) (b : Nat0) : Nat0 :=
+  match b with
+  | 0   => a
+  | + q =>
+      match fuel with
+      | Nat.One          => + q
+      | Nat.Successor f' => gcd_with_fuel f' (+ q) (a %. q)
+      end
   end.
-  - intros b.
-    quod idem est.
-  - intros b.
-    let s
-      : Induced
-          (<)%n
-          (@Product.second Nat0 Nat)
-          ((+ q), r)
-          (a, q)
-      := Induced.introduction
-          (f := @Product.second Nat0 Nat) (y := ((+ q), r)) (x := (a, q))
-          (Biconditional.forward.elimination (positive.order.embedding r q) b)
-      in |- *.
-    let proof H := h ((+ q), r).
-    ipso (modus ponens H, s).
-Qed.
 
-End nat. (* euclid.nat *)
-
-End euclid. (* euclid *)
-
-Existing Instance euclid.well_founded.
-
-Existing Instance euclid.nat.well_founded.
-
-(* Greatest Common Divisor *)
+(* Greatest Common Divisor, [b]'s own magnitude serving as the fuel. *)
 (* [Nat0 -> Nat0 -> Nat0] *)
-Definition gcd :=
-  fun (a : Nat0) (b : Nat0) .
-    (WellFounded.recursion euclid.step (a, b)).
-
-Local Close Scope jwa_product_scope.
+Definition gcd := fun (a : Nat0) (b : Nat0) .
+  match b with
+  | 0   => a
+  | + q => gcd_with_fuel q a (+ q)
+  end.
 
 Module divisibility. (* divisibility *)
 
@@ -2883,21 +2697,151 @@ Local Open Scope jwa_product_scope.
 Theorem zero : forall (a : Nat0) . gcd a 0 = a.
 Proof.
   intros a.
-  simpl gcd in |- *.
-  leibniz (WellFounded.recursion.unfolding euclid.extensionality (a, 0)) in |- *.
-  simpl euclid.step in |- *.
+  simpl in |- *.
   quod idem est.
 Qed.
+
+(* The two sides of [recurrence] run on different fuels, so it rests on
+ * [sufficiency]: any fuel at least [b] gives the same answer.
+ *)
+Module fuel. (* gcd.fuel *)
+
+(* gcd.fuel.zero *)
+Lemma zero : forall (f : Nat) (a : Nat0) . gcd_with_fuel f a 0 = a.
+Proof.
+  intros f a.
+  match f with | | f' end; simpl in |- *; quod idem est.
+Qed.
+
+(* Fuel [One] is only ever reached with nothing left to divide. *)
+(* gcd.fuel.exhaustion *)
+Lemma exhaustion
+  : forall (x : Nat0) (q : Nat) . x < + q -> + q <= + Nat.One -> x = 0.
+Proof.
+  intros x q hx hq.
+  lemma below : x < + Nat.One.
+  {
+    simpl LessOrEqual in &hq.
+    match &hq with | e | l end.
+    - leibniz <- &e in |- *.
+      ipso &hx.
+    - ipso (order.strict.transitivity &hx &l).
+  }
+  let proof d := modus aequans (order.discreteness &x 0), &below.
+  simpl LessOrEqual in &d.
+  match &d with | e | l end.
+  - ipso &e.
+  - simpl LessThan in &l.
+    match &l with | k e end.
+    match &x with | | x' end.
+    + quod idem est.
+    + simpl in &e.
+      ex &e quodlibet.
+Qed.
+
+(* One step of Euclid keeps the second argument within the remaining fuel. *)
+(* gcd.fuel.bound *)
+Lemma bound
+  : forall (x : Nat0) (q : Nat) (f : Nat) .
+      x < + q -> + q <= + (Nat.Successor f) -> x <= + f.
+Proof.
+  intros x q f hx hq.
+  lemma below : x < + (Nat.Successor f).
+  {
+    simpl LessOrEqual in &hq.
+    match &hq with | e | l end.
+    - leibniz <- &e in |- *.
+      ipso &hx.
+    - ipso (order.strict.transitivity &hx &l).
+  }
+  lemma sum : (+ f) + (+ Nat.One) = + (Nat.Successor f).
+  {
+    leibniz (addition.commutativity (+ &f) (+ Nat.One)) in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  leibniz <- &sum in &below.
+  ipso (modus aequans (order.discreteness &x (+ &f)), &below).
+Qed.
+
+(* gcd.fuel.sufficiency *)
+Lemma sufficiency
+  : forall (f : Nat) (g : Nat) (a : Nat0) (b : Nat0) .
+      b <= + f -> b <= + g -> gcd_with_fuel f a b = gcd_with_fuel g a b.
+Proof.
+  intros f.
+  match f with | | f' by IH end per Nat.induction.
+  -
+    intros g a b hf hg.
+    match b with | | q end.
+    +
+      leibniz (fuel.zero Nat.One &a), (fuel.zero &g &a) in |- *.
+      quod idem est.
+    +
+      lemma r : (&a %. &q) = 0.
+      {
+        ipso (fuel.exhaustion (&a %. &q) &q (division.remainder.boundedness &a &q) &hf).
+      }
+      match g with | | g' end.
+      * quod idem est.
+      * simpl in |- *.
+        leibniz &r, (fuel.zero &g' (+ &q)) in |- *.
+        quod idem est.
+  -
+    intros g a b hf hg.
+    match b with | | q end.
+    +
+      leibniz (fuel.zero (Nat.Successor &f') &a), (fuel.zero &g &a) in |- *.
+      quod idem est.
+    +
+      match g with | | g' end.
+      *
+        lemma r : (&a %. &q) = 0.
+        {
+          ipso (fuel.exhaustion (&a %. &q) &q (division.remainder.boundedness &a &q) &hg).
+        }
+        simpl in |- *.
+        leibniz &r, (fuel.zero &f' (+ &q)) in |- *.
+        quod idem est.
+      *
+        simpl in |- *.
+        ipso (&IH &g' (+ &q) (&a %. &q)
+                (fuel.bound (&a %. &q) &q &f' (division.remainder.boundedness &a &q) &hf)
+                (fuel.bound (&a %. &q) &q &g' (division.remainder.boundedness &a &q) &hg)).
+Qed.
+
+End fuel. (* gcd.fuel *)
 
 (* gcd.recurrence *)
 Theorem recurrence
   : forall (a : Nat0) (q : Nat) . gcd a (+ q) = gcd (+ q) ((a %. q)).
 Proof.
   intros a q.
-  simpl gcd in |- *.
-  leibniz (WellFounded.recursion.unfolding euclid.extensionality (a, + q)) in |- *.
-  simpl euclid.step in |- *.
-  quod idem est.
+  match q with | | q' end.
+  -
+    lemma r : (&a %. Nat.One) = 0.
+    {
+      ipso (fuel.exhaustion (&a %. Nat.One) Nat.One
+              (division.remainder.boundedness &a Nat.One)
+              (disjoin (Identity.reflexivity _), _)).
+    }
+    leibniz &r in |- *.
+    simpl in |- *.
+    quod idem est.
+  -
+    simpl in |- *.
+    match (&a %. Nat.Successor &q') with | | r end |- E.
+    +
+      leibniz (fuel.zero &q' (+ Nat.Successor &q')), (zero (+ Nat.Successor &q')) in |- *.
+      quod idem est.
+    +
+      simpl in |- *.
+      let proof B := division.remainder.boundedness &a (Nat.Successor &q').
+      leibniz &E in &B.
+      ipso (fuel.sufficiency &q' &r (+ Nat.Successor &q') (+ &r)
+              (fuel.bound (+ &r) (Nat.Successor &q') &q' &B
+                 (disjoin (Identity.reflexivity _), _))
+              (disjoin (Identity.reflexivity _), _)).
 Qed.
 
 (* gcd.divisibility *)
@@ -3127,11 +3071,17 @@ Qed.
 
 End multiplication. (* gcd.multiplication *)
 
+(* [gcd] with its [+] taken off. [gcd a (+ q)] is never [0], so the [0] arm
+ * is never taken; it answers [Nat.One], not [q], so that the arm reads the
+ * same whatever the arguments, which [recurrence] needs.
+ *)
 (* [Nat0 -> Nat -> Nat] *)
 (* gcd.nat *)
-Definition nat :=
-  fun (a : Nat0) (q : Nat) .
-    (WellFounded.recursion euclid.nat.step (a, q)).
+Definition nat := fun (a : Nat0) (q : Nat) .
+  match gcd a (+ q) with
+  | 0   => Nat.One
+  | + g => g
+  end.
 
 Module nat. (* gcd.nat *)
 
@@ -3141,14 +3091,7 @@ Theorem zero
 Proof.
   intros a q e.
   simpl gcd.nat in |- *.
-  leibniz (WellFounded.recursion.unfolding
-             euclid.nat.extensionality (a, q)) in |- *.
-  simpl euclid.nat.step in |- *.
-  let b := division.remainder.boundedness a q in |- *.
-  let proof b := &b.
-  extro &b.
-  leibniz e in |- *.
-  intros b.
+  leibniz (gcd.recurrence a q), e, (gcd.zero (+ q)) in |- *.
   simpl in |- *.
   quod idem est.
 Qed.
@@ -3160,16 +3103,7 @@ Theorem recurrence
 Proof.
   intros a q r e.
   simpl gcd.nat in |- *.
-  leibniz (WellFounded.recursion.unfolding euclid.nat.extensionality (a, q)) in |- *.
-  simpl euclid.nat.step in |- *.
-  let b
-    := division.remainder.boundedness a q in |- *.
-  let proof b
-    := &b.
-  extro &b.
-  leibniz e in |- *.
-  intros b.
-  simpl in |- *.
+  leibniz (gcd.recurrence a q), e in |- *.
   quod idem est.
 Qed.
 
