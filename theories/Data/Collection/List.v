@@ -307,7 +307,7 @@ Fixpoint nth {A : Type} (l : List A) (i : Nat0) : Option A :=
   | []      => None
   | a :: l' =>
       match i with
-      | Nat0.Zero                    => Some a
+      | Nat0.Zero                        => Some a
       | Nat0.Positive Nat.One            => nth l' Nat0.Zero
       | Nat0.Positive (Nat.Successor i') => nth l' i'
       end
@@ -323,7 +323,7 @@ Fixpoint take {A : Type} (n : Nat0) (l : List A) : List A :=
   | []      => []
   | a :: l' =>
       match n with
-      | Nat0.Zero                    => []
+      | Nat0.Zero                        => []
       | Nat0.Positive Nat.One            => a :: []
       | Nat0.Positive (Nat.Successor n') => a :: take n' l'
       end
@@ -335,7 +335,7 @@ Fixpoint drop {A : Type} (n : Nat0) (l : List A) : List A :=
   | []      => []
   | a :: l' =>
       match n with
-      | Nat0.Zero                    => a :: l'
+      | Nat0.Zero                        => a :: l'
       | Nat0.Positive Nat.One            => l'
       | Nat0.Positive (Nat.Successor n') => drop n' l'
       end
