@@ -558,6 +558,14 @@ Definition data_number_all_delivers_integer_literal_large
   : Integer
   := (-100000)%z.
 
+Definition data_number_all_delivers_integer_minimum_computes
+  : Integer.min 3%z (-5)%z = (-5)%z
+  := Identity.reflexivity _.
+
+Definition data_number_all_delivers_integer_maximum_computes
+  : Integer.max 3%z (-5)%z = 3%z
+  := Identity.reflexivity _.
+
 Definition data_number_all_delivers_bare_numeral
   := 3.
 

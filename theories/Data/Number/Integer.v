@@ -258,6 +258,12 @@ Definition compare := fun (m : Integer) (n : Integer) .
 (* [Integer -> Integer -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
+(* [Integer -> Integer -> Integer] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [Integer -> Integer -> Integer] *)
+Abbreviation max := (Comparable.max compare).
+
 (* [Integer -> Integer -> Prop] *)
 Definition Divides := fun (d : Integer) (n : Integer) . forsome (k : Integer) . d * k = n.
 
