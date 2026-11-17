@@ -2647,11 +2647,28 @@ Existing Instance euclid.well_founded.
 
 Existing Instance euclid.nat.well_founded.
 
-(* Greatest Common Divisor *)
+(* Euclid's algorithm with fuel, so that it is structural and evaluates: each
+ * call strips a [Successor]. From [gcd] the second argument never exceeds the
+ * fuel, so at fuel [One] it is [+ One], and [+ q] is the right answer there.
+ *)
+(* [Nat -> Nat0 -> Nat0 -> Nat0] *)
+Fixpoint gcd_with_fuel (fuel : Nat) (a : Nat0) (b : Nat0) : Nat0 :=
+  match b with
+  | 0   => a
+  | + q =>
+      match fuel with
+      | Nat.One          => + q
+      | Nat.Successor f' => gcd_with_fuel f' (+ q) (a %. q)
+      end
+  end.
+
+(* Greatest Common Divisor, [b]'s own magnitude serving as the fuel. *)
 (* [Nat0 -> Nat0 -> Nat0] *)
-Definition gcd :=
-  fun (a : Nat0) (b : Nat0) .
-    (WellFounded.recursion euclid.step (a, b)).
+Definition gcd := fun (a : Nat0) (b : Nat0) .
+  match b with
+  | 0   => a
+  | + q => gcd_with_fuel q a (+ q)
+  end.
 
 Local Close Scope jwa_product_scope.
 
@@ -2883,21 +2900,151 @@ Local Open Scope jwa_product_scope.
 Theorem zero : forall (a : Nat0) . gcd a 0 = a.
 Proof.
   intros a.
-  simpl gcd in |- *.
-  leibniz (WellFounded.recursion.unfolding euclid.extensionality (a, 0)) in |- *.
-  simpl euclid.step in |- *.
+  simpl in |- *.
   quod idem est.
 Qed.
+
+(* The two sides of [recurrence] run on different fuels, so it rests on
+ * [sufficiency]: any fuel at least [b] gives the same answer.
+ *)
+Module fuel. (* gcd.fuel *)
+
+(* gcd.fuel.zero *)
+Lemma zero : forall (f : Nat) (a : Nat0) . gcd_with_fuel f a 0 = a.
+Proof.
+  intros f a.
+  match f with | | f' end; simpl in |- *; quod idem est.
+Qed.
+
+(* Fuel [One] is only ever reached with nothing left to divide. *)
+(* gcd.fuel.exhaustion *)
+Lemma exhaustion
+  : forall (x : Nat0) (q : Nat) . x < + q -> + q <= + Nat.One -> x = 0.
+Proof.
+  intros x q hx hq.
+  lemma below : x < + Nat.One.
+  {
+    simpl LessOrEqual in &hq.
+    match &hq with | e | l end.
+    - leibniz <- &e in |- *.
+      ipso &hx.
+    - ipso (order.strict.transitivity &hx &l).
+  }
+  let proof d := modus aequans (order.discreteness &x 0), &below.
+  simpl LessOrEqual in &d.
+  match &d with | e | l end.
+  - ipso &e.
+  - simpl LessThan in &l.
+    match &l with | k e end.
+    match &x with | | x' end.
+    + quod idem est.
+    + simpl in &e.
+      ex &e quodlibet.
+Qed.
+
+(* One step of Euclid keeps the second argument within the remaining fuel. *)
+(* gcd.fuel.bound *)
+Lemma bound
+  : forall (x : Nat0) (q : Nat) (f : Nat) .
+      x < + q -> + q <= + (Nat.Successor f) -> x <= + f.
+Proof.
+  intros x q f hx hq.
+  lemma below : x < + (Nat.Successor f).
+  {
+    simpl LessOrEqual in &hq.
+    match &hq with | e | l end.
+    - leibniz <- &e in |- *.
+      ipso &hx.
+    - ipso (order.strict.transitivity &hx &l).
+  }
+  lemma sum : (+ f) + (+ Nat.One) = + (Nat.Successor f).
+  {
+    leibniz (addition.commutativity (+ &f) (+ Nat.One)) in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  leibniz <- &sum in &below.
+  ipso (modus aequans (order.discreteness &x (+ &f)), &below).
+Qed.
+
+(* gcd.fuel.sufficiency *)
+Lemma sufficiency
+  : forall (f : Nat) (g : Nat) (a : Nat0) (b : Nat0) .
+      b <= + f -> b <= + g -> gcd_with_fuel f a b = gcd_with_fuel g a b.
+Proof.
+  intros f.
+  match f with | | f' by IH end per Nat.induction.
+  -
+    intros g a b hf hg.
+    match b with | | q end.
+    +
+      leibniz (fuel.zero Nat.One &a), (fuel.zero &g &a) in |- *.
+      quod idem est.
+    +
+      lemma r : (&a %. &q) = 0.
+      {
+        ipso (fuel.exhaustion (&a %. &q) &q (division.remainder.boundedness &a &q) &hf).
+      }
+      match g with | | g' end.
+      * quod idem est.
+      * simpl in |- *.
+        leibniz &r, (fuel.zero &g' (+ &q)) in |- *.
+        quod idem est.
+  -
+    intros g a b hf hg.
+    match b with | | q end.
+    +
+      leibniz (fuel.zero (Nat.Successor &f') &a), (fuel.zero &g &a) in |- *.
+      quod idem est.
+    +
+      match g with | | g' end.
+      *
+        lemma r : (&a %. &q) = 0.
+        {
+          ipso (fuel.exhaustion (&a %. &q) &q (division.remainder.boundedness &a &q) &hg).
+        }
+        simpl in |- *.
+        leibniz &r, (fuel.zero &f' (+ &q)) in |- *.
+        quod idem est.
+      *
+        simpl in |- *.
+        ipso (&IH &g' (+ &q) (&a %. &q)
+                (fuel.bound (&a %. &q) &q &f' (division.remainder.boundedness &a &q) &hf)
+                (fuel.bound (&a %. &q) &q &g' (division.remainder.boundedness &a &q) &hg)).
+Qed.
+
+End fuel. (* gcd.fuel *)
 
 (* gcd.recurrence *)
 Theorem recurrence
   : forall (a : Nat0) (q : Nat) . gcd a (+ q) = gcd (+ q) ((a %. q)).
 Proof.
   intros a q.
-  simpl gcd in |- *.
-  leibniz (WellFounded.recursion.unfolding euclid.extensionality (a, + q)) in |- *.
-  simpl euclid.step in |- *.
-  quod idem est.
+  match q with | | q' end.
+  -
+    lemma r : (&a %. Nat.One) = 0.
+    {
+      ipso (fuel.exhaustion (&a %. Nat.One) Nat.One
+              (division.remainder.boundedness &a Nat.One)
+              (disjoin (Identity.reflexivity _), _)).
+    }
+    leibniz &r in |- *.
+    simpl in |- *.
+    quod idem est.
+  -
+    simpl in |- *.
+    match (&a %. Nat.Successor &q') with | | r end |- E.
+    +
+      leibniz (fuel.zero &q' (+ Nat.Successor &q')), (zero (+ Nat.Successor &q')) in |- *.
+      quod idem est.
+    +
+      simpl in |- *.
+      let proof B := division.remainder.boundedness &a (Nat.Successor &q').
+      leibniz &E in &B.
+      ipso (fuel.sufficiency &q' &r (+ Nat.Successor &q') (+ &r)
+              (fuel.bound (+ &r) (Nat.Successor &q') &q' &B
+                 (disjoin (Identity.reflexivity _), _))
+              (disjoin (Identity.reflexivity _), _)).
 Qed.
 
 (* gcd.divisibility *)
