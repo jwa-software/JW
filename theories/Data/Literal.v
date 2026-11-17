@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* The plugin behind [Number Notation] and [String Notation]: a file declaring
  * either command requires this one, which loads the plugin and so makes the

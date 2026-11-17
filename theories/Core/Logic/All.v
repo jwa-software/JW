@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Umbrella for [jwa.Core.Logic]: re-exports every connective, so a client
  * imports them all with [From jwa Require Import Core.Logic.All].

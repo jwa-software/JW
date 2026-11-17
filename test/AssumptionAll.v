@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* [Assumption] holds no module, so this guard checks only that its umbrella
  * loads. No other guard reaches this layer, [jwa.All] leaving it out, so this

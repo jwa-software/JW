@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Umbrella for [jwa.Relation.Order]: re-exports the four order classes, and
  * the six classes their fields hold, so a client imports them with

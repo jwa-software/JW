@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* The umbrella under guard, and nothing else that it owes a client. The one
  * other import is a tactic language, not a type: some guards below are proved

@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* The tactic language is Ltac2, a compiled plugin rather than Rocq syntax.
  * [Ltac2.Init] loads it and makes Ltac2 the proof mode of every file that

@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* [-noinit] keeps [Corelib.Init.Prelude] out, so every notation, [->]
    included, is declared by this tree: the scope and the levels here, each

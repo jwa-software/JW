@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Umbrella for [jwa.Data.Number.Binary]: re-exports the three binary number
  * types, so a client imports them with

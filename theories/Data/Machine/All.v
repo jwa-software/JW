@@ -1,4 +1,4 @@
-(* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
+(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
 
 (* Umbrella for [jwa.Data.Machine]: re-exports the machine units, so a client
  * imports them with [From jwa Require Import Data.Machine.All].
