@@ -1,5 +1,6 @@
 (* Copyright (c) 2026 Junzhe Wang, licensed under the MIT License. *)
 
+From jwa Require Import Algebra.Semigroup.
 From jwa Require Import Core.All.
 From jwa Require Import Data.Base.Bool.
 From jwa Require Import Data.Collection.List.
@@ -614,6 +615,14 @@ Abbreviation NonEmptyList := NonEmptyList.T.
  * [concat], the laws and the two ctors still need the prefix.
  *)
 Export (notations) NonEmptyList.
+
+(* Only a semigroup, where [List] is a monoid: the identity would be an empty
+ * non-empty list.
+ *)
+Instance NonEmptyList_concat_semigroup
+  : forall {A : Type} . Semigroup (@NonEmptyList.concat A) :=
+  fun (A : Type) .
+    ({| Semigroup.associativity := @NonEmptyList.concatenation.associativity A |}).
 
 Instance NonEmptyList_functor
   : Functor NonEmptyList :=
