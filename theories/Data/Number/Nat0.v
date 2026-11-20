@@ -285,6 +285,29 @@ Definition Even := fun (n : Nat0) . Divides (+ (Nat.Successor Nat.One)) n.
 Definition Odd := fun (n : Nat0) .
   forsome (k : Nat0) . (+ Nat.One) + ((+ (Nat.Successor Nat.One)) * k) = n.
 
+(* Euclid's algorithm with fuel, so that it is structural and evaluates: each
+ * call strips a [Successor]. From [gcd] the second argument never exceeds the
+ * fuel, so at fuel [One] it is [+ One], and [+ q] is the right answer there.
+ *)
+(* [Nat -> Nat0 -> Nat0 -> Nat0] *)
+Fixpoint gcd_with_fuel (fuel : Nat) (a : Nat0) (b : Nat0) : Nat0 :=
+  match b with
+  | 0   => a
+  | + q =>
+      match fuel with
+      | Nat.One          => + q
+      | Nat.Successor f' => gcd_with_fuel f' (+ q) (a %. q)
+      end
+  end.
+
+(* Greatest Common Divisor, [b]'s own magnitude serving as the fuel. *)
+(* [Nat0 -> Nat0 -> Nat0] *)
+Definition gcd := fun (a : Nat0) (b : Nat0) .
+  match b with
+  | 0   => a
+  | + q => gcd_with_fuel q a (+ q)
+  end.
+
 Module positive. (* positive *)
 
 (* positive.injectivity *)
@@ -2445,29 +2468,6 @@ End right. (* modulo.product.right *)
 End product. (* modulo.product *)
 
 End modulo. (* modulo *)
-
-(* Euclid's algorithm with fuel, so that it is structural and evaluates: each
- * call strips a [Successor]. From [gcd] the second argument never exceeds the
- * fuel, so at fuel [One] it is [+ One], and [+ q] is the right answer there.
- *)
-(* [Nat -> Nat0 -> Nat0 -> Nat0] *)
-Fixpoint gcd_with_fuel (fuel : Nat) (a : Nat0) (b : Nat0) : Nat0 :=
-  match b with
-  | 0   => a
-  | + q =>
-      match fuel with
-      | Nat.One          => + q
-      | Nat.Successor f' => gcd_with_fuel f' (+ q) (a %. q)
-      end
-  end.
-
-(* Greatest Common Divisor, [b]'s own magnitude serving as the fuel. *)
-(* [Nat0 -> Nat0 -> Nat0] *)
-Definition gcd := fun (a : Nat0) (b : Nat0) .
-  match b with
-  | 0   => a
-  | + q => gcd_with_fuel q a (+ q)
-  end.
 
 Module divisibility. (* divisibility *)
 
