@@ -776,7 +776,7 @@ Proof.
       intro h.
       match h with | e | h' end.
       * exists &a.
-        ipso (conjoin (disjoin (Identity.reflexivity &a), _), &e).
+        ipso (conjoin (disjoin (refl &a), _), &e).
       * let proof w := IH h'.
         match w with | a' c end.
         match c with | m e end.
@@ -1348,7 +1348,7 @@ Proof.
   - simpl in |- *.
     intro h.
     divide et impera.
-    + ipso (&h &b (disjoin (Identity.reflexivity &b), _)).
+    + ipso (&h &b (disjoin (refl &b), _)).
     + lemma members : forall (a : &A) . &l' contains_member a -> &P a.
       {
         intros a ha.
@@ -1468,7 +1468,7 @@ Proof.
     match h with | pb | h' end.
     + exists b.
       divide et impera.
-      * ipso (disjoin (Identity.reflexivity b), _).
+      * ipso (disjoin (refl b), _).
       * ipso pb.
     + match (IH h') with | a ha end.
       match ha with | ha' pa end.
@@ -1978,7 +1978,7 @@ Proof.
       simpl in |- *.
       quod idem est.
     + simpl in e.
-      let proof e' := Identity.symmetry e.
+      let proof e' := symm e.
       leibniz (Nat0.increment.specification (|| l2' ||)) in e'.
       leibniz (Nat0.addition.commutativity Nat.One (|| l2' ||)) in e'.
       let proof h := Nat0.addition.right.identity.absence (|| l2' ||) Nat.One.
@@ -2514,7 +2514,7 @@ Proof.
     + divide et impera.
       * intro e.
         modus aequans IH, e |- all'.
-        ipso (conjoin (Identity.reflexivity false), all').
+        ipso (conjoin (refl false), all').
       * intro c.
         match c with | e all' end.
         ipso (modus aequans IH, all').
@@ -2863,7 +2863,7 @@ Proof.
     match h with | k e end.
     match i with | | q end.
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity Nat0.Zero), _).
+      ipso (disjoin (refl Nat0.Zero), _).
     + simpl in e.
       let proof e' := Nat0.positive.injectivity e.
       match q with | | q' end; simpl in e'; ex e' quodlibet.
@@ -3421,7 +3421,7 @@ Proof.
         simpl in |- *.
         divide et impera.
         -- ipso s.
-        -- ipso (IH m' (Identity.reflexivity (Some m'))).
+        -- ipso (IH m' (refl (Some m'))).
       * let proof e' := Option.some.injectivity e.
         leibniz <- e' in |- *.
         simpl in |- *.
@@ -3430,7 +3430,7 @@ Proof.
         -- ipso (comparison.reflexivity total a).
         -- ipso (quantification.all.monotonicity
                     (fun (x : A) (h : le x m' = true) . transitive x m' a h ha)
-                    (IH m' (Identity.reflexivity (Some m')))).
+                    (IH m' (refl (Some m')))).
 Qed.
 
 (* maximum.membership *)
@@ -3448,15 +3448,15 @@ Proof.
     match (maximum_of le l') with | | m' end |- r.
     + let proof e' := Option.some.injectivity e.
       simpl in |- *.
-      ipso (disjoin (Identity.symmetry e'), _).
+      ipso (disjoin (symm e'), _).
     + match (le a m') with end |- s.
       * let proof e' := Option.some.injectivity e.
         leibniz <- e' in |- *.
         simpl in |- *.
-        ipso (disjoin _, (&IH &m' (Identity.reflexivity (Some &m')))).
+        ipso (disjoin _, (&IH &m' (refl (Some &m')))).
       * let proof e' := Option.some.injectivity e.
         simpl in |- *.
-        ipso (disjoin (Identity.symmetry e'), _).
+        ipso (disjoin (symm e'), _).
 Qed.
 
 End maximum. (* maximum *)
@@ -3522,13 +3522,13 @@ Proof.
         -- ipso (comparison.reflexivity total a).
         -- ipso (quantification.all.monotonicity
                     (fun (x : A) (h : le m' x = true) . transitive a m' x s h)
-                    (IH m' (Identity.reflexivity (Some m')))).
+                    (IH m' (refl (Some m')))).
       * let proof e' := Option.some.injectivity e.
         leibniz <- e' in |- *.
         simpl in |- *.
         divide et impera.
         -- ipso (comparison.contraposition total s).
-        -- ipso (IH m' (Identity.reflexivity (Some m'))).
+        -- ipso (IH m' (refl (Some m'))).
 Qed.
 
 (* minimum.membership *)
@@ -3546,15 +3546,15 @@ Proof.
     match (minimum_of le l') with | | m' end |- r.
     + let proof e' := Option.some.injectivity e.
       simpl in |- *.
-      ipso (disjoin (Identity.symmetry e'), _).
+      ipso (disjoin (symm e'), _).
     + match (le a m') with end |- s.
       * let proof e' := Option.some.injectivity e.
         simpl in |- *.
-        ipso (disjoin (Identity.symmetry e'), _).
+        ipso (disjoin (symm e'), _).
       * let proof e' := Option.some.injectivity e.
         leibniz <- e' in |- *.
         simpl in |- *.
-        ipso (disjoin _, (&IH &m' (Identity.reflexivity (Some &m')))).
+        ipso (disjoin _, (&IH &m' (refl (Some &m')))).
 Qed.
 
 End minimum. (* minimum *)

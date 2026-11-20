@@ -571,7 +571,7 @@ Proof.
   | m'
   end.
   - simpl in |- *.
-    ipso (disjoin (Identity.reflexivity n), _).
+    ipso (disjoin (refl n), _).
   - lemma facto : &n < (+ &m') + &n.
     {
       simpl ( _ < _ ) in |- *.
@@ -672,7 +672,7 @@ Proof.
   match h with | e | lt end.
   - leibniz e in |- *.
     simpl ( _ <= _ ) in |- *.
-    ipso (disjoin (Identity.reflexivity (k + n)), _).
+    ipso (disjoin (refl (k + n)), _).
   - simpl ( _ <= _ ) in |- *.
     ipso (disjoin _, (addition.order.strict.monotonicity k m n lt)).
 Qed.
@@ -873,13 +873,13 @@ Proof.
   | p
   end.
   - simpl in |- *.
-    ipso (disjoin (Identity.reflexivity 0), _).
+    ipso (disjoin (refl 0), _).
   - match k with
     |
     | k'
     end.
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity (+ p)), _).
+      ipso (disjoin (refl (+ p)), _).
     + lemma facto
       : (+ &p) < (+ Nat.Successor &k') * (+ &p).
       {
@@ -2035,7 +2035,7 @@ Proof.
                   ((n /. d) * (+ d)) ((+ k) * (+ d)) r) in e.
       symm in recon.
       let proof chain
-        := Identity.transitivity e recon.
+        := trans e, recon.
       let proof excess
         := addition.left.cancellation chain.
       symm in excess.
@@ -2085,7 +2085,7 @@ Proof.
                     ((+ k) * (+ d))
                     (n %. d)) in recon.
         let proof chain
-          := Identity.transitivity recon (symm e).
+          := trans recon, (symm e).
         let proof excess
           := addition.left.cancellation chain.
         leibniz (symm excess) in b.
@@ -2125,7 +2125,7 @@ Proof.
     ipso quotient.
   -
     leibniz quotient in recon.
-    let proof chain := Identity.transitivity recon (symm e).
+    let proof chain := trans recon, (symm e).
     ipso (addition.left.cancellation chain).
 Qed.
 
@@ -2154,7 +2154,7 @@ Proof.
         leibniz (multiplication.associativity (+ k) (+ d) (n /. d))     in |- *.
         leibniz (multiplication.commutativity (+ d) (n /. d))           in |- *.
         let proof dist
-          := Identity.symmetry
+          := symm
                 (multiplication.left.distributivity.over.addition
                     (+ k)
                     ((n /. d) * (+ d))
@@ -2285,7 +2285,7 @@ Definition safe :=
   fun (d : Nat) (g : Nat) (h : Divides (+ g) (+ d)) .
     match (+ d) /. g as q
     with (* the Zero branch is never reachable *)
-    | 0    => fun (n : ~ (0 = 0)) . match n (Identity.reflexivity 0) return Nat with end
+    | 0    => fun (n : ~ (0 = 0)) . match n (refl 0) return Nat with end
     | + q' => fun (_ : ~ ((+ q') = 0)) . q'
     end (division.nat.quotient.positivity d g h).
 
@@ -2305,7 +2305,7 @@ Proof.
   extro &n.
   match ((+ d) /. g) with | | q' end.
   - intro n.
-    modus ponens n, (Identity.reflexivity 0) |- f.
+    modus ponens n, (refl 0) |- f.
     ex f quodlibet.
   - intro n.
     quod idem est.
@@ -2323,7 +2323,7 @@ Proof.
   let proof s2 := divide.nat.safe.specification d2 g2 h2.
   leibniz e in s1.
   symm in s2.
-  let proof full := Identity.transitivity s1 s2.
+  let proof full := trans s1, s2.
   ipso (positive.injectivity full).
 Qed.
 
@@ -2556,7 +2556,7 @@ Proof.
   match m with | | p end.
   - simpl in e1.
     ipso e1.
-  - let proof e1' := Identity.symmetry e1.
+  - let proof e1' := symm e1.
     leibniz e1' in e2.
     match k with
     |
@@ -2581,7 +2581,7 @@ Proof.
         simpl in c.
 
         let proof e4
-          := Identity.transitivity e3 c.
+          := trans e3, c.
 
         let proof e5
           := Nat.multiplication.left.cancellation e4.
@@ -2687,7 +2687,7 @@ Proof.
         leibniz &e1 in e2.
         match (addition.identity m) with | i1 i2 end.
         let proof e3
-          := Identity.transitivity i2 e2.
+          := trans i2, e2.
         let proof e4
           := addition.left.cancellation e3.
         leibniz <- e4 in |- *.
@@ -2703,7 +2703,7 @@ Proof.
         match (addition.identity m) with | i1 i2 end.
         symm in i2.
         let proof e3
-          := Identity.transitivity ej i2.
+          := trans ej, i2.
         let proof e4
           := addition.left.cancellation e3.
         let proof pos
@@ -2872,7 +2872,7 @@ Proof.
     {
       ipso (fuel.exhaustion (&a %. Nat.One) Nat.One
               (division.remainder.boundedness &a Nat.One)
-              (disjoin (Identity.reflexivity _), _)).
+              (disjoin (refl _), _)).
     }
     leibniz &r in |- *.
     simpl in |- *.
@@ -2889,8 +2889,8 @@ Proof.
       leibniz &E in &B.
       ipso (fuel.sufficiency &q' &r (+ Nat.Successor &q') (+ &r)
               (fuel.bound (+ &r) (Nat.Successor &q') &q' &B
-                 (disjoin (Identity.reflexivity _), _))
-              (disjoin (Identity.reflexivity _), _)).
+                 (disjoin (refl _), _))
+              (disjoin (refl _), _)).
 Qed.
 
 (* gcd.divisibility *)

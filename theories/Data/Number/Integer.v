@@ -553,7 +553,7 @@ Proof.
     simpl in s.
     let proof e' := Nat0.positive.injectivity s.
     leibniz (Nat.addition.commutativity p k) in |- *.
-    ipso (Identity.symmetry e').
+    ipso (symm e').
   - intro e.
     symm in e.
     leibniz e in |- *.
@@ -576,7 +576,7 @@ Proof.
     leibniz e in s.
     simpl in s.
     let proof e' := Nat0.positive.injectivity s.
-    ipso (Identity.symmetry e').
+    ipso (symm e').
   - intro e.
     leibniz e in |- *.
     ipso (difference.nat.reflexivity q).
@@ -919,9 +919,9 @@ Theorem associativity
       (l + m) + n = l + (m + n).
 Proof.
   intros l m n.
-  let proof el := Identity.symmetry (difference.nat0.canonicity l).
-  let proof em := Identity.symmetry (difference.nat0.canonicity m).
-  let proof en := Identity.symmetry (difference.nat0.canonicity n).
+  let proof el := symm (difference.nat0.canonicity l).
+  let proof em := symm (difference.nat0.canonicity m).
+  let proof en := symm (difference.nat0.canonicity n).
   leibniz el in |- *.
   leibniz em in |- *.
   leibniz en in |- *.
@@ -1105,7 +1105,7 @@ Theorem subtraction
   : forall (m : Integer) (n : Integer) . (m - n) + n = m.
 Proof.
   intros m n.
-  let proof s : &m - &n = &m + negate &n := Identity.reflexivity _.
+  let proof s : &m - &n = &m + negate &n := refl _.
   leibniz &s in |- *.
   leibniz (addition.associativity &m (negate &n) &n) in |- *.
   leibniz (addition.left.inverse &n) in |- *.
@@ -1146,7 +1146,7 @@ Theorem specification
   : forall (m : Integer) (n : Integer) . m - n = m + negate n.
 Proof.
   intros m n.
-  ipso (Identity.reflexivity _).
+  ipso (refl _).
 Qed.
 
 Module inversion. (* subtraction.inversion *)
@@ -1341,15 +1341,15 @@ Proof.
             (ramp (negate n))) in |- *.
   leibniz (ramp.scaling k m) in |- *.
   leibniz (ramp.scaling k n) in |- *.
-  let proof nm := Identity.transitivity
-                (Identity.transitivity
-                  (multiplication.commutativity (+ k) (negate m))
-                  (multiplication.left.negation m (+ k)))
+  let proof nm := trans
+                (trans
+                  (multiplication.commutativity (+ k) (negate m)),
+                  (multiplication.left.negation m (+ k))),
                 (congru negate, (multiplication.commutativity m (+ k))).
-  let proof nn := Identity.transitivity
-                (Identity.transitivity
-                  (multiplication.commutativity (+ k) (negate n))
-                  (multiplication.left.negation n (+ k)))
+  let proof nn := trans
+                (trans
+                  (multiplication.commutativity (+ k) (negate n)),
+                  (multiplication.left.negation n (+ k))),
                 (congru negate, (multiplication.commutativity n (+ k))).
   leibniz <- nm in |- *.
   leibniz <- nn in |- *.
@@ -1521,11 +1521,11 @@ Theorem interchange
 Proof.
   intros a b c d.
   leibniz (multiplication.associativity a b (c * d)) in |- *.
-  let proof inner := Identity.symmetry (multiplication.associativity b c d).
+  let proof inner := symm (multiplication.associativity b c d).
   leibniz inner in |- *.
   leibniz (multiplication.commutativity b c) in |- *.
   leibniz (multiplication.associativity c b d) in |- *.
-  let proof outer := Identity.symmetry (multiplication.associativity a c (b * d)).
+  let proof outer := symm (multiplication.associativity a c (b * d)).
   leibniz outer in |- *.
   quod idem est.
 Qed.
@@ -1552,7 +1552,7 @@ Proof.
       leibniz (cancel (magnitude.negative.injectivity e)) in |- *.
       quod idem est.
   - simpl (~ _) in nonzero.
-    modus ponens nonzero, (Identity.reflexivity 0) |- f.
+    modus ponens nonzero, (refl 0) |- f.
     ex f quodlibet.
   - match m with | a | | a end; match n with | b | | b end; simpl in e.
     + match (Nat.multiplication.cancellation p a b) with | cancel _ end.
@@ -1607,7 +1607,7 @@ Proof.
   intro h.
   simpl ( _ < _ ) in h.
   match h with | k e end.
-  let proof e' := Identity.transitivity e (Identity.symmetry (addition.right.identity n)).
+  let proof e' := trans e, (symm (addition.right.identity n)).
   let proof f := addition.left.cancellation e'.
   ex f quodlibet.
 Qed.
@@ -2304,7 +2304,7 @@ Proof.
         ipso (addition.left.inverse (+ p)).
       }
       ipso (disjoin _, below).
-    + ipso (disjoin (Identity.reflexivity 0), _).
+    + ipso (disjoin (refl 0), _).
     + simpl to_nat in e.
       ex e quodlibet.
   - intro h.

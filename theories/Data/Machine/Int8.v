@@ -943,7 +943,7 @@ Proof.
   lemma base : (1 <= Bit.to_bin_with_zero 1)%bin_with_zero.
   {
     simpl BinWithZero.LessOrEqual, Bit.to_bin_with_zero in |- *.
-    ipso (disjoin (Identity.reflexivity 1%bin_with_zero), _).
+    ipso (disjoin (refl 1%bin_with_zero), _).
   }
   ipso
     (Bit.conversion.binary.boundedness.lower.propagation _ _ _
@@ -2048,8 +2048,8 @@ Proof.
             ex
               (&h
                 (conjoin
-                  (Identity.reflexivity (-10000000)%b),
-                  (Identity.reflexivity BinBase.One)))
+                  (refl (-10000000)%b),
+                  (refl BinBase.One)))
               quodlibet.
           + lemma differ : ~ (BinBase.b0 &d' = BinBase.One).
             {

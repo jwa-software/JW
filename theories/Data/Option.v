@@ -40,7 +40,7 @@ Definition unwrap_or := fun {A : Type} (d : A) (o : Option A) .
 Definition unwrap := fun {A : Type} (o : Option A) .
   match o as p return ~ (p = None) -> A with
   | None   => fun (h : ~ (None = None)) .
-                match h (Identity.reflexivity None) return A with end
+                match h (refl None) return A with end
   | Some a => fun (_ : ~ (Some a = None)) . a
   end.
 
@@ -119,7 +119,7 @@ Theorem restoration
 Proof.
   intros A o h.
   match o with | None | Some a end.
-  - ex (h (Identity.reflexivity None)) quodlibet.
+  - ex (h (refl None)) quodlibet.
   - simpl unwrap in |- *.
     quod idem est.
 Qed.
@@ -132,7 +132,7 @@ Theorem irrelevance
 Proof.
   intros A o h1 h2.
   match o with | None | Some a end.
-  - ex (h1 (Identity.reflexivity None)) quodlibet.
+  - ex (h1 (refl None)) quodlibet.
   - simpl unwrap in |- *.
     quod idem est.
 Qed.

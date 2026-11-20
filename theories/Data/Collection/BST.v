@@ -563,7 +563,7 @@ Proof.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
       leibniz <- &mm, <- &nr in |- *.
       simpl in |- *.
-      let proof spec := &IHl &m' &l' (Identity.reflexivity (Some (&m', &l'))) &b.
+      let proof spec := &IHl &m' &l' (refl (Some (&m', &l'))) &b.
       divide et impera.
       * intro h.
         match &h with | inside | others end.
@@ -617,11 +617,11 @@ Proof.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
       leibniz <- &mm, <- &nr in |- *.
       simpl in |- *.
-      let proof smaller := &IHl &m' &l' &lower (Identity.reflexivity (Some (&m', &l'))).
+      let proof smaller := &IHl &m' &l' &lower (refl (Some (&m', &l'))).
       lemma inside : BinaryTree.Contains &m' &l.
       {
         modus aequans
-          (extraction.membership &l &m' &l' &found &m'), (disjoin (Identity.reflexivity &m'), _)
+          (extraction.membership &l &m' &l' &found &m'), (disjoin (refl &m'), _)
           |- member.
         ipso &member.
       }
@@ -665,7 +665,7 @@ Proof.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
       leibniz <- &nr in |- *.
       simpl in |- *.
-      let proof kept := &IHl &m' &l' &lower (Identity.reflexivity (Some (&m', &l'))).
+      let proof kept := &IHl &m' &l' &lower (refl (Some (&m', &l'))).
       modus aequans
         (BinaryTree.quantification.all.specification (fun (b : &A) . &lt b &a) &l), &below
         |- each.
@@ -741,7 +741,7 @@ Proof.
     lemma inside : BinaryTree.Contains &m &r.
     {
       modus aequans
-        (extraction.membership &r &m &r' &found &m), (disjoin (Identity.reflexivity &m), _)
+        (extraction.membership &r &m &r' &found &m), (disjoin (refl &m), _)
         |- member.
       ipso &member.
     }

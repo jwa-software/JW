@@ -1948,7 +1948,7 @@ Proof.
     simpl Nat0.LessOrEqual in |- *.
     match &hac with | same | smaller end.
     - leibniz &same in |- *.
-      ipso (disjoin (Identity.reflexivity (to_nat0 &d + to_nat0 &c)%n0), _).
+      ipso (disjoin (refl (to_nat0 &d + to_nat0 &c)%n0), _).
     - let proof ac := modus aequans (conversion.order &a &c), &smaller.
       ipso
         (disjoin _,

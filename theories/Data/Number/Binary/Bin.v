@@ -1006,7 +1006,7 @@ Theorem subtraction
   : forall (x : Bin) (y : Bin) . (x - y) + y = x.
 Proof.
   intros x y.
-  let proof s : &x - &y = &x + negate &y := Identity.reflexivity _.
+  let proof s : &x - &y = &x + negate &y := refl _.
   leibniz &s in |- *.
   leibniz (addition.associativity &x (negate &y) &y) in |- *.
   leibniz (addition.left.inverse &y) in |- *.
@@ -1024,7 +1024,7 @@ Theorem specification
   : forall (x : Bin) (y : Bin) . x - y = x + negate y.
 Proof.
   intros x y.
-  ipso (Identity.reflexivity _).
+  ipso (refl _).
 Qed.
 
 Module inversion. (* subtraction.inversion *)

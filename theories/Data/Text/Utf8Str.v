@@ -508,7 +508,7 @@ Proof.
           simpl in |- *.
           leibniz
             (Utf8.conversion.ascii.inversion &c &a &ec),
-            (&IH &bs' (Identity.reflexivity _))
+            (&IH &bs' (refl _))
             in |- *.
           quod idem est.
   }
