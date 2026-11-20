@@ -5,7 +5,7 @@
 (version 0.1.0)
 (generate_opam_files true)
 (opam_file_location inside_opam_directory)
-(formatting (enabled_for dune))
+(formatting (enabled_for dune ocaml))
 
 (source (github jwa-software/rocq-jwa))
 (license MIT)

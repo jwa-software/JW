@@ -44,7 +44,7 @@ jobs:
               opam config list; opam repo list; opam list
             endGroup
           # Replaces the default script, which would opam-install the
-          # package; the three checks below are what a PR must keep green.
+          # package; the four checks below are what a PR must keep green.
           # The opam file is built by its target path rather than the @opam
           # alias, which the image's dune does not have; under (lang dune
           # 3.21) that rewrites the checked-in file in place instead of
@@ -53,11 +53,18 @@ jobs:
             startGroup "Build"
               make build
             endGroup
+            startGroup "Tests that execute"
+              make test
+            endGroup
             startGroup "opam file in sync with dune-project"
               make opam
               git diff --exit-code opam/
             endGroup
-            startGroup "dune files formatted"
+            # .ocamlformat pins the version, and the image ships none.
+            startGroup "Install ocamlformat"
+              opam install --yes ocamlformat.0.29.0
+            endGroup
+            startGroup "dune and OCaml files formatted"
               make fmt-check
             endGroup
           # The default uninstall test would opam remove the package, which

@@ -1,0 +1,35 @@
+; SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+; SPDX-License-Identifier: MIT
+
+; Extract.v writes jwa.ml and jwa.mli; dune has to know the module names
+; before it runs the extraction, so they are listed here.
+
+(rocq.extraction
+ (prelude Extract)
+ (extracted_modules jwa)
+ (theories
+  Ltac2
+  jwa
+  jwa.Dialect
+  jwa.Core
+  jwa.Tactics
+  jwa.Algebra
+  jwa.Relation
+  jwa.Data))
+
+; The extracted code is generated: an unused variable or an unused match case
+; in it says nothing about the library, so its warnings are off.
+
+(library
+ (name jwa_extraction)
+ (modules jwa)
+ (wrapped false)
+ (flags
+  (:standard -w -a)))
+
+; make build compiles the test; make test runs it.
+
+(test
+ (name extraction_test)
+ (modules extraction_test)
+ (libraries jwa_extraction))

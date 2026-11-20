@@ -37,11 +37,12 @@ make
 
 | Command | What it does | When to use it |
 |:---|:---|:---|
-| `make` | Compiles every layer to `.vo` under `_build/default/theories/`, and the test suite. Silent on success. | After any change to a `.v` or `dune` file. |
+| `make` | Compiles every layer to `.vo` under `_build/default/theories/`, the test suite, and the library extracted to OCaml under `_build/default/extraction/`. Silent on success. | After any change to a `.v` or `dune` file. |
+| `make test` | Runs the tests that execute: the extracted OCaml on known values. CI runs it after the build. | After `make`, before committing. |
 | `opam exec -- dune build theories/Data` | Compiles one layer and the layers it depends on. | Iterating on a single layer. |
 | `make opam` | Regenerates `opam/rocq-jwa.opam` from `dune-project`, rewriting it in place. | After changing a field of `dune-project` that ends up in the opam file: version, depends, synopsis, description, authors, maintainers, license, source, tags. |
-| `make fmt-check` | Prints the formatting diff of the `dune` files without touching them; CI runs it. | Before committing, to see what `make fmt` would change. |
-| `make fmt` | Reformats the `dune` files in place. `.v` files are never touched. | When `make fmt-check` reports a diff you agree with. |
+| `make fmt-check` | Prints the formatting diff of the `dune` and OCaml files without touching them; CI runs it. The OCaml files need `ocamlformat` 0.29.0, the version `.ocamlformat` pins, which `make deps` does not install. | Before committing, to see what `make fmt` would change. |
+| `make fmt` | Reformats the `dune` and OCaml files in place. `.v` files are never touched. | When `make fmt-check` reports a diff you agree with. |
 | `opam exec -- dune build @install` | Builds exactly what an opam installation of the package would build. | Before a release, as a self-check. |
 | `make clean` | Deletes `_build/`. | When a build result looks stale or inconsistent. |
 | `make deps` | Installs the dependencies declared in `opam/rocq-jwa.opam` into the active switch. | Once, on a new switch. |
@@ -69,6 +70,7 @@ Every theory is built with `-noinit`, so **Rocq's prelude is never loaded**: a f
 - [Machine units](docs/machine.md): `Bit`, `Byte`, the words `HWord` to `QWord` with their byte order, and the fixed-width integers `UInt8` to `UInt64` and `Int8` to `Int64`, with their division and the conversions between widths.
 - [Text](docs/text.md): the characters `Ascii` and `Utf8`, the strings `AsciiStr` and `Utf8Str`, their order and case, the code points of `Utf8`, indexing and substrings of the strings, and how a string literal is read.
 - [Collections](docs/collections.md): the containers `List`, `NonEmptyList` and `BinaryTree`, their operations and laws, the conversions to `List`, the search tree `BST`, the balanced search tree `AVL`, the set `SortedSet`, and the interfaces `Functor`, `Sized` and `Membership`.
+- [Extraction](docs/extraction.md): the library extracted to OCaml, what the extracted code looks like, and the test that runs it.
 - [Layout](docs/layout.md): the layers, their directories and what each depends on.
 
 ---

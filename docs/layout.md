@@ -31,6 +31,17 @@ The library lives under `theories/`, **one directory per layer**. Each layer:
 
 ---
 
+## Beside the layers
+
+Two directories sit beside `theories/` and are not part of the library: an opam installation leaves both out.
+
+| Directory | Holds |
+|:---|:---|
+| `test/` | The theory `jwa_test`: one file per umbrella, each importing that umbrella alone, and `TacticsAll.v` for the tactics |
+| `extraction/` | `Extract.v`, which extracts the computing modules of `Data` to OCaml, and `extraction_test.ml`, which runs the result; see [Extraction](extraction.md) |
+
+---
+
 ## Groups inside a layer
 
 In `Core`, `Relation` and `Data`, whose `dune` files carry `(include_subdirs qualified)`, a subdirectory groups related modules and **becomes a segment of the module path**: `theories/Core/Logic/Conjunction.v` is `jwa.Core.Logic.Conjunction`. Each group has its own umbrella, such as `From jwa Require Import Core.Logic.All`.
