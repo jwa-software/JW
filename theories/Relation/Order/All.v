@@ -2,24 +2,24 @@
  * SPDX-License-Identifier: MIT
  *)
 
-(* Umbrella for [jwa.Relation.Order]: re-exports the four order classes, and
+(* Umbrella for [JW.Relation.Order]: re-exports the four order classes, and
  * the six classes their fields hold, so a client imports them with
- * [From jwa Require Import Relation.Order.All].
+ * [From JW Require Import Relation.Order.All].
  *)
 
 (* The modules below only [Import] [Core.All], so the open scope reaches a
  * client of this umbrella only from here.
  *)
-From jwa Require Export Core.All.
+From JW Require Export Core.All.
 
-From jwa Require Export Relation.Order.PartialOrder.
-From jwa Require Export Relation.Order.StrictPartialOrder.
-From jwa Require Export Relation.Order.StrictTotalOrder.
-From jwa Require Export Relation.Order.TotalOrder.
+From JW Require Export Relation.Order.PartialOrder.
+From JW Require Export Relation.Order.StrictPartialOrder.
+From JW Require Export Relation.Order.StrictTotalOrder.
+From JW Require Export Relation.Order.TotalOrder.
 
-From jwa Require Export Relation.Antisymmetric.
-From jwa Require Export Relation.Irreflexive.
-From jwa Require Export Relation.Reflexive.
-From jwa Require Export Relation.Total.
-From jwa Require Export Relation.Transitive.
-From jwa Require Export Relation.Trichotomous.
+From JW Require Export Relation.Antisymmetric.
+From JW Require Export Relation.Irreflexive.
+From JW Require Export Relation.Reflexive.
+From JW Require Export Relation.Total.
+From JW Require Export Relation.Transitive.
+From JW Require Export Relation.Trichotomous.

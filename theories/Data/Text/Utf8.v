@@ -2,21 +2,21 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Assert.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Literal.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Machine.UInt32.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Text.Ascii.
-From jwa Require Import Data.Text.SourceByte.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Core.All.
+From JW Require Import Data.Assert.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Literal.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Machine.UInt32.
+From JW Require Import Data.Option.
+From JW Require Import Data.Text.Ascii.
+From JW Require Import Data.Text.SourceByte.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Module Utf8. (* Utf8 *)
 
@@ -129,7 +129,7 @@ Inductive T : Type :=
 
 Abbreviation Utf8 := T.
 
-Local Open Scope jwa_list_scope.
+Local Open Scope jw_list_scope.
 
 (* [Utf8 -> List Byte] *)
 Definition to_bytes := fun (c : Utf8) .
@@ -296,23 +296,23 @@ Definition from_code := fun (u : UInt32) . from_bytes (encode u).
 Definition LessThan := fun (x : Utf8) (y : Utf8) . (code x < code y)%uint32.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jwa_utf8_scope.
+  : jw_utf8_scope.
 
 (* [Utf8 -> Utf8 -> Prop] *)
 Definition LessOrEqual := fun (x : Utf8) (y : Utf8) . x = y \/ LessThan x y.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jwa_utf8_scope.
+  : jw_utf8_scope.
 
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jwa_utf8_scope.
+  : jw_utf8_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jwa_utf8_scope.
+  : jw_utf8_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_utf8_scope.
+  : jw_utf8_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_utf8_scope.
+  : jw_utf8_scope.
 
 (* [Utf8 -> Utf8 -> Comparison] *)
 Definition compare := fun (x : Utf8) (y : Utf8) . UInt32.compare (code x) (code y).
@@ -377,7 +377,7 @@ Definition to_lower := fun (c : Utf8) .
   | Some a => from_ascii (Ascii.to_lower a)
   end.
 
-Local Open Scope jwa_utf8_scope.
+Local Open Scope jw_utf8_scope.
 
 Module conversion. (* conversion *)
 
@@ -1255,12 +1255,12 @@ Export (notations) Utf8.
  * ["A"%u8c], and a closed one prints back so.
  *)
 String Notation Utf8.T Utf8.from_source_bytes Utf8.to_source_bytes
-  : jwa_utf8_scope.
+  : jw_utf8_scope.
 
 (* Where a [Utf8] is expected, a literal reads in this scope without its
  * [%u8c].
  *)
-Bind Scope jwa_utf8_scope with Utf8.T.
+Bind Scope jw_utf8_scope with Utf8.T.
 
 (* Declared inside [Module Utf8], whose proofs use it; an instance declared
  * there is dropped at the module's [End], so it is announced again here.

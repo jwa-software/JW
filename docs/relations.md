@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 # Relations
 
-`jwa.Relation` holds the classes that name what a relation does, and the means to define a function by going down a relation:
+`JW.Relation` holds the classes that name what a relation does, and the means to define a function by going down a relation:
 
 | Class | Its law | Holds of |
 |:---|:---|:---|
@@ -24,7 +24,7 @@ SPDX-License-Identifier: MIT
 - **A field is read behind the name of its class:** `Transitive.transitivity`, `Total.totality`.
 - **The seven properties have no instance of their own.** Each is held by a larger class: `Equivalence` for `=` and `<->`, and the classes of [Order](order.md) for the `<` and `<=` of every type with a `Comparable` instance. A proof still asks for one property alone: `Transitive.transitivity` at `<` on `Nat0` is found through them.
 
-`From jwa Require Import Relation.All` brings the classes. The examples on this page are in `Nat0`, under the key `%n0`.
+`From JW Require Import Relation.All` brings the classes. The examples on this page are in `Nat0`, under the key `%n0`.
 
 ---
 
@@ -125,8 +125,8 @@ SPDX-License-Identifier: MIT
 At a concrete relation, the instance is found from the goal. A law stated over the classes is proved once and holds of every relation that has them:
 
 ```
-From jwa Require Import Relation.All.
-From jwa Require Import Data.All.
+From JW Require Import Relation.All.
+From JW Require Import Data.All.
 
 Definition chain
   : forall (l : Nat0) (m : Nat0) (n : Nat0) . (l < m -> m < n -> l < n)%n0

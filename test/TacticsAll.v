@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Data.All.
-From jwa Require Import Tactics.All.
+From JW Require Import Data.All.
+From JW Require Import Tactics.All.
 
 Ltac2 Notation "lazy_match!" t(tactic(6)) "with" m(constr_matching) "end" : 0 :=
   Pattern.lazy_match0 t m.

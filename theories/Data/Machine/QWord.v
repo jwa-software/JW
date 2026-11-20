@@ -2,15 +2,15 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Machine.Endian.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
+From JW Require Import Core.All.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Machine.Endian.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
 
 Module QWord. (* QWord *)
 
@@ -218,11 +218,11 @@ Definition flip := fun (x : QWord) .
     (Byte.flip (byte8 x)) (Byte.flip (byte9 x)) (Byte.flip (byte10 x)) (Byte.flip (byte11 x))
     (Byte.flip (byte12 x)) (Byte.flip (byte13 x)) (Byte.flip (byte14 x)) (Byte.flip (byte15 x)).
 
-(* The spellings and levels are those of [jwa_bit_scope]; [only parsing]
+(* The spellings and levels are those of [jw_bit_scope]; [only parsing]
  * keeps goals printing the operations by name.
  *)
 Notation "~. x" := (flip x) (only parsing)
-  : jwa_qword_scope.
+  : jw_qword_scope.
 
 (* [x] converted to little-endian, then flipped. *)
 (* [QWord -> QWord] *)
@@ -248,7 +248,7 @@ Definition and := fun (x : QWord) (y : QWord) .
     (Byte.and (byte14 x) (byte14 y)) (Byte.and (byte15 x) (byte15 y)).
 
 Notation "x &. y" := (and x y) (only parsing)
-  : jwa_qword_scope.
+  : jw_qword_scope.
 
 (* Both operands converted to little-endian, then combined: the result is
  * little-endian whatever theirs.
@@ -278,7 +278,7 @@ Definition or := fun (x : QWord) (y : QWord) .
     (Byte.or (byte14 x) (byte14 y)) (Byte.or (byte15 x) (byte15 y)).
 
 Notation "x |. y" := (or x y) (only parsing)
-  : jwa_qword_scope.
+  : jw_qword_scope.
 
 (* [QWord -> QWord -> QWord] *)
 Definition or_little_endian := fun (x : QWord) (y : QWord) .
@@ -302,7 +302,7 @@ Definition xor := fun (x : QWord) (y : QWord) .
     (Byte.xor (byte14 x) (byte14 y)) (Byte.xor (byte15 x) (byte15 y)).
 
 Notation "x ^. y" := (xor x y) (only parsing)
-  : jwa_qword_scope.
+  : jw_qword_scope.
 
 (* [QWord -> QWord -> QWord] *)
 Definition xor_little_endian := fun (x : QWord) (y : QWord) .
@@ -910,7 +910,7 @@ Definition to_little_numeral := fun (x : QWord) . to_numeral Endian.Little x.
 (* [QWord -> Option Numeral.Unsigned] *)
 Definition to_big_numeral := fun (x : QWord) . to_numeral Endian.Big x.
 
-Local Open Scope jwa_qword_scope.
+Local Open Scope jw_qword_scope.
 
 (* Equal bytes in each place make equal quadruple words of one endianness; each law
  * below is its [Byte] counterpart taken byte by byte through this.
@@ -1976,13 +1976,13 @@ Export (notations) QWord.
  * prints under [%qword].
  *)
 Number Notation QWord.T QWord.from_little_numeral QWord.to_little_numeral
-  : jwa_qword_little_scope.
+  : jw_qword_little_scope.
 Number Notation QWord.T QWord.from_big_numeral QWord.to_big_numeral
-  : jwa_qword_big_scope.
+  : jw_qword_big_scope.
 Number Notation QWord.T QWord.from_little_numeral QWord.to_little_numeral
-  : jwa_qword_scope.
+  : jw_qword_scope.
 
 (* Where a [QWord] is expected, a literal or a notation reads in this scope
  * without its [%qword].
  *)
-Bind Scope jwa_qword_scope with QWord.T.
+Bind Scope jw_qword_scope with QWord.T.

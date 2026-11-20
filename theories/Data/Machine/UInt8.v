@@ -2,27 +2,27 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Number.Binary.Bin.
-From jwa Require Import Data.Number.Binary.BinBase.
-From jwa Require Import Data.Number.Binary.BinWithZero.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 (* An unsigned integer of eight bits: a [Byte] read as a number from 0 to
  * 255 (2^8 - 1), its arithmetic wrapping modulo 256 (2^8). In this file
@@ -137,7 +137,7 @@ Definition add := fun (x : UInt8) (y : UInt8) . (pi_2 (add_with_carry 0 x y))%pr
 
 (* [only parsing] keeps goals printing the operations by name. *)
 Notation "x + y" := (add x y) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* The borrow out and the difference of [x - y - borrow], the borrow
  * rippling up as the carry does in [add_with_carry].
@@ -168,7 +168,7 @@ Definition sub_with_borrow := fun (borrow : Bit) (x : UInt8) (y : UInt8) .
 Definition sub := fun (x : UInt8) (y : UInt8) . (pi_2 (sub_with_borrow 0 x y))%product.
 
 Notation "x - y" := (sub x y) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* The two's complement: [x] taken from [Zero], wrapping. *)
 (* [UInt8 -> UInt8] *)
@@ -176,7 +176,7 @@ Definition negate := fun (x : UInt8) . sub Zero x.
 
 Notation "- x" := (negate x)
   (at level 35, right associativity, only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* [y]'s bits from the most significant, each step doubling the product so
  * far and adding [x] for a 1, all modulo 256.
@@ -195,7 +195,7 @@ Definition mul := fun (x : UInt8) (y : UInt8) .
   end.
 
 Notation "x * y" := (mul x y) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* [p] modulo 256, its bits appended from the most significant. *)
 (* [BinBase -> UInt8] *)
@@ -239,7 +239,7 @@ Definition divide := fun (x : UInt8) (y : UInt8) .
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* The remainder through [BinWithZero], [None] when [y] is zero. *)
 (* [UInt8 -> UInt8 -> Option UInt8] *)
@@ -250,30 +250,30 @@ Definition modulo := fun (x : UInt8) (y : UInt8) .
   end.
 
 Notation "x %. y" := (modulo x y) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* [UInt8 -> UInt8 -> Prop] *)
 Definition LessThan := fun (x : UInt8) (y : UInt8) .
   (to_bin_with_zero x < to_bin_with_zero y)%bin_with_zero.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* [UInt8 -> UInt8 -> Prop] *)
 Definition LessOrEqual := fun (x : UInt8) (y : UInt8) . x = y \/ LessThan x y.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* [UInt8 -> UInt8 -> Comparison] *)
 Definition compare := fun (x : UInt8) (y : UInt8) .
@@ -312,7 +312,7 @@ Definition from_numeral := fun (u : Numeral.Unsigned) .
 Definition to_numeral := fun (x : UInt8) .
   Numeral.Unsigned.Decimal (BinWithZero.to_decimal (to_bin_with_zero x)).
 
-Local Open Scope jwa_uint8_scope.
+Local Open Scope jw_uint8_scope.
 
 Module conversion. (* conversion *)
 
@@ -1416,12 +1416,12 @@ Export (notations) UInt8.
  * scope, [200%uint8] or [0xFF%uint8], and a closed one prints in decimal.
  *)
 Number Notation UInt8.T UInt8.from_numeral UInt8.to_numeral
-  : jwa_uint8_scope.
+  : jw_uint8_scope.
 
 (* Where a [UInt8] is expected, a literal or a notation reads in this scope
  * without its [%uint8].
  *)
-Bind Scope jwa_uint8_scope with UInt8.T.
+Bind Scope jw_uint8_scope with UInt8.T.
 
 (* A [UInt8] stands wherever a [BinWithZero] is expected, read as its value,
  * and wherever a [Nat0] is, through that value; each conversion is printed

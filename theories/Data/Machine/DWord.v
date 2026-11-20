@@ -2,15 +2,15 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Machine.Endian.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
+From JW Require Import Core.All.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Machine.Endian.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
 
 Module DWord. (* DWord *)
 
@@ -114,11 +114,11 @@ Definition flip := fun (x : DWord) .
     (Byte.flip (byte0 x)) (Byte.flip (byte1 x)) (Byte.flip (byte2 x)) (Byte.flip (byte3 x))
     (Byte.flip (byte4 x)) (Byte.flip (byte5 x)) (Byte.flip (byte6 x)) (Byte.flip (byte7 x)).
 
-(* The spellings and levels are those of [jwa_bit_scope]; [only parsing]
+(* The spellings and levels are those of [jw_bit_scope]; [only parsing]
  * keeps goals printing the operations by name.
  *)
 Notation "~. x" := (flip x) (only parsing)
-  : jwa_dword_scope.
+  : jw_dword_scope.
 
 (* [x] converted to little-endian, then flipped. *)
 (* [DWord -> DWord] *)
@@ -140,7 +140,7 @@ Definition and := fun (x : DWord) (y : DWord) .
     (Byte.and (byte6 x) (byte6 y)) (Byte.and (byte7 x) (byte7 y)).
 
 Notation "x &. y" := (and x y) (only parsing)
-  : jwa_dword_scope.
+  : jw_dword_scope.
 
 (* Both operands converted to little-endian, then combined: the result is
  * little-endian whatever theirs.
@@ -166,7 +166,7 @@ Definition or := fun (x : DWord) (y : DWord) .
     (Byte.or (byte6 x) (byte6 y)) (Byte.or (byte7 x) (byte7 y)).
 
 Notation "x |. y" := (or x y) (only parsing)
-  : jwa_dword_scope.
+  : jw_dword_scope.
 
 (* [DWord -> DWord -> DWord] *)
 Definition or_little_endian := fun (x : DWord) (y : DWord) .
@@ -186,7 +186,7 @@ Definition xor := fun (x : DWord) (y : DWord) .
     (Byte.xor (byte6 x) (byte6 y)) (Byte.xor (byte7 x) (byte7 y)).
 
 Notation "x ^. y" := (xor x y) (only parsing)
-  : jwa_dword_scope.
+  : jw_dword_scope.
 
 (* [DWord -> DWord -> DWord] *)
 Definition xor_little_endian := fun (x : DWord) (y : DWord) .
@@ -603,7 +603,7 @@ Definition to_little_numeral := fun (x : DWord) . to_numeral Endian.Little x.
 (* [DWord -> Option Numeral.Unsigned] *)
 Definition to_big_numeral := fun (x : DWord) . to_numeral Endian.Big x.
 
-Local Open Scope jwa_dword_scope.
+Local Open Scope jw_dword_scope.
 
 (* Equal bytes in each place make equal double words of one endianness; each law
  * below is its [Byte] counterpart taken byte by byte through this.
@@ -1424,13 +1424,13 @@ Export (notations) DWord.
  * little-endian double word prints as [0x0123456789abcdef%dword].
  *)
 Number Notation DWord.T DWord.from_little_numeral DWord.to_little_numeral
-  : jwa_dword_little_scope.
+  : jw_dword_little_scope.
 Number Notation DWord.T DWord.from_big_numeral DWord.to_big_numeral
-  : jwa_dword_big_scope.
+  : jw_dword_big_scope.
 Number Notation DWord.T DWord.from_little_numeral DWord.to_little_numeral
-  : jwa_dword_scope.
+  : jw_dword_scope.
 
 (* Where a [DWord] is expected, a literal or a notation reads in this scope
  * without its [%dword].
  *)
-Bind Scope jwa_dword_scope with DWord.T.
+Bind Scope jw_dword_scope with DWord.T.

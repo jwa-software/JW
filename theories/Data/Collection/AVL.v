@@ -2,20 +2,20 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Assert.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.BST.
-From jwa Require Import Data.Collection.BinaryTree.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Core.All.
+From JW Require Import Data.Assert.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.BST.
+From JW Require Import Data.Collection.BinaryTree.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 (* An AVL tree is a binary tree that stores at each node the height of the
  * subtree there, and keeps the heights of every node's two subtrees within
@@ -39,7 +39,7 @@ Arguments Node {A} l a r h.
 Abbreviation AVL := T.
 
 (* [Nat0]'s scope is opened for the [++] of the heights. *)
-Local Open Scope jwa_nat0_scope.
+Local Open Scope jw_nat0_scope.
 
 (* The eliminator that [match ... per] takes, written out. Each hypothesis
  * stands right after the subtree it is about.

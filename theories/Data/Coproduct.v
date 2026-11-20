@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Functor.
-From jwa Require Import Tactics.Equation.
+From JW Require Import Core.All.
+From JW Require Import Data.Functor.
+From JW Require Import Tactics.Equation.
 
 Module Coproduct. (* Coproduct *)
 
@@ -269,7 +269,7 @@ End Coproduct. (* Coproduct *)
 Abbreviation Coproduct := Coproduct.T.
 
 Notation "A + B" := (Coproduct A B)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 Instance Coproduct_functor
   : forall (A : Type) . Functor (Coproduct A) :=

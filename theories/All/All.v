@@ -2,14 +2,14 @@
  * SPDX-License-Identifier: MIT
  *)
 
-(* Umbrella for the whole library: [From jwa Require Import All] brings in
+(* Umbrella for the whole library: [From JW Require Import All] brings in
  * every layer except [Assumption], whose axioms are opted into separately
- * with [From jwa Require Import Assumption.All].
+ * with [From JW Require Import Assumption.All].
  *)
 
-From jwa Require Export Algebra.All.
-From jwa Require Export Core.All.
-From jwa Require Export Data.All.
-From jwa Require Export Dialect.All.
-From jwa Require Export Relation.All.
-From jwa Require Export Tactics.All.
+From JW Require Export Algebra.All.
+From JW Require Export Core.All.
+From JW Require Export Data.All.
+From JW Require Export Dialect.All.
+From JW Require Export Relation.All.
+From JW Require Export Tactics.All.

@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Functor.
-From jwa Require Import Tactics.Equation.
+From JW Require Import Core.All.
+From JW Require Import Data.Functor.
+From JW Require Import Tactics.Equation.
 
 Module Option. (* Option *)
 

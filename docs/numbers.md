@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 # Numbers
 
-`jwa.Data` holds seven number types:
+`JW.Data` holds seven number types:
 
 | Type | Values | Scope key |
 |:---|:---|:---|

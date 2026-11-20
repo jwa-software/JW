@@ -5,6 +5,6 @@
 ; so the position of this layer in the stack can be read off this file.
 
 (rocq.theory
- (name jwa.Algebra)
- (package rocq-jwa)
- (theories Ltac2 jwa.Dialect jwa.Core))
+ (name JW.Algebra)
+ (package JW)
+ (theories Ltac2 JW.Dialect JW.Core))

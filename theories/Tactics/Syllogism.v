@@ -2,11 +2,11 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Logic.Syllogism.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.Local.
-From jwa Require Import Dialect.Ltac.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Logic.Syllogism.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.Local.
+From JW Require Import Dialect.Ltac.
 From Ltac2 Require Control Std.
 
 (* Syllogisms: two premises meeting in a middle term compose into a third.

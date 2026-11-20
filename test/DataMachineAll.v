@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Data.Machine.All.
+From JW Require Import Data.Machine.All.
 
 Definition data_machine_all_delivers_bit
   : Bit

@@ -25,7 +25,7 @@ jobs:
 
       # docker-coq-action picks the rocq/rocq-prover image for Rocq >= 9.0.
       # Its default install step pins the checkout as an opam path and
-      # installs the dependencies of opam/rocq-jwa.opam, which upgrades dune
+      # installs the dependencies of opam/JW.opam, which upgrades dune
       # inside the image if the one shipped is older than dune-project asks.
       - uses: coq-community/docker-coq-action@v1
         with:

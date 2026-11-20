@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-(* Umbrella for [jwa.Data.Number.Binary]: re-exports the three binary number
+(* Umbrella for [JW.Data.Number.Binary]: re-exports the three binary number
  * types, so a client imports them with
- * [From jwa Require Import Data.Number.Binary.All].
+ * [From JW Require Import Data.Number.Binary.All].
  *
  * A binary number carries its digits, where the unary types carry their value
  * in units, so an operation costs a step per digit rather than per unit.
@@ -13,7 +13,7 @@
 (* The modules below only [Import] [Core.All], so the open scope reaches a
  * client of this umbrella only from here.
  *)
-From jwa Require Export Core.All.
+From JW Require Export Core.All.
 
 (* An umbrella exports every type the interfaces under it name, so that a
  * client can write down what they take and return: [Comparison] for
@@ -23,18 +23,18 @@ From jwa Require Export Core.All.
  * for [div], and [Accessible], [Induced] and [WellFounded] for the descent
  * theorems and the instances.
  *)
-From jwa Require Export Data.Base.Bool.
-From jwa Require Export Data.Base.Comparison.
-From jwa Require Export Data.Number.Integer.
-From jwa Require Export Data.Number.Nat.
-From jwa Require Export Data.Number.Nat0.
-From jwa Require Export Data.Number.Numeral.
-From jwa Require Export Data.Option.
-From jwa Require Export Data.Product.
-From jwa Require Export Relation.Accessible.
-From jwa Require Export Relation.Induced.
-From jwa Require Export Relation.WellFounded.
+From JW Require Export Data.Base.Bool.
+From JW Require Export Data.Base.Comparison.
+From JW Require Export Data.Number.Integer.
+From JW Require Export Data.Number.Nat.
+From JW Require Export Data.Number.Nat0.
+From JW Require Export Data.Number.Numeral.
+From JW Require Export Data.Option.
+From JW Require Export Data.Product.
+From JW Require Export Relation.Accessible.
+From JW Require Export Relation.Induced.
+From JW Require Export Relation.WellFounded.
 
-From jwa Require Export Data.Number.Binary.BinBase.
-From jwa Require Export Data.Number.Binary.Bin.
-From jwa Require Export Data.Number.Binary.BinWithZero.
+From JW Require Export Data.Number.Binary.BinBase.
+From JW Require Export Data.Number.Binary.Bin.
+From JW Require Export Data.Number.Binary.BinWithZero.

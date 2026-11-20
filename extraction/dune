@@ -1,28 +1,28 @@
 ; SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
 ; SPDX-License-Identifier: MIT
 
-; Extract.v writes jwa.ml and jwa.mli; dune has to know the module names
+; Extract.v writes JW.ml and JW.mli; dune has to know the module names
 ; before it runs the extraction, so they are listed here.
 
 (rocq.extraction
  (prelude Extract)
- (extracted_modules jwa)
+ (extracted_modules JW)
  (theories
   Ltac2
-  jwa
-  jwa.Dialect
-  jwa.Core
-  jwa.Tactics
-  jwa.Algebra
-  jwa.Relation
-  jwa.Data))
+  JW
+  JW.Dialect
+  JW.Core
+  JW.Tactics
+  JW.Algebra
+  JW.Relation
+  JW.Data))
 
 ; The extracted code is generated: an unused variable or an unused match case
 ; in it says nothing about the library, so its warnings are off.
 
 (library
- (name jwa_extraction)
- (modules jwa)
+ (name jw_extraction)
+ (modules JW)
  (wrapped false)
  (flags
   (:standard -w -a)))
@@ -32,4 +32,4 @@
 (test
  (name extraction_test)
  (modules extraction_test)
- (libraries jwa_extraction))
+ (libraries jw_extraction))

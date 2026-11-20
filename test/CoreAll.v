@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
+From JW Require Import Core.All.
 
 Definition core_all_delivers
   : forall (A : Prop) (B : Prop) .

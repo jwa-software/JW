@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
-From jwa Require Import Relation.Order.PartialOrder.
-From jwa Require Import Relation.Total.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
+From JW Require Import Relation.Order.PartialOrder.
+From JW Require Import Relation.Total.
 
 Module TotalOrder. (* TotalOrder *)
 

@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Data.Base.All.
+From JW Require Import Data.Base.All.
 
 Definition data_base_all_delivers_bool
   : Bool

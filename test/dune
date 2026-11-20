@@ -2,14 +2,14 @@
 ; SPDX-License-Identifier: MIT
 
 (rocq.theory
- (name jwa_test)
+ (name jw_test)
  (theories
   Ltac2
-  jwa
-  jwa.Dialect
-  jwa.Core
-  jwa.Tactics
-  jwa.Algebra
-  jwa.Relation
-  jwa.Data
-  jwa.Assumption))
+  JW
+  JW.Dialect
+  JW.Core
+  JW.Tactics
+  JW.Algebra
+  JW.Relation
+  JW.Data
+  JW.Assumption))

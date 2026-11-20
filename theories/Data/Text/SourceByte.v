@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Machine.Byte.
+From JW Require Import Core.All.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Machine.Byte.
 
 Module SourceByte. (* SourceByte *)
 

@@ -2,24 +2,24 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Cancellative.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Integer.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Option.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Dialect.Simpl.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Cancellative.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Integer.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Option.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Dialect.Simpl.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Module Rational. (* Rational *)
 
@@ -84,7 +84,7 @@ Definition negate := fun (x : Rational) .
   make n d.
 
 Notation "- x" := (negate x) (at level 35, right associativity, only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 
 (* [Rational -> Rational -> Rational] *)
 Definition add := fun (x : Rational) (y : Rational) .
@@ -99,13 +99,13 @@ Definition add := fun (x : Rational) (y : Rational) .
   make n d.
 
 Notation "x + y" := (add x y) (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 
 (* [Rational -> Rational -> Rational] *)
 Definition sub := fun (x : Rational) (y : Rational) . let y := negate y in add x y.
 
 Notation "x - y" := (sub x y) (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 
 (* [Rational -> Rational -> Rational] *)
 Definition mul := fun (x : Rational) (y : Rational) .
@@ -116,7 +116,7 @@ Definition mul := fun (x : Rational) (y : Rational) .
   make n d.
 
 Notation "x * y" := (mul x y) (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 
 (* x/y -> y/x *)
 (* [Rational -> Option Rational] *)
@@ -135,23 +135,23 @@ Definition LessThan := fun (x : Rational) (y : Rational) .
    < numerator y * denominator x)%z.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 
 (* [Rational -> Rational -> Prop] *)
 Definition LessOrEqual := fun (x : Rational) (y : Rational) .
   x = y \/ (x < y)%q.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_rational_scope.
+  : jw_rational_scope.
 
 (* [Rational -> Rational -> Comparison] *)
 Definition compare := fun (x : Rational) (y : Rational) .
@@ -186,7 +186,7 @@ Definition to_nat := fun (x : Rational) .
   | Some z => Integer.to_nat z
   end.
 
-Local Open Scope jwa_rational_scope.
+Local Open Scope jw_rational_scope.
 
 Theorem extensionality
   : forall (x : Rational) (y : Rational) .
@@ -2269,7 +2269,7 @@ End nat. (* narrowing.nat *)
 
 End narrowing. (* narrowing *)
 
-Local Close Scope jwa_rational_scope.
+Local Close Scope jw_rational_scope.
 
 End Rational. (* Rational *)
 

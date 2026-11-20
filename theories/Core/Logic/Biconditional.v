@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 Module Biconditional. (* Biconditional *)
 
@@ -16,7 +16,7 @@ Arguments Biconditional.introduction {P} {Q} forward backward.
 Abbreviation Biconditional := T.
 
 Notation "P <-> Q" := (Biconditional P Q)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 Theorem reflexivity : forall (P : Prop) . P <-> P.
 Proof.

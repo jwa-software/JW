@@ -2,12 +2,12 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
-From jwa Require Import Data.Assert.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Dialect.ExFalso.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
+From JW Require Import Data.Assert.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Dialect.ExFalso.
 
 Module Sized. (* Sized *)
 
@@ -25,7 +25,7 @@ Class T (F : Type -> Type) : Type :=
 Abbreviation Sized := T.
 
 (* [Bool]'s scope is opened for the [!] of [is_not_empty]. *)
-Local Open Scope jwa_bool_scope.
+Local Open Scope jw_bool_scope.
 
 (* [forall {F : Type -> Type} {S : Sized F} {A : Type} . F A -> Bool] *)
 Definition is_empty := fun {F : Type -> Type} {S : Sized F} {A : Type} (x : F A) .

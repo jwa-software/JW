@@ -7,8 +7,8 @@
  * rather than stated, and [Tactics.Equation] is what writes them. A type this
  * file can name only because it imported it would defeat the guard.
  *)
-From jwa Require Import Data.Number.All.
-From jwa Require Import Tactics.Equation.
+From JW Require Import Data.Number.All.
+From JW Require Import Tactics.Equation.
 
 Definition data_number_all_delivers
   : Nat -> Nat0 -> Integer -> ~ Falsum -> Verum

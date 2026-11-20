@@ -2,12 +2,12 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Logic.Disjunction.
-From jwa Require Import Core.Logic.Falsum.
-From jwa Require Import Core.Logic.Negation.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Logic.Disjunction.
+From JW Require Import Core.Logic.Falsum.
+From JW Require Import Core.Logic.Negation.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 Module Identity.
 
@@ -32,13 +32,13 @@ Abbreviation Identity := T.
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs here. *)
 Notation "x = y" := (Identity x y)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* The same with no arguments, for where the relation is passed rather than
  * applied.
  *)
 Notation "'(=)'" := Identity (only parsing)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* Carries a proof across the equation. The tactics fill the slots of
  * [core.eq.ind] by position, so this order -- [P] before the proof and

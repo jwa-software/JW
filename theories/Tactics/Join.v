@@ -2,12 +2,12 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Abjunction.
-From jwa Require Import Core.Logic.Conjunction.
-From jwa Require Import Core.Logic.Sejunction.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.Local.
-From jwa Require Import Dialect.Ltac.
+From JW Require Import Core.Logic.Abjunction.
+From JW Require Import Core.Logic.Conjunction.
+From JW Require Import Core.Logic.Sejunction.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.Local.
+From JW Require Import Dialect.Ltac.
 From Ltac2 Require Control Message Std.
 
 (* The introduction of each junction, written as the rule reads:

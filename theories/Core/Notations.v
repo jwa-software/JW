@@ -8,19 +8,19 @@
 
 (* The scope name carries no mechanism; [Bind] below is what makes it apply
    where a type is expected. *)
-Declare Scope jwa_type_scope.
-Delimit Scope jwa_type_scope with jwa_type.
+Declare Scope jw_type_scope.
+Delimit Scope jw_type_scope with jw_type.
 
 (* [Bind] covers type positions, [Open] the ones Rocq cannot classify. *)
-Bind Scope jwa_type_scope with Sortclass.
-Open Scope jwa_type_scope.
+Bind Scope jw_type_scope with Sortclass.
+Open Scope jw_type_scope.
 
 (* The list notations, delimited but not opened: [[]] is
    the empty list and [++] is [List.concat] only where a file opens the
    scope or writes [(...)%list], so the same spellings stay free for other
    containers in scopes of their own. *)
-Declare Scope jwa_list_scope.
-Delimit Scope jwa_list_scope with list.
+Declare Scope jw_list_scope.
+Delimit Scope jw_list_scope with list.
 
 (* The same spellings again for the non-empty list, in a scope of its own:
    [a :: x] and [x ++ y] read there as the ctor and the join of that type,
@@ -28,149 +28,149 @@ Delimit Scope jwa_list_scope with list.
    or [(...)%non_empty_list]. The level of each token is reserved once
    below, so the two readings agree on how they parse and differ only in
    what they mean. *)
-Declare Scope jwa_non_empty_list_scope.
-Delimit Scope jwa_non_empty_list_scope with non_empty_list.
+Declare Scope jw_non_empty_list_scope.
+Delimit Scope jw_non_empty_list_scope with non_empty_list.
 
 (* The product notations, delimited but not opened. [A * B] is not in it: a
- * type former belongs in [jwa_type_scope] beside [->].
+ * type former belongs in [jw_type_scope] beside [->].
  *)
-Declare Scope jwa_product_scope.
-Delimit Scope jwa_product_scope with product.
+Declare Scope jw_product_scope.
+Delimit Scope jw_product_scope with product.
 
 (* The [Bool] operations, delimited but not opened. The spellings are
  * contested: [&&] and [||] are what a closed notation elsewhere would take
  * away, and [!] is the boolean negation beside the logical [~], which stays
- * in [jwa_type_scope] because a proposition is what the tree is mostly about.
+ * in [jw_type_scope] because a proposition is what the tree is mostly about.
  *)
-Declare Scope jwa_bool_scope.
-Delimit Scope jwa_bool_scope with bool.
+Declare Scope jw_bool_scope.
+Delimit Scope jw_bool_scope with bool.
 
 (* The [Kleene3] operations, delimited but not opened, under the [Bool]
  * spellings: a [Kleene3] is a truth value too, with one more value between.
  *)
-Declare Scope jwa_kleene3_scope.
-Delimit Scope jwa_kleene3_scope with k3.
+Declare Scope jw_kleene3_scope.
+Delimit Scope jw_kleene3_scope with k3.
 
 (* The [Bit] operations, delimited but not opened, each spelled with a dot
  * ([~.], [&.], [|.], [^.]) apart from the [Bool] ones: a bit is a binary
  * digit and a [Bool] a truth value.
  *)
-Declare Scope jwa_bit_scope.
-Delimit Scope jwa_bit_scope with bit.
+Declare Scope jw_bit_scope.
+Delimit Scope jw_bit_scope with bit.
 
 (* The [Byte] operations, the [Bit] ones taken field by field, delimited but
  * not opened under the same spellings.
  *)
-Declare Scope jwa_byte_scope.
-Delimit Scope jwa_byte_scope with byte.
+Declare Scope jw_byte_scope.
+Delimit Scope jw_byte_scope with byte.
 
 (* The [UInt8] arithmetic, delimited but not opened. *)
-Declare Scope jwa_uint8_scope.
-Delimit Scope jwa_uint8_scope with uint8.
+Declare Scope jw_uint8_scope.
+Delimit Scope jw_uint8_scope with uint8.
 
 (* The [Int8] arithmetic, delimited but not opened. *)
-Declare Scope jwa_int8_scope.
-Delimit Scope jwa_int8_scope with int8.
+Declare Scope jw_int8_scope.
+Delimit Scope jw_int8_scope with int8.
 
 (* The [UInt16] arithmetic, delimited but not opened. *)
-Declare Scope jwa_uint16_scope.
-Delimit Scope jwa_uint16_scope with uint16.
+Declare Scope jw_uint16_scope.
+Delimit Scope jw_uint16_scope with uint16.
 
 (* The [Int16] arithmetic, delimited but not opened. *)
-Declare Scope jwa_int16_scope.
-Delimit Scope jwa_int16_scope with int16.
+Declare Scope jw_int16_scope.
+Delimit Scope jw_int16_scope with int16.
 
 (* The [UInt32] arithmetic, delimited but not opened. *)
-Declare Scope jwa_uint32_scope.
-Delimit Scope jwa_uint32_scope with uint32.
+Declare Scope jw_uint32_scope.
+Delimit Scope jw_uint32_scope with uint32.
 
 (* The [Int32] arithmetic, delimited but not opened. *)
-Declare Scope jwa_int32_scope.
-Delimit Scope jwa_int32_scope with int32.
+Declare Scope jw_int32_scope.
+Delimit Scope jw_int32_scope with int32.
 
 (* The [UInt64] arithmetic, delimited but not opened. *)
-Declare Scope jwa_uint64_scope.
-Delimit Scope jwa_uint64_scope with uint64.
+Declare Scope jw_uint64_scope.
+Delimit Scope jw_uint64_scope with uint64.
 
 (* The [Int64] arithmetic, delimited but not opened. *)
-Declare Scope jwa_int64_scope.
-Delimit Scope jwa_int64_scope with int64.
+Declare Scope jw_int64_scope.
+Delimit Scope jw_int64_scope with int64.
 
 (* The [HWord] operations, the [Byte] ones taken byte by byte, delimited but
  * not opened under the same spellings; a literal under it is little-endian.
  *)
-Declare Scope jwa_hword_scope.
-Delimit Scope jwa_hword_scope with hword.
+Declare Scope jw_hword_scope.
+Delimit Scope jw_hword_scope with hword.
 
 (* [HWord] literals laid out little-endian. *)
-Declare Scope jwa_hword_little_scope.
-Delimit Scope jwa_hword_little_scope with hword_little.
+Declare Scope jw_hword_little_scope.
+Delimit Scope jw_hword_little_scope with hword_little.
 
 (* [HWord] literals laid out big-endian. *)
-Declare Scope jwa_hword_big_scope.
-Delimit Scope jwa_hword_big_scope with hword_big.
+Declare Scope jw_hword_big_scope.
+Delimit Scope jw_hword_big_scope with hword_big.
 
 (* The [Word] operations, the [Byte] ones taken byte by byte, delimited but
  * not opened under the same spellings; a literal under it is little-endian.
  *)
-Declare Scope jwa_word_scope.
-Delimit Scope jwa_word_scope with word.
+Declare Scope jw_word_scope.
+Delimit Scope jw_word_scope with word.
 
 (* [Word] literals laid out little-endian. *)
-Declare Scope jwa_word_little_scope.
-Delimit Scope jwa_word_little_scope with word_little.
+Declare Scope jw_word_little_scope.
+Delimit Scope jw_word_little_scope with word_little.
 
 (* [Word] literals laid out big-endian. *)
-Declare Scope jwa_word_big_scope.
-Delimit Scope jwa_word_big_scope with word_big.
+Declare Scope jw_word_big_scope.
+Delimit Scope jw_word_big_scope with word_big.
 
 (* The [DWord] operations, the [Byte] ones taken byte by byte, delimited but
  * not opened under the same spellings; a literal under it is little-endian.
  *)
-Declare Scope jwa_dword_scope.
-Delimit Scope jwa_dword_scope with dword.
+Declare Scope jw_dword_scope.
+Delimit Scope jw_dword_scope with dword.
 
 (* [DWord] literals laid out little-endian. *)
-Declare Scope jwa_dword_little_scope.
-Delimit Scope jwa_dword_little_scope with dword_little.
+Declare Scope jw_dword_little_scope.
+Delimit Scope jw_dword_little_scope with dword_little.
 
 (* [DWord] literals laid out big-endian. *)
-Declare Scope jwa_dword_big_scope.
-Delimit Scope jwa_dword_big_scope with dword_big.
+Declare Scope jw_dword_big_scope.
+Delimit Scope jw_dword_big_scope with dword_big.
 
 (* The [QWord] operations, the [Byte] ones taken byte by byte, delimited but
  * not opened under the same spellings; a literal under it is little-endian.
  *)
-Declare Scope jwa_qword_scope.
-Delimit Scope jwa_qword_scope with qword.
+Declare Scope jw_qword_scope.
+Delimit Scope jw_qword_scope with qword.
 
 (* [QWord] literals laid out little-endian. *)
-Declare Scope jwa_qword_little_scope.
-Delimit Scope jwa_qword_little_scope with qword_little.
+Declare Scope jw_qword_little_scope.
+Delimit Scope jw_qword_little_scope with qword_little.
 
 (* [QWord] literals laid out big-endian. *)
-Declare Scope jwa_qword_big_scope.
-Delimit Scope jwa_qword_big_scope with qword_big.
+Declare Scope jw_qword_big_scope.
+Delimit Scope jw_qword_big_scope with qword_big.
 
 (* [Ascii] characters, delimited but not opened: ["A"%ac]. *)
-Declare Scope jwa_ascii_scope.
-Delimit Scope jwa_ascii_scope with ac.
+Declare Scope jw_ascii_scope.
+Delimit Scope jw_ascii_scope with ac.
 
 (* [AsciiStr] strings and their operations, delimited but not opened:
  * [("ab" ++ "c")%a].
  *)
-Declare Scope jwa_ascii_str_scope.
-Delimit Scope jwa_ascii_str_scope with a.
+Declare Scope jw_ascii_str_scope.
+Delimit Scope jw_ascii_str_scope with a.
 
 (* [Utf8] characters, delimited but not opened: ["A"%u8c]. *)
-Declare Scope jwa_utf8_scope.
-Delimit Scope jwa_utf8_scope with u8c.
+Declare Scope jw_utf8_scope.
+Delimit Scope jw_utf8_scope with u8c.
 
 (* [Utf8Str] strings and their operations, delimited but not opened:
  * [("ab" ++ "c")%u8].
  *)
-Declare Scope jwa_utf8_str_scope.
-Delimit Scope jwa_utf8_str_scope with u8.
+Declare Scope jw_utf8_str_scope.
+Delimit Scope jw_utf8_str_scope with u8.
 
 (* One scope per numeral type, delimited but not opened, so that [+] and [*]
    name that type's operations only under its delimiter: [(m + n)%n],
@@ -180,26 +180,26 @@ Delimit Scope jwa_utf8_str_scope with u8.
    A key is short where it is written often: the scope name says which type
    it is for, so the key only has to be unambiguous. The scope name itself
    is never abbreviated, being named for the context it disambiguates. *)
-Declare Scope jwa_nat_scope.
-Delimit Scope jwa_nat_scope with n.
-Declare Scope jwa_nat0_scope.
-Delimit Scope jwa_nat0_scope with n0.
-Declare Scope jwa_integer_scope.
-Delimit Scope jwa_integer_scope with z.
-Declare Scope jwa_rational_scope.
-Delimit Scope jwa_rational_scope with q.
-Declare Scope jwa_bin_base_scope.
-Delimit Scope jwa_bin_base_scope with bin_base.
-Declare Scope jwa_bin_with_zero_scope.
-Delimit Scope jwa_bin_with_zero_scope with bin_with_zero.
+Declare Scope jw_nat_scope.
+Delimit Scope jw_nat_scope with n.
+Declare Scope jw_nat0_scope.
+Delimit Scope jw_nat0_scope with n0.
+Declare Scope jw_integer_scope.
+Delimit Scope jw_integer_scope with z.
+Declare Scope jw_rational_scope.
+Delimit Scope jw_rational_scope with q.
+Declare Scope jw_bin_base_scope.
+Delimit Scope jw_bin_base_scope with bin_base.
+Declare Scope jw_bin_with_zero_scope.
+Delimit Scope jw_bin_with_zero_scope with bin_with_zero.
 
 (* [b] is the shortest key in the tree and it goes to the type whose literals
    cover the most ground: [Bin] reads both [1011%b] and [(-1011)%b],
    where [BinWithZero] could never spell the second. A key is worth its
    brevity when literals are written under it, not when the type is named
    briefly. *)
-Declare Scope jwa_bin_scope.
-Delimit Scope jwa_bin_scope with b.
+Declare Scope jw_bin_scope.
+Delimit Scope jw_bin_scope with b.
 
 (* Precedence follows the textbook order, [~] tightest and [->] loosest with
    [forsome] beyond them, so a formula reads without parentheses; [_\/_] sits

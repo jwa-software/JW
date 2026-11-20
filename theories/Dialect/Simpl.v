@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Export Dialect.Ltac.
-From jwa Require Import Dialect.Local.
-From jwa Require Import Dialect.Place.
+From JW Require Export Dialect.Ltac.
+From JW Require Import Dialect.Local.
+From JW Require Import Dialect.Place.
 From Ltac2 Require Constr Control Env Ident List Message RedFlags Std.
 
 (* [unfold] and [simpl] serve one purpose, making a statement plainer

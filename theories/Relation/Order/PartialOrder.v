@@ -2,11 +2,11 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
-From jwa Require Import Relation.Antisymmetric.
-From jwa Require Import Relation.Reflexive.
-From jwa Require Import Relation.Transitive.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
+From JW Require Import Relation.Antisymmetric.
+From JW Require Import Relation.Reflexive.
+From JW Require Import Relation.Transitive.
 
 Module PartialOrder. (* PartialOrder *)
 

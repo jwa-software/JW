@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 # Algebra
 
-`jwa.Algebra` holds nine classes. Each one names the laws an operation obeys, so that a proof asks for a law by one name whatever the type:
+`JW.Algebra` holds nine classes. Each one names the laws an operation obeys, so that a proof asks for a law by one name whatever the type:
 
 | Class | Holds | Adds the law |
 |:---|:---|:---|
@@ -23,7 +23,7 @@ SPDX-License-Identifier: MIT
 - **A class is a proposition, and its fields are its laws.** A field is read behind the name of its class: `Monoid.identity`, `Group.inverse`.
 - **A class gives the laws of the classes it holds.** With a `Group` in hand, `Monoid.identity` and `Semigroup.associativity` are found without being asked for.
 
-`From jwa Require Import Algebra.All` brings the nine classes. An instance comes with the file of its type, `Nat0_add_monoid` with `Nat0`. The examples on this page are written under the key of their number type, `%n0` for `Nat0` and `%z` for `Integer`.
+`From JW Require Import Algebra.All` brings the nine classes. An instance comes with the file of its type, `Nat0_add_monoid` with `Nat0`. The examples on this page are written under the key of their number type, `%n0` for `Nat0` and `%z` for `Integer`.
 
 ---
 
@@ -112,8 +112,8 @@ SPDX-License-Identifier: MIT
 At a concrete operation, the instance is found from the goal. A law stated over a class is proved once and holds at every instance:
 
 ```
-From jwa Require Import Algebra.All.
-From jwa Require Import Data.All.
+From JW Require Import Algebra.All.
+From JW Require Import Data.All.
 
 Definition zero_changes_nothing
   : forall (n : Nat0) . (0 + n = n /\ n + 0 = n)%n0

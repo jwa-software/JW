@@ -2,31 +2,31 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Cancellative.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Binary.BinBase.
-From jwa Require Import Data.Number.Binary.BinWithZero.
-From jwa Require Import Data.Number.Integer.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Dialect.Simpl.
-From jwa Require Import Relation.Induced.
-From jwa Require Import Relation.WellFounded.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Cancellative.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Integer.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Dialect.Simpl.
+From JW Require Import Relation.Induced.
+From JW Require Import Relation.WellFounded.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 Module Bin. (* Bin *)
 
@@ -174,9 +174,9 @@ Definition add := fun (x : Bin) (y : Bin) .
 
 (* The prefix [+ p] above is a separate notation and coexists with this one. *)
 Notation "x + y" := (add x y) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
-Local Open Scope jwa_bin_scope.
+Local Open Scope jw_bin_scope.
 
 (* [Bin -> Bin -> Bin] *)
 Definition sub := fun (x : Bin) (y : Bin) . x + negate y.
@@ -185,7 +185,7 @@ Definition sub := fun (x : Bin) (y : Bin) . x + negate y.
  * of negative literals, as [x + y] does with [+ p].
  *)
 Notation "x - y" := (sub x y) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* The magnitudes multiply in [BinBase], and the sign is positive exactly when the
  * two signs agree.
@@ -209,7 +209,7 @@ Definition mul := fun (x : Bin) (y : Bin) .
   end.
 
 Notation "x * y" := (mul x y) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* The divisor is a [BinBase], so it is never zero: the magnitude is divided and
  * the sign carried over, so the quotient rounds toward zero.
@@ -223,7 +223,7 @@ Definition divide := fun (x : Bin) (d : BinBase) .
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* The witness is a [BinBase], so it is never zero and [<] is strict.
  *)
@@ -232,26 +232,26 @@ Definition LessThan := fun (x : Bin) (y : Bin) .
   forsome (k : BinBase) . x + (+ k) = y.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* [Bin -> Bin -> Prop] *)
 Definition LessOrEqual := fun (x : Bin) (y : Bin) . x = y \/ x < y.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* The reversed spellings name no new relation: [x > y] is [y < x] with the
  * arguments the other way round, so no law is stated for them.
  *)
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* Between two negatives the order reverses, the larger magnitude being the
  * smaller number, so those two arguments reach [BinBase.compare] the other way
@@ -1344,14 +1344,14 @@ Export (notations) Bin.
  *)
 Notation "- x" := (Bin.negate x)
   (at level 35, right associativity, only parsing)
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* A number of the type is written in binary digits under its scope, [1011%b]
  * for eleven and [(-1011)%b] for minus eleven, and a closed one prints that
  * way; a literal with any other digit is refused.
  *)
 Number Notation Bin.T Bin.from_numeral Bin.to_numeral
-  : jwa_bin_scope.
+  : jw_bin_scope.
 
 (* A [BinBase] stands wherever a [Bin] is expected, read as its [Positive],
  * and a [BinWithZero] through [from_bin_with_zero]; both are printed where

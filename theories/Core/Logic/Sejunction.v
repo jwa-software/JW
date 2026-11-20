@@ -2,14 +2,14 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Abjunction.
-From jwa Require Import Core.Logic.Biconditional.
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Logic.Conjunction.
-From jwa Require Import Core.Logic.Disjunction.
-From jwa Require Import Core.Logic.Negation.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Logic.Abjunction.
+From JW Require Import Core.Logic.Biconditional.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Logic.Conjunction.
+From JW Require Import Core.Logic.Disjunction.
+From JW Require Import Core.Logic.Negation.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 Module Sejunction. (* Sejunction *)
 
@@ -28,7 +28,7 @@ Arguments Sejunction.introduction_right {A} {B} na b.
 Abbreviation Sejunction := T.
 
 Notation "A _\/_ B" := (Sejunction A B)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* [sejoin a, nb] : [A _\/_ B] from [a : A] and [nb : ~ B], and [sejoin na, b]
  * from [na : ~ A] and [b : B]: the types of the two decide the side.

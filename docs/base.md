@@ -17,9 +17,9 @@ A base type is built from no other type: every constructor takes no argument, so
 
 - **Each type lives in a module of its name.** The carrier is `Bool.T`, written `Bool` on both sides of the module, and the constructors stand behind the namespace: `Comparison.Lt`, `Kleene3.unknown`.
 - **Only `Bool` hands its constructors back bare.** `true` and `false` are `Bool.true` and `Bool.false`. Every other constructor is written with its type's prefix, so a bare `true` is the `Bool` one beside `Kleene3.true`.
-- **The notations are in a scope of their own.** `Bool` has `jwa_bool_scope` under the key `%bool`, and `Kleene3` has `jwa_kleene3_scope` under `%k3`. Neither is opened: write `(b1 && b2)%bool`, or open the scope.
+- **The notations are in a scope of their own.** `Bool` has `jw_bool_scope` under the key `%bool`, and `Kleene3` has `jw_kleene3_scope` under `%k3`. Neither is opened: write `(b1 && b2)%bool`, or open the scope.
 
-`From jwa Require Import Data.Base.All` brings the five types and their notations. The laws are written with the type's prefix: `Bool.conjunction.commutativity`.
+`From JW Require Import Data.Base.All` brings the five types and their notations. The laws are written with the type's prefix: `Bool.conjunction.commutativity`.
 
 ---
 

@@ -2,23 +2,23 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Number.Binary.BinWithZero.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 (* A bit is a binary digit, a datum, where a [Bool] is a truth value; the two
  * are separate types so that neither stands where the other is meant, and
@@ -47,7 +47,7 @@ Definition flip := fun (b : Bit) .
  * printing the operations by name.
  *)
 Notation "~. b" := (flip b) (only parsing)
-  : jwa_bit_scope.
+  : jw_bit_scope.
 
 (* [Bit -> Bit -> Bit] *)
 Definition and := fun (b1 : Bit) (b2 : Bit) .
@@ -57,7 +57,7 @@ Definition and := fun (b1 : Bit) (b2 : Bit) .
   end.
 
 Notation "b1 &. b2" := (and b1 b2) (only parsing)
-  : jwa_bit_scope.
+  : jw_bit_scope.
 
 (* [Bit -> Bit -> Bit] *)
 Definition or := fun (b1 : Bit) (b2 : Bit) .
@@ -67,7 +67,7 @@ Definition or := fun (b1 : Bit) (b2 : Bit) .
   end.
 
 Notation "b1 |. b2" := (or b1 b2) (only parsing)
-  : jwa_bit_scope.
+  : jw_bit_scope.
 
 (* [Bit -> Bit -> Bit] *)
 Definition xor := fun (b1 : Bit) (b2 : Bit) .
@@ -77,7 +77,7 @@ Definition xor := fun (b1 : Bit) (b2 : Bit) .
   end.
 
 Notation "b1 ^. b2" := (xor b1 b2) (only parsing)
-  : jwa_bit_scope.
+  : jw_bit_scope.
 
 (* [Bool -> Bit] *)
 Definition from_bool := fun (b : Bool) .
@@ -139,7 +139,7 @@ Definition to_numeral := fun (b : Bit) .
   | One  => Numeral.Unsigned.Decimal (Numeral.Decimal.Digits.One Numeral.Decimal.Digits.End)
   end.
 
-Local Open Scope jwa_bit_scope.
+Local Open Scope jw_bit_scope.
 
 Module distinctness. (* distinctness *)
 
@@ -1148,12 +1148,12 @@ Export (notations) Bit.
 
 (* A bit is written [0%bit] or [1%bit], and a closed one prints the same way. *)
 Number Notation Bit.T Bit.from_numeral Bit.to_numeral
-  : jwa_bit_scope.
+  : jw_bit_scope.
 
 (* Where a [Bit] is expected, a literal or a notation reads in this scope
  * without its [%bit].
  *)
-Bind Scope jwa_bit_scope with Bit.T.
+Bind Scope jw_bit_scope with Bit.T.
 
 Instance Bit_and_monoid
   : Monoid Bit.and 1%bit :=

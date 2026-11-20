@@ -1,18 +1,18 @@
 ; SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
 ; SPDX-License-Identifier: MIT
 
-; Named after the logical root itself, so its one module is jwa.All rather
-; than jwa.All.All. jwa.Assumption is deliberately absent: importing
+; Named after the logical root itself, so its one module is JW.All rather
+; than JW.All.All. JW.Assumption is deliberately absent: importing
 ; everything must not pull in axioms, see theories/Assumption/dune.
 
 (rocq.theory
- (name jwa)
- (package rocq-jwa)
+ (name JW)
+ (package JW)
  (theories
   Ltac2
-  jwa.Dialect
-  jwa.Core
-  jwa.Tactics
-  jwa.Algebra
-  jwa.Relation
-  jwa.Data))
+  JW.Dialect
+  JW.Core
+  JW.Tactics
+  JW.Algebra
+  JW.Relation
+  JW.Data))

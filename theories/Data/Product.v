@@ -2,17 +2,17 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Functor.
-From jwa Require Import Tactics.Equation.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Functor.
+From JW Require Import Tactics.Equation.
 
 (* Opened for the whole file, so that every definition and law below spells
  * a pair the way a client does.
  *)
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 Module Product. (* Product *)
 
@@ -28,13 +28,13 @@ Arguments Product.introduction {A} {B} a b.
 Abbreviation Product := T.
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs
- * here. It lives in [jwa_product_scope], which [Core.Notations] declares
+ * here. It lives in [jw_product_scope], which [Core.Notations] declares
  * without opening, so a client writes [(a, b)%product] or opens the scope.
  * It prints as well as parses: a pair reads the same in a goal as in the
  * source that built it.
  *)
 Notation "( a , b )" := (Product.introduction a b)
-  : jwa_product_scope.
+  : jw_product_scope.
 
 (* The eliminator that [match ... per] takes, written out. Nothing recurses: a
  * product holds no smaller product, so one [match] is the whole content.
@@ -410,26 +410,26 @@ Abbreviation Product := Product.T.
 
 (* Makes the pair notation declared in [Module Product] usable in every file
  * that imports this one, as [(a, b)%product] or under an opened
- * [jwa_product_scope].
+ * [jw_product_scope].
  *)
 Export (notations) Product.
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs here.
  * Declared at file level, it reaches a client through [Require Export]. A
- * type former sits in [jwa_type_scope] beside [->], so [A * B -> C] needs
+ * type former sits in [jw_type_scope] beside [->], so [A * B -> C] needs
  * no delimiter.
  *)
 Notation "A * B" := (Product A B)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* The projections under their textbook names. Each is a keyword standing
  * for the function itself, so [pi_1 p] is ordinary application and
  * [pi_1 (a , b)] computes as [Product.first (a , b)] does.
  *)
 Notation "'pi_1'" := Product.first (only parsing)
-  : jwa_product_scope.
+  : jw_product_scope.
 Notation "'pi_2'" := Product.second (only parsing)
-  : jwa_product_scope.
+  : jw_product_scope.
 
 (* [Product A] is a functor in its second component; [A] is a parameter of
  * the instance, so every first component gets one. The two laws were

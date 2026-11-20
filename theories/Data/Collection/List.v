@@ -2,24 +2,24 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.Membership.
-From jwa Require Import Data.Collection.Sized.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Functor.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Syllogism.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.Membership.
+From JW Require Import Data.Collection.Sized.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Functor.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Syllogism.
+From JW Require Import Tactics.Witness.
 
 Module List. (* List *)
 
@@ -39,7 +39,7 @@ Arguments Cons {A} a l.
 Abbreviation List := T.
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs here.
- * Every list notation lives in [jwa_list_scope], which [Core.Notations]
+ * Every list notation lives in [jw_list_scope], which [Core.Notations]
  * declares without opening: a client writes [(a :: l)%list] or opens the
  * scope. The [Export (notations)] below the module is what carries these
  * out to a client, and it carries the notations alone, so [[]] and [::]
@@ -47,16 +47,16 @@ Abbreviation List := T.
  *)
 (* The token is [[]] as one piece; [[ ]] with a space is not it. *)
 Notation "[]" := Nil
-  : jwa_list_scope.
+  : jw_list_scope.
 
 (* [a :: l] puts one element in front; with [[]] it spells a list out:
  * [a :: b :: []].
  *)
 Notation "a :: l" := (Cons a l)
-  : jwa_list_scope.
+  : jw_list_scope.
 
 (* Opening the scope here lets every definition and law below use them. *)
-Local Open Scope jwa_list_scope.
+Local Open Scope jw_list_scope.
 
 (* The eliminator that [match ... per] takes, written out. Its content is the [fix]:
  * the proof for [Cons a l] is built from the proof for [l], and following
@@ -82,18 +82,18 @@ Definition induction
  * this module [*] is [Nat0.mul]; a product type still parses where
  * a type is expected, as in [List A * List A].
  *)
-Local Open Scope jwa_nat0_scope.
+Local Open Scope jw_nat0_scope.
 
 (* [Bool]'s scope is opened for the [!] of [partition]. The [||] it also
  * carries is the infix [Bool.or] and does not disturb [(|| l ||)], whose
  * delimiters are tokens of their own.
  *)
-Local Open Scope jwa_bool_scope.
+Local Open Scope jw_bool_scope.
 
 (* [Product]'s scope is opened for the [(a, b)] of [pop], [zip], [unzip],
  * [partition] and [split_at], whose results are pairs.
  *)
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 (* Recursion is on the first list: [concat Nil l2] is [l2], and each [Cons]
  * of [l1] is put back in front of the result.
@@ -107,10 +107,10 @@ Fixpoint concat {A : Type} (l1 : List A) (l2 : List A) : List A :=
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs here.
  * After [End List] a client writes [(l1 ++ l2)%list] or opens
- * [jwa_list_scope].
+ * [jw_list_scope].
  *)
 Notation "l1 ++ l2" := (concat l1 l2)
-  : jwa_list_scope.
+  : jw_list_scope.
 
 (* The other end from [Cons]: [append l a] puts [a] after everything in
  * [l]. Concatenation with a one-element list rather than a recursion of
@@ -134,7 +134,7 @@ Fixpoint length {A : Type} (l : List A) : Nat0 :=
  * own.
  *)
 Notation "(|| l ||)" := (length l) (only parsing)
-  : jwa_list_scope.
+  : jw_list_scope.
 
 (* [map] applies [f] to every element and keeps the shape. *)
 (* [forall {A : Type} {B : Type} . (A -> B) -> List A -> List B] *)
@@ -182,15 +182,15 @@ Fixpoint Contains {A : Type} (a : A) (l : List A) : Prop :=
  * arguments the other way round, so no law is stated for them.
  *)
 Notation "l 'contains_member' a" := (Contains a l)
-  : jwa_list_scope.
+  : jw_list_scope.
 
 Notation "a 'belongs_to' l" := (Contains a l) (only parsing)
-  : jwa_list_scope.
+  : jw_list_scope.
 
 Notation "l 'does_not_contain_member' a" := (~ (Contains a l))
-  : jwa_list_scope.
+  : jw_list_scope.
 Notation "a 'does_not_belong_to' l" := (~ (Contains a l)) (only parsing)
-  : jwa_list_scope.
+  : jw_list_scope.
 
 (* [filter p] keeps the elements [p] answers [true] on, in their order. *)
 (* [forall {A : Type} . (A -> Bool) -> List A -> List A] *)
@@ -2033,7 +2033,7 @@ Qed.
 End partitioning. (* partitioning *)
 
 (* The last law stated about a pair; nothing below spells one. *)
-Local Close Scope jwa_product_scope.
+Local Close Scope jw_product_scope.
 
 Module indexing. (* indexing *)
 

@@ -2,23 +2,23 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Relation.Antisymmetric.
-From jwa Require Import Relation.Irreflexive.
-From jwa Require Import Relation.Order.PartialOrder.
-From jwa Require Import Relation.Order.StrictPartialOrder.
-From jwa Require Import Relation.Order.StrictTotalOrder.
-From jwa Require Import Relation.Order.TotalOrder.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Relation.Reflexive.
-From jwa Require Import Relation.Total.
-From jwa Require Import Relation.Transitive.
-From jwa Require Import Relation.Trichotomous.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Relation.Antisymmetric.
+From JW Require Import Relation.Irreflexive.
+From JW Require Import Relation.Order.PartialOrder.
+From JW Require Import Relation.Order.StrictPartialOrder.
+From JW Require Import Relation.Order.StrictTotalOrder.
+From JW Require Import Relation.Order.TotalOrder.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Relation.Reflexive.
+From JW Require Import Relation.Total.
+From JW Require Import Relation.Transitive.
+From JW Require Import Relation.Trichotomous.
 
 Module Comparable. (* Comparable *)
 

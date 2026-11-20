@@ -2,12 +2,12 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Option.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Option.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 (* The bridge from a computed answer to a statement. [Assert true] is
  * [Verum] and [Assert false] is [Falsum] by reduction, so case analysis on
@@ -27,9 +27,9 @@ Definition Assert := fun (b : Bool) .
 Module Assert. (* Assert *)
 
 (* [&&], [||], [^^] and [!] are exported by [Data.Bool] into
- * [jwa_bool_scope], which every law below reads.
+ * [jw_bool_scope], which every law below reads.
  *)
-Local Open Scope jwa_bool_scope.
+Local Open Scope jw_bool_scope.
 
 (* [Some (f I)] when [b] is [true], [None] otherwise: [f] is applied only
  * where its premise holds, so a value that needs a proof of [Assert b] is

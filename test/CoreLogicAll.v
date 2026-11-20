@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.All.
+From JW Require Import Core.Logic.All.
 
 Definition core_logic_all_delivers
   : forall (A : Prop) (B : Prop) (T : Type) (Q : T -> Prop) .

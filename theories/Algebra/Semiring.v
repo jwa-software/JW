@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianMonoid.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
+From JW Require Import Algebra.AbelianMonoid.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
 
 Module Semiring. (* Semiring *)
 

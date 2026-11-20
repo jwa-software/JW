@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Data.All.
+From JW Require Import Data.All.
 
 Definition data_all_delivers_some
   : forall (A : Type) (B : Type) (f : A -> B) (a : A) .

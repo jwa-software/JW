@@ -8,6 +8,6 @@
 ; requires Corelib.Init.Ltac.
 
 (rocq.theory
- (name jwa.Dialect)
- (package rocq-jwa)
+ (name JW.Dialect)
+ (package JW)
  (theories Ltac2))

@@ -2,18 +2,18 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Assert.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Collection.Membership.
-From jwa Require Import Data.Collection.Sized.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Functor.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Core.All.
+From JW Require Import Data.Assert.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Collection.Membership.
+From JW Require Import Data.Collection.Sized.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Functor.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 Module BinaryTree. (* BinaryTree *)
 
@@ -35,8 +35,8 @@ Abbreviation BinaryTree := T.
 (* [Nat0]'s scope is opened for the [++] and [+] of [size] and [height],
  * [List]'s for the [[]], [::] and [++] of [to_list].
  *)
-Local Open Scope jwa_nat0_scope.
-Local Open Scope jwa_list_scope.
+Local Open Scope jw_nat0_scope.
+Local Open Scope jw_list_scope.
 
 (* The eliminator that [match ... per] takes, written out. A node has two
  * subtrees, so its step takes two hypotheses, each stated right after the

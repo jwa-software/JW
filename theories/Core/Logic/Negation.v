@@ -2,21 +2,21 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Biconditional.
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Logic.Conjunction.
-From jwa Require Import Core.Logic.Disjunction.
-From jwa Require Import Core.Logic.Exists.
-From jwa Require Import Core.Logic.Falsum.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Logic.Biconditional.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Logic.Conjunction.
+From JW Require Import Core.Logic.Disjunction.
+From JW Require Import Core.Logic.Exists.
+From JW Require Import Core.Logic.Falsum.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 (* Negation: a proof of [A] leads to [Falsum]. *)
 (* [Prop -> Prop] *)
 Definition Negation := fun (A : Prop) . A -> Falsum.
 
 Notation "~ A" := (Negation A)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 Module Negation. (* Negation *)
 

@@ -2,20 +2,20 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Collection.Membership.
-From jwa Require Import Data.Collection.Sized.
-From jwa Require Import Data.Functor.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Option.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Dialect.Simpl.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Collection.Membership.
+From JW Require Import Data.Collection.Sized.
+From JW Require Import Data.Functor.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Option.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Dialect.Simpl.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Module NonEmptyList. (* NonEmptyList *)
 
@@ -37,27 +37,27 @@ Arguments Cons {A} a x.
 Abbreviation NonEmptyList := T.
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs
- * here. [List] gives the same token its own meaning in [jwa_list_scope],
+ * here. [List] gives the same token its own meaning in [jw_list_scope],
  * so a reader says which is meant by opening a scope or by writing the
  * delimiter.
  *)
 Notation "a :: x" := (Cons a x)
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
 (* [[a]] is the list of that one element, so a literal ends where [List]'s
  * ends with [[]]: [a :: b :: [c]] against [a :: b :: c :: []]. The
  * brackets are a closed token and take no level, as [[]] does not.
  *)
 Notation "[ a ]" := (One a)
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
-(* Both scopes are open: [jwa_list_scope] for [to_list], whose result is a
+(* Both scopes are open: [jw_list_scope] for [to_list], whose result is a
  * [List], and this type's own for everything else. The one opened later
  * wins where a token is in both, so the [List] readings below carry their
  * delimiter.
  *)
-Local Open Scope jwa_list_scope.
-Local Open Scope jwa_non_empty_list_scope.
+Local Open Scope jw_list_scope.
+Local Open Scope jw_non_empty_list_scope.
 
 (* The eliminator that [match ... per] takes, written out. Its content
  * is the [fix]: the proof for [Cons a x] is built from the proof for [x],
@@ -102,7 +102,7 @@ Fixpoint length {A : Type} (x : NonEmptyList A) : Nat :=
   end.
 
 Notation "(|| x ||)" := (length x) (only parsing)
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
 (* The forgetful map into [List]: every operation of [List] is reachable
  * through it, and a law proved there transports along it.
@@ -126,7 +126,7 @@ Fixpoint concat {A : Type} (x : NonEmptyList A) (y : NonEmptyList A)
   end.
 
 Notation "x ++ y" := (concat x y)
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
 (* [forall {A : Type} . NonEmptyList A -> NonEmptyList A] *)
 Fixpoint reverse {A : Type} (x : NonEmptyList A) : NonEmptyList A :=
@@ -147,16 +147,16 @@ Fixpoint Contains {A : Type} (a : A) (x : NonEmptyList A) : Prop :=
   end.
 
 Notation "x 'contains_member' a" := (Contains a x)
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
 Notation "a 'belongs_to' x" := (Contains a x) (only parsing)
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
 Notation "x 'does_not_contain_member' a" := (~ (Contains a x))
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
 Notation "a 'does_not_belong_to' x" := (~ (Contains a x)) (only parsing)
-  : jwa_non_empty_list_scope.
+  : jw_non_empty_list_scope.
 
 (* [forall {A : Type} {B : Type} . (A -> B) -> NonEmptyList A -> NonEmptyList B] *)
 Fixpoint map {A : Type} {B : Type} (f : A -> B) (x : NonEmptyList A)

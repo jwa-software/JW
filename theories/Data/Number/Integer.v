@@ -2,28 +2,28 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Cancellative.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Dialect.Simpl.
-From jwa Require Import Relation.Induced.
-From jwa Require Import Relation.WellFounded.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Cancellative.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Dialect.Simpl.
+From JW Require Import Relation.Induced.
+From JW Require Import Relation.WellFounded.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 Module Integer. (* Integer *)
 
@@ -84,7 +84,7 @@ Definition abs := fun (x : Integer) .
  * open.
  *)
 Notation "(| x |)" := (abs x) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* [Nat -> Integer] *)
 Definition from_nat := fun (n : Nat) . (+ n).
@@ -147,15 +147,15 @@ Definition add := fun (m : Integer) (n : Integer) .
                            (ramp (negate m) + ramp (negate n))%n0.
 
 Notation "m + n" := (add m n) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
-Local Open Scope jwa_integer_scope.
+Local Open Scope jw_integer_scope.
 
 (* [Integer -> Integer -> Integer] *)
 Definition sub := fun (m : Integer) (n : Integer) . m + negate n.
 
 Notation "m - n" := (sub m n) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* [Integer -> Integer -> Integer] *)
 Definition mul := fun (m : Integer) (n : Integer) .
@@ -176,7 +176,7 @@ Definition mul := fun (m : Integer) (n : Integer) .
   end.
 
 Notation "m * n" := (mul m n) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* The divisor is a [Nat], so it is never zero and no case is missing: the
  * magnitude is divided and the sign carried over.
@@ -196,33 +196,33 @@ Definition divide := fun (x : Integer) (d : Nat) .
  * none is chosen, so [Integer] carries no [modulo].
  *)
 Notation "m /. n" := (divide m n) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* [Integer -> Integer -> Prop] *)
 Definition LessThan := fun (m : Integer) (n : Integer) .
   forsome (k : Nat) . m + (+ k) = n.
 
 Notation "m < n" := (LessThan m n) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* [Integer -> Integer -> Prop] *)
 Definition LessOrEqual := fun (m : Integer) (n : Integer) . m = n \/ m < n.
 
 Notation "m <= n" := (LessOrEqual m n) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* The reversed spellings name no new relation: [m > n] is [n < m] with the
  * arguments the other way round, so no law is stated for them.
  *)
 Notation "m > n" := (LessThan n m) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 Notation "m >= n" := (LessOrEqual n m) (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* [Integer -> Integer -> Comparison] *)
 Definition compare := fun (m : Integer) (n : Integer) .
@@ -2343,7 +2343,7 @@ Export (notations) Integer.
  *)
 Notation "- x" := (Integer.negate x)
   (at level 35, right associativity, only parsing)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* A number of the type is written in decimal or hexadecimal under its scope,
  * [3%z], [(-3)%z] or [0x1F%z], and a closed one prints in decimal. One of
@@ -2351,12 +2351,12 @@ Notation "- x" := (Integer.negate x)
  * something computes it.
  *)
 Number Notation Integer.T Integer.from_numeral Integer.to_numeral (abstract after 5000)
-  : jwa_integer_scope.
+  : jw_integer_scope.
 
 (* Where an [Integer] is expected, a literal or a notation reads in this scope
  * without its [%z].
  *)
-Bind Scope jwa_integer_scope with Integer.T.
+Bind Scope jw_integer_scope with Integer.T.
 
 Coercion Integer.Positive : Nat >-> Integer.
 Coercion Integer.from_nat0 : Nat0 >-> Integer.

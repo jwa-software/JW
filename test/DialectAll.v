@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Dialect.All.
+From JW Require Import Dialect.All.
 
 Theorem dialect_all_delivers
   : forall (A : Prop) (B : Prop) (_ : (fun (X : Prop) => X) A) (_ : B), A.

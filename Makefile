@@ -1,14 +1,14 @@
 # SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
 # SPDX-License-Identifier: MIT
 
-# Build entry points for rocq-jwa.
+# Build entry points for JW.
 #
 #   make            build every theory and the test suite (default target)
 #   make test       run the tests that execute, such as the extracted OCaml
 #   make fmt        format the dune files
 #   make fmt-check  report the dune files that are not formatted, changing none
 #   make clean      remove the build directory
-#   make opam       regenerate opam/rocq-jwa.opam from dune-project
+#   make opam       regenerate opam/JW.opam from dune-project
 #   make deps       install the build dependencies into the current opam switch
 #
 # Each command runs under `opam exec`, so that the dune and Rocq of the
@@ -35,9 +35,9 @@ clean:
 
 # dune 3.21 provides no @opam alias; the file is built by its path.
 opam:
-	$(OPAM_EXEC) dune build opam/rocq-jwa.opam
+	$(OPAM_EXEC) dune build opam/JW.opam
 
 # The dependencies are those declared in the generated opam file: dune, and
 # rocq-core, which also provides Ltac2.
 deps:
-	opam install --deps-only --yes ./opam/rocq-jwa.opam
+	opam install --deps-only --yes ./opam/JW.opam

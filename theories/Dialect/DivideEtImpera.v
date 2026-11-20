@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Export Dialect.Ltac.
+From JW Require Export Dialect.Ltac.
 From Ltac2 Require Control Std.
 
 (* divide et impera    turns a goal whose type has one constructor into one
