@@ -10,6 +10,8 @@ From jwa Require Import Data.Collection.BinaryTree.
 From jwa Require Import Data.Collection.List.
 From jwa Require Import Data.Comparable.
 From jwa Require Import Data.Number.Nat0.
+From jwa Require Import Data.Option.
+From jwa Require Import Data.Product.
 From jwa Require Import Dialect.ExFalso.
 From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
@@ -200,6 +202,52 @@ Fixpoint insert {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) : AV
       | Comparison.Lt => balance (insert cmp a l) b r
       | Comparison.Eq => AVL.Node l b r h
       | Comparison.Gt => balance l b (insert cmp a r)
+      end
+  end.
+
+Module pop. (* pop *)
+
+(* The smallest element of an ordered tree is its leftmost one. [pop.min]
+ * answers with it and with the tree that is left, rebalancing each node on
+ * the way back up, and with [None] on a leaf.
+ *)
+(* [forall {A : Type} . AVL A -> Option (Product A (AVL A))] *)
+Fixpoint min {A : Type} (t : AVL A) : Option (Product A (AVL A)) :=
+  match t with
+  | AVL.Leaf         => None
+  | AVL.Node l a r _ =>
+      match min l with
+      | None                             => Some (Product.introduction a r)
+      | Some (Product.introduction m l') => Some (Product.introduction m (balance l' a r))
+      end
+  end.
+
+End pop. (* pop *)
+
+(* One tree out of two, for an [l] that lies wholly below [r]: the smallest
+ * element of [r] becomes the root, the one element that may stand between
+ * the two.
+ *)
+(* [forall {A : Type} . AVL A -> AVL A -> AVL A] *)
+Definition join := fun {A : Type} (l : AVL A) (r : AVL A) .
+  match pop.min r with
+  | None                             => l
+  | Some (Product.introduction m r') => balance l m r'
+  end.
+
+(* [remove] walks the path that the comparison picks. Where it finds [a],
+ * the node goes and its two subtrees are joined; each node on the way back
+ * up is rebalanced.
+ *)
+(* [forall {A : Type} . (A -> A -> Comparison) -> A -> AVL A -> AVL A] *)
+Fixpoint remove {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) : AVL A :=
+  match t with
+  | AVL.Leaf         => AVL.Leaf
+  | AVL.Node l b r _ =>
+      match cmp a b with
+      | Comparison.Lt => balance (remove cmp a l) b r
+      | Comparison.Eq => join l r
+      | Comparison.Gt => balance l b (remove cmp a r)
       end
   end.
 
@@ -1357,6 +1405,344 @@ Proof.
     + ipso &o.
 Qed.
 
+Module shrinkage. (* balancing.shrinkage *)
+
+(* [h] is the height the left subtree had before it lost one level or none,
+ * and [l] is what it became: the result is as high as a node over the old
+ * subtree and [r], or one lower.
+ *)
+(* balancing.shrinkage.left *)
+Lemma left
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) (h : Nat0) .
+      Measured r -> Balanced r ->
+      h = height r \/ h = ++ (height r) \/ height r = ++ h ->
+      height l = h \/ ++ (height l) = h ->
+      height (AVL.balance l a r) = ++ (Nat0.max h (height r))
+      \/ ++ (height (AVL.balance l a r)) = ++ (Nat0.max h (height r)).
+Proof.
+  intros A l a r h mr br rel g.
+  simpl AVL.balance in |- *.
+  match (Nat0.eq (height &l) (++ (++ (height &r)))) with | | end |- t1.
+  - modus aequans
+      (Comparable.comparison.equality.reflection (height &l) (++ (++ (height &r)))), &t1
+      |- e1.
+    match &rel with | q | rel' end.
+    + match &g with | k | k end.
+      * leibniz &k, &q in &e1.
+        ex
+          (Nat0.order.strict.distinction
+            (Nat0.order.strict.transitivity
+              (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+            &e1)
+          quodlibet.
+      * trans (symm &q), (symm &k) |- rx.
+        leibniz &rx in &e1.
+        ex
+          (Nat0.order.strict.distinction
+            (Nat0.order.strict.transitivity
+              (Nat0.increment.order.extensivity _)
+              (Nat0.order.strict.transitivity
+                (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _)))
+            &e1)
+          quodlibet.
+    + match &rel' with | q | q end.
+      * match &g with | k | k end.
+        -- leibniz &k, &q in &e1.
+           let proof e1' := Nat0.increment.injectivity &e1.
+           ex (Nat0.order.strict.distinction (Nat0.increment.order.extensivity _) &e1') quodlibet.
+        -- let proof xr := Nat0.increment.injectivity (trans &k, &q).
+           leibniz &xr in &e1.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+               &e1)
+             quodlibet.
+      * match &g with | k | k end.
+        -- leibniz &k, &q in &e1.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _)
+                 (Nat0.order.strict.transitivity
+                   (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _)))
+               &e1)
+             quodlibet.
+        -- leibniz (symm &k) in &q.
+           leibniz &q in &e1.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _)
+                 (Nat0.order.strict.transitivity
+                   (Nat0.increment.order.extensivity _)
+                   (Nat0.order.strict.transitivity
+                     (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))))
+               &e1)
+             quodlibet.
+  - match (Nat0.eq (height &r) (++ (++ (height &l)))) with | | end |- t2.
+    + modus aequans
+        (Comparable.comparison.equality.reflection (height &r) (++ (++ (height &l)))), &t2
+        |- e2.
+      match &rel with | q | rel' end.
+      * match &g with | k | k end.
+        -- leibniz &k, &q in &e2.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+               &e2)
+             quodlibet.
+        -- trans (symm &q), (symm &k) |- rx.
+           leibniz &rx in &e2.
+           let proof e2' := Nat0.increment.injectivity &e2.
+           ex (Nat0.order.strict.distinction (Nat0.increment.order.extensivity _) &e2') quodlibet.
+      * match &rel' with | q | q end.
+        -- match &g with | k | k end.
+           ++ leibniz &k, &q in &e2.
+              ex
+                (Nat0.order.strict.distinction
+                  (Nat0.order.strict.transitivity
+                    (Nat0.increment.order.extensivity _)
+                    (Nat0.order.strict.transitivity
+                      (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _)))
+                  &e2)
+                quodlibet.
+           ++ let proof xr := Nat0.increment.injectivity (trans &k, &q).
+              leibniz &xr in &e2.
+              ex
+                (Nat0.order.strict.distinction
+                  (Nat0.order.strict.transitivity
+                    (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+                  &e2)
+                quodlibet.
+        -- match &g with | k | k end.
+           ++ leibniz &k, &q in &e2.
+              let proof e2' := Nat0.increment.injectivity &e2.
+              ex
+                (Nat0.order.strict.distinction (Nat0.increment.order.extensivity _) &e2')
+                quodlibet.
+           (* The right subtree is now two above the left: a rotation. *)
+           ++ let proof gr := rotation.left.growth &l &a &r &mr &br &e2.
+              leibniz &q in |- *.
+              leibniz (Comparable.maximum.commutativity &h (++ &h)) in |- *.
+              leibniz
+                (modus aequans
+                  (Comparable.maximum.specification (++ &h) &h),
+                  (disjoin _, (Nat0.increment.order.extensivity &h)))
+                in |- *.
+              leibniz &q in &gr.
+              match &gr with | u | u end.
+              ** ipso (disjoin _, (congru Nat0.inc, &u)).
+              ** ipso (disjoin &u, _).
+    + simpl node in |- *.
+      simpl in |- *.
+      match &rel with | q | rel' end.
+      * match &g with | k | k end.
+        -- leibniz &k in |- *.
+           ipso (disjoin (Identity.reflexivity _), _).
+        -- trans (symm &q), (symm &k) |- rx.
+           leibniz &q in |- *.
+           leibniz &rx in |- *.
+           leibniz (Comparable.maximum.commutativity (height &l) (++ (height &l))) in |- *.
+           leibniz
+             (modus aequans
+               (Comparable.maximum.specification (++ (height &l)) (height &l)),
+               (disjoin _, (Nat0.increment.order.extensivity (height &l))))
+             in |- *.
+           leibniz (Comparable.maximum.idempotence (++ (height &l))) in |- *.
+           ipso (disjoin (Identity.reflexivity _), _).
+      * match &rel' with | q | q end.
+        -- match &g with | k | k end.
+           ++ leibniz &k in |- *.
+              ipso (disjoin (Identity.reflexivity _), _).
+           ++ let proof xr := Nat0.increment.injectivity (trans &k, &q).
+              leibniz &xr, &q in |- *.
+              leibniz (Comparable.maximum.idempotence (height &r)) in |- *.
+              leibniz
+                (modus aequans
+                  (Comparable.maximum.specification (++ (height &r)) (height &r)),
+                  (disjoin _, (Nat0.increment.order.extensivity (height &r))))
+                in |- *.
+              ipso (disjoin _, (Identity.reflexivity _)).
+        -- match &g with | k | k end.
+           ++ leibniz &k in |- *.
+              ipso (disjoin (Identity.reflexivity _), _).
+           ++ leibniz (symm &k) in &q.
+              modus aequans
+                (Comparable.comparison.equality.reflection (height &r) (++ (++ (height &l)))),
+                &q
+                |- t.
+              leibniz &t in &t2.
+              ex &t2 quodlibet.
+Qed.
+
+(* The mirror of [balancing.shrinkage.left], for the right subtree. *)
+(* balancing.shrinkage.right *)
+Lemma right
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) (h : Nat0) .
+      Measured l -> Balanced l ->
+      height l = h \/ height l = ++ h \/ h = ++ (height l) ->
+      height r = h \/ ++ (height r) = h ->
+      height (AVL.balance l a r) = ++ (Nat0.max (height l) h)
+      \/ ++ (height (AVL.balance l a r)) = ++ (Nat0.max (height l) h).
+Proof.
+  intros A l a r h ml bl rel g.
+  simpl AVL.balance in |- *.
+  match (Nat0.eq (height &l) (++ (++ (height &r)))) with | | end |- t1.
+  - modus aequans
+      (Comparable.comparison.equality.reflection (height &l) (++ (++ (height &r)))), &t1
+      |- e1.
+    match &rel with | q | rel' end.
+    + match &g with | k | k end.
+      * leibniz &k in &e1.
+        leibniz <- &q in &e1.
+        ex
+          (Nat0.order.strict.distinction
+            (Nat0.order.strict.transitivity
+              (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+            &e1)
+          quodlibet.
+      * trans &q, (symm &k) |- ly.
+        leibniz &ly in &e1.
+        let proof e1' := Nat0.increment.injectivity &e1.
+        ex (Nat0.order.strict.distinction (Nat0.increment.order.extensivity _) &e1') quodlibet.
+    + match &rel' with | q | q end.
+      * match &g with | k | k end.
+        -- leibniz &k, &q in &e1.
+           let proof e1' := Nat0.increment.injectivity &e1.
+           ex (Nat0.order.strict.distinction (Nat0.increment.order.extensivity _) &e1') quodlibet.
+        (* The left subtree is now two above the right: a rotation. *)
+        -- let proof gr := rotation.right.growth &l &a &r &ml &bl &e1.
+           leibniz &q in |- *.
+           leibniz
+             (modus aequans
+               (Comparable.maximum.specification (++ &h) &h),
+               (disjoin _, (Nat0.increment.order.extensivity &h)))
+             in |- *.
+           leibniz &q in &gr.
+           match &gr with | u | u end.
+           ++ ipso (disjoin _, (congru Nat0.inc, &u)).
+           ++ ipso (disjoin &u, _).
+      * match &g with | k | k end.
+        -- leibniz &k, &q in &e1.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _)
+                 (Nat0.order.strict.transitivity
+                   (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _)))
+               &e1)
+             quodlibet.
+        -- let proof yl := Nat0.increment.injectivity (trans &k, &q).
+           leibniz &yl in &e1.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+               &e1)
+             quodlibet.
+  - match (Nat0.eq (height &r) (++ (++ (height &l)))) with | | end |- t2.
+    + modus aequans
+        (Comparable.comparison.equality.reflection (height &r) (++ (++ (height &l)))), &t2
+        |- e2.
+      match &rel with | q | rel' end.
+      * match &g with | k | k end.
+        -- leibniz &k in &e2.
+           leibniz <- &q in &e2.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+               &e2)
+             quodlibet.
+        -- trans &q, (symm &k) |- ly.
+           leibniz &ly in &e2.
+           ex
+             (Nat0.order.strict.distinction
+               (Nat0.order.strict.transitivity
+                 (Nat0.increment.order.extensivity _)
+                 (Nat0.order.strict.transitivity
+                   (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _)))
+               &e2)
+             quodlibet.
+      * match &rel' with | q | q end.
+        -- match &g with | k | k end.
+           ++ leibniz &k, &q in &e2.
+              ex
+                (Nat0.order.strict.distinction
+                  (Nat0.order.strict.transitivity
+                    (Nat0.increment.order.extensivity _)
+                    (Nat0.order.strict.transitivity
+                      (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _)))
+                  &e2)
+                quodlibet.
+           ++ leibniz (symm &k) in &q.
+              modus aequans
+                (Comparable.comparison.equality.reflection (height &l) (++ (++ (height &r)))),
+                &q
+                |- t.
+              leibniz &t in &t1.
+              ex &t1 quodlibet.
+        -- match &g with | k | k end.
+           ++ leibniz &k, &q in &e2.
+              let proof e2' := Nat0.increment.injectivity &e2.
+              ex
+                (Nat0.order.strict.distinction (Nat0.increment.order.extensivity _) &e2')
+                quodlibet.
+           ++ let proof yl := Nat0.increment.injectivity (trans &k, &q).
+              leibniz &yl in &e2.
+              ex
+                (Nat0.order.strict.distinction
+                  (Nat0.order.strict.transitivity
+                    (Nat0.increment.order.extensivity _) (Nat0.increment.order.extensivity _))
+                  &e2)
+                quodlibet.
+    + simpl node in |- *.
+      simpl in |- *.
+      match &rel with | q | rel' end.
+      * match &g with | k | k end.
+        -- leibniz &k in |- *.
+           ipso (disjoin (Identity.reflexivity _), _).
+        -- trans &q, (symm &k) |- ly.
+           leibniz (symm &k) in |- *.
+           leibniz &ly in |- *.
+           leibniz
+             (modus aequans
+               (Comparable.maximum.specification (++ (height &r)) (height &r)),
+               (disjoin _, (Nat0.increment.order.extensivity (height &r))))
+             in |- *.
+           leibniz (Comparable.maximum.idempotence (++ (height &r))) in |- *.
+           ipso (disjoin (Identity.reflexivity _), _).
+      * match &rel' with | q | q end.
+        -- match &g with | k | k end.
+           ++ leibniz &k in |- *.
+              ipso (disjoin (Identity.reflexivity _), _).
+           ++ leibniz (symm &k) in &q.
+              modus aequans
+                (Comparable.comparison.equality.reflection (height &l) (++ (++ (height &r)))),
+                &q
+                |- t.
+              leibniz &t in &t1.
+              ex &t1 quodlibet.
+        -- match &g with | k | k end.
+           ++ leibniz &k in |- *.
+              ipso (disjoin (Identity.reflexivity _), _).
+           ++ let proof yl := Nat0.increment.injectivity (trans &k, &q).
+              leibniz &yl in |- *.
+              leibniz &q in |- *.
+              leibniz (Comparable.maximum.idempotence (height &l)) in |- *.
+              leibniz (Comparable.maximum.commutativity (height &l) (++ (height &l))) in |- *.
+              leibniz
+                (modus aequans
+                  (Comparable.maximum.specification (++ (height &l)) (height &l)),
+                  (disjoin _, (Nat0.increment.order.extensivity (height &l))))
+                in |- *.
+              ipso (disjoin _, (Identity.reflexivity _)).
+Qed.
+
+End shrinkage. (* balancing.shrinkage *)
+
 End balancing. (* balancing *)
 
 Module insertion. (* insertion *)
@@ -2028,6 +2414,915 @@ Proof.
 Qed.
 
 End insertion. (* insertion *)
+
+Module extraction. (* extraction *)
+
+Module absence. (* extraction.absence *)
+
+(* extraction.absence.specification *)
+Theorem specification
+  : forall {A : Type} (t : AVL A) . pop.min t = None <-> t = AVL.Leaf.
+Proof.
+  intros A t.
+  divide et impera.
+  - match &t with | Leaf | Node l a r h end.
+    + intro e.
+      quod idem est.
+    + simpl in |- *.
+      match (pop.min &l) with | None | Some p end |- found.
+      * intro e.
+        ex &e quodlibet.
+      * match &p with | m l' end.
+        intro e.
+        ex &e quodlibet.
+  - intro e.
+    leibniz &e in |- *.
+    simpl in |- *.
+    quod idem est.
+Qed.
+
+End absence. (* extraction.absence *)
+
+(* This law asks for no ordered tree: on any tree, the element taken out
+ * and the tree that is left hold what the tree held.
+ *)
+(* extraction.membership *)
+Theorem membership
+  : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
+      pop.min t = Some (Product.introduction m rest) ->
+      forall (b : A) .
+        BinaryTree.Contains b (to_tree t) <-> b = m \/ BinaryTree.Contains b (to_tree rest).
+Proof.
+  intros A t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) n end per AVL.induction.
+  - intros m rest e b.
+    simpl in &e.
+    ex &e quodlibet.
+  - intros m rest.
+    simpl in |- *.
+    match (pop.min &l) with | None | Some p end |- found.
+    + intros e b.
+      modus aequans (extraction.absence.specification &l), &found |- empty.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
+      leibniz &empty in |- *.
+      leibniz <- &am, <- &rr in |- *.
+      simpl in |- *.
+      divide et impera.
+      * intro h.
+        match &h with | f | h' end.
+        -- ex &f quodlibet.
+        -- ipso &h'.
+      * intro h.
+        ipso (disjoin _, &h).
+    + match &p with | m' l' end.
+      intros e b.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
+      leibniz <- &mm, <- &nr in |- *.
+      let proof bm := balancing.membership &l' &a &r &b.
+      simpl node in &bm.
+      simpl in &bm.
+      let proof spec
+        := &IHl &m' &l' (Identity.reflexivity (Some (Product.introduction &m' &l'))) &b.
+      divide et impera.
+      * intro h.
+        match &h with | inside | others end.
+        -- modus aequans &spec, &inside |- d.
+           match &d with | least | kept end.
+           ++ ipso (disjoin &least, _).
+           ++ modus aequans &bm, (disjoin &kept, _) |- now.
+              ipso (disjoin _, &now).
+        -- modus aequans &bm, (disjoin _, &others) |- now.
+           ipso (disjoin _, &now).
+      * intro h.
+        match &h with | least | h' end.
+        -- modus aequans &spec, (disjoin &least, _) |- inside.
+           ipso (disjoin &inside, _).
+        -- modus aequans &bm, &h' |- h''.
+           match &h'' with | kept | others end.
+           ++ modus aequans &spec, (disjoin _, &kept) |- inside.
+              ipso (disjoin &inside, _).
+           ++ ipso (disjoin _, &others).
+Qed.
+
+(* Transitivity is the one property of [lt] this law reads, so it takes
+ * that alone and no comparison.
+ *)
+(* extraction.minimality *)
+Theorem minimality
+  : forall {A : Type} {lt : A -> A -> Prop} .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (t : AVL A) (m : A) (rest : AVL A) .
+        Ordered lt t -> pop.min t = Some (Product.introduction m rest) ->
+        BinaryTree.All (fun (b : A) . lt m b) (to_tree rest).
+Proof.
+  intros A lt transitive t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+  - intros m rest o e.
+    simpl in &e.
+    ex &e quodlibet.
+  - intros m rest o.
+    simpl Ordered in &o.
+    simpl in &o.
+    match &o with | below o1 end.
+    match &o1 with | above o2 end.
+    match &o2 with | lower upper end.
+    simpl in |- *.
+    match (pop.min &l) with | None | Some p end |- found.
+    + intro e.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
+      leibniz <- &am, <- &rr in |- *.
+      ipso &above.
+    (* The element taken out is in the left subtree, so it is below [a],
+     * and through [a] below all of the right subtree.
+     *)
+    + match &p with | m' l' end.
+      intro e.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
+      leibniz <- &mm, <- &nr in |- *.
+      let proof smaller
+        := &IHl &m' &l' &lower (Identity.reflexivity (Some (Product.introduction &m' &l'))).
+      lemma inside : BinaryTree.Contains &m' (to_tree &l).
+      {
+        modus aequans
+          (extraction.membership &l &m' &l' &found &m'), (disjoin (Identity.reflexivity &m'), _)
+          |- member.
+        ipso &member.
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification (fun (b : &A) . &lt b &a) (to_tree &l)),
+        &below
+        |- each.
+      let proof ma : &lt &m' &a := &each &m' &inside.
+      lemma beyond : BinaryTree.All (fun (b : &A) . &lt &m' b) (to_tree &r).
+      {
+        ipso
+          (BinaryTree.quantification.all.monotonicity
+            (fun (b : &A) (ab : &lt &a b) . &transitive &m' &a b &ma ab) &above).
+      }
+      lemma whole : BinaryTree.All (fun (b : &A) . &lt &m' b) (to_tree (node &l' &a &r)).
+      {
+        simpl node in |- *.
+        simpl in |- *.
+        ipso (conjoin &smaller, (conjoin &ma, &beyond)).
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification
+          (fun (b : &A) . &lt &m' b) (to_tree (node &l' &a &r))),
+        &whole
+        |- every.
+      lemma moved
+        : forall (x : &A) . BinaryTree.Contains x (to_tree (balance &l' &a &r)) -> &lt &m' x.
+      {
+        intros x member.
+        modus aequans (balancing.membership &l' &a &r &x), &member |- there.
+        ipso (&every &x &there).
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification
+          (fun (b : &A) . &lt &m' b) (to_tree (balance &l' &a &r))),
+        &moved
+        |- done.
+      ipso &done.
+Qed.
+
+Module preservation. (* extraction.preservation *)
+
+(* What is left of the left subtree was in it, so it is still below [a]. *)
+(* extraction.preservation.order *)
+Theorem order
+  : forall {A : Type} {lt : A -> A -> Prop} .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (t : AVL A) (m : A) (rest : AVL A) .
+        Ordered lt t -> pop.min t = Some (Product.introduction m rest) -> Ordered lt rest.
+Proof.
+  intros A lt transitive t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+  - intros m rest o e.
+    simpl in &e.
+    ex &e quodlibet.
+  - intros m rest o.
+    simpl Ordered in &o.
+    simpl in &o.
+    match &o with | below o1 end.
+    match &o1 with | above o2 end.
+    match &o2 with | lower upper end.
+    simpl in |- *.
+    match (pop.min &l) with | None | Some p end |- found.
+    + intro e.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
+      leibniz <- &rr in |- *.
+      ipso &upper.
+    + match &p with | m' l' end.
+      intro e.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
+      leibniz <- &nr in |- *.
+      let proof kept
+        := &IHl &m' &l' &lower (Identity.reflexivity (Some (Product.introduction &m' &l'))).
+      modus aequans
+        (BinaryTree.quantification.all.specification (fun (b : &A) . &lt b &a) (to_tree &l)),
+        &below
+        |- each.
+      lemma every : forall (x : &A) . BinaryTree.Contains x (to_tree &l') -> &lt x &a.
+      {
+        intros x member.
+        modus aequans (extraction.membership &l &m' &l' &found &x), (disjoin _, &member)
+          |- inside.
+        ipso (&each &x &inside).
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification (fun (b : &A) . &lt b &a) (to_tree &l')),
+        &every
+        |- smaller.
+      lemma on : Ordered &lt (node &l' &a &r).
+      {
+        simpl Ordered, node in |- *.
+        simpl in |- *.
+        ipso (conjoin &smaller, (conjoin &above, (conjoin &kept, &upper))).
+      }
+      ipso (balancing.order &transitive &l' &a &r &on).
+Qed.
+
+(* extraction.preservation.measurement *)
+Theorem measurement
+  : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
+      Measured t -> pop.min t = Some (Product.introduction m rest) -> Measured rest.
+Proof.
+  intros A t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+  - intros m rest mt e.
+    simpl in &e.
+    ex &e quodlibet.
+  - intros m rest mt.
+    let proof m0 := simpl &mt.
+    match &m0 with | _ m' end.
+    match &m' with | ml mr end.
+    simpl in |- *.
+    match (pop.min &l) with | None | Some p end |- found.
+    + intro e.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
+      leibniz <- &rr in |- *.
+      ipso &mr.
+    + match &p with | m'' l' end.
+      intro e.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
+      leibniz <- &nr in |- *.
+      let proof ml'
+        := &IHl &m'' &l' &ml (Identity.reflexivity (Some (Product.introduction &m'' &l'))).
+      ipso (balancing.measurement &l' &a &r &ml' &mr).
+Qed.
+
+(* The balance of what [pop.min] leaves and its height are proved by one
+ * induction, as for [insert]: the height bound keeps the two subtrees of
+ * each rebuilt node within [balance]'s reach.
+ *)
+(* extraction.preservation.invariance *)
+Lemma invariance
+  : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
+      Measured t -> Balanced t -> pop.min t = Some (Product.introduction m rest) ->
+      Balanced rest /\ (height rest = height t \/ ++ (height rest) = height t).
+Proof.
+  intros A t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+  - intros m rest mt bt e.
+    simpl in &e.
+    ex &e quodlibet.
+  - intros m rest mt bt.
+    let proof m0 := simpl &mt.
+    match &m0 with | e m' end.
+    match &m' with | ml mr end.
+    let proof b0 := simpl &bt.
+    match &b0 with | rel b' end.
+    match &b' with | bl br end.
+    simpl in |- *.
+    match (pop.min &l) with | None | Some p end |- found.
+    + intro e'.
+      modus aequans (extraction.absence.specification &l), &found |- empty.
+      match (Product.introduction.injectivity (Option.some.injectivity &e')) with | am rr end.
+      leibniz <- &rr in |- *.
+      divide et impera.
+      * ipso &br.
+      * leibniz &e in |- *.
+        leibniz &empty in |- *.
+        let proof z : height (@AVL.Leaf &A) = Nat0.Zero := Identity.reflexivity _.
+        leibniz &z in |- *.
+        leibniz (Nat0.maximum.left.identity (height &r)) in |- *.
+        ipso (disjoin _, (Identity.reflexivity _)).
+    + match &p with | m'' l' end.
+      intro e'.
+      match (Product.introduction.injectivity (Option.some.injectivity &e')) with | mm nr end.
+      leibniz <- &nr in |- *.
+      let proof ml' := extraction.preservation.measurement &l &m'' &l' &ml &found.
+      let proof ih
+        := &IHl &m'' &l' &ml &bl (Identity.reflexivity (Some (Product.introduction &m'' &l'))).
+      match &ih with | bl' g end.
+      lemma near
+        : height &l' = height &r
+          \/ height &l' = ++ (height &r)
+          \/ height &r = ++ (height &l')
+          \/ height &l' = ++ (++ (height &r))
+          \/ height &r = ++ (++ (height &l')).
+      {
+        match &rel with | q | rel' end.
+        - match &g with | k | k end.
+          + ipso (disjoin (trans &k, &q), _).
+          + ipso (disjoin _, (disjoin _, (disjoin (symm (trans &k, &q)), _))).
+        - match &rel' with | q | q end.
+          + match &g with | k | k end.
+            * ipso (disjoin _, (disjoin (trans &k, &q), _)).
+            * ipso (disjoin (Nat0.increment.injectivity (trans &k, &q)), _).
+          + match &g with | k | k end.
+            * leibniz <- &k in &q.
+              ipso (disjoin _, (disjoin _, (disjoin &q, _))).
+            * leibniz (symm &k) in &q.
+              ipso (disjoin _, (disjoin _, (disjoin _, (disjoin _, &q)))).
+      }
+      divide et impera.
+      * ipso (balancing.balance &l' &a &r &ml' &mr &bl' &br &near).
+      * leibniz &e in |- *.
+        ipso (balancing.shrinkage.left &l' &a &r (height &l) &mr &br &rel &g).
+Qed.
+
+(* extraction.preservation.balance *)
+Theorem balance
+  : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
+      Measured t -> Balanced t -> pop.min t = Some (Product.introduction m rest) ->
+      Balanced rest.
+Proof.
+  intros A t m rest mt bt e.
+  match (extraction.preservation.invariance &t &m &rest &mt &bt &e) with | kept _ end.
+  ipso &kept.
+Qed.
+
+End preservation. (* extraction.preservation *)
+
+(* extraction.shrinkage *)
+Theorem shrinkage
+  : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
+      Measured t -> Balanced t -> pop.min t = Some (Product.introduction m rest) ->
+      height rest = height t \/ ++ (height rest) = height t.
+Proof.
+  intros A t m rest mt bt e.
+  match (extraction.preservation.invariance &t &m &rest &mt &bt &e) with | _ shrunk end.
+  ipso &shrunk.
+Qed.
+
+End extraction. (* extraction *)
+
+Module joining. (* joining *)
+
+(* joining.membership *)
+Theorem membership
+  : forall {A : Type} (l : AVL A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (to_tree (join l r))
+      <-> BinaryTree.Contains b (to_tree l) \/ BinaryTree.Contains b (to_tree r).
+Proof.
+  intros A l r b.
+  simpl join in |- *.
+  match (pop.min &r) with | None | Some p end |- found.
+  - modus aequans (extraction.absence.specification &r), &found |- empty.
+    leibniz &empty in |- *.
+    simpl in |- *.
+    divide et impera.
+    + intro h.
+      ipso (disjoin &h, _).
+    + intro h.
+      match &h with | m | f end.
+      * ipso &m.
+      * ex &f quodlibet.
+  - match &p with | m r' end.
+    let proof bm := balancing.membership &l &m &r' &b.
+    simpl node in &bm.
+    simpl in &bm.
+    let proof spec := extraction.membership &r &m &r' &found &b.
+    divide et impera.
+    + intro h.
+      modus aequans &bm, &h |- h'.
+      match &h' with | inside | rest end.
+      * ipso (disjoin &inside, _).
+      * ipso (disjoin _, (modus aequans &spec, &rest)).
+    + intro h.
+      match &h with | inside | beyond end.
+      * modus aequans &bm, (disjoin &inside, _) |- now.
+        ipso &now.
+      * modus aequans &spec, &beyond |- rest.
+        modus aequans &bm, (disjoin _, &rest) |- now.
+        ipso &now.
+Qed.
+
+Module preservation. (* joining.preservation *)
+
+(* [b] stands between the two trees: every element of [l] is below it, and
+ * every element of [r] above it.
+ *)
+(* joining.preservation.order *)
+Theorem order
+  : forall {A : Type} {lt : A -> A -> Prop} .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (b : A) (l : AVL A) (r : AVL A) .
+        BinaryTree.All (fun (x : A) . lt x b) (to_tree l) ->
+        BinaryTree.All (fun (x : A) . lt b x) (to_tree r) ->
+        Ordered lt l -> Ordered lt r -> Ordered lt (join l r).
+Proof.
+  intros A lt transitive b l r below above lower upper.
+  simpl join in |- *.
+  match (pop.min &r) with | None | Some p end |- found.
+  - ipso &lower.
+  - match &p with | m r' end.
+    lemma inside : BinaryTree.Contains &m (to_tree &r).
+    {
+      modus aequans
+        (extraction.membership &r &m &r' &found &m), (disjoin (Identity.reflexivity &m), _)
+        |- member.
+      ipso &member.
+    }
+    modus aequans
+      (BinaryTree.quantification.all.specification (fun (x : &A) . &lt &b x) (to_tree &r)),
+      &above
+      |- each.
+    let proof bm : &lt &b &m := &each &m &inside.
+    lemma smaller : BinaryTree.All (fun (x : &A) . &lt x &m) (to_tree &l).
+    {
+      ipso
+        (BinaryTree.quantification.all.monotonicity
+          (fun (x : &A) (xb : &lt x &b) . &transitive x &b &m xb &bm) &below).
+    }
+    let proof larger := extraction.minimality &transitive &r &m &r' &upper &found.
+    let proof kept := extraction.preservation.order &transitive &r &m &r' &upper &found.
+    lemma on : Ordered &lt (node &l &m &r').
+    {
+      simpl Ordered, node in |- *.
+      simpl in |- *.
+      ipso (conjoin &smaller, (conjoin &larger, (conjoin &lower, &kept))).
+    }
+    ipso (balancing.order &transitive &l &m &r' &on).
+Qed.
+
+(* joining.preservation.measurement *)
+Theorem measurement
+  : forall {A : Type} (l : AVL A) (r : AVL A) .
+      Measured l -> Measured r -> Measured (join l r).
+Proof.
+  intros A l r ml mr.
+  simpl join in |- *.
+  match (pop.min &r) with | None | Some p end |- found.
+  - ipso &ml.
+  - match &p with | m r' end.
+    ipso
+      (balancing.measurement &l &m &r'
+        &ml (extraction.preservation.measurement &r &m &r' &mr &found)).
+Qed.
+
+(* The two trees are within one level of each other, as the subtrees of a
+ * balanced node are.
+ *)
+(* joining.preservation.balance *)
+Theorem balance
+  : forall {A : Type} (l : AVL A) (r : AVL A) .
+      Measured l -> Measured r -> Balanced l -> Balanced r ->
+      height l = height r \/ height l = ++ (height r) \/ height r = ++ (height l) ->
+      Balanced (join l r).
+Proof.
+  intros A l r ml mr bl br rel.
+  simpl join in |- *.
+  match (pop.min &r) with | None | Some p end |- found.
+  - ipso &bl.
+  - match &p with | m r' end.
+    let proof mr' := extraction.preservation.measurement &r &m &r' &mr &found.
+    let proof inv := extraction.preservation.invariance &r &m &r' &mr &br &found.
+    match &inv with | br' g end.
+    lemma near
+      : height &l = height &r'
+        \/ height &l = ++ (height &r')
+        \/ height &r' = ++ (height &l)
+        \/ height &l = ++ (++ (height &r'))
+        \/ height &r' = ++ (++ (height &l)).
+    {
+      match &rel with | q | rel' end.
+      - match &g with | k | k end.
+        + ipso (disjoin (trans &q, (symm &k)), _).
+        + ipso (disjoin _, (disjoin (trans &q, (symm &k)), _)).
+      - match &rel' with | q | q end.
+        + match &g with | k | k end.
+          * leibniz <- &k in &q.
+            ipso (disjoin _, (disjoin &q, _)).
+          * leibniz (symm &k) in &q.
+            ipso (disjoin _, (disjoin _, (disjoin _, (disjoin &q, _)))).
+        + match &g with | k | k end.
+          * ipso (disjoin _, (disjoin _, (disjoin (trans &k, &q), _))).
+          * ipso (disjoin (symm (Nat0.increment.injectivity (trans &k, &q))), _).
+    }
+    ipso (balancing.balance &l &m &r' &ml &mr' &bl &br' &near).
+Qed.
+
+End preservation. (* joining.preservation *)
+
+End joining. (* joining *)
+
+Module removal. (* removal *)
+
+(* removal.membership *)
+Theorem membership
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (a : A) (b : A) (t : AVL A) .
+        Ordered lt t ->
+        (BinaryTree.Contains b (to_tree (remove cmp a t))
+          <-> BinaryTree.Contains b (to_tree t) /\ ~ (b = a)).
+Proof.
+  intros A cmp lt C a b t.
+  match &t with | Leaf | Node (l by IHl) c (r by IHr) n end per AVL.induction.
+  - intro o.
+    simpl in |- *.
+    divide et impera.
+    + intro f.
+      ex &f quodlibet.
+    + intro h.
+      match &h with | f differs end.
+      ex &f quodlibet.
+  - intro o.
+    simpl Ordered in &o.
+    simpl in &o.
+    match &o with | below o1 end.
+    match &o1 with | above o2 end.
+    match &o2 with | lower upper end.
+    modus ponens &IHl, &lower |- left.
+    modus ponens &IHr, &upper |- right.
+    modus aequans
+      (BinaryTree.quantification.all.specification (fun (x : &A) . &lt x &c) (to_tree &l)),
+      &below
+      |- under.
+    modus aequans
+      (BinaryTree.quantification.all.specification (fun (x : &A) . &lt &c x) (to_tree &r)),
+      &above
+      |- over.
+    simpl in |- *.
+    match (&cmp &a &c) with | | | end |- k.
+    (* [a] is below [c]: it is removed from the left subtree. *)
+    + modus aequans (Comparable.comparison.strict.specification &a &c), &k |- ac.
+      let proof bm := balancing.membership (remove &cmp &a &l) &c &r &b.
+      simpl node in &bm.
+      simpl in &bm.
+      lemma shift
+        : (BinaryTree.Contains &b (to_tree (remove &cmp &a &l))
+            \/ &b = &c
+            \/ BinaryTree.Contains &b (to_tree &r))
+          <-> (BinaryTree.Contains &b (to_tree &l)
+                \/ &b = &c
+                \/ BinaryTree.Contains &b (to_tree &r))
+              /\ ~ (&b = &a).
+      {
+        divide et impera.
+        - intro h.
+          match &h with | m | h' end.
+          + modus aequans &left, &m |- both.
+            match &both with | inside differs end.
+            ipso (conjoin (disjoin &inside, _), &differs).
+          + match &h' with | e | m end.
+            * lemma differs : ~ (&b = &a).
+              {
+                simpl (~ _) in |- *.
+                intro ba.
+                leibniz <- &ba in &ac.
+                leibniz &e in &ac.
+                ex (Comparable.order.strict.irreflexivity &c &ac) quodlibet.
+              }
+              ipso (conjoin (disjoin _, (disjoin &e, _)), &differs).
+            * lemma differs : ~ (&b = &a).
+              {
+                simpl (~ _) in |- *.
+                intro ba.
+                let proof cb : &lt &c &b := &over &b &m.
+                leibniz &ba in &cb.
+                ex (Comparable.order.strict.asymmetry &a &c &ac &cb) quodlibet.
+              }
+              ipso (conjoin (disjoin _, (disjoin _, &m)), &differs).
+        - intro h.
+          match &h with | present differs end.
+          match &present with | m | rest end.
+          + modus aequans &left, (conjoin &m, &differs) |- kept.
+            ipso (disjoin &kept, _).
+          + ipso (disjoin _, &rest).
+      }
+      ipso (Biconditional.transitivity &bm &shift).
+    (* [a] is [c]: the node goes, and its two subtrees are joined. *)
+    + modus aequans (Comparable.comparison.equality.specification &a &c), &k |- ac.
+      let proof joined := joining.membership &l &r &b.
+      divide et impera.
+      * intro h.
+        modus aequans &joined, &h |- either.
+        match &either with | m | m end.
+        -- lemma differs : ~ (&b = &a).
+           {
+             simpl (~ _) in |- *.
+             intro ba.
+             let proof bc : &lt &b &c := &under &b &m.
+             leibniz &ba in &bc.
+             leibniz &ac in &bc.
+             ex (Comparable.order.strict.irreflexivity &c &bc) quodlibet.
+           }
+           ipso (conjoin (disjoin &m, _), &differs).
+        -- lemma differs : ~ (&b = &a).
+           {
+             simpl (~ _) in |- *.
+             intro ba.
+             let proof cb : &lt &c &b := &over &b &m.
+             leibniz &ba in &cb.
+             leibniz &ac in &cb.
+             ex (Comparable.order.strict.irreflexivity &c &cb) quodlibet.
+           }
+           ipso (conjoin (disjoin _, (disjoin _, &m)), &differs).
+      * intro h.
+        match &h with | present differs end.
+        match &present with | m | rest end.
+        -- ipso (modus aequans &joined, (disjoin &m, _)).
+        -- match &rest with | e | m end.
+           ++ trans &e, (symm &ac) |- ba.
+              ex (&differs &ba) quodlibet.
+           ++ ipso (modus aequans &joined, (disjoin _, &m)).
+    (* [a] is above [c]: it is removed from the right subtree. *)
+    + modus aequans
+        (Comparable.comparison.strict.transposition.specification &a &c), &k |- ca.
+      let proof bm := balancing.membership &l &c (remove &cmp &a &r) &b.
+      simpl node in &bm.
+      simpl in &bm.
+      lemma shift
+        : (BinaryTree.Contains &b (to_tree &l)
+            \/ &b = &c
+            \/ BinaryTree.Contains &b (to_tree (remove &cmp &a &r)))
+          <-> (BinaryTree.Contains &b (to_tree &l)
+                \/ &b = &c
+                \/ BinaryTree.Contains &b (to_tree &r))
+              /\ ~ (&b = &a).
+      {
+        divide et impera.
+        - intro h.
+          match &h with | m | h' end.
+          + lemma differs : ~ (&b = &a).
+            {
+              simpl (~ _) in |- *.
+              intro ba.
+              let proof bc : &lt &b &c := &under &b &m.
+              leibniz &ba in &bc.
+              ex (Comparable.order.strict.asymmetry &a &c &bc &ca) quodlibet.
+            }
+            ipso (conjoin (disjoin &m, _), &differs).
+          + match &h' with | e | m end.
+            * lemma differs : ~ (&b = &a).
+              {
+                simpl (~ _) in |- *.
+                intro ba.
+                leibniz <- &ba in &ca.
+                leibniz &e in &ca.
+                ex (Comparable.order.strict.irreflexivity &c &ca) quodlibet.
+              }
+              ipso (conjoin (disjoin _, (disjoin &e, _)), &differs).
+            * modus aequans &right, &m |- both.
+              match &both with | inside differs end.
+              ipso (conjoin (disjoin _, (disjoin _, &inside)), &differs).
+        - intro h.
+          match &h with | present differs end.
+          match &present with | m | rest end.
+          + ipso (disjoin &m, _).
+          + match &rest with | e | m end.
+            * ipso (disjoin _, (disjoin &e, _)).
+            * modus aequans &right, (conjoin &m, &differs) |- kept.
+              ipso (disjoin _, (disjoin _, &kept)).
+      }
+      ipso (Biconditional.transitivity &bm &shift).
+Qed.
+
+Module preservation. (* removal.preservation *)
+
+(* removal.preservation.order *)
+Theorem order
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (a : A) (t : AVL A) . Ordered lt t -> Ordered lt (remove cmp a t).
+Proof.
+  intros A cmp lt C a t.
+  match &t with | Leaf | Node (l by IHl) c (r by IHr) n end per AVL.induction.
+  - intro o.
+    ipso I.
+  - intro o.
+    simpl Ordered in &o.
+    let proof o0 := simpl &o.
+    match &o0 with | below o1 end.
+    match &o1 with | above o2 end.
+    match &o2 with | lower upper end.
+    simpl in |- *.
+    match (&cmp &a &c) with | | | end |- k.
+    (* What is left of the left subtree was in it, so it is still below [c]. *)
+    + modus ponens &IHl, &lower |- kept.
+      modus aequans
+        (BinaryTree.quantification.all.specification (fun (x : &A) . &lt x &c) (to_tree &l)),
+        &below
+        |- under.
+      lemma every
+        : forall (x : &A) . BinaryTree.Contains x (to_tree (remove &cmp &a &l)) -> &lt x &c.
+      {
+        intros x member.
+        modus aequans (removal.membership &C &a &x &l &lower), &member |- both.
+        match &both with | inside differs end.
+        ipso (&under &x &inside).
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification
+          (fun (x : &A) . &lt x &c) (to_tree (remove &cmp &a &l))),
+        &every
+        |- smaller.
+      lemma on : Ordered &lt (node (remove &cmp &a &l) &c &r).
+      {
+        simpl Ordered, node in |- *.
+        simpl in |- *.
+        ipso (conjoin &smaller, (conjoin &above, (conjoin &kept, &upper))).
+      }
+      ipso
+        (balancing.order
+          (fun (x : &A) (y : &A) (z : &A) . Comparable.transitivity x y z)
+          (remove &cmp &a &l) &c &r &on).
+    + ipso
+        (joining.preservation.order
+          (fun (x : &A) (y : &A) (z : &A) . Comparable.transitivity x y z)
+          &c &l &r &below &above &lower &upper).
+    (* What is left of the right subtree was in it, so it is still above [c]. *)
+    + modus ponens &IHr, &upper |- kept.
+      modus aequans
+        (BinaryTree.quantification.all.specification (fun (x : &A) . &lt &c x) (to_tree &r)),
+        &above
+        |- over.
+      lemma every
+        : forall (x : &A) . BinaryTree.Contains x (to_tree (remove &cmp &a &r)) -> &lt &c x.
+      {
+        intros x member.
+        modus aequans (removal.membership &C &a &x &r &upper), &member |- both.
+        match &both with | inside differs end.
+        ipso (&over &x &inside).
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification
+          (fun (x : &A) . &lt &c x) (to_tree (remove &cmp &a &r))),
+        &every
+        |- larger.
+      lemma on : Ordered &lt (node &l &c (remove &cmp &a &r)).
+      {
+        simpl Ordered, node in |- *.
+        simpl in |- *.
+        ipso (conjoin &below, (conjoin &larger, (conjoin &lower, &kept))).
+      }
+      ipso
+        (balancing.order
+          (fun (x : &A) (y : &A) (z : &A) . Comparable.transitivity x y z)
+          &l &c (remove &cmp &a &r) &on).
+Qed.
+
+(* removal.preservation.measurement *)
+Theorem measurement
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      Measured t -> Measured (remove cmp a t).
+Proof.
+  intros A cmp a t.
+  match &t with | Leaf | Node (l by IHl) c (r by IHr) n end per AVL.induction.
+  - intro m.
+    ipso I.
+  - intro m.
+    let proof m0 := simpl &m.
+    match &m0 with | _ m' end.
+    match &m' with | ml mr end.
+    simpl in |- *.
+    match (&cmp &a &c) with | | | end |- k.
+    + modus ponens &IHl, &ml |- ml'.
+      ipso (balancing.measurement (remove &cmp &a &l) &c &r &ml' &mr).
+    + ipso (joining.preservation.measurement &l &r &ml &mr).
+    + modus ponens &IHr, &mr |- mr'.
+      ipso (balancing.measurement &l &c (remove &cmp &a &r) &ml &mr').
+Qed.
+
+(* The balance of [remove cmp a t] and its height are proved by one
+ * induction, as for [insert]: the height bound keeps the two subtrees of
+ * each rebuilt node within [balance]'s reach.
+ *)
+(* removal.preservation.invariance *)
+Lemma invariance
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      Measured t -> Balanced t ->
+        Balanced (remove cmp a t)
+        /\ (height (remove cmp a t) = height t \/ ++ (height (remove cmp a t)) = height t).
+Proof.
+  intros A cmp a t.
+  match &t with | Leaf | Node (l by IHl) c (r by IHr) h end per AVL.induction.
+  - intros mt bt.
+    ipso (conjoin I, (disjoin (Identity.reflexivity _), _)).
+  - intros mt bt.
+    let proof m0 := simpl &mt.
+    match &m0 with | e m' end.
+    match &m' with | ml mr end.
+    let proof b0 := simpl &bt.
+    match &b0 with | rel b' end.
+    match &b' with | bl br end.
+    simpl in |- *.
+    match (&cmp &a &c) with | | | end |- k.
+    (* [a] is removed from the left subtree. *)
+    + modus ponens &IHl, &ml |- IHl'.
+      modus ponens &IHl', &bl |- ih.
+      match &ih with | bl' g end.
+      let proof ml' := removal.preservation.measurement &cmp &a &l &ml.
+      lemma near
+        : height (remove &cmp &a &l) = height &r
+          \/ height (remove &cmp &a &l) = ++ (height &r)
+          \/ height &r = ++ (height (remove &cmp &a &l))
+          \/ height (remove &cmp &a &l) = ++ (++ (height &r))
+          \/ height &r = ++ (++ (height (remove &cmp &a &l))).
+      {
+        match &rel with | q | rel' end.
+        - match &g with | k' | k' end.
+          + ipso (disjoin (trans &k', &q), _).
+          + ipso (disjoin _, (disjoin _, (disjoin (symm (trans &k', &q)), _))).
+        - match &rel' with | q | q end.
+          + match &g with | k' | k' end.
+            * ipso (disjoin _, (disjoin (trans &k', &q), _)).
+            * ipso (disjoin (Nat0.increment.injectivity (trans &k', &q)), _).
+          + match &g with | k' | k' end.
+            * leibniz <- &k' in &q.
+              ipso (disjoin _, (disjoin _, (disjoin &q, _))).
+            * leibniz (symm &k') in &q.
+              ipso (disjoin _, (disjoin _, (disjoin _, (disjoin _, &q)))).
+      }
+      divide et impera.
+      * ipso (balancing.balance (remove &cmp &a &l) &c &r &ml' &mr &bl' &br &near).
+      * leibniz &e in |- *.
+        ipso (balancing.shrinkage.left (remove &cmp &a &l) &c &r (height &l) &mr &br &rel &g).
+    (* [a] is [c]: the node goes, and its two subtrees are joined. *)
+    + divide et impera.
+      * ipso (joining.preservation.balance &l &r &ml &mr &bl &br &rel).
+      * leibniz &e in |- *.
+        simpl join in |- *.
+        match (pop.min &r) with | None | Some p end |- found.
+        -- modus aequans (extraction.absence.specification &r), &found |- empty.
+           leibniz &empty in |- *.
+           let proof z : height (@AVL.Leaf &A) = Nat0.Zero := Identity.reflexivity _.
+           leibniz &z in |- *.
+           leibniz (Nat0.maximum.right.identity (height &l)) in |- *.
+           ipso (disjoin _, (Identity.reflexivity _)).
+        -- match &p with | m r' end.
+           let proof inv := extraction.preservation.invariance &r &m &r' &mr &br &found.
+           match &inv with | br' g end.
+           ipso (balancing.shrinkage.right &l &m &r' (height &r) &ml &bl &rel &g).
+    (* [a] is removed from the right subtree. *)
+    + modus ponens &IHr, &mr |- IHr'.
+      modus ponens &IHr', &br |- ih.
+      match &ih with | br' g end.
+      let proof mr' := removal.preservation.measurement &cmp &a &r &mr.
+      lemma near
+        : height &l = height (remove &cmp &a &r)
+          \/ height &l = ++ (height (remove &cmp &a &r))
+          \/ height (remove &cmp &a &r) = ++ (height &l)
+          \/ height &l = ++ (++ (height (remove &cmp &a &r)))
+          \/ height (remove &cmp &a &r) = ++ (++ (height &l)).
+      {
+        match &rel with | q | rel' end.
+        - match &g with | k' | k' end.
+          + ipso (disjoin (trans &q, (symm &k')), _).
+          + ipso (disjoin _, (disjoin (trans &q, (symm &k')), _)).
+        - match &rel' with | q | q end.
+          + match &g with | k' | k' end.
+            * leibniz <- &k' in &q.
+              ipso (disjoin _, (disjoin &q, _)).
+            * leibniz (symm &k') in &q.
+              ipso (disjoin _, (disjoin _, (disjoin _, (disjoin &q, _)))).
+          + match &g with | k' | k' end.
+            * ipso (disjoin _, (disjoin _, (disjoin (trans &k', &q), _))).
+            * ipso (disjoin (symm (Nat0.increment.injectivity (trans &k', &q))), _).
+      }
+      divide et impera.
+      * ipso (balancing.balance &l &c (remove &cmp &a &r) &ml &mr' &bl &br' &near).
+      * leibniz &e in |- *.
+        ipso (balancing.shrinkage.right &l &c (remove &cmp &a &r) (height &r) &ml &bl &rel &g).
+Qed.
+
+(* removal.preservation.balance *)
+Theorem balance
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      Measured t -> Balanced t -> Balanced (remove cmp a t).
+Proof.
+  intros A cmp a t m bt.
+  match (removal.preservation.invariance &cmp &a &t &m &bt) with | kept _ end.
+  ipso &kept.
+Qed.
+
+End preservation. (* removal.preservation *)
+
+(* removal.shrinkage *)
+Theorem shrinkage
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      Measured t -> Balanced t ->
+      height (remove cmp a t) = height t \/ ++ (height (remove cmp a t)) = height t.
+Proof.
+  intros A cmp a t m bt.
+  match (removal.preservation.invariance &cmp &a &t &m &bt) with | _ shrunk end.
+  ipso &shrunk.
+Qed.
+
+End removal. (* removal *)
 
 End AVL. (* AVL *)
 
