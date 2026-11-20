@@ -45,6 +45,12 @@ Delimit Scope jwa_product_scope with product.
 Declare Scope jwa_bool_scope.
 Delimit Scope jwa_bool_scope with bool.
 
+(* The [Kleene3] operations, delimited but not opened, under the [Bool]
+ * spellings: a [Kleene3] is a truth value too, with one more value between.
+ *)
+Declare Scope jwa_kleene3_scope.
+Delimit Scope jwa_kleene3_scope with k3.
+
 (* The [Bit] operations, delimited but not opened, each spelled with a dot
  * ([~.], [&.], [|.], [^.]) apart from the [Bool] ones: a bit is a binary
  * digit and a [Bool] a truth value.
