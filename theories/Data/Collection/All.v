@@ -36,4 +36,5 @@ From jwa Require Export Data.Collection.List.
 From jwa Require Export Data.Collection.Membership.
 From jwa Require Export Data.Collection.NonEmptyList.
 From jwa Require Export Data.Collection.Sized.
+From jwa Require Export Data.Collection.SortedSet.
 From jwa Require Export Data.Functor.
