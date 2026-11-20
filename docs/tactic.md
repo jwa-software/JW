@@ -58,7 +58,7 @@ Each tactic file opens with its grammar in a comment. In outline:
 - `modus ponens`, `modus tollens`, `modus tollendo ponens`, `modus ponendo tollens` and `modus aequans`;
 - `hs` (hypothetical syllogism) and `barbara`;
 - `dni` and `dne` (double negation) and `de morgan`;
-- `trans` and `congru`, the transitivity and the congruence of `=`;
+- `refl`, `symm`, `trans` and `congru`, the reflexivity, the symmetry, the transitivity and the congruence of `=`;
 - the introductions `conjoin`, `sejoin` and `abjoin`.
 
 Bare, each is a term: `ipso (modus ponens &hab, &a)`. Followed by `as <p>` or `|- <p>`, it is a tactic that adds the conclusion as `<p>`.

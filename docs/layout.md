@@ -19,7 +19,7 @@ The library lives under `theories/`, **one directory per layer**. Each layer:
 |:---|:---|:---|
 | `jwa.Dialect` | The tactic language: Ltac2 with Rocq's tactic syntax hidden, and the tactics that name no definition of the library | -- |
 | `jwa.Core` | Base definitions, notations, the connectives and equality, the instance hint database and the minimal lemmas everything else shares | Dialect |
-| `jwa.Tactics` | Tactics that apply the laws of Core: the rules of inference by name, symmetry and transitivity, witnesses | Dialect, Core |
+| `jwa.Tactics` | Tactics that apply the laws of Core: the rules of inference by name, the laws of `=` as terms, witnesses | Dialect, Core |
 | `jwa.Algebra` | Algebraic structures, from semigroups to rings, and their theory | Dialect, Core |
 | `jwa.Relation` | Orders, well-founded and equivalence relations | Dialect, Core, Tactics |
 | `jwa.Data` | Concrete data types: the base types, the machine units, products, coproducts, options, the numbers, lists, text, and the functor class they instantiate | Dialect, Core, Tactics, Algebra, Relation |
