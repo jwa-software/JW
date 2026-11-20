@@ -5,7 +5,9 @@
 From jwa Require Import Core.All.
 From jwa Require Import Data.Base.Bool.
 From jwa Require Import Data.Base.Comparison.
+From jwa Require Import Data.Collection.BST.
 From jwa Require Import Data.Collection.BinaryTree.
+From jwa Require Import Data.Collection.List.
 From jwa Require Import Data.Comparable.
 From jwa Require Import Data.Number.Nat0.
 From jwa Require Import Dialect.ExFalso.
@@ -107,6 +109,14 @@ Fixpoint Balanced {A : Type} (t : AVL A) : Prop :=
       /\ Balanced r
   end.
 
+(* The order of a search tree, read on the tree without its heights: at
+ * every node the left subtree holds what is below the node's element, and
+ * the right subtree what is above it.
+ *)
+(* [forall {A : Type} . (A -> A -> Prop) -> AVL A -> Prop] *)
+Definition Ordered := fun {A : Type} (lt : A -> A -> Prop) (t : AVL A) .
+  BST.Ordered lt (to_tree t).
+
 Module rotate. (* rotate *)
 
 (* A node whose left subtree stands two above its right one, rebuilt one
@@ -158,6 +168,22 @@ Definition balance := fun {A : Type} (l : AVL A) (a : A) (r : AVL A) .
       match Nat0.eq (height r) (++ (++ (height l))) with
       | true  => rotate.left l a r
       | false => node l a r
+      end
+  end.
+
+(* [cmp a b] picks one subtree at each node, so the search follows one path
+ * from the root down. Its answer is the tree's membership only where the
+ * tree is [Ordered].
+ *)
+(* [forall {A : Type} . (A -> A -> Comparison) -> A -> AVL A -> Bool] *)
+Fixpoint contains {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) : Bool :=
+  match t with
+  | AVL.Leaf         => false
+  | AVL.Node l b r _ =>
+      match cmp a b with
+      | Comparison.Lt => contains cmp a l
+      | Comparison.Eq => true
+      | Comparison.Gt => contains cmp a r
       end
   end.
 
@@ -216,9 +242,168 @@ Qed.
 
 End measurement. (* measurement *)
 
+Module search. (* search *)
+
+(* search.specification *)
+Theorem specification
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (a : A) (t : AVL A) .
+        Ordered lt t -> (contains cmp a t = true <-> BinaryTree.Contains a (to_tree t)).
+Proof.
+  intros A cmp lt C a t.
+  lemma same : contains &cmp &a &t = BST.contains &cmp &a (to_tree &t).
+  {
+    match &t with | Leaf | Node (l by IHl) b (r by IHr) h end per AVL.induction.
+    - simpl in |- *.
+      quod idem est.
+    - simpl in |- *.
+      match (&cmp &a &b) with | | | end |- c.
+      + ipso &IHl.
+      + quod idem est.
+      + ipso &IHr.
+  }
+  intro o.
+  leibniz &same in |- *.
+  ipso (BST.search.specification &C &a (to_tree &t) &o).
+Qed.
+
+End search. (* search *)
+
 Module rotation. (* rotation *)
 
 Module right. (* rotation.right *)
+
+(* A rotation keeps the elements in their order from left to right, so the
+ * proof compares the two lists [BinaryTree.to_list] reads.
+ *)
+(* rotation.right.membership *)
+Theorem membership
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (to_tree (rotate.right l a r))
+      <-> BinaryTree.Contains b (to_tree (node l a r)).
+Proof.
+  intros A l a r b.
+  lemma sequence
+    : BinaryTree.to_list (to_tree (rotate.right &l &a &r))
+      = BinaryTree.to_list (to_tree (node &l &a &r)).
+  {
+    simpl rotate.right in |- *.
+    match &l with | Leaf | Node ll c lr hl end.
+    - simpl in |- *.
+      quod idem est.
+    - match (Nat0.eq (height &lr) (++ (height &ll))) with | | end |- t.
+      + match &lr with | Leaf | Node lrl d lrr hlr end.
+        * simpl in |- *.
+          quod idem est.
+        * simpl node in |- *.
+          simpl in |- *.
+          leibniz
+            (List.concatenation.associativity
+              (BinaryTree.to_list (to_tree &ll))
+              (List.Cons &c (BinaryTree.to_list (to_tree &lrl)))
+              (List.Cons &d
+                (List.concat
+                  (BinaryTree.to_list (to_tree &lrr))
+                  (List.Cons &a (BinaryTree.to_list (to_tree &r))))))
+            in |- *.
+          leibniz
+            (List.concatenation.associativity
+              (BinaryTree.to_list (to_tree &ll))
+              (List.Cons &c
+                (List.concat
+                  (BinaryTree.to_list (to_tree &lrl))
+                  (List.Cons &d (BinaryTree.to_list (to_tree &lrr)))))
+              (List.Cons &a (BinaryTree.to_list (to_tree &r))))
+            in |- *.
+          simpl in |- *.
+          leibniz
+            (List.concatenation.associativity
+              (BinaryTree.to_list (to_tree &lrl))
+              (List.Cons &d (BinaryTree.to_list (to_tree &lrr)))
+              (List.Cons &a (BinaryTree.to_list (to_tree &r))))
+            in |- *.
+          simpl in |- *.
+          quod idem est.
+      + simpl node in |- *.
+        simpl in |- *.
+        leibniz
+          (List.concatenation.associativity
+            (BinaryTree.to_list (to_tree &ll))
+            (List.Cons &c (BinaryTree.to_list (to_tree &lr)))
+            (List.Cons &a (BinaryTree.to_list (to_tree &r))))
+          in |- *.
+        simpl in |- *.
+        quod idem est.
+  }
+  let proof here := BinaryTree.conversion.membership &b (to_tree (rotate.right &l &a &r)).
+  let proof there := BinaryTree.conversion.membership &b (to_tree (node &l &a &r)).
+  leibniz &sequence in &here.
+  ipso (Biconditional.transitivity &here (Biconditional.symmetry &there)).
+Qed.
+
+(* A subtree that moves to a new parent is below or above it by
+ * transitivity, through the element it was compared with before.
+ *)
+(* rotation.right.order *)
+Theorem order
+  : forall {A : Type} {lt : A -> A -> Prop} .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (l : AVL A) (a : A) (r : AVL A) .
+        Ordered lt (node l a r) -> Ordered lt (rotate.right l a r).
+Proof.
+  intros A lt tr l a r o.
+  simpl Ordered, node in &o.
+  simpl Ordered, rotate.right in |- *.
+  let proof o0 := simpl &o.
+  match &o0 with | below o1 end.
+  match &o1 with | above o2 end.
+  match &o2 with | ordl ordr end.
+  match &l with | Leaf | Node ll c lr hl end.
+  - ipso &o.
+  - simpl in &below.
+    match &below with | bll b1 end.
+    match &b1 with | ca blr end.
+    simpl in &ordl.
+    match &ordl with | cll c1 end.
+    match &c1 with | clr c2 end.
+    match &c2 with | oll olr end.
+    match (Nat0.eq (height &lr) (++ (height &ll))) with | | end |- t.
+    + match &lr with | Leaf | Node lrl d lrr hlr end.
+      * ipso &o.
+      * simpl in &blr.
+        match &blr with | blrl b2 end.
+        match &b2 with | da blrr end.
+        simpl in &clr.
+        match &clr with | clrl c3 end.
+        match &c3 with | cd clrr end.
+        simpl in &olr.
+        match &olr with | dlrl d1 end.
+        match &d1 with | dlrr d2 end.
+        match &d2 with | olrl olrr end.
+        let proof dll
+          := BinaryTree.quantification.all.monotonicity
+               (fun (x : &A) (h : &lt x &c) . &tr x &c &d h &cd) &cll.
+        let proof dr
+          := BinaryTree.quantification.all.monotonicity
+               (fun (x : &A) (h : &lt &a x) . &tr &d &a x &da h) &above.
+        simpl node in |- *.
+        simpl in |- *.
+        ipso
+          (conjoin (conjoin &dll, (conjoin &cd, &dlrl)),
+            (conjoin (conjoin &dlrr, (conjoin &da, &dr)),
+              (conjoin (conjoin &cll, (conjoin &clrl, (conjoin &oll, &olrl))),
+                (conjoin &blrr, (conjoin &above, (conjoin &olrr, &ordr)))))).
+    + let proof cr
+        := BinaryTree.quantification.all.monotonicity
+             (fun (x : &A) (h : &lt &a x) . &tr &c &a x &ca h) &above.
+      simpl node in |- *.
+      simpl in |- *.
+      ipso
+        (conjoin &cll,
+          (conjoin (conjoin &clr, (conjoin &ca, &cr)),
+            (conjoin &oll, (conjoin &blr, (conjoin &above, (conjoin &olr, &ordr)))))).
+Qed.
 
 (* rotation.right.measurement *)
 Theorem measurement
@@ -588,6 +773,121 @@ Qed.
 End right. (* rotation.right *)
 
 Module left. (* rotation.left *)
+
+(* rotation.left.membership *)
+Theorem membership
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (to_tree (rotate.left l a r))
+      <-> BinaryTree.Contains b (to_tree (node l a r)).
+Proof.
+  intros A l a r b.
+  lemma sequence
+    : BinaryTree.to_list (to_tree (rotate.left &l &a &r))
+      = BinaryTree.to_list (to_tree (node &l &a &r)).
+  {
+    simpl rotate.left in |- *.
+    match &r with | Leaf | Node rl c rr hr end.
+    - simpl in |- *.
+      quod idem est.
+    - match (Nat0.eq (height &rl) (++ (height &rr))) with | | end |- t.
+      + match &rl with | Leaf | Node rll d rlr hrl end.
+        * simpl in |- *.
+          quod idem est.
+        * simpl node in |- *.
+          simpl in |- *.
+          leibniz
+            (List.concatenation.associativity
+              (BinaryTree.to_list (to_tree &l))
+              (List.Cons &a (BinaryTree.to_list (to_tree &rll)))
+              (List.Cons &d
+                (List.concat
+                  (BinaryTree.to_list (to_tree &rlr))
+                  (List.Cons &c (BinaryTree.to_list (to_tree &rr))))))
+            in |- *.
+          leibniz
+            (List.concatenation.associativity
+              (BinaryTree.to_list (to_tree &rll))
+              (List.Cons &d (BinaryTree.to_list (to_tree &rlr)))
+              (List.Cons &c (BinaryTree.to_list (to_tree &rr))))
+            in |- *.
+          simpl in |- *.
+          quod idem est.
+      + simpl node in |- *.
+        simpl in |- *.
+        leibniz
+          (List.concatenation.associativity
+            (BinaryTree.to_list (to_tree &l))
+            (List.Cons &a (BinaryTree.to_list (to_tree &rl)))
+            (List.Cons &c (BinaryTree.to_list (to_tree &rr))))
+          in |- *.
+        simpl in |- *.
+        quod idem est.
+  }
+  let proof here := BinaryTree.conversion.membership &b (to_tree (rotate.left &l &a &r)).
+  let proof there := BinaryTree.conversion.membership &b (to_tree (node &l &a &r)).
+  leibniz &sequence in &here.
+  ipso (Biconditional.transitivity &here (Biconditional.symmetry &there)).
+Qed.
+
+(* rotation.left.order *)
+Theorem order
+  : forall {A : Type} {lt : A -> A -> Prop} .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (l : AVL A) (a : A) (r : AVL A) .
+        Ordered lt (node l a r) -> Ordered lt (rotate.left l a r).
+Proof.
+  intros A lt tr l a r o.
+  simpl Ordered, node in &o.
+  simpl Ordered, rotate.left in |- *.
+  let proof o0 := simpl &o.
+  match &o0 with | below o1 end.
+  match &o1 with | above o2 end.
+  match &o2 with | ordl ordr end.
+  match &r with | Leaf | Node rl c rr hr end.
+  - ipso &o.
+  - simpl in &above.
+    match &above with | arl a1 end.
+    match &a1 with | ac arr end.
+    simpl in &ordr.
+    match &ordr with | crl c1 end.
+    match &c1 with | crr c2 end.
+    match &c2 with | orl orr end.
+    match (Nat0.eq (height &rl) (++ (height &rr))) with | | end |- t.
+    + match &rl with | Leaf | Node rll d rlr hrl end.
+      * ipso &o.
+      * simpl in &arl.
+        match &arl with | arll a2 end.
+        match &a2 with | ad arlr end.
+        simpl in &crl.
+        match &crl with | crll c3 end.
+        match &c3 with | dc crlr end.
+        simpl in &orl.
+        match &orl with | drll d1 end.
+        match &d1 with | drlr d2 end.
+        match &d2 with | orll orlr end.
+        let proof dl
+          := BinaryTree.quantification.all.monotonicity
+               (fun (x : &A) (h : &lt x &a) . &tr x &a &d h &ad) &below.
+        let proof drr
+          := BinaryTree.quantification.all.monotonicity
+               (fun (x : &A) (h : &lt &c x) . &tr &d &c x &dc h) &crr.
+        simpl node in |- *.
+        simpl in |- *.
+        ipso
+          (conjoin (conjoin &dl, (conjoin &ad, &drll)),
+            (conjoin (conjoin &drlr, (conjoin &dc, &drr)),
+              (conjoin (conjoin &below, (conjoin &arll, (conjoin &ordl, &orll))),
+                (conjoin &crlr, (conjoin &crr, (conjoin &orlr, &orr)))))).
+    + let proof cl
+        := BinaryTree.quantification.all.monotonicity
+             (fun (x : &A) (h : &lt x &a) . &tr x &a &c h &ac) &below.
+      simpl node in |- *.
+      simpl in |- *.
+      ipso
+        (conjoin (conjoin &cl, (conjoin &ac, &crl)),
+          (conjoin &crr,
+            (conjoin (conjoin &below, (conjoin &arl, (conjoin &ordl, &orl))), &orr))).
+Qed.
 
 (* rotation.left.measurement *)
 Theorem measurement
@@ -1026,9 +1326,144 @@ Proof.
       ipso (conjoin &rel, (conjoin &bl, &br)).
 Qed.
 
+(* balancing.membership *)
+Theorem membership
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (to_tree (AVL.balance l a r))
+      <-> BinaryTree.Contains b (to_tree (node l a r)).
+Proof.
+  intros A l a r b.
+  simpl AVL.balance in |- *.
+  match (Nat0.eq (height &l) (++ (++ (height &r)))) with | | end |- t1.
+  - ipso (rotation.right.membership &l &a &r &b).
+  - match (Nat0.eq (height &r) (++ (++ (height &l)))) with | | end |- t2.
+    + ipso (rotation.left.membership &l &a &r &b).
+    + ipso (Biconditional.reflexivity _).
+Qed.
+
+(* balancing.order *)
+Theorem order
+  : forall {A : Type} {lt : A -> A -> Prop} .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (l : AVL A) (a : A) (r : AVL A) .
+        Ordered lt (node l a r) -> Ordered lt (AVL.balance l a r).
+Proof.
+  intros A lt tr l a r o.
+  simpl AVL.balance in |- *.
+  match (Nat0.eq (height &l) (++ (++ (height &r)))) with | | end |- t1.
+  - ipso (rotation.right.order &tr &l &a &r &o).
+  - match (Nat0.eq (height &r) (++ (++ (height &l)))) with | | end |- t2.
+    + ipso (rotation.left.order &tr &l &a &r &o).
+    + ipso &o.
+Qed.
+
 End balancing. (* balancing *)
 
 Module insertion. (* insertion *)
+
+(* This law asks for no ordered tree: [insert] adds [a] and loses nothing
+ * on any tree.
+ *)
+(* insertion.membership *)
+Theorem membership
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (a : A) (b : A) (t : AVL A) .
+        BinaryTree.Contains b (to_tree (insert cmp a t))
+        <-> b = a \/ BinaryTree.Contains b (to_tree t).
+Proof.
+  intros A cmp lt C a b t.
+  match &t with | Leaf | Node (l by IHl) c (r by IHr) n end per AVL.induction.
+  - simpl in |- *.
+    divide et impera.
+    + intro h.
+      match &h with | f | h' end.
+      * ex &f quodlibet.
+      * match &h' with | e | f end.
+        -- ipso (disjoin &e, _).
+        -- ex &f quodlibet.
+    + intro h.
+      match &h with | e | f end.
+      * ipso (disjoin _, (disjoin &e, _)).
+      * ex &f quodlibet.
+  - simpl in |- *.
+    match (&cmp &a &c) with | | | end |- k.
+    + let proof bm := balancing.membership (insert &cmp &a &l) &c &r &b.
+      simpl node in &bm.
+      simpl in &bm.
+      lemma shift
+        : (BinaryTree.Contains &b (to_tree (insert &cmp &a &l))
+            \/ &b = &c
+            \/ BinaryTree.Contains &b (to_tree &r))
+          <-> &b = &a
+            \/ BinaryTree.Contains &b (to_tree &l)
+            \/ &b = &c
+            \/ BinaryTree.Contains &b (to_tree &r).
+      {
+        divide et impera.
+        - intro h.
+          match &h with | m | rest end.
+          + modus aequans &IHl, &m |- found.
+            match &found with | e | m' end.
+            * ipso (disjoin &e, _).
+            * ipso (disjoin _, (disjoin &m', _)).
+          + ipso (disjoin _, (disjoin _, &rest)).
+        - intro h.
+          match &h with | e | h' end.
+          + modus aequans &IHl, (disjoin &e, _) |- m.
+            ipso (disjoin &m, _).
+          + match &h' with | m | rest end.
+            * modus aequans &IHl, (disjoin _, &m) |- m'.
+              ipso (disjoin &m', _).
+            * ipso (disjoin _, &rest).
+      }
+      ipso (Biconditional.transitivity &bm &shift).
+    (* [a] is [c], already in the tree: [b = a] is [b = c]. *)
+    + modus aequans (Comparable.comparison.equality.specification &a &c), &k |- ac.
+      simpl in |- *.
+      divide et impera.
+      * intro h.
+        ipso (disjoin _, &h).
+      * intro h.
+        match &h with | e | present end.
+        -- trans &e, &ac |- bc.
+           ipso (disjoin _, (disjoin &bc, _)).
+        -- ipso &present.
+    + let proof bm := balancing.membership &l &c (insert &cmp &a &r) &b.
+      simpl node in &bm.
+      simpl in &bm.
+      lemma shift
+        : (BinaryTree.Contains &b (to_tree &l)
+            \/ &b = &c
+            \/ BinaryTree.Contains &b (to_tree (insert &cmp &a &r)))
+          <-> &b = &a
+            \/ BinaryTree.Contains &b (to_tree &l)
+            \/ &b = &c
+            \/ BinaryTree.Contains &b (to_tree &r).
+      {
+        divide et impera.
+        - intro h.
+          match &h with | m | h' end.
+          + ipso (disjoin _, (disjoin &m, _)).
+          + match &h' with | e | m end.
+            * ipso (disjoin _, (disjoin _, (disjoin &e, _))).
+            * modus aequans &IHr, &m |- found.
+              match &found with | e | m' end.
+              -- ipso (disjoin &e, _).
+              -- ipso (disjoin _, (disjoin _, (disjoin _, &m'))).
+        - intro h.
+          match &h with | e | h1 end.
+          + modus aequans &IHr, (disjoin &e, _) |- m.
+            ipso (disjoin _, (disjoin _, &m)).
+          + match &h1 with | m | h2 end.
+            * ipso (disjoin &m, _).
+            * match &h2 with | e | m end.
+              -- ipso (disjoin _, (disjoin &e, _)).
+              -- modus aequans &IHr, (disjoin _, &m) |- m'.
+                 ipso (disjoin _, (disjoin _, &m')).
+      }
+      ipso (Biconditional.transitivity &bm &shift).
+Qed.
 
 Module preservation. (* insertion.preservation *)
 
@@ -1052,6 +1487,95 @@ Proof.
     + ipso &m.
     + modus ponens &IHr, &mr |- mr'.
       ipso (balancing.measurement &l &b (insert &cmp &a &r) &ml &mr').
+Qed.
+
+(* insertion.preservation.order *)
+Theorem order
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (a : A) (t : AVL A) . Ordered lt t -> Ordered lt (insert cmp a t).
+Proof.
+  intros A cmp lt C a t.
+  match &t with | Leaf | Node (l by IHl) b (r by IHr) h end per AVL.induction.
+  - intro o.
+    simpl Ordered in |- *.
+    simpl in |- *.
+    ipso (conjoin I, (conjoin I, (conjoin I, I))).
+  - intro o.
+    simpl Ordered in &o.
+    let proof o0 := simpl &o.
+    match &o0 with | below o1 end.
+    match &o1 with | above o2 end.
+    match &o2 with | ordl ordr end.
+    simpl Ordered in |- *.
+    simpl in |- *.
+    match (&cmp &a &b) with | | | end |- c.
+    (* [a] goes into the left subtree, and is below [b] as all of it is. *)
+    + modus aequans (Comparable.comparison.strict.specification &a &b), &c |- ab.
+      modus ponens &IHl, &ordl |- kept.
+      lemma each
+        : forall (x : &A) . BinaryTree.Contains x (to_tree (insert &cmp &a &l)) -> &lt x &b.
+      {
+        intros x m.
+        modus aequans (insertion.membership &C &a &x &l), &m |- w.
+        match &w with | e | m' end.
+        - leibniz &e in |- *.
+          ipso &ab.
+        - modus aequans
+            (BinaryTree.quantification.all.specification (fun (y : &A) . &lt y &b) (to_tree &l)),
+            &below
+            |- under.
+          ipso (&under &x &m').
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification
+          (fun (y : &A) . &lt y &b) (to_tree (insert &cmp &a &l))),
+        &each
+        |- inserted.
+      lemma on : Ordered &lt (node (insert &cmp &a &l) &b &r).
+      {
+        simpl Ordered, node in |- *.
+        simpl in |- *.
+        ipso (conjoin &inserted, (conjoin &above, (conjoin &kept, &ordr))).
+      }
+      ipso
+        (balancing.order
+          (fun (x : &A) (y : &A) (z : &A) . Comparable.transitivity x y z)
+          (insert &cmp &a &l) &b &r &on).
+    + ipso &o.
+    (* [a] goes into the right subtree, and is above [b] as all of it is. *)
+    + modus aequans
+        (Comparable.comparison.strict.transposition.specification &a &b), &c |- ba.
+      modus ponens &IHr, &ordr |- kept.
+      lemma each
+        : forall (x : &A) . BinaryTree.Contains x (to_tree (insert &cmp &a &r)) -> &lt &b x.
+      {
+        intros x m.
+        modus aequans (insertion.membership &C &a &x &r), &m |- w.
+        match &w with | e | m' end.
+        - leibniz &e in |- *.
+          ipso &ba.
+        - modus aequans
+            (BinaryTree.quantification.all.specification (fun (y : &A) . &lt &b y) (to_tree &r)),
+            &above
+            |- over.
+          ipso (&over &x &m').
+      }
+      modus aequans
+        (BinaryTree.quantification.all.specification
+          (fun (y : &A) . &lt &b y) (to_tree (insert &cmp &a &r))),
+        &each
+        |- inserted.
+      lemma on : Ordered &lt (node &l &b (insert &cmp &a &r)).
+      {
+        simpl Ordered, node in |- *.
+        simpl in |- *.
+        ipso (conjoin &below, (conjoin &inserted, (conjoin &ordl, &kept))).
+      }
+      ipso
+        (balancing.order
+          (fun (x : &A) (y : &A) (z : &A) . Comparable.transitivity x y z)
+          &l &b (insert &cmp &a &r) &on).
 Qed.
 
 (* The balance of [insert cmp a t] and its height are proved by one
