@@ -15,10 +15,12 @@ From jwa Require Export Core.All.
 (* An umbrella exports every type the interfaces under it name: [Nat0]
  * for the index [nth], [take] and [drop] count with, [Option] for what [nth]
  * returns, [Nat] for [NonEmptyList]'s length, [Bool] for the deciders,
+ * [Assert] for the reflection laws that read a decider as a proposition,
  * [Comparison] for what [compare] returns, [Comparable] for the premise of
  * its laws, and [Product] for the pairs that [pop], [zip], [unzip],
  * [partition], [split_at] and [BST.pop_minimum] return.
  *)
+From jwa Require Export Data.Assert.
 From jwa Require Export Data.Base.Bool.
 From jwa Require Export Data.Base.Comparison.
 From jwa Require Export Data.Comparable.

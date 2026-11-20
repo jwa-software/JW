@@ -3,6 +3,7 @@
  *)
 
 From jwa Require Import Core.All.
+From jwa Require Import Data.Assert.
 From jwa Require Import Data.Base.Bool.
 From jwa Require Import Data.Base.Comparison.
 From jwa Require Import Data.Collection.BST.
@@ -118,6 +119,44 @@ Fixpoint Balanced {A : Type} (t : AVL A) : Prop :=
 (* [forall {A : Type} . (A -> A -> Prop) -> AVL A -> Prop] *)
 Definition Ordered := fun {A : Type} (lt : A -> A -> Prop) (t : AVL A) .
   BST.Ordered lt (to_tree t).
+
+(* The test that a tree is [Measured], answered as a [Bool]. *)
+(* [forall {A : Type} . AVL A -> Bool] *)
+Fixpoint is_measured {A : Type} (t : AVL A) : Bool :=
+  match t with
+  | AVL.Leaf         => true
+  | AVL.Node l _ r h =>
+      Bool.and
+        (Nat0.eq h (++ (Nat0.max (height l) (height r))))
+        (Bool.and (is_measured l) (is_measured r))
+  end.
+
+(* The test that a tree is [Balanced], answered as a [Bool]. *)
+(* [forall {A : Type} . AVL A -> Bool] *)
+Fixpoint is_balanced {A : Type} (t : AVL A) : Bool :=
+  match t with
+  | AVL.Leaf         => true
+  | AVL.Node l _ r _ =>
+      Bool.and
+        (Bool.or
+          (Nat0.eq (height l) (height r))
+          (Bool.or (Nat0.eq (height l) (++ (height r))) (Nat0.eq (height r) (++ (height l)))))
+        (Bool.and (is_balanced l) (is_balanced r))
+  end.
+
+(* The test that a tree is ordered by [cmp], read on the tree without its
+ * heights.
+ *)
+(* [forall {A : Type} . (A -> A -> Comparison) -> AVL A -> Bool] *)
+Definition is_ordered := fun {A : Type} (cmp : A -> A -> Comparison) (t : AVL A) .
+  BST.is_ordered cmp (to_tree t).
+
+(* The three tests at once: a tree that passes is one that [insert] and
+ * [remove] keep in shape.
+ *)
+(* [forall {A : Type} . (A -> A -> Comparison) -> AVL A -> Bool] *)
+Definition is_valid := fun {A : Type} (cmp : A -> A -> Comparison) (t : AVL A) .
+  Bool.and (is_measured t) (Bool.and (is_balanced t) (is_ordered cmp t)).
 
 Module rotate. (* rotate *)
 
@@ -285,7 +324,178 @@ Proof.
     quod idem est.
 Qed.
 
+(* measurement.reflection *)
+Theorem reflection
+  : forall {A : Type} (t : AVL A) . Assert (is_measured t) <-> Measured t.
+Proof.
+  intros A t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+  - simpl in |- *.
+    ipso (Biconditional.reflexivity _).
+  - simpl in |- *.
+    let proof q
+      := Biconditional.transitivity
+           (Assert.specification (Nat0.eq &h (++ (Nat0.max (height &l) (height &r)))))
+           (Comparable.comparison.equality.reflection
+             &h (++ (Nat0.max (height &l) (height &r)))).
+    divide et impera.
+    + intro w.
+      modus aequans (Assert.conjunction _ _), &w |- w1.
+      match &w1 with | he w2 end.
+      modus aequans (Assert.conjunction _ _), &w2 |- w3.
+      match &w3 with | ml mr end.
+      ipso
+        (conjoin (modus aequans &q, &he),
+          (conjoin (modus aequans &IHl, &ml), (modus aequans &IHr, &mr))).
+    + intro w.
+      match &w with | e w2 end.
+      match &w2 with | ml mr end.
+      modus aequans &q, &e |- he.
+      modus aequans &IHl, &ml |- il.
+      modus aequans &IHr, &mr |- ir.
+      modus aequans (Assert.conjunction _ _), (conjoin &il, &ir) |- w3.
+      ipso (modus aequans (Assert.conjunction _ _), (conjoin &he, &w3)).
+Qed.
+
 End measurement. (* measurement *)
+
+(* The laws of the rule [Balanced], under a noun of their own: [balance]
+ * and [balancing] are the operation and its laws.
+ *)
+Module equilibrium. (* equilibrium *)
+
+(* equilibrium.reflection *)
+Theorem reflection
+  : forall {A : Type} (t : AVL A) . Assert (is_balanced t) <-> Balanced t.
+Proof.
+  intros A t.
+  lemma equation
+    : forall (m : Nat0) (n : Nat0) . Assert (Nat0.eq m n) <-> m = n.
+  {
+    intros m n.
+    ipso
+      (Biconditional.transitivity
+        (Assert.specification (Nat0.eq &m &n))
+        (Comparable.comparison.equality.reflection &m &n)).
+  }
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+  - simpl in |- *.
+    ipso (Biconditional.reflexivity _).
+  - simpl in |- *.
+    lemma rel
+      : Assert
+          (Bool.or
+            (Nat0.eq (height &l) (height &r))
+            (Bool.or
+              (Nat0.eq (height &l) (++ (height &r)))
+              (Nat0.eq (height &r) (++ (height &l)))))
+        <-> height &l = height &r
+          \/ height &l = ++ (height &r)
+          \/ height &r = ++ (height &l).
+    {
+      let proof d1
+        := Assert.disjunction
+             (Nat0.eq (height &l) (height &r))
+             (Bool.or
+               (Nat0.eq (height &l) (++ (height &r)))
+               (Nat0.eq (height &r) (++ (height &l)))).
+      let proof d2
+        := Assert.disjunction
+             (Nat0.eq (height &l) (++ (height &r)))
+             (Nat0.eq (height &r) (++ (height &l))).
+      divide et impera.
+      - intro w.
+        modus aequans &d1, &w |- w1.
+        match &w1 with | e | w2 end.
+        + ipso (disjoin (modus aequans (&equation _ _), &e), _).
+        + modus aequans &d2, &w2 |- w3.
+          match &w3 with | e | e end.
+          * ipso (disjoin _, (disjoin (modus aequans (&equation _ _), &e), _)).
+          * ipso (disjoin _, (disjoin _, (modus aequans (&equation _ _), &e))).
+      - intro w.
+        match &w with | e | w2 end.
+        + modus aequans (&equation (height &l) (height &r)), &e |- t.
+          modus aequans &d1, (disjoin &t, _) |- done.
+          ipso &done.
+        + match &w2 with | e | e end.
+          * modus aequans (&equation (height &l) (++ (height &r))), &e |- t.
+            modus aequans &d2, (disjoin &t, _) |- t'.
+            modus aequans &d1, (disjoin _, &t') |- done.
+            ipso &done.
+          * modus aequans (&equation (height &r) (++ (height &l))), &e |- t.
+            modus aequans &d2, (disjoin _, &t) |- t'.
+            modus aequans &d1, (disjoin _, &t') |- done.
+            ipso &done.
+    }
+    divide et impera.
+    + intro w.
+      modus aequans (Assert.conjunction _ _), &w |- w1.
+      match &w1 with | hr w2 end.
+      modus aequans (Assert.conjunction _ _), &w2 |- w3.
+      match &w3 with | bl br end.
+      ipso
+        (conjoin (modus aequans &rel, &hr),
+          (conjoin (modus aequans &IHl, &bl), (modus aequans &IHr, &br))).
+    + intro w.
+      match &w with | e w2 end.
+      match &w2 with | bl br end.
+      modus aequans &rel, &e |- hr.
+      modus aequans &IHl, &bl |- il.
+      modus aequans &IHr, &br |- ir.
+      modus aequans (Assert.conjunction _ _), (conjoin &il, &ir) |- w3.
+      ipso (modus aequans (Assert.conjunction _ _), (conjoin &hr, &w3)).
+Qed.
+
+End equilibrium. (* equilibrium *)
+
+Module order. (* order *)
+
+(* order.reflection *)
+Theorem reflection
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (t : AVL A) . Assert (is_ordered cmp t) <-> Ordered lt t.
+Proof.
+  intros A cmp lt C t.
+  ipso (BST.order.reflection &C (to_tree &t)).
+Qed.
+
+End order. (* order *)
+
+Module validity. (* validity *)
+
+(* validity.reflection *)
+Theorem reflection
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (t : AVL A) .
+        Assert (is_valid cmp t) <-> Measured t /\ Balanced t /\ Ordered lt t.
+Proof.
+  intros A cmp lt C t.
+  let proof qm := measurement.reflection &t.
+  let proof qb := equilibrium.reflection &t.
+  let proof qo := order.reflection &C &t.
+  simpl is_valid in |- *.
+  divide et impera.
+  - intro w.
+    modus aequans (Assert.conjunction _ _), &w |- w1.
+    match &w1 with | m w2 end.
+    modus aequans (Assert.conjunction _ _), &w2 |- w3.
+    match &w3 with | b o end.
+    ipso
+      (conjoin (modus aequans &qm, &m),
+        (conjoin (modus aequans &qb, &b), (modus aequans &qo, &o))).
+  - intro w.
+    match &w with | m w2 end.
+    match &w2 with | b o end.
+    modus aequans &qm, &m |- am.
+    modus aequans &qb, &b |- ab.
+    modus aequans &qo, &o |- ao.
+    modus aequans (Assert.conjunction _ _), (conjoin &ab, &ao) |- w3.
+    ipso (modus aequans (Assert.conjunction _ _), (conjoin &am, &w3)).
+Qed.
+
+End validity. (* validity *)
 
 Module search. (* search *)
 
