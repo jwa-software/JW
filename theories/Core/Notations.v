@@ -256,6 +256,11 @@ Reserved Notation "x |. y"
   (at level 50, left associativity).
 Reserved Notation "x + y"
   (at level 50, left associativity).
+(* The infix [-] shares its symbol with the prefix [- x] at level 35, which
+ * binds tighter than the infix.
+ *)
+Reserved Notation "x - y"
+  (at level 50, left associativity).
 Reserved Notation "x ++ y"
   (at level 60, right associativity).
 Reserved Notation "++ n"

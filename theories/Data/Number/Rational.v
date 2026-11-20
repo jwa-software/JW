@@ -83,6 +83,9 @@ Definition negate := fun (x : Rational) .
   let d := denominator x in
   make n d.
 
+Notation "- x" := (negate x) (at level 35, right associativity, only parsing)
+  : jwa_rational_scope.
+
 (* [Rational -> Rational -> Rational] *)
 Definition add := fun (x : Rational) (y : Rational) .
   let nx := numerator x in
@@ -100,6 +103,9 @@ Notation "x + y" := (add x y) (only parsing)
 
 (* [Rational -> Rational -> Rational] *)
 Definition sub := fun (x : Rational) (y : Rational) . let y := negate y in add x y.
+
+Notation "x - y" := (sub x y) (only parsing)
+  : jwa_rational_scope.
 
 (* [Rational -> Rational -> Rational] *)
 Definition mul := fun (x : Rational) (y : Rational) .

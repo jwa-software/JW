@@ -167,6 +167,9 @@ Local Open Scope jwa_integer_scope.
 (* [Integer -> Integer -> Integer] *)
 Definition sub := fun (m : Integer) (n : Integer) . m + negate n.
 
+Notation "m - n" := (sub m n) (only parsing)
+  : jwa_integer_scope.
+
 (* [Integer -> Integer -> Integer] *)
 Definition mul := fun (m : Integer) (n : Integer) .
   match m with
@@ -1139,7 +1142,7 @@ Module inversion. (* subtraction.inversion *)
 
 (* subtraction.inversion.addition *)
 Theorem addition
-  : forall (m : Integer) (n : Integer) . sub (m + n) n = m.
+  : forall (m : Integer) (n : Integer) . (m + n) - n = m.
 Proof.
   intros m n.
   simpl sub in |- *.
