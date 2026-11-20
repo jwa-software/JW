@@ -39,7 +39,7 @@ In `Core`, `Relation` and `Data`, whose `dune` files carry `(include_subdirs qua
 |:---|:---|
 | `Core/Logic/` | The connectives, `Verum`, `Falsum`, `forsome` and the syllogisms |
 | `Relation/Order/` | The order classes |
-| `Data/Base/` | The types built from no other type: `Empty`, `Unit`, `Bool`, `Comparison` |
+| `Data/Base/` | The types built from no other type: `Empty`, `Unit`, `Bool`, `Comparison`, `Kleene3` |
 | `Data/Collection/` | `List`, `NonEmptyList` and `BinaryTree`, `BST`, the search tree over `BinaryTree`, `AVL`, the balanced search tree, and `SortedSet`, a set held in an AVL tree |
 | `Data/Machine/` | The fixed-width units a machine stores: `Bit`, `Byte`, `HWord`, `Word`, `DWord`, `QWord`, the integers `UInt8` to `UInt64` and `Int8` to `Int64`, and `Endian`, the byte order of a word |
 | `Data/Number/` | `Nat`, `Nat0`, `Integer`, `Rational`, and `Numeral`, the digit types a literal is read into |
