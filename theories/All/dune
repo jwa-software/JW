@@ -15,5 +15,4 @@
   jwa.Tactics
   jwa.Algebra
   jwa.Relation
-  jwa.Data
-  jwa.Programming))
+  jwa.Data))

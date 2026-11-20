@@ -21,6 +21,18 @@ Set Warnings "-extraction-default-directory".
 
 Extraction Language OCaml.
 
+(* Four types become their OCaml counterparts. Each mapping is trusted: the
+ * constructors are paired with the OCaml ones by position, in the order the
+ * [Inductive] declares them, and nothing checks the pairing. [Option]
+ * declares [None] first. A wrong order for [Option], [Product] or [List]
+ * fails to compile, the arities differing; for [Bool] it would compile and
+ * swap [true] and [false], which [extraction_test.ml] would catch.
+ *)
+Extract Inductive jwa.Data.Base.Bool.Bool.T       => "bool"   [ "true" "false" ].
+Extract Inductive jwa.Data.Option.Option.T        => "option" [ "None" "Some" ].
+Extract Inductive jwa.Data.Product.Product.T      => "( * )"  [ "(,)" ].
+Extract Inductive jwa.Data.Collection.List.List.T => "list"   [ "[]" "(::)" ].
+
 (* Every module of [Data] that computes, into one file [jwa.ml]: the proofs
  * are erased, so [SortedSet.T] becomes the [AVL.T] it holds.
  *)

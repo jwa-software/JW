@@ -28,8 +28,7 @@ In a dune project whose `dune-project` declares `(using rocq 0.11)`, list `Ltac2
   jwa.Tactics
   jwa.Algebra
   jwa.Relation
-  jwa.Data
-  jwa.Programming)
+  jwa.Data)
  (flags :standard -noinit))
 ```
 

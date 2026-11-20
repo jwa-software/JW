@@ -12,5 +12,4 @@
   jwa.Algebra
   jwa.Relation
   jwa.Data
-  jwa.Assumption
-  jwa.Programming))
+  jwa.Assumption))
