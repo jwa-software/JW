@@ -985,3 +985,29 @@ Definition data_collection_all_delivers_sorted_set_conversion_size
   : forall (A : Type) (cmp : A -> A -> Comparison) (s : SortedSet cmp) .
       (|| SortedSet.to_list s ||)%list = SortedSet.size s
   := @SortedSet.conversion.size.
+
+Definition data_collection_all_delivers_sorted_set_insertion_size_growth
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = false ->
+      SortedSet.size (SortedSet.insert a s) = (++ (SortedSet.size s))%n0
+  := @SortedSet.insertion.size.growth.
+
+Definition data_collection_all_delivers_sorted_set_insertion_size_invariance
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = true -> SortedSet.size (SortedSet.insert a s) = SortedSet.size s
+  := @SortedSet.insertion.size.invariance.
+
+Definition data_collection_all_delivers_sorted_set_removal_size_shrinkage
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = true ->
+      (++ (SortedSet.size (SortedSet.remove a s)))%n0 = SortedSet.size s
+  := @SortedSet.removal.size.shrinkage.
+
+Definition data_collection_all_delivers_sorted_set_removal_size_invariance
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = false -> SortedSet.size (SortedSet.remove a s) = SortedSet.size s
+  := @SortedSet.removal.size.invariance.
