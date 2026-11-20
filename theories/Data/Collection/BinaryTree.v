@@ -3,6 +3,8 @@
  *)
 
 From jwa Require Import Core.All.
+From jwa Require Import Data.Assert.
+From jwa Require Import Data.Base.Bool.
 From jwa Require Import Data.Collection.List.
 From jwa Require Import Data.Collection.Membership.
 From jwa Require Import Data.Collection.Sized.
@@ -135,6 +137,14 @@ Fixpoint Any {A : Type} (P : A -> Prop) (t : BinaryTree A) : Prop :=
   match t with
   | Leaf       => Falsum
   | Node l a r => Any P l \/ P a \/ Any P r
+  end.
+
+(* The test that every element passes [p], answered as a [Bool]. *)
+(* [forall {A : Type} . (A -> Bool) -> BinaryTree A -> Bool] *)
+Fixpoint all {A : Type} (p : A -> Bool) (t : BinaryTree A) : Bool :=
+  match t with
+  | Leaf       => true
+  | Node l a r => Bool.and (all p l) (Bool.and (p a) (all p r))
   end.
 
 Module height. (* height *)
@@ -588,6 +598,33 @@ Proof.
     ipso (&weaker &a (&each &a &m)).
   }
   ipso (modus aequans (quantification.all.specification &Q &t), &every).
+Qed.
+
+(* quantification.all.reflection *)
+Theorem reflection
+  : forall {A : Type} (p : A -> Bool) (t : BinaryTree A) .
+      Assert (all p t) <-> All (fun (a : A) . Assert (p a)) t.
+Proof.
+  intros A p t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) end per BinaryTree.induction.
+  - simpl in |- *.
+    ipso (Biconditional.reflexivity _).
+  - let proof c1 := Assert.conjunction (all &p &l) (Bool.and (&p &a) (all &p &r)).
+    let proof c2 := Assert.conjunction (&p &a) (all &p &r).
+    divide et impera.
+    + intro h.
+      modus aequans &c1, &h |- h1.
+      match &h1 with | hl h' end.
+      modus aequans &c2, &h' |- h2.
+      match &h2 with | ha hr end.
+      ipso (conjoin (modus aequans &IHl, &hl), (conjoin &ha, (modus aequans &IHr, &hr))).
+    + intro h.
+      match &h with | hl h' end.
+      match &h' with | ha hr end.
+      modus aequans &IHl, &hl |- al.
+      modus aequans &IHr, &hr |- ar.
+      modus aequans &c2, (conjoin &ha, &ar) |- h2.
+      ipso (modus aequans &c1, (conjoin &al, &h2)).
 Qed.
 
 End all. (* quantification.all *)

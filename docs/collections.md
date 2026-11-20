@@ -13,10 +13,11 @@ SPDX-License-Identifier: MIT
 | `NonEmptyList A` | One element or more, in order | `(1 :: 2 :: [3])%non_empty_list`, `[1]%non_empty_list` |
 | `BinaryTree A` | A leaf, which holds nothing, or a node: one element between two subtrees | `BinaryTree.Node BinaryTree.Leaf 1 BinaryTree.Leaf` |
 | `AVL A` | A binary tree that stores at each node the height of the subtree there | `AVL.Node AVL.Leaf 1 AVL.Leaf 1` |
+| `SortedSet cmp` | A set of elements in the order `cmp` decides, held in an AVL tree with the proof of its rules | `SortedSet.insert 1 (SortedSet.empty Nat0.compare)` |
 
 `BST` is a module beside them and not a type of its own: it holds the rule that makes a `BinaryTree` a search tree, and the operations that follow that rule.
 
-`From jwa Require Import Data.Collection.All` brings the four types, `BST`, the interfaces, and what their operations and laws name: the types `Nat0`, `Nat`, `Bool`, `Option`, `Product` and `Comparison`, and the class `Comparable`. The examples on this page take their numbers in `Nat0` and are written with `jwa_list_scope` and `jwa_nat0_scope` open.
+`From jwa Require Import Data.Collection.All` brings the five types, `BST`, the interfaces, and what their operations and laws name: the types `Nat0`, `Nat`, `Bool`, `Option`, `Product` and `Comparison`, the class `Comparable`, and `Assert`, which reads a `Bool` as a proposition. The examples on this page take their numbers in `Nat0` and are written with `jwa_list_scope` and `jwa_nat0_scope` open.
 
 ---
 
@@ -63,6 +64,7 @@ SPDX-License-Identifier: MIT
 - **`map` keeps the shape.** `BinaryTree.map Nat0.inc t` holds `2`, `3` and `4` where `t` holds `1`, `2` and `3`. `BinaryTree.mapping.identity` and `BinaryTree.mapping.composition` are its two laws, and `BinaryTree.mapping.preservation` states that the size and the height stay, and that a member `a` of `t` gives the member `f a` of `map f t`.
 - **`mirror` exchanges the two subtrees of every node.** `BinaryTree.mirror t` lists as `3 :: 2 :: 1 :: []`. `BinaryTree.mirroring.involution` states `mirror (mirror t) = t`, and `BinaryTree.mirroring.preservation` that the size, the height and the members stay.
 - **Membership and the quantifiers are propositions:** `BinaryTree.Contains a t`, `BinaryTree.All P t` and `BinaryTree.Any P t`, each read in the order of `to_list`. `BinaryTree.quantification.all.specification` and `BinaryTree.quantification.any.specification` state both quantifiers through membership, and `BinaryTree.quantification.all.monotonicity` carries `All` from a property to a weaker one.
+- **`all` is the `Bool` test of `All`.** `BinaryTree.all (Nat0.le 1) t` is `true`, and `BinaryTree.all (Nat0.le 2) t` is `false`, since `1` fails it. `BinaryTree.quantification.all.reflection` states `Assert (all p t) <-> All (fun a . Assert (p a)) t`.
 - **The `conversion` laws carry each operation to `List`'s.** `BinaryTree.conversion.size` states `(|| to_list t ||) = size t`; `BinaryTree.conversion.mapping` and `BinaryTree.conversion.mirroring` state that `to_list` turns `map` into `List.map` and `mirror` into `List.reverse`; `BinaryTree.conversion.membership`, `BinaryTree.conversion.all` and `BinaryTree.conversion.any` state `Contains`, `All` and `Any` through `List`'s. Along them a statement about a tree moves to the list of its elements, and a `List` law comes back.
 - **Two trees may hold the same elements and differ.** `Node Leaf 1 (Node Leaf 2 Leaf)` and `Node (Node Leaf 1 Leaf) 2 Leaf` both list as `1 :: 2 :: []` and are two values, so a statement about what a tree holds goes through `to_list` or `Contains`, not through `=`.
 - **Induction has one hypothesis per subtree:** `match t with | Leaf | Node (l by IHl) a (r by IHr) end per BinaryTree.induction`.
@@ -80,6 +82,7 @@ A search tree is a `BinaryTree` whose elements stand in order: at every node, th
 - **`remove` takes an element out.** `BST.remove Nat0.compare 5 t` puts `8`, the smallest element of the right subtree, at the root, and the tree then lists as `2 :: 8 :: []`; removing an element the tree does not hold changes nothing. `BST.removal.membership` states, for an ordered tree, `Contains b (remove cmp a t) <-> Contains b t /\ ~ (b = a)`, and `BST.removal.preservation` that the tree stays ordered.
 - **`remove` is built from two operations.** `BST.pop_minimum t` answers with the smallest element and the tree that is left, `Some` of the pair of `2` and the rest for `t`, and with `None` on a leaf; its laws are under `BST.extraction`. `BST.join l r` makes one tree of two where `l` lies wholly below `r`; its laws are under `BST.joining`.
 - **The comparison is an argument.** `contains`, `insert` and `remove` take `cmp`, as `List.compare` does, and their laws take `Comparable cmp lt` as a premise: `BST.search.specification Nat0.comparable` is the law at `Nat0`. The laws that read only the transitivity of `lt`, `BST.extraction.minimality` and `BST.joining.preservation`, take that alone.
+- **`is_ordered` is the `Bool` test of the rule.** `BST.is_ordered Nat0.compare t` is `true`, and `BST.is_ordered Nat0.compare (BinaryTree.mirror t)` is `false`. For a `cmp` that is `Comparable cmp lt`, `BST.order.reflection` states `Assert (is_ordered cmp t) <-> Ordered lt t`.
 - **The type does not hold the rule.** A `BinaryTree` put together by hand need not be ordered, and on such a tree the laws say nothing: each one that needs the rule has `BST.Ordered lt t` as a premise. `BinaryTree.mirror` does not keep the rule either: `BST.contains Nat0.compare 8 (BinaryTree.mirror t)` is `false`.
 - **The tree is not balanced.** `1`, `2` and `3` inserted in that order make a chain of height `3`, where `t`, with three elements too, has height `2`. A search in a chain may go through every element. `AVL`, below, keeps its trees balanced.
 
@@ -98,14 +101,27 @@ An AVL tree is a search tree that keeps the heights of every node's two subtrees
 - **Each operation keeps each rule.** Under `insertion`, `extraction`, `joining` and `removal`, a `preservation` law states for each rule that the result keeps it: `AVL.insertion.preservation.balance` states `Measured t -> Balanced t -> Balanced (insert cmp a t)`, beside `.measurement` and `.order`. The `membership` laws state what the result holds, as `BST`'s do, through `to_tree`.
 - **The height changes by one level at most.** `AVL.insertion.growth` states that `insert` leaves the height as it was or one higher, and `AVL.removal.shrinkage` and `AVL.extraction.shrinkage` that `remove` and `pop` leave it as it was or one lower.
 - **The comparison is an argument.** `contains`, `insert` and `remove` take `cmp`, and their laws take `Comparable cmp lt` as a premise. The laws that read only the transitivity of `lt`, those of the rotations, of `balance`, of `pop` and of `join`, take that alone.
-- **The type does not hold the rules.** A tree put together by hand may store a wrong height, or be unbalanced or unordered, and on such a tree the laws say nothing: each one that needs a rule has it as a premise. A tree built from `AVL.Leaf` by `insert` and `remove` keeps all three.
+- **`is_valid` tests the three rules at once.** `AVL.is_measured`, `AVL.is_balanced` and `AVL.is_ordered` test one rule each as a `Bool`, and `AVL.is_valid` joins them. The `reflection` laws under `measurement`, `equilibrium`, `order` and `validity` state each test as its rule: `AVL.validity.reflection` states `Assert (is_valid cmp t) <-> Measured t /\ Balanced t /\ Ordered lt t` for a `Comparable cmp lt`. `AVL.is_valid Nat0.compare t` is `true`, and `AVL.is_measured (AVL.Node AVL.Leaf 1 AVL.Leaf 7)` is `false`.
+- **The type does not hold the rules.** A tree put together by hand may store a wrong height, or be unbalanced or unordered, and on such a tree the laws say nothing: each one that needs a rule has it as a premise. A tree built from `AVL.Leaf` by `insert` and `remove` keeps all three. `SortedSet`, below, carries their proof with the tree.
 - **Induction has one hypothesis per subtree:** `match t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction`.
+
+---
+
+## SortedSet
+
+A sorted set holds an AVL tree together with the proof that the tree passes `AVL.is_valid cmp`, so every value is measured, balanced and ordered, and its laws need none of those premises. The type is `SortedSet cmp`, one type for each comparison: `SortedSet Nat0.compare` is a set of numbers. Below, `s` is `SortedSet.insert 2 (SortedSet.insert 3 (SortedSet.insert 1 (SortedSet.empty Nat0.compare)))`.
+
+- **The proof is a `Bool` check under `Assert`.** `SortedSet.introduction t p` takes the tree `t` and a proof `p` of `Assert (AVL.is_valid cmp t)`, and `SortedSet.to_avl` gives the tree back. Any two proofs of `Assert b` are equal (`Assert.uniqueness`), so `SortedSet.conversion.injectivity` states that two sets with the same tree are the same set: `SortedSet.insert 1` applied twice to `SortedSet.empty Nat0.compare` is `SortedSet.insert 1` applied once.
+- **`insert` and `remove` take the order as an instance.** Keeping the tree ordered needs `cmp` to decide a strict order, so both take `Comparable cmp lt`, which instance search finds: `SortedSet.insert 3 s` finds `Nat0.comparable`. `empty`, `contains`, `to_list` and `size` take none.
+- **The laws state plain facts.** `SortedSet.insertion.membership` states `contains b (insert a s) = true <-> b = a \/ contains b s = true`, `SortedSet.removal.membership` states `contains b (remove a s) = true <-> contains b s = true /\ ~ (b = a)`, and `SortedSet.emptiness` states `contains a (empty cmp) = false`.
+- **The elements read in order.** `SortedSet.to_list s` is `1 :: 2 :: 3 :: []`, `SortedSet.contains 3 s` is `true` and `SortedSet.contains 4 s` is `false`. Removing `2` leaves `1 :: 3 :: []`, of `SortedSet.size` `2`, and `SortedSet.conversion.size` states `(|| to_list s ||) = size s`.
+- **What it does not say.** How `insert` and `remove` change `size`: such a law rests on the size of each AVL rotation, which `AVL` does not state.
 
 ---
 
 ## Interfaces
 
-Each interface is a class over a container `F : Type -> Type`, and `List`, `NonEmptyList` and `BinaryTree` each have an instance of all three; `AVL` has none, and reaches them through `AVL.to_tree`. `Functor` has a section of its own after this one.
+Each interface is a class over a container `F : Type -> Type`, and `List`, `NonEmptyList` and `BinaryTree` each have an instance of all three; `AVL` and `SortedSet` have none, and reach `BinaryTree`'s through `AVL.to_tree`, a set after `SortedSet.to_avl`. `Functor` has a section of its own after this one.
 
 | Class | What it holds | `List` | `NonEmptyList` | `BinaryTree` |
 |:---|:---|:---|:---|:---|

@@ -272,6 +272,26 @@ Definition data_collection_all_delivers_binary_tree_quantification_any_specifica
       BinaryTree.Any P t <-> (forsome (a : A) . BinaryTree.Contains a t /\ P a)
   := @BinaryTree.quantification.any.specification.
 
+Definition data_collection_all_computes_binary_tree_all
+  : BinaryTree.all (Nat0.le 2%n0)
+      (BinaryTree.Node
+        (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf)
+        5%n0
+        (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf))
+    = true
+    /\ BinaryTree.all (Nat0.le 3%n0)
+        (BinaryTree.Node
+          (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf)
+          5%n0
+          (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf))
+      = false
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_binary_tree_quantification_all_reflection
+  : forall (A : Type) (p : A -> Bool) (t : BinaryTree A) .
+      Assert (BinaryTree.all p t) <-> BinaryTree.All (fun (a : A) . Assert (p a)) t
+  := @BinaryTree.quantification.all.reflection.
+
 Definition data_collection_all_delivers_bst_ordered
   : forall (A : Type) (lt : A -> A -> Prop) (t : BinaryTree A) . Prop
   := fun (A : Type) (lt : A -> A -> Prop) (t : BinaryTree A) . BST.Ordered lt t.
@@ -297,6 +317,27 @@ Definition data_collection_all_delivers_bst_search_specification
       forall (a : A) (t : BinaryTree A) .
         BST.Ordered lt t -> (BST.contains cmp a t = true <-> BinaryTree.Contains a t)
   := @BST.search.specification.
+
+Definition data_collection_all_computes_bst_is_ordered
+  : BST.is_ordered Nat0.compare
+      (BinaryTree.Node
+        (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf)
+        5%n0
+        (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf))
+    = true
+    /\ BST.is_ordered Nat0.compare
+        (BinaryTree.Node
+          (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf)
+          5%n0
+          (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf))
+      = false
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_bst_order_reflection
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (t : BinaryTree A) . Assert (BST.is_ordered cmp t) <-> BST.Ordered lt t
+  := @BST.order.reflection.
 
 Definition data_collection_all_computes_bst_insert
   : BST.insert Nat0.compare 3%n0
@@ -798,3 +839,116 @@ Definition data_collection_all_delivers_avl_removal_shrinkage
       AVL.height (AVL.remove cmp a t) = AVL.height t
       \/ (++ (AVL.height (AVL.remove cmp a t)))%n0 = AVL.height t
   := @AVL.removal.shrinkage.
+
+Definition data_collection_all_computes_avl_is_valid
+  : AVL.is_valid Nat0.compare
+      (AVL.insert Nat0.compare 3%n0
+        (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
+    = true
+    /\ AVL.is_measured (AVL.Node AVL.Leaf 1%n0 AVL.Leaf 7%n0) = false
+    /\ AVL.is_balanced
+        (AVL.Node
+          (AVL.Node (AVL.Node AVL.Leaf 1%n0 AVL.Leaf 1%n0) 2%n0 AVL.Leaf 2%n0)
+          3%n0
+          AVL.Leaf
+          3%n0)
+      = false
+    /\ AVL.is_ordered Nat0.compare
+        (AVL.Node (AVL.Node AVL.Leaf 3%n0 AVL.Leaf 1%n0) 2%n0 AVL.Leaf 2%n0)
+      = false
+  := conjoin (Identity.reflexivity _),
+       (conjoin (Identity.reflexivity _),
+         (conjoin (Identity.reflexivity _), (Identity.reflexivity _))).
+
+Definition data_collection_all_delivers_avl_measurement_reflection
+  : forall (A : Type) (t : AVL A) . Assert (AVL.is_measured t) <-> AVL.Measured t
+  := @AVL.measurement.reflection.
+
+Definition data_collection_all_delivers_avl_equilibrium_reflection
+  : forall (A : Type) (t : AVL A) . Assert (AVL.is_balanced t) <-> AVL.Balanced t
+  := @AVL.equilibrium.reflection.
+
+Definition data_collection_all_delivers_avl_order_reflection
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (t : AVL A) . Assert (AVL.is_ordered cmp t) <-> AVL.Ordered lt t
+  := @AVL.order.reflection.
+
+Definition data_collection_all_delivers_avl_validity_reflection
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (t : AVL A) .
+        Assert (AVL.is_valid cmp t) <-> AVL.Measured t /\ AVL.Balanced t /\ AVL.Ordered lt t
+  := @AVL.validity.reflection.
+
+Definition data_collection_all_delivers_sorted_set
+  : SortedSet Nat0.compare
+  := SortedSet.empty Nat0.compare.
+
+Definition data_collection_all_computes_sorted_set_to_list
+  : SortedSet.to_list
+      (SortedSet.insert 2%n0
+        (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))))
+    = (1%n0 :: 2%n0 :: 3%n0 :: [])%list
+  := Identity.reflexivity _.
+
+Definition data_collection_all_computes_sorted_set_contains
+  : SortedSet.contains 3%n0
+      (SortedSet.insert 2%n0
+        (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))))
+    = true
+    /\ SortedSet.contains 4%n0
+        (SortedSet.insert 2%n0
+          (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))))
+      = false
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_computes_sorted_set_insert_present
+  : SortedSet.insert 1%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))
+    = SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)
+  := SortedSet.conversion.injectivity
+       (SortedSet.insert 1%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)))
+       (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))
+       (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_sorted_set_conversion_injectivity
+  : forall (A : Type) (cmp : A -> A -> Comparison) (s1 : SortedSet cmp) (s2 : SortedSet cmp) .
+      SortedSet.to_avl s1 = SortedSet.to_avl s2 -> s1 = s2
+  := @SortedSet.conversion.injectivity.
+
+Definition data_collection_all_delivers_sorted_set_emptiness
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) .
+      SortedSet.contains a (SortedSet.empty cmp) = false
+  := @SortedSet.emptiness.
+
+Definition data_collection_all_delivers_sorted_set_insertion_membership
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (b : A) (s : SortedSet cmp) .
+      SortedSet.contains b (SortedSet.insert a s) = true
+      <-> b = a \/ SortedSet.contains b s = true
+  := @SortedSet.insertion.membership.
+
+Definition data_collection_all_computes_sorted_set_remove
+  : SortedSet.to_list
+      (SortedSet.remove 2%n0
+        (SortedSet.insert 2%n0
+          (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)))))
+    = (1%n0 :: 3%n0 :: [])%list
+    /\ SortedSet.size
+        (SortedSet.remove 2%n0
+          (SortedSet.insert 2%n0
+            (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)))))
+      = 2%n0
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_sorted_set_removal_membership
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (b : A) (s : SortedSet cmp) .
+      SortedSet.contains b (SortedSet.remove a s) = true
+      <-> SortedSet.contains b s = true /\ ~ (b = a)
+  := @SortedSet.removal.membership.
+
+Definition data_collection_all_delivers_sorted_set_conversion_size
+  : forall (A : Type) (cmp : A -> A -> Comparison) (s : SortedSet cmp) .
+      (|| SortedSet.to_list s ||)%list = SortedSet.size s
+  := @SortedSet.conversion.size.
