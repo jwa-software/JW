@@ -564,3 +564,87 @@ Definition data_collection_all_delivers_avl_insertion_growth
       AVL.height (AVL.insert cmp a t) = AVL.height t
       \/ AVL.height (AVL.insert cmp a t) = (++ (AVL.height t))%n0
   := @AVL.insertion.growth.
+
+Definition data_collection_all_delivers_avl_ordered
+  : forall (A : Type) (lt : A -> A -> Prop) (t : AVL A) . Prop
+  := fun (A : Type) (lt : A -> A -> Prop) (t : AVL A) . AVL.Ordered lt t.
+
+Definition data_collection_all_computes_avl_contains
+  : AVL.contains Nat0.compare 3%n0
+      (AVL.insert Nat0.compare 3%n0
+        (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
+    = true
+    /\ AVL.contains Nat0.compare 4%n0
+        (AVL.insert Nat0.compare 3%n0
+          (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
+      = false
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_computes_avl_insert_in_order
+  : BinaryTree.to_list
+      (AVL.to_tree
+        (AVL.insert Nat0.compare 1%n0
+          (AVL.insert Nat0.compare 3%n0 (AVL.insert Nat0.compare 2%n0 AVL.Leaf))))
+    = (1%n0 :: 2%n0 :: 3%n0 :: [])%list
+  := Identity.reflexivity _.
+
+Definition data_collection_all_delivers_avl_search_specification
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (a : A) (t : AVL A) .
+        AVL.Ordered lt t ->
+        (AVL.contains cmp a t = true <-> BinaryTree.Contains a (AVL.to_tree t))
+  := @AVL.search.specification.
+
+Definition data_collection_all_delivers_avl_rotation_right_membership
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (AVL.to_tree (AVL.rotate.right l a r))
+      <-> BinaryTree.Contains b (AVL.to_tree (AVL.node l a r))
+  := @AVL.rotation.right.membership.
+
+Definition data_collection_all_delivers_avl_rotation_right_order
+  : forall (A : Type) (lt : A -> A -> Prop) .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (l : AVL A) (a : A) (r : AVL A) .
+        AVL.Ordered lt (AVL.node l a r) -> AVL.Ordered lt (AVL.rotate.right l a r)
+  := @AVL.rotation.right.order.
+
+Definition data_collection_all_delivers_avl_rotation_left_membership
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (AVL.to_tree (AVL.rotate.left l a r))
+      <-> BinaryTree.Contains b (AVL.to_tree (AVL.node l a r))
+  := @AVL.rotation.left.membership.
+
+Definition data_collection_all_delivers_avl_rotation_left_order
+  : forall (A : Type) (lt : A -> A -> Prop) .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (l : AVL A) (a : A) (r : AVL A) .
+        AVL.Ordered lt (AVL.node l a r) -> AVL.Ordered lt (AVL.rotate.left l a r)
+  := @AVL.rotation.left.order.
+
+Definition data_collection_all_delivers_avl_balancing_membership
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (AVL.to_tree (AVL.balance l a r))
+      <-> BinaryTree.Contains b (AVL.to_tree (AVL.node l a r))
+  := @AVL.balancing.membership.
+
+Definition data_collection_all_delivers_avl_balancing_order
+  : forall (A : Type) (lt : A -> A -> Prop) .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (l : AVL A) (a : A) (r : AVL A) .
+        AVL.Ordered lt (AVL.node l a r) -> AVL.Ordered lt (AVL.balance l a r)
+  := @AVL.balancing.order.
+
+Definition data_collection_all_delivers_avl_insertion_membership
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (a : A) (b : A) (t : AVL A) .
+        BinaryTree.Contains b (AVL.to_tree (AVL.insert cmp a t))
+        <-> b = a \/ BinaryTree.Contains b (AVL.to_tree t)
+  := @AVL.insertion.membership.
+
+Definition data_collection_all_delivers_avl_insertion_preservation_order
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (a : A) (t : AVL A) . AVL.Ordered lt t -> AVL.Ordered lt (AVL.insert cmp a t)
+  := @AVL.insertion.preservation.order.
