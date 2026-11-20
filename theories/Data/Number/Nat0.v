@@ -365,6 +365,56 @@ Proof.
     quod idem est.
 Qed.
 
+(* increment.injectivity *)
+Theorem injectivity : forall {m : Nat0} {n : Nat0} . (++ m) = ++ n -> m = n.
+Proof.
+  intros m n e.
+  match &m with | | p end; match &n with | | q end; simpl in &e.
+  - quod idem est.
+  - simpl Nat.inc in &e.
+    let proof e' := positive.injectivity &e.
+    ex &e' quodlibet.
+  - simpl Nat.inc in &e.
+    let proof e' := positive.injectivity &e.
+    ex &e' quodlibet.
+  - simpl Nat.inc in &e.
+    let proof e' := Nat.successor.injectivity (positive.injectivity &e).
+    leibniz &e' in |- *.
+    quod idem est.
+Qed.
+
+Module order. (* increment.order *)
+
+(* increment.order.extensivity *)
+Theorem extensivity : forall (n : Nat0) . n < ++ n.
+Proof.
+  intros n.
+  simpl ( _ < _ ) in |- *.
+  exists Nat.One.
+  match &n with | | p end; simpl in |- *.
+  - quod idem est.
+  - leibniz (Nat.addition.commutativity &p Nat.One) in |- *.
+    simpl Nat.inc in |- *.
+    simpl in |- *.
+    quod idem est.
+Qed.
+
+(* increment.order.positivity *)
+Theorem positivity : forall (n : Nat0) . 0 < ++ n.
+Proof.
+  intros n.
+  simpl ( _ < _ ) in |- *.
+  match &n with | | p end.
+  - exists Nat.One.
+    simpl in |- *.
+    quod idem est.
+  - exists (Nat.inc &p).
+    simpl in |- *.
+    quod idem est.
+Qed.
+
+End order. (* increment.order *)
+
 End increment. (* increment *)
 
 Module addition. (* addition *)
@@ -1040,6 +1090,16 @@ Proof.
   leibniz (addition.associativity l (+ k1) (+ k2)) in |- *.
   simpl in |- *.
   quod idem est.
+Qed.
+
+(* order.strict.distinction *)
+Theorem distinction : forall {m : Nat0} {n : Nat0} . m < n -> ~ (m = n).
+Proof.
+  intros m n s.
+  simpl (~ _) in |- *.
+  intro e.
+  leibniz &e in &s.
+  ex (order.strict.irreflexivity &n &s) quodlibet.
 Qed.
 
 Module zero. (* order.strict.zero *)

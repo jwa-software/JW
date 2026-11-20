@@ -12,10 +12,11 @@ SPDX-License-Identifier: MIT
 | `List A` | Any number of elements of type `A`, in order | `(1 :: 2 :: 3 :: [])%list`, `[]%list` (empty) |
 | `NonEmptyList A` | One element or more, in order | `(1 :: 2 :: [3])%non_empty_list`, `[1]%non_empty_list` |
 | `BinaryTree A` | A leaf, which holds nothing, or a node: one element between two subtrees | `BinaryTree.Node BinaryTree.Leaf 1 BinaryTree.Leaf` |
+| `AVL A` | A binary tree that stores at each node the height of the subtree there | `AVL.Node AVL.Leaf 1 AVL.Leaf 1` |
 
-`BST` is a module beside them and not a fourth type: it holds the rule that makes a `BinaryTree` a search tree, and the operations that follow that rule.
+`BST` is a module beside them and not a type of its own: it holds the rule that makes a `BinaryTree` a search tree, and the operations that follow that rule.
 
-`From jwa Require Import Data.Collection.All` brings the three types, `BST`, the interfaces, and what their operations and laws name: the types `Nat0`, `Nat`, `Bool`, `Option`, `Product` and `Comparison`, and the class `Comparable`. The examples on this page take their numbers in `Nat0` and are written with `jwa_list_scope` and `jwa_nat0_scope` open.
+`From jwa Require Import Data.Collection.All` brings the four types, `BST`, the interfaces, and what their operations and laws name: the types `Nat0`, `Nat`, `Bool`, `Option`, `Product` and `Comparison`, and the class `Comparable`. The examples on this page take their numbers in `Nat0` and are written with `jwa_list_scope` and `jwa_nat0_scope` open.
 
 ---
 
@@ -80,13 +81,31 @@ A search tree is a `BinaryTree` whose elements stand in order: at every node, th
 - **`remove` is built from two operations.** `BST.pop_minimum t` answers with the smallest element and the tree that is left, `Some` of the pair of `2` and the rest for `t`, and with `None` on a leaf; its laws are under `BST.extraction`. `BST.join l r` makes one tree of two where `l` lies wholly below `r`; its laws are under `BST.joining`.
 - **The comparison is an argument.** `contains`, `insert` and `remove` take `cmp`, as `List.compare` does, and their laws take `Comparable cmp lt` as a premise: `BST.search.specification Nat0.comparable` is the law at `Nat0`. The laws that read only the transitivity of `lt`, `BST.extraction.minimality` and `BST.joining.preservation`, take that alone.
 - **The type does not hold the rule.** A `BinaryTree` put together by hand need not be ordered, and on such a tree the laws say nothing: each one that needs the rule has `BST.Ordered lt t` as a premise. `BinaryTree.mirror` does not keep the rule either: `BST.contains Nat0.compare 8 (BinaryTree.mirror t)` is `false`.
-- **The tree is not balanced.** `1`, `2` and `3` inserted in that order make a chain of height `3`, where `t`, with three elements too, has height `2`. A search in a chain may go through every element.
+- **The tree is not balanced.** `1`, `2` and `3` inserted in that order make a chain of height `3`, where `t`, with three elements too, has height `2`. A search in a chain may go through every element. `AVL`, below, keeps its trees balanced.
+
+---
+
+## AVL
+
+An AVL tree is a search tree that keeps the heights of every node's two subtrees within one of each other, so that a path from the root stays short. `AVL` is a type of its own: each node stores the height of the subtree there, which a plain `BinaryTree` has no place for. Below, the comparison is `Nat0.compare`, and `t` is the tree that `1`, `2` and `3` make when inserted into `AVL.Leaf` in that order: `Node (Node Leaf 1 Leaf 1) 2 (Node Leaf 3 Leaf 1) 2`, each ctor under its prefix.
+
+- **A node stores its height, last.** `AVL.Node l a r h` holds the left subtree `l`, the element `a`, the right subtree `r` and the height `h`. `AVL.height t` reads it in one step, `2` for `t`, and `AVL.node l a r` builds a node with the right height. `AVL.to_tree` drops the heights and gives the `BinaryTree`, so `BinaryTree.to_list (AVL.to_tree t)` is `1 :: 2 :: 3 :: []`.
+- **Three rules are propositions.** `AVL.Measured t` states that every stored height is one above the higher of the heights its two subtrees store; `AVL.measurement.specification` turns it into `height t = BinaryTree.height (to_tree t)`. `AVL.Balanced t` states that at every node the heights of the two subtrees are equal or one apart. `AVL.Ordered lt t` is `BST.Ordered lt (to_tree t)`.
+- **`insert` rebalances on the way back up.** Where a subtree has grown two above its sibling, `AVL.balance` turns the node with `AVL.rotate.right` or `AVL.rotate.left`, a single or a double rotation. `t` comes from one single rotation, and `3`, `1` and `2` inserted in that order give the same tree from one double rotation. `1` to `7` inserted in order make a tree of height `3`, where `BST.insert` makes a chain of height `7`.
+- **A search follows one path.** `AVL.contains Nat0.compare 3 t` is `true`, and `AVL.contains Nat0.compare 4 t` is `false`. `AVL.search.specification` states that on an ordered tree the answer is the membership of `to_tree t`.
+- **`pop` takes the first element in order.** `AVL.pop t` is `Some` of the pair of `1` and the tree of `2` and `3`, and `None` on a leaf; on an ordered tree the first element is the smallest, by `AVL.extraction.minimality`. `AVL.join l r` makes one tree of two where `l` lies wholly below `r`: the first element of `r` goes between them, and the node is rebalanced.
+- **`remove` rebalances as well.** `AVL.remove Nat0.compare 2 t` puts `3` at the root, over `1`. `1` to `7` inserted in order, then `1`, `3` and `2` removed, leave `4 :: 5 :: 6 :: 7 :: []` at height `3`: the last removal turns the root with a left rotation.
+- **Each operation keeps each rule.** Under `insertion`, `extraction`, `joining` and `removal`, a `preservation` law states for each rule that the result keeps it: `AVL.insertion.preservation.balance` states `Measured t -> Balanced t -> Balanced (insert cmp a t)`, beside `.measurement` and `.order`. The `membership` laws state what the result holds, as `BST`'s do, through `to_tree`.
+- **The height changes by one level at most.** `AVL.insertion.growth` states that `insert` leaves the height as it was or one higher, and `AVL.removal.shrinkage` and `AVL.extraction.shrinkage` that `remove` and `pop` leave it as it was or one lower.
+- **The comparison is an argument.** `contains`, `insert` and `remove` take `cmp`, and their laws take `Comparable cmp lt` as a premise. The laws that read only the transitivity of `lt`, those of the rotations, of `balance`, of `pop` and of `join`, take that alone.
+- **The type does not hold the rules.** A tree put together by hand may store a wrong height, or be unbalanced or unordered, and on such a tree the laws say nothing: each one that needs a rule has it as a premise. A tree built from `AVL.Leaf` by `insert` and `remove` keeps all three.
+- **Induction has one hypothesis per subtree:** `match t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction`.
 
 ---
 
 ## Interfaces
 
-Each interface is a class over a container `F : Type -> Type`, and each type on this page has an instance of all three. `Functor` has a section of its own after this one.
+Each interface is a class over a container `F : Type -> Type`, and `List`, `NonEmptyList` and `BinaryTree` each have an instance of all three; `AVL` has none, and reaches them through `AVL.to_tree`. `Functor` has a section of its own after this one.
 
 | Class | What it holds | `List` | `NonEmptyList` | `BinaryTree` |
 |:---|:---|:---|:---|:---|

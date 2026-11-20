@@ -27,6 +27,7 @@ From jwa Require Export Data.Number.Nat0.
 From jwa Require Export Data.Option.
 From jwa Require Export Data.Product.
 
+From jwa Require Export Data.Collection.AVL.
 From jwa Require Export Data.Collection.BST.
 From jwa Require Export Data.Collection.BinaryTree.
 From jwa Require Export Data.Collection.List.
