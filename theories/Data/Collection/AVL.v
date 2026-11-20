@@ -526,8 +526,65 @@ Module rotation. (* rotation *)
 Module right. (* rotation.right *)
 
 (* A rotation keeps the elements in their order from left to right, so the
- * proof compares the two lists [BinaryTree.to_list] reads.
+ * two lists [BinaryTree.to_list] reads are the same; [membership] and [size]
+ * both go through them.
  *)
+(* rotation.right.sequence *)
+Lemma sequence
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) .
+      BinaryTree.to_list (to_tree (rotate.right l a r))
+      = BinaryTree.to_list (to_tree (node l a r)).
+Proof.
+  intros A l a r.
+  simpl rotate.right in |- *.
+  match &l with | Leaf | Node ll c lr hl end.
+  - simpl in |- *.
+    quod idem est.
+  - match (Nat0.eq (height &lr) (++ (height &ll))) with | | end |- t.
+    + match &lr with | Leaf | Node lrl d lrr hlr end.
+      * simpl in |- *.
+        quod idem est.
+      * simpl node in |- *.
+        simpl in |- *.
+        leibniz
+          (List.concatenation.associativity
+            (BinaryTree.to_list (to_tree &ll))
+            (List.Cons &c (BinaryTree.to_list (to_tree &lrl)))
+            (List.Cons &d
+              (List.concat
+                (BinaryTree.to_list (to_tree &lrr))
+                (List.Cons &a (BinaryTree.to_list (to_tree &r))))))
+          in |- *.
+        leibniz
+          (List.concatenation.associativity
+            (BinaryTree.to_list (to_tree &ll))
+            (List.Cons &c
+              (List.concat
+                (BinaryTree.to_list (to_tree &lrl))
+                (List.Cons &d (BinaryTree.to_list (to_tree &lrr)))))
+            (List.Cons &a (BinaryTree.to_list (to_tree &r))))
+          in |- *.
+        simpl in |- *.
+        leibniz
+          (List.concatenation.associativity
+            (BinaryTree.to_list (to_tree &lrl))
+            (List.Cons &d (BinaryTree.to_list (to_tree &lrr)))
+            (List.Cons &a (BinaryTree.to_list (to_tree &r))))
+          in |- *.
+        simpl in |- *.
+        quod idem est.
+    + simpl node in |- *.
+      simpl in |- *.
+      leibniz
+        (List.concatenation.associativity
+          (BinaryTree.to_list (to_tree &ll))
+          (List.Cons &c (BinaryTree.to_list (to_tree &lr)))
+          (List.Cons &a (BinaryTree.to_list (to_tree &r))))
+        in |- *.
+      simpl in |- *.
+      quod idem est.
+Qed.
+
 (* rotation.right.membership *)
 Theorem membership
   : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) (b : A) .
@@ -535,62 +592,24 @@ Theorem membership
       <-> BinaryTree.Contains b (to_tree (node l a r)).
 Proof.
   intros A l a r b.
-  lemma sequence
-    : BinaryTree.to_list (to_tree (rotate.right &l &a &r))
-      = BinaryTree.to_list (to_tree (node &l &a &r)).
-  {
-    simpl rotate.right in |- *.
-    match &l with | Leaf | Node ll c lr hl end.
-    - simpl in |- *.
-      quod idem est.
-    - match (Nat0.eq (height &lr) (++ (height &ll))) with | | end |- t.
-      + match &lr with | Leaf | Node lrl d lrr hlr end.
-        * simpl in |- *.
-          quod idem est.
-        * simpl node in |- *.
-          simpl in |- *.
-          leibniz
-            (List.concatenation.associativity
-              (BinaryTree.to_list (to_tree &ll))
-              (List.Cons &c (BinaryTree.to_list (to_tree &lrl)))
-              (List.Cons &d
-                (List.concat
-                  (BinaryTree.to_list (to_tree &lrr))
-                  (List.Cons &a (BinaryTree.to_list (to_tree &r))))))
-            in |- *.
-          leibniz
-            (List.concatenation.associativity
-              (BinaryTree.to_list (to_tree &ll))
-              (List.Cons &c
-                (List.concat
-                  (BinaryTree.to_list (to_tree &lrl))
-                  (List.Cons &d (BinaryTree.to_list (to_tree &lrr)))))
-              (List.Cons &a (BinaryTree.to_list (to_tree &r))))
-            in |- *.
-          simpl in |- *.
-          leibniz
-            (List.concatenation.associativity
-              (BinaryTree.to_list (to_tree &lrl))
-              (List.Cons &d (BinaryTree.to_list (to_tree &lrr)))
-              (List.Cons &a (BinaryTree.to_list (to_tree &r))))
-            in |- *.
-          simpl in |- *.
-          quod idem est.
-      + simpl node in |- *.
-        simpl in |- *.
-        leibniz
-          (List.concatenation.associativity
-            (BinaryTree.to_list (to_tree &ll))
-            (List.Cons &c (BinaryTree.to_list (to_tree &lr)))
-            (List.Cons &a (BinaryTree.to_list (to_tree &r))))
-          in |- *.
-        simpl in |- *.
-        quod idem est.
-  }
   let proof here := BinaryTree.conversion.membership &b (to_tree (rotate.right &l &a &r)).
   let proof there := BinaryTree.conversion.membership &b (to_tree (node &l &a &r)).
-  leibniz &sequence in &here.
+  leibniz (rotation.right.sequence &l &a &r) in &here.
   ipso (Biconditional.transitivity &here (Biconditional.symmetry &there)).
+Qed.
+
+(* rotation.right.size *)
+Theorem size
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) .
+      BinaryTree.size (to_tree (rotate.right l a r)) = BinaryTree.size (to_tree (node l a r)).
+Proof.
+  intros A l a r.
+  leibniz
+    <- (BinaryTree.conversion.size (to_tree (rotate.right &l &a &r))),
+    <- (BinaryTree.conversion.size (to_tree (node &l &a &r)))
+    in |- *.
+  leibniz (rotation.right.sequence &l &a &r) in |- *.
+  quod idem est.
 Qed.
 
 (* A subtree that moves to a new parent is below or above it by
@@ -1025,6 +1044,52 @@ End right. (* rotation.right *)
 
 Module left. (* rotation.left *)
 
+(* rotation.left.sequence *)
+Lemma sequence
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) .
+      BinaryTree.to_list (to_tree (rotate.left l a r))
+      = BinaryTree.to_list (to_tree (node l a r)).
+Proof.
+  intros A l a r.
+  simpl rotate.left in |- *.
+  match &r with | Leaf | Node rl c rr hr end.
+  - simpl in |- *.
+    quod idem est.
+  - match (Nat0.eq (height &rl) (++ (height &rr))) with | | end |- t.
+    + match &rl with | Leaf | Node rll d rlr hrl end.
+      * simpl in |- *.
+        quod idem est.
+      * simpl node in |- *.
+        simpl in |- *.
+        leibniz
+          (List.concatenation.associativity
+            (BinaryTree.to_list (to_tree &l))
+            (List.Cons &a (BinaryTree.to_list (to_tree &rll)))
+            (List.Cons &d
+              (List.concat
+                (BinaryTree.to_list (to_tree &rlr))
+                (List.Cons &c (BinaryTree.to_list (to_tree &rr))))))
+          in |- *.
+        leibniz
+          (List.concatenation.associativity
+            (BinaryTree.to_list (to_tree &rll))
+            (List.Cons &d (BinaryTree.to_list (to_tree &rlr)))
+            (List.Cons &c (BinaryTree.to_list (to_tree &rr))))
+          in |- *.
+        simpl in |- *.
+        quod idem est.
+    + simpl node in |- *.
+      simpl in |- *.
+      leibniz
+        (List.concatenation.associativity
+          (BinaryTree.to_list (to_tree &l))
+          (List.Cons &a (BinaryTree.to_list (to_tree &rl)))
+          (List.Cons &c (BinaryTree.to_list (to_tree &rr))))
+        in |- *.
+      simpl in |- *.
+      quod idem est.
+Qed.
+
 (* rotation.left.membership *)
 Theorem membership
   : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) (b : A) .
@@ -1032,52 +1097,24 @@ Theorem membership
       <-> BinaryTree.Contains b (to_tree (node l a r)).
 Proof.
   intros A l a r b.
-  lemma sequence
-    : BinaryTree.to_list (to_tree (rotate.left &l &a &r))
-      = BinaryTree.to_list (to_tree (node &l &a &r)).
-  {
-    simpl rotate.left in |- *.
-    match &r with | Leaf | Node rl c rr hr end.
-    - simpl in |- *.
-      quod idem est.
-    - match (Nat0.eq (height &rl) (++ (height &rr))) with | | end |- t.
-      + match &rl with | Leaf | Node rll d rlr hrl end.
-        * simpl in |- *.
-          quod idem est.
-        * simpl node in |- *.
-          simpl in |- *.
-          leibniz
-            (List.concatenation.associativity
-              (BinaryTree.to_list (to_tree &l))
-              (List.Cons &a (BinaryTree.to_list (to_tree &rll)))
-              (List.Cons &d
-                (List.concat
-                  (BinaryTree.to_list (to_tree &rlr))
-                  (List.Cons &c (BinaryTree.to_list (to_tree &rr))))))
-            in |- *.
-          leibniz
-            (List.concatenation.associativity
-              (BinaryTree.to_list (to_tree &rll))
-              (List.Cons &d (BinaryTree.to_list (to_tree &rlr)))
-              (List.Cons &c (BinaryTree.to_list (to_tree &rr))))
-            in |- *.
-          simpl in |- *.
-          quod idem est.
-      + simpl node in |- *.
-        simpl in |- *.
-        leibniz
-          (List.concatenation.associativity
-            (BinaryTree.to_list (to_tree &l))
-            (List.Cons &a (BinaryTree.to_list (to_tree &rl)))
-            (List.Cons &c (BinaryTree.to_list (to_tree &rr))))
-          in |- *.
-        simpl in |- *.
-        quod idem est.
-  }
   let proof here := BinaryTree.conversion.membership &b (to_tree (rotate.left &l &a &r)).
   let proof there := BinaryTree.conversion.membership &b (to_tree (node &l &a &r)).
-  leibniz &sequence in &here.
+  leibniz (rotation.left.sequence &l &a &r) in &here.
   ipso (Biconditional.transitivity &here (Biconditional.symmetry &there)).
+Qed.
+
+(* rotation.left.size *)
+Theorem size
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) .
+      BinaryTree.size (to_tree (rotate.left l a r)) = BinaryTree.size (to_tree (node l a r)).
+Proof.
+  intros A l a r.
+  leibniz
+    <- (BinaryTree.conversion.size (to_tree (rotate.left &l &a &r))),
+    <- (BinaryTree.conversion.size (to_tree (node &l &a &r)))
+    in |- *.
+  leibniz (rotation.left.sequence &l &a &r) in |- *.
+  quod idem est.
 Qed.
 
 (* rotation.left.order *)
@@ -1606,6 +1643,20 @@ Proof.
   - match (Nat0.eq (height &r) (++ (++ (height &l)))) with | | end |- t2.
     + ipso (rotation.left.order &tr &l &a &r &o).
     + ipso &o.
+Qed.
+
+(* balancing.size *)
+Theorem size
+  : forall {A : Type} (l : AVL A) (a : A) (r : AVL A) .
+      BinaryTree.size (to_tree (AVL.balance l a r)) = BinaryTree.size (to_tree (node l a r)).
+Proof.
+  intros A l a r.
+  simpl AVL.balance in |- *.
+  match (Nat0.eq (height &l) (++ (++ (height &r)))) with | | end |- t1.
+  - ipso (rotation.right.size &l &a &r).
+  - match (Nat0.eq (height &r) (++ (++ (height &l)))) with | | end |- t2.
+    + ipso (rotation.left.size &l &a &r).
+    + quod idem est.
 Qed.
 
 Module shrinkage. (* balancing.shrinkage *)
@@ -2616,6 +2667,88 @@ Proof.
   ipso &grown.
 Qed.
 
+(* [contains] and [insert] walk the same path, so the size laws read the
+ * tree's shape alone and ask for no ordered tree.
+ *)
+Module size. (* insertion.size *)
+
+(* insertion.size.growth *)
+Theorem growth
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      contains cmp a t = false ->
+      BinaryTree.size (to_tree (insert cmp a t)) = ++ (BinaryTree.size (to_tree t)).
+Proof.
+  intros A cmp a t.
+  match &t with | Leaf | Node (l by IHl) b (r by IHr) n end per AVL.induction.
+  - intro e.
+    simpl in |- *.
+    quod idem est.
+  - intro e.
+    simpl in &e.
+    simpl in |- *.
+    match (&cmp &a &b) with | | | end |- c.
+    + leibniz (balancing.size (insert &cmp &a &l) &b &r) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz (&IHl &e) in |- *.
+      leibniz (Nat0.increment.specification (BinaryTree.size (to_tree &l))) in |- *.
+      leibniz
+        (Nat0.addition.associativity
+          1 (BinaryTree.size (to_tree &l)) (BinaryTree.size (to_tree &r)))
+        in |- *.
+      leibniz
+        <- (Nat0.increment.specification
+             (BinaryTree.size (to_tree &l) + BinaryTree.size (to_tree &r)))
+        in |- *.
+      quod idem est.
+    + ex &e quodlibet.
+    + leibniz (balancing.size &l &b (insert &cmp &a &r)) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz (&IHr &e) in |- *.
+      leibniz (Nat0.increment.specification (BinaryTree.size (to_tree &r))) in |- *.
+      leibniz
+        (Nat0.addition.left.commutativity
+          (BinaryTree.size (to_tree &l)) 1 (BinaryTree.size (to_tree &r)))
+        in |- *.
+      leibniz
+        <- (Nat0.increment.specification
+             (BinaryTree.size (to_tree &l) + BinaryTree.size (to_tree &r)))
+        in |- *.
+      quod idem est.
+Qed.
+
+(* insertion.size.invariance *)
+Theorem invariance
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      contains cmp a t = true ->
+      BinaryTree.size (to_tree (insert cmp a t)) = BinaryTree.size (to_tree t).
+Proof.
+  intros A cmp a t.
+  match &t with | Leaf | Node (l by IHl) b (r by IHr) n end per AVL.induction.
+  - intro e.
+    simpl in &e.
+    ex &e quodlibet.
+  - intro e.
+    simpl in &e.
+    simpl in |- *.
+    match (&cmp &a &b) with | | | end |- c.
+    + leibniz (balancing.size (insert &cmp &a &l) &b &r) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz (&IHl &e) in |- *.
+      quod idem est.
+    + simpl in |- *.
+      quod idem est.
+    + leibniz (balancing.size &l &b (insert &cmp &a &r)) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz (&IHr &e) in |- *.
+      quod idem est.
+Qed.
+
+End size. (* insertion.size *)
+
 End insertion. (* insertion *)
 
 Module extraction. (* extraction *)
@@ -2969,6 +3102,47 @@ Proof.
   ipso &shrunk.
 Qed.
 
+(* extraction.size *)
+Theorem size
+  : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
+      pop t = Some (Product.introduction m rest) ->
+      ++ (BinaryTree.size (to_tree rest)) = BinaryTree.size (to_tree t).
+Proof.
+  intros A t.
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) n end per AVL.induction.
+  - intros m rest e.
+    simpl in &e.
+    ex &e quodlibet.
+  - intros m rest.
+    simpl in |- *.
+    match (pop &l) with | None | Some p end |- found.
+    + intro e.
+      modus aequans (extraction.absence.specification &l), &found |- empty.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
+      leibniz &empty, <- &rr in |- *.
+      simpl in |- *.
+      quod idem est.
+    + match &p with | m' l' end.
+      intro e.
+      match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
+      let proof spec
+        := &IHl &m' &l' (Identity.reflexivity (Some (Product.introduction &m' &l'))).
+      leibniz <- &nr, (balancing.size &l' &a &r) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz <- &spec in |- *.
+      leibniz (Nat0.increment.specification (BinaryTree.size (to_tree &l'))) in |- *.
+      leibniz
+        (Nat0.addition.associativity
+          1 (BinaryTree.size (to_tree &l')) (BinaryTree.size (to_tree &r)))
+        in |- *.
+      leibniz
+        <- (Nat0.increment.specification
+             (BinaryTree.size (to_tree &l') + BinaryTree.size (to_tree &r)))
+        in |- *.
+      quod idem est.
+Qed.
+
 End extraction. (* extraction *)
 
 Module joining. (* joining *)
@@ -3010,6 +3184,39 @@ Proof.
       * modus aequans &spec, &beyond |- rest.
         modus aequans &bm, (disjoin _, &rest) |- now.
         ipso &now.
+Qed.
+
+(* joining.size *)
+Theorem size
+  : forall {A : Type} (l : AVL A) (r : AVL A) .
+      BinaryTree.size (to_tree (join l r))
+      = BinaryTree.size (to_tree l) + BinaryTree.size (to_tree r).
+Proof.
+  intros A l r.
+  simpl join in |- *.
+  match (pop &r) with | None | Some p end |- found.
+  - modus aequans (extraction.absence.specification &r), &found |- empty.
+    leibniz &empty in |- *.
+    simpl in |- *.
+    match (Nat0.addition.identity (BinaryTree.size (to_tree &l))) with | _ ri end.
+    leibniz &ri in |- *.
+    quod idem est.
+  - match &p with | m r' end.
+    let proof spec := extraction.size &r &m &r' &found.
+    leibniz (balancing.size &l &m &r') in |- *.
+    simpl node in |- *.
+    simpl in |- *.
+    leibniz <- &spec in |- *.
+    leibniz (Nat0.increment.specification (BinaryTree.size (to_tree &r'))) in |- *.
+    leibniz
+      (Nat0.addition.left.commutativity
+        (BinaryTree.size (to_tree &l)) 1 (BinaryTree.size (to_tree &r')))
+      in |- *.
+    leibniz
+      <- (Nat0.increment.specification
+           (BinaryTree.size (to_tree &l) + BinaryTree.size (to_tree &r')))
+      in |- *.
+    quod idem est.
 Qed.
 
 Module preservation. (* joining.preservation *)
@@ -3524,6 +3731,90 @@ Proof.
   match (removal.preservation.invariance &cmp &a &t &m &bt) with | _ shrunk end.
   ipso &shrunk.
 Qed.
+
+(* [contains] and [remove] walk the same path, so the size laws read the
+ * tree's shape alone and ask for no ordered tree.
+ *)
+Module size. (* removal.size *)
+
+(* removal.size.shrinkage *)
+Theorem shrinkage
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      contains cmp a t = true ->
+      ++ (BinaryTree.size (to_tree (remove cmp a t))) = BinaryTree.size (to_tree t).
+Proof.
+  intros A cmp a t.
+  match &t with | Leaf | Node (l by IHl) b (r by IHr) n end per AVL.induction.
+  - intro e.
+    simpl in &e.
+    ex &e quodlibet.
+  - intro e.
+    simpl in &e.
+    simpl in |- *.
+    match (&cmp &a &b) with | | | end |- c.
+    + leibniz (balancing.size (remove &cmp &a &l) &b &r) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz <- (&IHl &e) in |- *.
+      leibniz (Nat0.increment.specification (BinaryTree.size (to_tree (remove &cmp &a &l))))
+        in |- *.
+      leibniz
+        (Nat0.addition.associativity
+          1 (BinaryTree.size (to_tree (remove &cmp &a &l))) (BinaryTree.size (to_tree &r)))
+        in |- *.
+      leibniz
+        <- (Nat0.increment.specification
+             (BinaryTree.size (to_tree (remove &cmp &a &l)) + BinaryTree.size (to_tree &r)))
+        in |- *.
+      quod idem est.
+    + leibniz (joining.size &l &r) in |- *.
+      quod idem est.
+    + leibniz (balancing.size &l &b (remove &cmp &a &r)) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz <- (&IHr &e) in |- *.
+      leibniz (Nat0.increment.specification (BinaryTree.size (to_tree (remove &cmp &a &r))))
+        in |- *.
+      leibniz
+        (Nat0.addition.left.commutativity
+          (BinaryTree.size (to_tree &l)) 1 (BinaryTree.size (to_tree (remove &cmp &a &r))))
+        in |- *.
+      leibniz
+        <- (Nat0.increment.specification
+             (BinaryTree.size (to_tree &l) + BinaryTree.size (to_tree (remove &cmp &a &r))))
+        in |- *.
+      quod idem est.
+Qed.
+
+(* removal.size.invariance *)
+Theorem invariance
+  : forall {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      contains cmp a t = false ->
+      BinaryTree.size (to_tree (remove cmp a t)) = BinaryTree.size (to_tree t).
+Proof.
+  intros A cmp a t.
+  match &t with | Leaf | Node (l by IHl) b (r by IHr) n end per AVL.induction.
+  - intro e.
+    simpl in |- *.
+    quod idem est.
+  - intro e.
+    simpl in &e.
+    simpl in |- *.
+    match (&cmp &a &b) with | | | end |- c.
+    + leibniz (balancing.size (remove &cmp &a &l) &b &r) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz (&IHl &e) in |- *.
+      quod idem est.
+    + ex &e quodlibet.
+    + leibniz (balancing.size &l &b (remove &cmp &a &r)) in |- *.
+      simpl node in |- *.
+      simpl in |- *.
+      leibniz (&IHr &e) in |- *.
+      quod idem est.
+Qed.
+
+End size. (* removal.size *)
 
 End removal. (* removal *)
 
