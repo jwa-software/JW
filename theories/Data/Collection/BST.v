@@ -3,6 +3,7 @@
  *)
 
 From jwa Require Import Core.All.
+From jwa Require Import Data.Assert.
 From jwa Require Import Data.Base.Bool.
 From jwa Require Import Data.Base.Comparison.
 From jwa Require Import Data.Collection.BinaryTree.
@@ -33,6 +34,36 @@ Fixpoint Ordered {A : Type} (lt : A -> A -> Prop) (t : BinaryTree A) : Prop :=
       /\ BinaryTree.All (fun (b : A) . lt a b) r
       /\ Ordered lt l
       /\ Ordered lt r
+  end.
+
+(* The test that a tree is ordered by [cmp], answered as a [Bool]: at every
+ * node each element of the left subtree compares [Lt] with the node's, and
+ * the node's compares [Lt] with each element of the right subtree.
+ *)
+(* [forall {A : Type} . (A -> A -> Comparison) -> BinaryTree A -> Bool] *)
+Fixpoint is_ordered {A : Type} (cmp : A -> A -> Comparison) (t : BinaryTree A) : Bool :=
+  match t with
+  | BinaryTree.Leaf       => true
+  | BinaryTree.Node l a r =>
+      Bool.and
+        (BinaryTree.all
+          (fun (b : A) .
+            match cmp b a with
+            | Comparison.Lt => true
+            | Comparison.Eq => false
+            | Comparison.Gt => false
+            end)
+          l)
+        (Bool.and
+          (BinaryTree.all
+            (fun (b : A) .
+              match cmp a b with
+              | Comparison.Lt => true
+              | Comparison.Eq => false
+              | Comparison.Gt => false
+              end)
+            r)
+          (Bool.and (is_ordered cmp l) (is_ordered cmp r)))
   end.
 
 (* [cmp a b] picks one subtree at each node, so the search follows one path
@@ -114,6 +145,94 @@ Fixpoint remove {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : BinaryTree 
       | Comparison.Gt => BinaryTree.Node l b (remove cmp a r)
       end
   end.
+
+Module order. (* order *)
+
+(* order.reflection *)
+Theorem reflection
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+      Comparable cmp lt ->
+      forall (t : BinaryTree A) . Assert (is_ordered cmp t) <-> Ordered lt t.
+Proof.
+  intros A cmp lt C t.
+  (* The test at each node answers [true] exactly for [Lt], which is [lt]. *)
+  lemma test
+    : forall (x : &A) (y : &A) .
+        Assert
+          (match &cmp x y with
+           | Comparison.Lt => true
+           | Comparison.Eq => false
+           | Comparison.Gt => false
+           end)
+        <-> &lt x y.
+  {
+    intros x y.
+    match (&cmp &x &y) with | | | end |- c.
+    - simpl in |- *.
+      divide et impera.
+      + intro v.
+        ipso (modus aequans (Comparable.comparison.strict.specification &x &y), &c).
+      + intro h.
+        ipso I.
+    - simpl in |- *.
+      divide et impera.
+      + intro f.
+        ex &f quodlibet.
+      + intro h.
+        modus aequans (Comparable.comparison.equality.specification &x &y), &c |- e.
+        leibniz &e in &h.
+        ex (Comparable.order.strict.irreflexivity &y &h) quodlibet.
+    - simpl in |- *.
+      divide et impera.
+      + intro f.
+        ex &f quodlibet.
+      + intro h.
+        modus aequans
+          (Comparable.comparison.strict.transposition.specification &x &y), &c |- yx.
+        ex (Comparable.order.strict.asymmetry &x &y &h &yx) quodlibet.
+  }
+  match &t with | Leaf | Node (l by IHl) a (r by IHr) end per BinaryTree.induction.
+  - simpl in |- *.
+    ipso (Biconditional.reflexivity _).
+  - simpl in |- *.
+    divide et impera.
+    + intro h.
+      modus aequans (Assert.conjunction _ _), &h |- h1.
+      match &h1 with | hb h2 end.
+      modus aequans (Assert.conjunction _ _), &h2 |- h3.
+      match &h3 with | ha h4 end.
+      modus aequans (Assert.conjunction _ _), &h4 |- h5.
+      match &h5 with | ol or end.
+      modus aequans (BinaryTree.quantification.all.reflection _ &l), &hb |- bl.
+      modus aequans (BinaryTree.quantification.all.reflection _ &r), &ha |- ar.
+      ipso
+        (conjoin
+          (BinaryTree.quantification.all.monotonicity
+            (fun (x : &A) . Biconditional.forward.elimination (&test x &a)) &bl),
+          (conjoin
+            (BinaryTree.quantification.all.monotonicity
+              (fun (x : &A) . Biconditional.forward.elimination (&test &a x)) &ar),
+            (conjoin (modus aequans &IHl, &ol), (modus aequans &IHr, &or)))).
+    + intro h.
+      match &h with | bl h2 end.
+      match &h2 with | ar h3 end.
+      match &h3 with | ol or end.
+      let proof bl'
+        := BinaryTree.quantification.all.monotonicity
+             (fun (x : &A) . Biconditional.backward.elimination (&test x &a)) &bl.
+      let proof ar'
+        := BinaryTree.quantification.all.monotonicity
+             (fun (x : &A) . Biconditional.backward.elimination (&test &a x)) &ar.
+      modus aequans (BinaryTree.quantification.all.reflection _ &l), &bl' |- hb.
+      modus aequans (BinaryTree.quantification.all.reflection _ &r), &ar' |- ha.
+      modus aequans &IHl, &ol |- il.
+      modus aequans &IHr, &or |- ir.
+      modus aequans (Assert.conjunction _ _), (conjoin &il, &ir) |- h5.
+      modus aequans (Assert.conjunction _ _), (conjoin &ha, &h5) |- h4.
+      ipso (modus aequans (Assert.conjunction _ _), (conjoin &hb, &h4)).
+Qed.
+
+End order. (* order *)
 
 Module search. (* search *)
 
