@@ -78,6 +78,46 @@ Definition data_number_all_delivers_rational_subtraction_notation
   := conjoin (Identity.reflexivity _),
        (conjoin (Identity.reflexivity _), (Identity.reflexivity _)).
 
+Definition data_number_all_delivers_integer_subtraction_specification
+  : forall (m : Integer) (n : Integer) . (m - n)%z = (m + Integer.negate n)%z
+  := Integer.subtraction.specification.
+
+Definition data_number_all_delivers_integer_subtraction_inversion_addition
+  : forall (m : Integer) (n : Integer) . ((m + n) - n)%z = m
+  := Integer.subtraction.inversion.addition.
+
+Definition data_number_all_delivers_integer_addition_inversion_subtraction
+  : forall (m : Integer) (n : Integer) . ((m - n) + n)%z = m
+  := Integer.addition.inversion.subtraction.
+
+Definition data_number_all_delivers_integer_subtraction_right_identity
+  : forall (n : Integer) . (n - Integer.Zero)%z = n
+  := Integer.subtraction.right.identity.
+
+Definition data_number_all_delivers_integer_subtraction_annihilation
+  : forall (n : Integer) . (n - n)%z = Integer.Zero
+  := Integer.subtraction.annihilation.
+
+Definition data_number_all_delivers_rational_subtraction_specification
+  : forall (x : Rational) (y : Rational) . (x - y)%q = (x + Rational.negate y)%q
+  := Rational.subtraction.specification.
+
+Definition data_number_all_delivers_rational_subtraction_inversion_addition
+  : forall (x : Rational) (y : Rational) . ((x + y) - y)%q = x
+  := Rational.subtraction.inversion.addition.
+
+Definition data_number_all_delivers_rational_addition_inversion_subtraction
+  : forall (x : Rational) (y : Rational) . ((x - y) + y)%q = x
+  := Rational.addition.inversion.subtraction.
+
+Definition data_number_all_delivers_rational_subtraction_right_identity
+  : forall (x : Rational) . (x - Rational.Zero)%q = x
+  := Rational.subtraction.right.identity.
+
+Definition data_number_all_delivers_rational_subtraction_annihilation
+  : forall (x : Rational) . (x - x)%q = Rational.Zero
+  := Rational.subtraction.annihilation.
+
 Definition data_number_all_delivers_gcd_divisibility
   : forall (b : Nat0) (a : Nat0) .
       Nat0.Divides (Nat0.gcd a b) a

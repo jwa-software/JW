@@ -31,6 +31,26 @@ Definition data_number_binary_all_delivers_bin_subtraction_notation
   : (11 - 1011)%b = (-1000)%b /\ ((1011 - 11) - 1)%b = 111%b
   := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
 
+Definition data_number_binary_all_delivers_bin_subtraction_specification
+  : forall (x : Bin) (y : Bin) . (x - y)%b = (x + Bin.negate y)%b
+  := Bin.subtraction.specification.
+
+Definition data_number_binary_all_delivers_bin_subtraction_inversion_addition
+  : forall (x : Bin) (y : Bin) . ((x + y) - y)%b = x
+  := Bin.subtraction.inversion.addition.
+
+Definition data_number_binary_all_delivers_bin_addition_inversion_subtraction
+  : forall (x : Bin) (y : Bin) . ((x - y) + y)%b = x
+  := Bin.addition.inversion.subtraction.
+
+Definition data_number_binary_all_delivers_bin_subtraction_right_identity
+  : forall (x : Bin) . (x - Bin.Zero)%b = x
+  := Bin.subtraction.right.identity.
+
+Definition data_number_binary_all_delivers_bin_subtraction_annihilation
+  : forall (x : Bin) . (x - x)%b = Bin.Zero
+  := Bin.subtraction.annihilation.
+
 Definition data_number_binary_all_delivers_bin_involution
   : forall (x : Bin) .
       Bin.negate (Bin.negate x) = x
