@@ -24,7 +24,6 @@ The library lives under `theories/`, **one directory per layer**. Each layer:
 | `jwa.Relation` | Orders, well-founded and equivalence relations | Dialect, Core, Tactics |
 | `jwa.Data` | Concrete data types: the base types, the machine units, products, coproducts, options, the numbers, lists, text, and the functor class they instantiate | Dialect, Core, Tactics, Algebra, Relation |
 | `jwa.Assumption` | Axioms: classical principles, extensionality, decidability; the layer holds only its umbrella | Dialect, Core |
-| `jwa.Programming` | Monad instances, effects, extraction-oriented code; the layer holds only its umbrella | Dialect, Core, Tactics, Algebra, Relation, Data |
 | `jwa.All` | `From jwa Require Import All` brings in every layer except Assumption | every layer but Assumption |
 
 **`Assumption` is the only layer that may introduce axioms**, and no other layer depends on it, so everything else stays axiom-free under `Print Assumptions`, the command its name is taken from. Import it explicitly, with `From jwa Require Import Assumption.All`, when a development needs it.
