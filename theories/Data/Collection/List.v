@@ -21,12 +21,6 @@ From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Syllogism.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [List.concat]. The
- * type and its ctors are declared inside it, so the names [Nil] and [Cons]
- * are reachable only as [List.Nil] and [List.Cons]. A bare ctor at the top
- * level is claimed by whichever file declares it last, silently and with no
- * warning, which makes the meaning of a name depend on import order.
- *)
 Module List. (* List *)
 
 (* A list is empty, or one element in front of a list. [A] is a parameter:
@@ -42,10 +36,6 @@ Inductive T (A : Type) : Type :=
 Arguments Nil  {A}.
 Arguments Cons {A} a l.
 
-(* The carrier is named [T] so that the type itself reads [List] on both
- * sides of the module: here through this abbreviation, outside through the
- * one that follows [End List].
- *)
 Abbreviation List := T.
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs here.
@@ -3571,18 +3561,11 @@ End minimum. (* minimum *)
 
 End List. (* List *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [List A], not [List.T A].
- *)
 Abbreviation List := List.T.
 
-(* Makes the notations declared in [Module List] usable in every file that
- * imports this one, as [(l1 ++ l2)%list] or under an opened
- * [jwa_list_scope]. Only the notations are exported: [concat], the laws and
- * the two ctors still need the [List.] prefix. That split is the point of
- * the selective form -- [[]] and [::] are the spellings a client wants,
- * while [Nil] and [Cons] are the names a second container would collide
- * with.
+(* Only the notations are exported, not the ctors: [[]] and [::] are the
+ * spellings a client wants, while [Nil] and [Cons] are the names a second
+ * container would collide with.
  *)
 Export (notations) List.
 

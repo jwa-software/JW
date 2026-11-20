@@ -1408,14 +1408,8 @@ Instance comparable
 
 End UInt8. (* UInt8 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [UInt8], not [UInt8.T].
- *)
 Abbreviation UInt8 := UInt8.T.
 
-(* Makes the notations declared in [Module UInt8] usable in every file that
- * imports this one, as [(x + y)%uint8] or under an opened [jwa_uint8_scope].
- *)
 Export (notations) UInt8.
 
 (* A number of the type is written in decimal or hexadecimal under its

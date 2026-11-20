@@ -16,11 +16,6 @@ From jwa Require Import Dialect.ExFalso.
 From jwa Require Import Dialect.Simpl.
 From jwa Require Import Tactics.Modus.
 
-(* A module may carry the type's name; its members read
- * [NonEmptyList.head]. The type and its ctors are declared inside it: a
- * ctor at the top level is rebound by any later file declaring the same
- * name, silently and with no warning.
- *)
 Module NonEmptyList. (* NonEmptyList *)
 
 (* A non-empty list is one element, or one element in front of a non-empty
@@ -38,10 +33,6 @@ Inductive T (A : Type) : Type :=
 Arguments One  {A} a.
 Arguments Cons {A} a x.
 
-(* The carrier is named [T] so that the type itself reads [NonEmptyList] on
- * both sides of the module: here through this abbreviation, outside
- * through the one that follows [End NonEmptyList].
- *)
 Abbreviation NonEmptyList := T.
 
 (* The level is reserved in [Core.Notations]; only the meaning belongs
@@ -606,16 +597,8 @@ End conversion. (* conversion *)
 
 End NonEmptyList. (* NonEmptyList *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [NonEmptyList A], not [NonEmptyList.T A].
- *)
 Abbreviation NonEmptyList := NonEmptyList.T.
 
-(* Makes the notations declared in [Module NonEmptyList] usable in every
- * file that imports this one, as [(x ++ y)%non_empty_list] or under an
- * opened [jwa_non_empty_list_scope]. Only the notations are exported:
- * [concat], the laws and the two ctors still need the prefix.
- *)
 Export (notations) NonEmptyList.
 
 (* Only a semigroup, where [List] is a monoid: the identity would be an empty

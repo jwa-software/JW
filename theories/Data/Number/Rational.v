@@ -2275,10 +2275,6 @@ End Rational. (* Rational *)
 
 Abbreviation Rational := Rational.T.
 
-(* Makes the notations declared in [Module Rational] usable in every file
- * that imports this one, as [(x + y)%q]. Only the notations are
- * exported: [add] and the laws still need the [Rational.] prefix.
- *)
 Export (notations) Rational.
 
 (* An [Integer] stands wherever a [Rational] is expected, and through it a

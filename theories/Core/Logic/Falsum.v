@@ -15,7 +15,6 @@ Inductive Falsum : Prop := .
 
 Register Falsum as core.False.type.
 
-(* A module may carry the type's name; its laws read [Falsum.elimination]. *)
 Module Falsum.
 
 (* Ex falso: a proof of [Falsum] proves anything, since there is no case to

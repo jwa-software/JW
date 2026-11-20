@@ -29,11 +29,6 @@ From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [Nat0.add].
- * The type and its ctors are declared inside it: [Integer] declares [Zero]
- * and [Positive] too, and across files a duplicate ctor name rebinds the
- * bare one silently and with no warning.
- *)
 Module Nat0. (* Nat0 *)
 
 (* [Positive] wraps a [Nat], so an operation here reduces to the [Nat] one
@@ -43,10 +38,6 @@ Inductive T : Type :=
   | Zero     : T
   | Positive : Nat -> T.
 
-(* The carrier is named [T] so that the type itself reads [Nat0] on
- * both sides of the module: here through this abbreviation, outside through
- * the one that follows [End Nat0].
- *)
 Abbreviation Nat0 := T.
 
 (* Short spellings for this module only: [Local] keeps them out of every
@@ -78,10 +69,6 @@ Definition mul := fun (m : Nat0) (n : Nat0) .
       end
   end.
 
-(* The scope is declared in [Core.Notations] and opened only inside this
- * module; after [End Nat0] a client writes [(m + n)%n0].
- * [only parsing] keeps goals printing the operations by name.
- *)
 Notation "m + n" := (add m n) (only parsing)
   : jwa_nat0_scope.
 Notation "m * n" := (mul m n) (only parsing)
@@ -3533,18 +3520,8 @@ End narrowing. (* narrowing *)
 
 End Nat0. (* Nat0 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Nat0], not [Nat0.T]. [Zero] and [Positive] name ctors of
- * [Integer] as well, so both types write theirs with the prefix.
- *)
 Abbreviation Nat0 := Nat0.T.
 
-(* Makes the notations declared in [Module Nat0] usable in every file
- * that imports this one, as [(m + n)%n0] or under an opened
- * [jwa_nat0_scope]. Only the notations are exported: [add] and the
- * laws still need the [Nat0.] prefix, and the local aliases [0] and
- * [+ p] stay inside the module.
- *)
 Export (notations) Nat0.
 
 (* A number of the type is written in decimal or hexadecimal under its scope,

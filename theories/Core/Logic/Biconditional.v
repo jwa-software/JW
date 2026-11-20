@@ -126,9 +126,6 @@ Qed.
 
 End Biconditional. (* Biconditional *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Biconditional], not [Biconditional.T].
- *)
 Abbreviation Biconditional := Biconditional.T.
 
 (* Makes [<->], declared in [Module Biconditional], usable in every file that

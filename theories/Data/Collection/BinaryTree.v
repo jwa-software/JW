@@ -15,11 +15,6 @@ From jwa Require Import Data.Number.Nat0.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [BinaryTree.map].
- * The type and its ctors are declared inside it: a ctor at the top level is
- * rebound by any later file declaring the same name, silently and with no
- * warning.
- *)
 Module BinaryTree. (* BinaryTree *)
 
 (* A binary tree is a leaf, which holds nothing, or a node: one element
@@ -35,10 +30,6 @@ Inductive T (A : Type) : Type :=
 Arguments Leaf {A}.
 Arguments Node {A} l a r.
 
-(* The carrier is named [T] so that the type itself reads [BinaryTree] on
- * both sides of the module: here through this abbreviation, outside
- * through the one that follows [End BinaryTree].
- *)
 Abbreviation BinaryTree := T.
 
 (* [Nat0]'s scope is opened for the [++] and [+] of [size] and [height],
@@ -667,9 +658,6 @@ End quantification. (* quantification *)
 
 End BinaryTree. (* BinaryTree *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [BinaryTree A], not [BinaryTree.T A].
- *)
 Abbreviation BinaryTree := BinaryTree.T.
 
 Instance BinaryTree_functor

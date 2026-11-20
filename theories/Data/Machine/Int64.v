@@ -3315,14 +3315,8 @@ Instance comparable
 
 End Int64. (* Int64 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Int64], not [Int64.T].
- *)
 Abbreviation Int64 := Int64.T.
 
-(* Makes the notations declared in [Module Int64] usable in every file that
- * imports this one, as [(x + y)%int64] or under an opened [jwa_int64_scope].
- *)
 Export (notations) Int64.
 
 (* A number of the type is written in decimal or hexadecimal under its

@@ -37,9 +37,6 @@ Notation "'forsome' x .. y '.' p" := (Exists (fun x . .. (Exists (fun y . p)) ..
 
 End Exists. (* Exists *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Exists], not [Exists.T].
- *)
 Abbreviation Exists := Exists.T.
 
 (* Makes [forsome], declared in [Module Exists], usable in every file that

@@ -2363,14 +2363,8 @@ Instance comparable
 
 End Int16. (* Int16 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Int16], not [Int16.T].
- *)
 Abbreviation Int16 := Int16.T.
 
-(* Makes the notations declared in [Module Int16] usable in every file that
- * imports this one, as [(x + y)%int16] or under an opened [jwa_int16_scope].
- *)
 Export (notations) Int16.
 
 (* A number of the type is written in decimal or hexadecimal under its

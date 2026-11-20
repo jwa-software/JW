@@ -2176,14 +2176,8 @@ Instance comparable
 
 End Int8. (* Int8 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Int8], not [Int8.T].
- *)
 Abbreviation Int8 := Int8.T.
 
-(* Makes the notations declared in [Module Int8] usable in every file that
- * imports this one, as [(x + y)%int8] or under an opened [jwa_int8_scope].
- *)
 Export (notations) Int8.
 
 (* A number of the type is written in decimal or hexadecimal under its

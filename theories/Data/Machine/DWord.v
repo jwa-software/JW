@@ -1413,14 +1413,8 @@ End conversion. (* conversion *)
 
 End DWord. (* DWord *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [DWord], not [DWord.T].
- *)
 Abbreviation DWord := DWord.T.
 
-(* Makes the notations declared in [Module DWord] usable in every file that
- * imports this one, as [(x &. y)%dword] or under an opened [jwa_dword_scope].
- *)
 Export (notations) DWord.
 
 (* A double word is written in hexadecimal,

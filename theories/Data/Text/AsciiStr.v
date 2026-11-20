@@ -559,9 +559,6 @@ Instance comparable
 
 End AsciiStr. (* AsciiStr *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [AsciiStr], not [AsciiStr.T].
- *)
 Abbreviation AsciiStr := AsciiStr.T.
 
 (* Makes [++] usable in every file that imports this one, as [(s ++ t)%a] or

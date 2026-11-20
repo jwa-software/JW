@@ -1556,14 +1556,8 @@ Instance comparable
 
 End UInt16. (* UInt16 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [UInt16], not [UInt16.T].
- *)
 Abbreviation UInt16 := UInt16.T.
 
-(* Makes the notations declared in [Module UInt16] usable in every file that
- * imports this one, as [(x + y)%uint16] or under an opened [jwa_uint16_scope].
- *)
 Export (notations) UInt16.
 
 (* A number of the type is written in decimal or hexadecimal under its

@@ -28,10 +28,6 @@ Inductive T {A : Type} (cmp : A -> A -> Comparison) : Type :=
 (* [A] and [cmp] are read off the tree and the proof. *)
 Arguments introduction {A} {cmp} t p.
 
-(* The carrier is named [T] so that the type itself reads [SortedSet] on
- * both sides of the module: here through this abbreviation, outside
- * through the one that follows [End SortedSet].
- *)
 Abbreviation SortedSet := T.
 
 (* The tree inside. *)

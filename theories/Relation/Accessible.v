@@ -230,7 +230,4 @@ End recursion. (* recursion *)
 
 End Accessible. (* Accessible *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Accessible], not [Accessible.T].
- *)
 Abbreviation Accessible := Accessible.T.

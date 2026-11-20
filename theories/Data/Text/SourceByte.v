@@ -871,9 +871,6 @@ End conversion. (* conversion *)
 
 End SourceByte. (* SourceByte *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [SourceByte], not [SourceByte.T].
- *)
 Abbreviation SourceByte := SourceByte.T.
 
 (* The plugin finds the byte type of a string literal by this name. *)

@@ -99,9 +99,6 @@ Qed.
 
 End Abjunction. (* Abjunction *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Abjunction], not [Abjunction.T].
- *)
 Abbreviation Abjunction := Abjunction.T.
 
 (* Makes [-/>] and [abjoin], declared in [Module Abjunction], usable in

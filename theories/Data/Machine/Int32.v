@@ -2675,14 +2675,8 @@ Instance comparable
 
 End Int32. (* Int32 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Int32], not [Int32.T].
- *)
 Abbreviation Int32 := Int32.T.
 
-(* Makes the notations declared in [Module Int32] usable in every file that
- * imports this one, as [(x + y)%int32] or under an opened [jwa_int32_scope].
- *)
 Export (notations) Int32.
 
 (* A number of the type is written in decimal or hexadecimal under its

@@ -133,9 +133,6 @@ Qed.
 
 End Conjunction. (* Conjunction *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Conjunction], not [Conjunction.T].
- *)
 Abbreviation Conjunction := Conjunction.T.
 
 (* Makes [/\] and [conjoin], declared in [Module Conjunction], usable in

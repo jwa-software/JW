@@ -21,9 +21,6 @@ From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [BinBase.add]. The type
- * and its ctors are declared inside it, so no later file can rebind them.
- *)
 Module BinBase. (* BinBase *)
 
 (* A positive number in binary, its leading bit innermost: [One] is 1, [b0]
@@ -37,10 +34,6 @@ Inductive T : Type :=
   | b0  : T -> T
   | b1  : T -> T.
 
-(* The carrier is named [T] so that the type itself reads [BinBase] on both
- * sides of the module: here through this abbreviation, outside through the
- * one that follows [End BinBase].
- *)
 Abbreviation BinBase := T.
 
 Definition induction
@@ -68,10 +61,6 @@ Fixpoint inc (b : BinBase) : BinBase :=
   | b1 b' => b0 (inc b')
   end.
 
-(* The scope is declared in [Core.Notations] and opened only inside this
- * module; after [End BinBase] a client writes [(a + b)%bin_base]. [only parsing]
- * keeps goals printing the operations by name.
- *)
 Notation "++ b" := (inc b) (only parsing)
   : jwa_bin_base_scope.
 
@@ -1430,16 +1419,8 @@ End comparison. (* comparison *)
 
 End BinBase. (* BinBase *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [BinBase], not [BinBase.T].
- *)
 Abbreviation BinBase := BinBase.T.
 
-(* Makes the notations declared in [Module BinBase] usable in every file that
- * imports this one, as [(a + b)%bin_base] or under an opened
- * [jwa_bin_base_scope]. Only the notations are exported: [add] and the laws
- * still need the [BinBase.] prefix.
- *)
 Export (notations) BinBase.
 
 (* A number of the type is written in binary digits under its scope,

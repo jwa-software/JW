@@ -217,9 +217,6 @@ End hedberg. (* hedberg *)
 
 End Identity.
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Identity], not [Identity.T].
- *)
 Abbreviation Identity := Identity.T.
 
 (* Makes [=] and [(=)], declared in [Module Identity], usable in every file
