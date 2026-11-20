@@ -41,6 +41,12 @@ Arithmetic is written with each type's notation and scope key, `(a + b)%n`, `(p 
 
 - Where one of the three types is expected, the key can go: `Nat0.add 3 4`.
 - Under `Data.Number.All` a numeral with no key is an `Integer`, `3` and `-3` alike, and a bare `a + b` is `Integer.add`.
+
+**Subtraction is written `x - y` on the types where it is total**, `Integer`, `Rational` and `Bin`: `(3 - 5)%z` is `-2`.
+
+- A chain with a `-` is written grouped, `((1 - 2) - 3)%z`, never `(1 - 2 - 3)%z`, though both parse alike.
+- `Nat`, `Nat0`, `BinBase` and `BinWithZero` keep `sub` by name, since it answers an `Option` that is `None` where the result would not be in the type, beside `saturating_sub` where the type has it.
+- The laws are the same in the three types: `subtraction.specification` (`x - y = x + negate y`), `subtraction.inversion.addition` (`(x + y) - y = x`), `addition.inversion.subtraction` (`(x - y) + y = x`), `subtraction.right.identity` (`x - 0 = x`) and `subtraction.annihilation` (`x - x = 0`).
 - These types spend one constructor per unit, so a `Nat0` or `Integer` literal of 5000 or more stays a call to its parsing function until something computes it, and a `Nat` literal that large, which is built in full, draws a warning.
 
 ---

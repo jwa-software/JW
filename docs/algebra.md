@@ -59,7 +59,7 @@ SPDX-License-Identifier: MIT
 
 ## Commutative
 
-- **The problem.** `2 + 3` and `3 + 2` are both `5`: the operands change places. Not every operation allows it: `Integer.sub 5 3` is `2`, and `Integer.sub 3 5` is `-2`.
+- **The problem.** `2 + 3` and `3 + 2` are both `5`: the operands change places. Not every operation allows it: `(5 - 3)%z` is `2`, and `(3 - 5)%z` is `-2`.
 - **The class.** `Commutative op` has one field, `Commutative.commutativity`: `op x y = op y x`.
 - **Instances.** `+` and `*` of the number types and of the fixed-width integers, as `Nat0_add_commutative` and `Nat0_mul_commutative`; `min` and `max`, as `Nat0_min_commutative`; and the `and`, `or` and `xor` of `Bool`, `Bit` and `Byte`, as `Bool_and_commutative`.
 - **In a proof.** `Commutative.commutativity x y` is that equation for the operation of the goal.

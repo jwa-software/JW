@@ -1735,3 +1735,195 @@ Definition data_machine_all_delivers_int32_comparable
 Definition data_machine_all_delivers_int64_comparable
   : forall (x : Int64) (y : Int64) . (x < y)%int64 \/ x = y \/ (y < x)%int64
   := Comparable.order.strict.trichotomy.
+
+Definition data_machine_all_computes_uint8_subtraction
+  : (3 - 5)%uint8 = UInt8.negate 2%uint8 /\ ((10 - 3) - 2)%uint8 = 5%uint8
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_uint8_subtraction_specification
+  : forall (x : UInt8) (y : UInt8) . (x - y = x + (- y))%uint8
+  := UInt8.subtraction.specification.
+
+Definition data_machine_all_delivers_uint8_subtraction_inversion_addition
+  : forall (x : UInt8) (y : UInt8) . ((x + y) - y = x)%uint8
+  := UInt8.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_uint8_addition_inversion_subtraction
+  : forall (x : UInt8) (y : UInt8) . ((x - y) + y = x)%uint8
+  := UInt8.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_uint8_subtraction_right_identity
+  : forall (x : UInt8) . (x - UInt8.Zero = x)%uint8
+  := UInt8.subtraction.right.identity.
+
+Definition data_machine_all_delivers_uint8_subtraction_annihilation
+  : forall (x : UInt8) . (x - x = UInt8.Zero)%uint8
+  := UInt8.subtraction.annihilation.
+
+Definition data_machine_all_computes_uint16_subtraction
+  : (3 - 5)%uint16 = UInt16.negate 2%uint16 /\ ((10 - 3) - 2)%uint16 = 5%uint16
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_uint16_subtraction_specification
+  : forall (x : UInt16) (y : UInt16) . (x - y = x + (- y))%uint16
+  := UInt16.subtraction.specification.
+
+Definition data_machine_all_delivers_uint16_subtraction_inversion_addition
+  : forall (x : UInt16) (y : UInt16) . ((x + y) - y = x)%uint16
+  := UInt16.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_uint16_addition_inversion_subtraction
+  : forall (x : UInt16) (y : UInt16) . ((x - y) + y = x)%uint16
+  := UInt16.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_uint16_subtraction_right_identity
+  : forall (x : UInt16) . (x - UInt16.Zero = x)%uint16
+  := UInt16.subtraction.right.identity.
+
+Definition data_machine_all_delivers_uint16_subtraction_annihilation
+  : forall (x : UInt16) . (x - x = UInt16.Zero)%uint16
+  := UInt16.subtraction.annihilation.
+
+Definition data_machine_all_computes_uint32_subtraction
+  : (3 - 5)%uint32 = UInt32.negate 2%uint32 /\ ((10 - 3) - 2)%uint32 = 5%uint32
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_uint32_subtraction_specification
+  : forall (x : UInt32) (y : UInt32) . (x - y = x + (- y))%uint32
+  := UInt32.subtraction.specification.
+
+Definition data_machine_all_delivers_uint32_subtraction_inversion_addition
+  : forall (x : UInt32) (y : UInt32) . ((x + y) - y = x)%uint32
+  := UInt32.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_uint32_addition_inversion_subtraction
+  : forall (x : UInt32) (y : UInt32) . ((x - y) + y = x)%uint32
+  := UInt32.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_uint32_subtraction_right_identity
+  : forall (x : UInt32) . (x - UInt32.Zero = x)%uint32
+  := UInt32.subtraction.right.identity.
+
+Definition data_machine_all_delivers_uint32_subtraction_annihilation
+  : forall (x : UInt32) . (x - x = UInt32.Zero)%uint32
+  := UInt32.subtraction.annihilation.
+
+Definition data_machine_all_computes_uint64_subtraction
+  : (3 - 5)%uint64 = UInt64.negate 2%uint64 /\ ((10 - 3) - 2)%uint64 = 5%uint64
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_uint64_subtraction_specification
+  : forall (x : UInt64) (y : UInt64) . (x - y = x + (- y))%uint64
+  := UInt64.subtraction.specification.
+
+Definition data_machine_all_delivers_uint64_subtraction_inversion_addition
+  : forall (x : UInt64) (y : UInt64) . ((x + y) - y = x)%uint64
+  := UInt64.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_uint64_addition_inversion_subtraction
+  : forall (x : UInt64) (y : UInt64) . ((x - y) + y = x)%uint64
+  := UInt64.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_uint64_subtraction_right_identity
+  : forall (x : UInt64) . (x - UInt64.Zero = x)%uint64
+  := UInt64.subtraction.right.identity.
+
+Definition data_machine_all_delivers_uint64_subtraction_annihilation
+  : forall (x : UInt64) . (x - x = UInt64.Zero)%uint64
+  := UInt64.subtraction.annihilation.
+
+Definition data_machine_all_computes_int8_subtraction
+  : (3 - 5)%int8 = (-2)%int8 /\ ((10 - 3) - 2)%int8 = 5%int8
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_int8_subtraction_specification
+  : forall (x : Int8) (y : Int8) . (x - y = x + (- y))%int8
+  := Int8.subtraction.specification.
+
+Definition data_machine_all_delivers_int8_subtraction_inversion_addition
+  : forall (x : Int8) (y : Int8) . ((x + y) - y = x)%int8
+  := Int8.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_int8_addition_inversion_subtraction
+  : forall (x : Int8) (y : Int8) . ((x - y) + y = x)%int8
+  := Int8.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_int8_subtraction_right_identity
+  : forall (x : Int8) . (x - Int8.Zero = x)%int8
+  := Int8.subtraction.right.identity.
+
+Definition data_machine_all_delivers_int8_subtraction_annihilation
+  : forall (x : Int8) . (x - x = Int8.Zero)%int8
+  := Int8.subtraction.annihilation.
+
+Definition data_machine_all_computes_int16_subtraction
+  : (3 - 5)%int16 = (-2)%int16 /\ ((10 - 3) - 2)%int16 = 5%int16
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_int16_subtraction_specification
+  : forall (x : Int16) (y : Int16) . (x - y = x + (- y))%int16
+  := Int16.subtraction.specification.
+
+Definition data_machine_all_delivers_int16_subtraction_inversion_addition
+  : forall (x : Int16) (y : Int16) . ((x + y) - y = x)%int16
+  := Int16.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_int16_addition_inversion_subtraction
+  : forall (x : Int16) (y : Int16) . ((x - y) + y = x)%int16
+  := Int16.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_int16_subtraction_right_identity
+  : forall (x : Int16) . (x - Int16.Zero = x)%int16
+  := Int16.subtraction.right.identity.
+
+Definition data_machine_all_delivers_int16_subtraction_annihilation
+  : forall (x : Int16) . (x - x = Int16.Zero)%int16
+  := Int16.subtraction.annihilation.
+
+Definition data_machine_all_computes_int32_subtraction
+  : (3 - 5)%int32 = (-2)%int32 /\ ((10 - 3) - 2)%int32 = 5%int32
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_int32_subtraction_specification
+  : forall (x : Int32) (y : Int32) . (x - y = x + (- y))%int32
+  := Int32.subtraction.specification.
+
+Definition data_machine_all_delivers_int32_subtraction_inversion_addition
+  : forall (x : Int32) (y : Int32) . ((x + y) - y = x)%int32
+  := Int32.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_int32_addition_inversion_subtraction
+  : forall (x : Int32) (y : Int32) . ((x - y) + y = x)%int32
+  := Int32.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_int32_subtraction_right_identity
+  : forall (x : Int32) . (x - Int32.Zero = x)%int32
+  := Int32.subtraction.right.identity.
+
+Definition data_machine_all_delivers_int32_subtraction_annihilation
+  : forall (x : Int32) . (x - x = Int32.Zero)%int32
+  := Int32.subtraction.annihilation.
+
+Definition data_machine_all_computes_int64_subtraction
+  : (3 - 5)%int64 = (-2)%int64 /\ ((10 - 3) - 2)%int64 = 5%int64
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_machine_all_delivers_int64_subtraction_specification
+  : forall (x : Int64) (y : Int64) . (x - y = x + (- y))%int64
+  := Int64.subtraction.specification.
+
+Definition data_machine_all_delivers_int64_subtraction_inversion_addition
+  : forall (x : Int64) (y : Int64) . ((x + y) - y = x)%int64
+  := Int64.subtraction.inversion.addition.
+
+Definition data_machine_all_delivers_int64_addition_inversion_subtraction
+  : forall (x : Int64) (y : Int64) . ((x - y) + y = x)%int64
+  := Int64.addition.inversion.subtraction.
+
+Definition data_machine_all_delivers_int64_subtraction_right_identity
+  : forall (x : Int64) . (x - Int64.Zero = x)%int64
+  := Int64.subtraction.right.identity.
+
+Definition data_machine_all_delivers_int64_subtraction_annihilation
+  : forall (x : Int64) . (x - x = Int64.Zero)%int64
+  := Int64.subtraction.annihilation.

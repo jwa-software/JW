@@ -83,6 +83,9 @@ Definition negate := fun (x : Rational) .
   let d := denominator x in
   make n d.
 
+Notation "- x" := (negate x) (at level 35, right associativity, only parsing)
+  : jwa_rational_scope.
+
 (* [Rational -> Rational -> Rational] *)
 Definition add := fun (x : Rational) (y : Rational) .
   let nx := numerator x in
@@ -100,6 +103,9 @@ Notation "x + y" := (add x y) (only parsing)
 
 (* [Rational -> Rational -> Rational] *)
 Definition sub := fun (x : Rational) (y : Rational) . let y := negate y in add x y.
+
+Notation "x - y" := (sub x y) (only parsing)
+  : jwa_rational_scope.
 
 (* [Rational -> Rational -> Rational] *)
 Definition mul := fun (x : Rational) (y : Rational) .
@@ -1220,6 +1226,22 @@ Proof.
   - ipso (addition.right.cancellation n m k).
 Qed.
 
+Module inversion. (* addition.inversion *)
+
+(* addition.inversion.subtraction *)
+Theorem subtraction
+  : forall (x : Rational) (y : Rational) . (x - y) + y = x.
+Proof.
+  intros x y.
+  let proof s : &x - &y = &x + (negate &y) := Identity.reflexivity _.
+  leibniz &s in |- *.
+  leibniz (addition.associativity &x (negate &y) &y) in |- *.
+  leibniz (addition.left.inverse &y) in |- *.
+  ipso (addition.right.identity &x).
+Qed.
+
+End inversion. (* addition.inversion *)
+
 Module order. (* addition.order *)
 
 Module strict. (* addition.order.strict *)
@@ -1307,6 +1329,56 @@ End order. (* addition.order *)
 
 End addition. (* addition *)
 
+Module subtraction. (* subtraction *)
+
+(* subtraction.specification *)
+Theorem specification
+  : forall (x : Rational) (y : Rational) . x - y = x + (negate y).
+Proof.
+  intros x y.
+  ipso (Identity.reflexivity _).
+Qed.
+
+Module inversion. (* subtraction.inversion *)
+
+(* subtraction.inversion.addition *)
+Theorem addition
+  : forall (x : Rational) (y : Rational) . (x + y) - y = x.
+Proof.
+  intros x y.
+  leibniz (subtraction.specification (&x + &y) &y) in |- *.
+  leibniz (addition.associativity &x &y (negate &y)) in |- *.
+  leibniz (addition.right.inverse &y) in |- *.
+  ipso (addition.right.identity &x).
+Qed.
+
+End inversion. (* subtraction.inversion *)
+
+Module right. (* subtraction.right *)
+
+(* [x - Zero] is [x + negate Zero], and [negate Zero] reduces to a value
+ * whose proof differs from [Zero]'s; reading it through
+ * [addition.inversion] instead needs no fact about [negate Zero].
+ *)
+(* subtraction.right.identity *)
+Theorem identity : forall (x : Rational) . x - Zero = x.
+Proof.
+  intros x.
+  leibniz <- (addition.right.identity (&x - Zero)) in |- *.
+  ipso (addition.inversion.subtraction &x Zero).
+Qed.
+
+End right. (* subtraction.right *)
+
+(* subtraction.annihilation *)
+Theorem annihilation : forall (x : Rational) . x - x = Zero.
+Proof.
+  intros x.
+  leibniz (subtraction.specification &x &x) in |- *.
+  ipso (addition.right.inverse &x).
+Qed.
+
+End subtraction. (* subtraction *)
 
 Module multiplication. (* multiplication *)
 
