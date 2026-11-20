@@ -272,6 +272,26 @@ Definition data_collection_all_delivers_binary_tree_quantification_any_specifica
       BinaryTree.Any P t <-> (forsome (a : A) . BinaryTree.Contains a t /\ P a)
   := @BinaryTree.quantification.any.specification.
 
+Definition data_collection_all_computes_binary_tree_all
+  : BinaryTree.all (Nat0.le 2%n0)
+      (BinaryTree.Node
+        (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf)
+        5%n0
+        (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf))
+    = true
+    /\ BinaryTree.all (Nat0.le 3%n0)
+        (BinaryTree.Node
+          (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf)
+          5%n0
+          (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf))
+      = false
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_binary_tree_quantification_all_reflection
+  : forall (A : Type) (p : A -> Bool) (t : BinaryTree A) .
+      Assert (BinaryTree.all p t) <-> BinaryTree.All (fun (a : A) . Assert (p a)) t
+  := @BinaryTree.quantification.all.reflection.
+
 Definition data_collection_all_delivers_bst_ordered
   : forall (A : Type) (lt : A -> A -> Prop) (t : BinaryTree A) . Prop
   := fun (A : Type) (lt : A -> A -> Prop) (t : BinaryTree A) . BST.Ordered lt t.
@@ -297,6 +317,27 @@ Definition data_collection_all_delivers_bst_search_specification
       forall (a : A) (t : BinaryTree A) .
         BST.Ordered lt t -> (BST.contains cmp a t = true <-> BinaryTree.Contains a t)
   := @BST.search.specification.
+
+Definition data_collection_all_computes_bst_is_ordered
+  : BST.is_ordered Nat0.compare
+      (BinaryTree.Node
+        (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf)
+        5%n0
+        (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf))
+    = true
+    /\ BST.is_ordered Nat0.compare
+        (BinaryTree.Node
+          (BinaryTree.Node BinaryTree.Leaf 8%n0 BinaryTree.Leaf)
+          5%n0
+          (BinaryTree.Node BinaryTree.Leaf 2%n0 BinaryTree.Leaf))
+      = false
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_bst_order_reflection
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (t : BinaryTree A) . Assert (BST.is_ordered cmp t) <-> BST.Ordered lt t
+  := @BST.order.reflection.
 
 Definition data_collection_all_computes_bst_insert
   : BST.insert Nat0.compare 3%n0
@@ -798,3 +839,44 @@ Definition data_collection_all_delivers_avl_removal_shrinkage
       AVL.height (AVL.remove cmp a t) = AVL.height t
       \/ (++ (AVL.height (AVL.remove cmp a t)))%n0 = AVL.height t
   := @AVL.removal.shrinkage.
+
+Definition data_collection_all_computes_avl_is_valid
+  : AVL.is_valid Nat0.compare
+      (AVL.insert Nat0.compare 3%n0
+        (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
+    = true
+    /\ AVL.is_measured (AVL.Node AVL.Leaf 1%n0 AVL.Leaf 7%n0) = false
+    /\ AVL.is_balanced
+        (AVL.Node
+          (AVL.Node (AVL.Node AVL.Leaf 1%n0 AVL.Leaf 1%n0) 2%n0 AVL.Leaf 2%n0)
+          3%n0
+          AVL.Leaf
+          3%n0)
+      = false
+    /\ AVL.is_ordered Nat0.compare
+        (AVL.Node (AVL.Node AVL.Leaf 3%n0 AVL.Leaf 1%n0) 2%n0 AVL.Leaf 2%n0)
+      = false
+  := conjoin (Identity.reflexivity _),
+       (conjoin (Identity.reflexivity _),
+         (conjoin (Identity.reflexivity _), (Identity.reflexivity _))).
+
+Definition data_collection_all_delivers_avl_measurement_reflection
+  : forall (A : Type) (t : AVL A) . Assert (AVL.is_measured t) <-> AVL.Measured t
+  := @AVL.measurement.reflection.
+
+Definition data_collection_all_delivers_avl_equilibrium_reflection
+  : forall (A : Type) (t : AVL A) . Assert (AVL.is_balanced t) <-> AVL.Balanced t
+  := @AVL.equilibrium.reflection.
+
+Definition data_collection_all_delivers_avl_order_reflection
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (t : AVL A) . Assert (AVL.is_ordered cmp t) <-> AVL.Ordered lt t
+  := @AVL.order.reflection.
+
+Definition data_collection_all_delivers_avl_validity_reflection
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (t : AVL A) .
+        Assert (AVL.is_valid cmp t) <-> AVL.Measured t /\ AVL.Balanced t /\ AVL.Ordered lt t
+  := @AVL.validity.reflection.
