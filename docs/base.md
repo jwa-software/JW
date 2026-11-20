@@ -82,4 +82,19 @@ A base type is built from no other type: every constructor takes no argument, so
 - **What it does not have.** The excluded middle and the law of contradiction: `(Kleene3.unknown || ! Kleene3.unknown)%k3` and `(Kleene3.unknown && ! Kleene3.unknown)%k3` are both `Kleene3.unknown`. A law that holds for `Bool` holds for `Kleene3` only when it has no such case.
 - **Implication.** `Kleene3.implies v1 v2` is `(! v1 || v2)%k3`, so `Kleene3.implies Kleene3.unknown Kleene3.unknown` is `Kleene3.unknown`, not `Kleene3.true`. `Kleene3.implication.contraposition` states `implies v1 v2 = implies (! v2) (! v1)`.
 - **From `Bool`.** `Kleene3.from_bool` sends `true` to `Kleene3.true` and `false` to `Kleene3.false`. The laws under `Kleene3.conversion` state that it is injective (`injectivity`), that it never gives `Kleene3.unknown` (`exclusion`), and that it commutes with `negation`, `conjunction`, `disjunction` and `implication`: `Kleene3.from_bool (Bool.and b1 b2) = (Kleene3.from_bool b1 && Kleene3.from_bool b2)%k3`.
-- **Instances.** `Kleene3_and_monoid`, with `Kleene3.true` as its identity, and `Kleene3_or_monoid`, with `Kleene3.false`. Both operations are `Commutative`. See [Algebra](algebra.md).
+- **The truth order.** `false < unknown < true`, as `Kleene3.TruthLessThan` and `Kleene3.TruthLessOrEqual`, written `<` and `<=` under `%k3`. `Kleene3.compare` decides it, and `Kleene3.comparable` makes it a `Comparable` instance. In this order `&&` is the minimum and `||` the maximum: `Kleene3.conjunction.minimum` states `v1 && v2 = Comparable.min compare v1 v2`, and `Kleene3.disjunction.maximum` states the same of `||` and `Comparable.max`.
+- **The Kleene condition.** `Kleene3.negation.kleene` states `v1 && ! v1 <= v2 || ! v2`: `v1 && ! v1` can only be either `false` or `unknown`, and `v2 || ! v2` can only be either `true` or `unknown`. The laws above hold in every De Morgan algebra; this one does not, and a De Morgan algebra that has it is called a Kleene algebra. Belnap's four-valued logic, with a value for "both true and false" and one for "neither", is a De Morgan algebra where it fails.
+- **The information order.** `Kleene3.InformationLessOrEqual v1 v2`, written `v1 [= v2` under `%k3`, holds when `v1` is `unknown` or `v1` is `v2`: `unknown` carries no information, and `true` and `false` carry all of it. `unknown` is its least element (`Kleene3.information.bottom`), and `true` and `false` are not comparable (`Kleene3.information.incomparability`), so it is a partial order and not a total one. The bilattice literature writes it `<=i` or, more often, `<=k`, beside the truth order `<=t`.
+
+```
+ truth order          information order
+
+    true               true       false
+     |                     \     /
+  unknown                  unknown
+     |
+   false
+```
+
+- **Every connective is monotone in the information order.** The laws under `Kleene3.information.monotonicity`, for `negation`, `conjunction`, `disjunction` and `implication`, state that more information in the arguments never takes information from the result: from `v1 [= v1'` and `v2 [= v2'`, `v1 && v2 [= v1' && v2'`. A result that is known stays the same when an `unknown` argument becomes known, which is why a known argument can decide. The order is not kept strictly: `unknown [= true`, but `unknown && false` and `true && false` are both `false`.
+- **Instances.** `Kleene3_and_monoid`, with `Kleene3.true` as its identity, and `Kleene3_or_monoid`, with `Kleene3.false`. Both operations are `Commutative`. See [Algebra](algebra.md). `Kleene3.comparable` gives the truth order its order classes, and `Kleene3_information_partial_order` makes the information order a `PartialOrder`. See [Order](order.md).
