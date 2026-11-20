@@ -813,9 +813,6 @@ Instance comparable
 
 End Utf8Str. (* Utf8Str *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Utf8Str], not [Utf8Str.T].
- *)
 Abbreviation Utf8Str := Utf8Str.T.
 
 (* Makes [++] usable in every file that imports this one, as [(s ++ t)%u8] or

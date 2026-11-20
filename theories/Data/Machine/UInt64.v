@@ -2205,14 +2205,8 @@ Instance comparable
 
 End UInt64. (* UInt64 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [UInt64], not [UInt64.T].
- *)
 Abbreviation UInt64 := UInt64.T.
 
-(* Makes the notations declared in [Module UInt64] usable in every file that
- * imports this one, as [(x + y)%uint64] or under an opened [jwa_uint64_scope].
- *)
 Export (notations) UInt64.
 
 (* A number of the type is written in decimal or hexadecimal under its

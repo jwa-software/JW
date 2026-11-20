@@ -207,9 +207,6 @@ End exclusion. (* exclusion *)
 
 End Sejunction. (* Sejunction *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Sejunction], not [Sejunction.T].
- *)
 Abbreviation Sejunction := Sejunction.T.
 
 (* Makes [_\/_] and [sejoin], declared in [Module Sejunction], usable in

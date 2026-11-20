@@ -142,9 +142,6 @@ Qed.
 
 End Disjunction. (* Disjunction *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Disjunction], not [Disjunction.T].
- *)
 Abbreviation Disjunction := Disjunction.T.
 
 (* Makes [\/] and [disjoin], declared in [Module Disjunction], usable in

@@ -19,10 +19,6 @@ From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [Nat.add]. The type
- * and its ctors are declared inside it: a ctor at the top level is rebound
- * by any later file declaring the same name, silently and with no warning.
- *)
 Module Nat. (* Nat *)
 
 (* Zero is not a [Nat]; [One] is the smallest.
@@ -32,10 +28,6 @@ Inductive T : Type :=
   | One       : T
   | Successor : T -> T.
 
-(* The carrier is named [T] so that the type itself reads [Nat] on both
- * sides of the module: here through this abbreviation, outside through the
- * one that follows [End Nat].
- *)
 Abbreviation Nat := T.
 
 Local Open Scope jwa_nat_scope.
@@ -72,10 +64,6 @@ Fixpoint mul (m : Nat) (n : Nat) : Nat :=
   | S m' => add n (mul m' n)
   end.
 
-(* The scope is declared in [Core.Notations] and opened only inside this
- * module; after [End Nat] a client writes [(m + n)%n]. [only parsing]
- * keeps goals printing the operations by name.
- *)
 Notation "m + n" := (add m n) (only parsing)
   : jwa_nat_scope.
 Notation "m * n" := (mul m n) (only parsing)
@@ -1533,18 +1521,8 @@ End subtraction. (* subtraction *)
 
 End Nat. (* Nat *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Nat], not [Nat.T]. The two ctors keep the prefix: [Nat.One] and
- * [Nat.Successor]
- * are exactly the short names another numeral type would want.
- *)
 Abbreviation Nat := Nat.T.
 
-(* Makes the notations declared in [Module Nat] usable in every file that
- * imports this one, as [(m + n)%n] or under an opened [jwa_nat_scope].
- * Only the notations are exported: [add] and the laws still need the
- * [Nat.] prefix, and the local aliases [1] and [S] stay inside the module.
- *)
 Export (notations) Nat.
 
 (* A number of the type is written in decimal or hexadecimal under its scope,

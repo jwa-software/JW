@@ -614,14 +614,8 @@ End lowercasing. (* lowercasing *)
 
 End Ascii. (* Ascii *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Ascii], not [Ascii.T].
- *)
 Abbreviation Ascii := Ascii.T.
 
-(* Makes the notations declared in [Module Ascii] usable in every file that
- * imports this one, as [(x < y)%ac] or under an opened [jwa_ascii_scope].
- *)
 Export (notations) Ascii.
 
 (* A character is written as a string of one character under its key,

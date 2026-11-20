@@ -1179,14 +1179,8 @@ End conversion. (* conversion *)
 
 End Word. (* Word *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Word], not [Word.T].
- *)
 Abbreviation Word := Word.T.
 
-(* Makes the notations declared in [Module Word] usable in every file that
- * imports this one, as [(x &. y)%word] or under an opened [jwa_word_scope].
- *)
 Export (notations) Word.
 
 (* A word is written in hexadecimal, [0x12345678%word_little] or

@@ -25,11 +25,6 @@ From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [Integer.add]. The
- * type and its ctors are declared inside it: [Nat0] declares [Zero]
- * and [Positive] too, and across files a duplicate ctor name rebinds the
- * bare one silently and with no warning.
- *)
 Module Integer. (* Integer *)
 
 Inductive T : Type :=
@@ -37,10 +32,6 @@ Inductive T : Type :=
   | Zero     : T
   | Positive : Nat -> T.
 
-(* The carrier is named [T] so that the type itself reads [Integer] on both
- * sides of the module: here through this abbreviation, outside through the
- * one that follows [End Integer].
- *)
 Abbreviation Integer := T.
 
 (* The eliminator behind the [destruct] tactic, written out: no recursion, since no
@@ -155,10 +146,6 @@ Definition add := fun (m : Integer) (n : Integer) .
   nat0_difference (ramp m + ramp n)%n0
                            (ramp (negate m) + ramp (negate n))%n0.
 
-(* The scope is declared in [Core.Notations] and opened only inside this
- * module; after [End Integer] a client writes [(m + n)%z]. [only
- * parsing] keeps goals printing the operations by name.
- *)
 Notation "m + n" := (add m n) (only parsing)
   : jwa_integer_scope.
 
@@ -2346,18 +2333,8 @@ End narrowing. (* narrowing *)
 
 End Integer. (* Integer *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Integer], not [Integer.T]. [Zero] and [Positive] name ctors of
- * [Nat0] as well, so both types write theirs with the prefix.
- *)
 Abbreviation Integer := Integer.T.
 
-(* Makes the notations declared in [Module Integer] usable in every file that
- * imports this one, as [(m + n)%z] or under an opened
- * [jwa_integer_scope]. Only the notations are exported: [add] and the laws
- * still need the [Integer.] prefix, and the local aliases [0], [+ p] and
- * [- p] stay inside the module.
- *)
 Export (notations) Integer.
 
 (* What makes the minus of a negative literal parse, as for [Bin]:

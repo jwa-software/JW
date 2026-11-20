@@ -31,7 +31,4 @@ Definition elimination := fun (A : Type) (e : Empty) .
 
 End Empty.
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Empty], not [Empty.T].
- *)
 Abbreviation Empty := Empty.T.

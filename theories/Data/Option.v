@@ -6,11 +6,6 @@ From jwa Require Import Core.All.
 From jwa Require Import Data.Functor.
 From jwa Require Import Tactics.Equation.
 
-(* A module may carry the type's name; its members read [Option.map]. The
- * type and its ctors are declared inside it: a ctor at the top level is
- * rebound by any later file declaring the same name, silently and with no
- * warning.
- *)
 Module Option. (* Option *)
 
 Inductive T (A : Type) : Type :=
@@ -20,10 +15,6 @@ Inductive T (A : Type) : Type :=
 Arguments None {A}.
 Arguments Some {A} a.
 
-(* The carrier is named [T] so that the type itself reads [Option] on both
- * sides of the module: here through this abbreviation, outside through the
- * one that follows [End Option].
- *)
 Abbreviation Option := T.
 
 (* [forall {A : Type} {B : Type} . (A -> B) -> Option A -> Option B] *)
@@ -150,9 +141,6 @@ End unwrapping. (* unwrapping *)
 
 End Option. (* Option *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Option A], not [Option.T A].
- *)
 Abbreviation Option := Option.T.
 
 (* [Some] and [None] stay reachable unprefixed. An abbreviation is the ctor

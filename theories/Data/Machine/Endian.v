@@ -17,7 +17,4 @@ Abbreviation Endian := T.
 
 End Endian. (* Endian *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Endian], not [Endian.T].
- *)
 Abbreviation Endian := Endian.T.

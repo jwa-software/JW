@@ -28,11 +28,6 @@ From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [BinWithZero.add].
- * The type and its ctors are declared inside it: [Nat0] and [Integer]
- * declare [Zero] and [Positive] too, and across files a duplicate ctor name
- * rebinds the bare one silently and with no warning.
- *)
 Module BinWithZero. (* BinWithZero *)
 
 (* [Positive] wraps a [BinBase], so addition, multiplication, powers, comparison
@@ -43,10 +38,6 @@ Inductive T : Type :=
   | Zero     : T
   | Positive : BinBase -> T.
 
-(* The carrier is named [T] so that the type itself reads [BinWithZero] on
- * both sides of the module: here through this abbreviation, outside through
- * the one that follows [End BinWithZero].
- *)
 Abbreviation BinWithZero := T.
 
 (* Short spellings for this module only: [Local] keeps them out of every
@@ -78,10 +69,6 @@ Definition mul := fun (m : BinWithZero) (n : BinWithZero) .
       end
   end.
 
-(* The scope is declared in [Core.Notations] and opened only inside this
- * module; after [End BinWithZero] a client writes [(m + n)%bin_with_zero].
- * [only parsing] keeps goals printing the operations by name.
- *)
 Notation "m + n" := (add m n) (only parsing)
   : jwa_bin_with_zero_scope.
 Notation "m * n" := (mul m n) (only parsing)
@@ -3157,19 +3144,8 @@ End bit. (* bit *)
 
 End BinWithZero. (* BinWithZero *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [BinWithZero], not [BinWithZero.T]. [Zero] and [Positive] name ctors
- * of [Nat0] and [Integer] as well, so all three write theirs with the
- * prefix.
- *)
 Abbreviation BinWithZero := BinWithZero.T.
 
-(* Makes the notations declared in [Module BinWithZero] usable in every
- * file that imports this one, as [(m + n)%bin_with_zero] or under an opened
- * [jwa_bin_with_zero_scope]. Only the notations are exported: [add] and
- * the laws still need the [BinWithZero.] prefix, and the local aliases
- * [0] and [+ p] stay inside the module.
- *)
 Export (notations) BinWithZero.
 
 (* A number of the type is written in binary digits under its scope,

@@ -33,7 +33,4 @@ Qed.
 
 End Unit.
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Unit], not [Unit.T].
- *)
 Abbreviation Unit := Unit.T.

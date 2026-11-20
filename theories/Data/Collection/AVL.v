@@ -36,10 +36,6 @@ Inductive T (A : Type) : Type :=
 Arguments Leaf {A}.
 Arguments Node {A} l a r h.
 
-(* The carrier is named [T] so that the type itself reads [AVL] on both
- * sides of the module: here through this abbreviation, outside through the
- * one that follows [End AVL].
- *)
 Abbreviation AVL := T.
 
 (* [Nat0]'s scope is opened for the [++] of the heights. *)

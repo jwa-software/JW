@@ -28,11 +28,6 @@ From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Tactics.Witness.
 
-(* A module may carry the type's name; its members read [Bin.negate].
- * The type and its ctors are declared inside it: [Nat0], [Integer] and
- * [BinWithZero] declare [Zero] and [Positive] too, and across files a
- * duplicate ctor name rebinds the bare one silently and with no warning.
- *)
 Module Bin. (* Bin *)
 
 (* Both sign cases wrap a [BinBase], so a nonzero value carries its magnitude in
@@ -49,10 +44,6 @@ Inductive T : Type :=
   | Zero     : T
   | Positive : BinBase -> T.
 
-(* The carrier is named [T] so that the type itself reads [Bin] on
- * both sides of the module: here through this abbreviation, outside through
- * the one that follows [End Bin].
- *)
 Abbreviation Bin := T.
 
 (* The eliminator behind the [destruct] tactic, written out: no recursion,
@@ -181,11 +172,7 @@ Definition add := fun (x : Bin) (y : Bin) .
   bin_with_zero_difference (ramp x + ramp y)%bin_with_zero
                            (ramp (negate x) + ramp (negate y))%bin_with_zero.
 
-(* The scope is declared in [Core.Notations] and opened only inside this
- * module; after [End Bin] a client writes [(x + y)%b]. [only parsing]
- * keeps goals printing the operations by name. The prefix [+ p] above is a
- * separate notation and coexists with this infix one, as in [Integer].
- *)
+(* The prefix [+ p] above is a separate notation and coexists with this one. *)
 Notation "x + y" := (add x y) (only parsing)
   : jwa_bin_scope.
 
@@ -1343,19 +1330,8 @@ End comparison. (* comparison *)
 
 End Bin. (* Bin *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Bin], not [Bin.T]. [Zero] and [Positive] name ctors of
- * three other number types, so all four write theirs with the prefix.
- *)
 Abbreviation Bin := Bin.T.
 
-(* Makes the notations declared in [Module Bin] usable in every file
- * that imports this one, as [(x + y)%b] or under an opened
- * [jwa_bin_scope]. Without it the notations reach no client while
- * this file still compiles, being in scope inside the module. Only the
- * notations are exported: [add] and the laws keep the [Bin.] prefix,
- * and the local aliases [0], [+ p] and [- p] stay inside.
- *)
 Export (notations) Bin.
 
 (* What makes the minus of a negative literal parse. [Numeral.Signed] lets

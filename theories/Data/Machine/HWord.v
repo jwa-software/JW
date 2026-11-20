@@ -1053,14 +1053,8 @@ End conversion. (* conversion *)
 
 End HWord. (* HWord *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [HWord], not [HWord.T].
- *)
 Abbreviation HWord := HWord.T.
 
-(* Makes the notations declared in [Module HWord] usable in every file that
- * imports this one, as [(x &. y)%hword] or under an opened [jwa_hword_scope].
- *)
 Export (notations) HWord.
 
 (* A half word is written in hexadecimal, [0x1234%hword_little] or

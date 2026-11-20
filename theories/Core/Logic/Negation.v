@@ -18,9 +18,6 @@ Definition Negation := fun (A : Prop) . A -> Falsum.
 Notation "~ A" := (Negation A)
   : jwa_type_scope.
 
-(* A module may carry the definition's name; its laws read
- * [Negation.contraposition].
- *)
 Module Negation. (* Negation *)
 
 Module de_morgan. (* de_morgan *)

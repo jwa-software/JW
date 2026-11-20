@@ -683,14 +683,8 @@ End rotation. (* rotation *)
 
 End Byte. (* Byte *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Byte], not [Byte.T].
- *)
 Abbreviation Byte := Byte.T.
 
-(* Makes the notations declared in [Module Byte] usable in every file that
- * imports this one, as [(x &. y)%byte] or under an opened [jwa_byte_scope].
- *)
 Export (notations) Byte.
 
 (* A byte is written in hexadecimal under its scope, [0xFF%byte], and a

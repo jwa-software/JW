@@ -1247,14 +1247,8 @@ End lowercasing. (* lowercasing *)
 
 End Utf8. (* Utf8 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Utf8], not [Utf8.T].
- *)
 Abbreviation Utf8 := Utf8.T.
 
-(* Makes the notations declared in [Module Utf8] usable in every file that
- * imports this one, as [(x < y)%u8c] or under an opened [jwa_utf8_scope].
- *)
 Export (notations) Utf8.
 
 (* A character is written as a string of one character under its key,

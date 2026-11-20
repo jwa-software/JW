@@ -406,9 +406,6 @@ End direct. (* direct *)
 
 End Product. (* Product *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Product], not [Product.T].
- *)
 Abbreviation Product := Product.T.
 
 (* Makes the pair notation declared in [Module Product] usable in every file

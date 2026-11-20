@@ -1770,14 +1770,8 @@ Instance comparable
 
 End UInt32. (* UInt32 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [UInt32], not [UInt32.T].
- *)
 Abbreviation UInt32 := UInt32.T.
 
-(* Makes the notations declared in [Module UInt32] usable in every file that
- * imports this one, as [(x + y)%uint32] or under an opened [jwa_uint32_scope].
- *)
 Export (notations) UInt32.
 
 (* A number of the type is written in decimal or hexadecimal under its

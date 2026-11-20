@@ -266,9 +266,6 @@ End copair. (* copair *)
 
 End Coproduct. (* Coproduct *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Coproduct], not [Coproduct.T].
- *)
 Abbreviation Coproduct := Coproduct.T.
 
 Notation "A + B" := (Coproduct A B)

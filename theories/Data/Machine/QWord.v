@@ -1965,14 +1965,8 @@ End conversion. (* conversion *)
 
 End QWord. (* QWord *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [QWord], not [QWord.T].
- *)
 Abbreviation QWord := QWord.T.
 
-(* Makes the notations declared in [Module QWord] usable in every file that
- * imports this one, as [(x &. y)%qword] or under an opened [jwa_qword_scope].
- *)
 Export (notations) QWord.
 
 (* A quadruple word is written in hexadecimal, in up to thirty-two digits
