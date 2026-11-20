@@ -2,12 +2,13 @@
  * SPDX-License-Identifier: MIT
  *)
 
+From jwa Require Import Algebra.Commutative.
+From jwa Require Import Algebra.Monoid.
+From jwa Require Import Algebra.Semigroup.
 From jwa Require Import Core.All.
+From jwa Require Import Data.Base.Bool.
 
-(* Kleene's strong three-valued logic: [unknown] is a truth value not yet
- * known, and a connective gives a known result whenever its known arguments
- * already decide it.
- *)
+(* Kleene's strong three-valued logic. *)
 Module Kleene3. (* Kleene3 *)
 
 (* The ctors in the truth order, from the greatest to the least: [and] takes
@@ -18,10 +19,6 @@ Inductive T : Type :=
   | unknown : T
   | false   : T.
 
-(* The carrier is named [T] so that the type itself reads [Kleene3] on both
- * sides of the module: here through this abbreviation, outside through the
- * one that follows [End Kleene3].
- *)
 Abbreviation Kleene3 := T.
 
 (* [Kleene3 -> Kleene3] *)
@@ -32,11 +29,6 @@ Definition negate := fun (v : Kleene3) .
   | false   => true
   end.
 
-(* The scope is declared in [Core.Notations] and opened only inside this
- * module; after [End Kleene3] a client writes [(v1 && v2)%k3] or opens the
- * scope. The levels are the ones reserved there for the [Bool] spellings.
- * [only parsing] keeps goals printing the operations by name.
- *)
 Notation "! v" := (negate v) (only parsing)
   : jwa_kleene3_scope.
 
@@ -73,6 +65,20 @@ Notation "v1 || v2" := (or v1 v2) (only parsing)
   : jwa_kleene3_scope.
 
 Local Open Scope jwa_kleene3_scope.
+
+(* Kleene's implication, [! v1 || v2]: [implies unknown unknown] is
+ * [unknown], not [true], since neither side is known.
+ *)
+(* [Kleene3 -> Kleene3 -> Kleene3] *)
+Definition implies := fun (v1 : Kleene3) (v2 : Kleene3) . ! v1 || v2.
+
+(* The known values, [Bool.true] to [true] and [Bool.false] to [false]. *)
+(* [Bool -> Kleene3] *)
+Definition from_bool := fun (b : Bool) .
+  match b with
+  | Bool.true  => true
+  | Bool.false => false
+  end.
 
 Module negation. (* negation *)
 
@@ -351,16 +357,102 @@ End distributivity. (* disjunction.distributivity *)
 
 End disjunction. (* disjunction *)
 
+Module implication. (* implication *)
+
+(* implication.contraposition *)
+Theorem contraposition
+  : forall (v1 : Kleene3) (v2 : Kleene3) . implies v1 v2 = implies (! v2) (! v1).
+Proof.
+  intros v1 v2.
+  simpl implies in |- *.
+  match v1 with | | | end; match v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+End implication. (* implication *)
+
+Module conversion. (* conversion *)
+
+(* conversion.injectivity *)
+Theorem injectivity : forall {b1 : Bool} {b2 : Bool} . from_bool b1 = from_bool b2 -> b1 = b2.
+Proof.
+  intros b1 b2 e.
+  match b1 with | | end; match b2 with | | end.
+  - quod idem est.
+  - simpl in &e.
+    ex &e quodlibet.
+  - simpl in &e.
+    ex &e quodlibet.
+  - quod idem est.
+Qed.
+
+(* conversion.exclusion *)
+Theorem exclusion : forall (b : Bool) . ~ (from_bool b = unknown).
+Proof.
+  intros b.
+  simpl (~ _) in |- *.
+  intro e.
+  match b with | | end; simpl in &e; ex &e quodlibet.
+Qed.
+
+(* conversion.negation *)
+Theorem negation : forall (b : Bool) . from_bool (Bool.negate b) = ! from_bool b.
+Proof.
+  intros b.
+  match b with | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* conversion.conjunction *)
+Theorem conjunction
+  : forall (b1 : Bool) (b2 : Bool) .
+      from_bool (Bool.and b1 b2) = from_bool b1 && from_bool b2.
+Proof.
+  intros b1 b2.
+  match b1 with | | end; match b2 with | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* conversion.disjunction *)
+Theorem disjunction
+  : forall (b1 : Bool) (b2 : Bool) .
+      from_bool (Bool.or b1 b2) = from_bool b1 || from_bool b2.
+Proof.
+  intros b1 b2.
+  match b1 with | | end; match b2 with | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* conversion.implication *)
+Theorem implication
+  : forall (b1 : Bool) (b2 : Bool) .
+      from_bool (Bool.or (Bool.negate b1) b2) = implies (from_bool b1) (from_bool b2).
+Proof.
+  intros b1 b2.
+  simpl implies in |- *.
+  match b1 with | | end; match b2 with | | end; simpl in |- *; quod idem est.
+Qed.
+
+End conversion. (* conversion *)
+
 End Kleene3. (* Kleene3 *)
 
-(* The counterpart of the abbreviation inside the module: a client writes
- * [Kleene3], not [Kleene3.T].
- *)
 Abbreviation Kleene3 := Kleene3.T.
 
-(* Makes the notations declared in [Module Kleene3] usable in every file that
- * imports this one, as [(v1 && v2)%k3] or under an opened
- * [jwa_kleene3_scope]. Only the notations are exported: the ctors, [and] and
- * the laws still need the [Kleene3.] prefix.
- *)
 Export (notations) Kleene3.
+
+Instance Kleene3_and_monoid
+  : Monoid Kleene3.and Kleene3.true :=
+  {| Monoid.semigroup      :=
+       {| Semigroup.associativity := Kleene3.conjunction.associativity |}
+   ; Monoid.identity       := Kleene3.conjunction.identity |}.
+
+Instance Kleene3_or_monoid
+  : Monoid Kleene3.or Kleene3.false :=
+  {| Monoid.semigroup      :=
+       {| Semigroup.associativity := Kleene3.disjunction.associativity |}
+   ; Monoid.identity       := Kleene3.disjunction.identity |}.
+
+Instance Kleene3_and_commutative
+  : Commutative Kleene3.and :=
+  {| Commutative.commutativity := Kleene3.conjunction.commutativity |}.
+
+Instance Kleene3_or_commutative
+  : Commutative Kleene3.or :=
+  {| Commutative.commutativity := Kleene3.disjunction.commutativity |}.
