@@ -72,6 +72,30 @@ Definition insert
            end))
   end.
 
+(* [AVL.remove], with the proof rebuilt from the three [preservation] laws
+ * of [AVL.removal]; it takes the fact that [cmp] decides a strict order as
+ * [insert] does.
+ *)
+(* [forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop} .
+ *   Comparable cmp lt -> A -> SortedSet cmp -> SortedSet cmp]
+ *)
+Definition remove
+  := fun {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop}
+       {C : Comparable cmp lt} (a : A) (s : SortedSet cmp) .
+  match s with
+  | SortedSet.introduction t p =>
+      SortedSet.introduction
+        (AVL.remove cmp a t)
+        (Biconditional.backward.elimination
+          (AVL.validity.reflection C (AVL.remove cmp a t))
+          (match Biconditional.forward.elimination (AVL.validity.reflection C t) p with
+           | Conjunction.introduction m (Conjunction.introduction b o) =>
+               conjoin (AVL.removal.preservation.measurement cmp a t m),
+                 (conjoin (AVL.removal.preservation.balance cmp a t m b),
+                   (AVL.removal.preservation.order C a t o))
+           end))
+  end.
+
 (* The search of [AVL.contains] on the tree inside; it needs no proof. *)
 (* [forall {A : Type} {cmp : A -> A -> Comparison} . A -> SortedSet cmp -> Bool] *)
 Definition contains := fun {A : Type} {cmp : A -> A -> Comparison} (a : A) (s : SortedSet cmp) .
@@ -81,6 +105,11 @@ Definition contains := fun {A : Type} {cmp : A -> A -> Comparison} (a : A) (s : 
 (* [forall {A : Type} {cmp : A -> A -> Comparison} . SortedSet cmp -> List A] *)
 Definition to_list := fun {A : Type} {cmp : A -> A -> Comparison} (s : SortedSet cmp) .
   BinaryTree.to_list (AVL.to_tree (to_avl s)).
+
+(* The number of elements. *)
+(* [forall {A : Type} {cmp : A -> A -> Comparison} . SortedSet cmp -> Nat0] *)
+Definition size := fun {A : Type} {cmp : A -> A -> Comparison} (s : SortedSet cmp) .
+  BinaryTree.size (AVL.to_tree (to_avl s)).
 
 Module conversion. (* conversion *)
 
@@ -98,6 +127,16 @@ Proof.
   match &e with end.
   intro p2.
   ipso (congru (SortedSet.introduction &t1), (Assert.uniqueness _ &p1 &p2)).
+Qed.
+
+(* conversion.size *)
+Theorem size
+  : forall {A : Type} {cmp : A -> A -> Comparison} (s : SortedSet cmp) .
+      (|| to_list s ||)%list = size s.
+Proof.
+  intros A cmp s.
+  match &s with | introduction t p end.
+  ipso (BinaryTree.conversion.size (AVL.to_tree &t)).
 Qed.
 
 End conversion. (* conversion *)
@@ -156,6 +195,48 @@ Proof.
 Qed.
 
 End insertion. (* insertion *)
+
+Module removal. (* removal *)
+
+(* The search on the tree after [AVL.remove] answers the tree's membership,
+ * since the tree is still ordered; the membership law of [AVL.remove] then
+ * carries it back to a search on the tree before.
+ *)
+(* removal.membership *)
+Theorem membership
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop}
+      {C : Comparable cmp lt} (a : A) (b : A) (s : SortedSet cmp) .
+      contains b (remove a s) = true <-> contains b s = true /\ ~ (b = a).
+Proof.
+  intros A cmp lt C a b s.
+  match &s with | introduction t p end.
+  let proof parts := Biconditional.forward.elimination (AVL.validity.reflection &C &t) &p.
+  match &parts with | m rest end.
+  match &rest with | bt o end.
+  let proof o' := AVL.removal.preservation.order &C &a &t &o.
+  let proof after := AVL.search.specification &C &b (AVL.remove &cmp &a &t) &o'.
+  let proof removed := AVL.removal.membership &C &a &b &t &o.
+  let proof before := AVL.search.specification &C &b &t &o.
+  lemma shown
+    : AVL.contains &cmp &b (AVL.remove &cmp &a &t) = true
+      <-> AVL.contains &cmp &b &t = true /\ ~ (&b = &a).
+  {
+    divide et impera.
+    - intro h.
+      modus aequans &after, &h |- h1.
+      modus aequans &removed, &h1 |- h2.
+      match &h2 with | inside differs end.
+      ipso (conjoin (modus aequans &before, &inside), &differs).
+    - intro h.
+      match &h with | found differs end.
+      modus aequans &before, &found |- inside.
+      modus aequans &removed, (conjoin &inside, &differs) |- h1.
+      ipso (modus aequans &after, &h1).
+  }
+  ipso &shown.
+Qed.
+
+End removal. (* removal *)
 
 End SortedSet. (* SortedSet *)
 
