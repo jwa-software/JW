@@ -445,3 +445,122 @@ Definition data_collection_all_delivers_bst_removal_preservation
       forall (a : A) (t : BinaryTree A) .
         BST.Ordered lt t -> BST.Ordered lt (BST.remove cmp a t)
   := @BST.removal.preservation.
+
+Definition data_collection_all_delivers_avl
+  : forall (A : Type) (a : A) . AVL A
+  := fun (A : Type) (a : A) . AVL.Node AVL.Leaf a AVL.Leaf 1%n0.
+
+Definition data_collection_all_computes_avl_insert_single_rotation
+  : AVL.insert Nat0.compare 3%n0
+      (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf))
+    = AVL.Node
+        (AVL.Node AVL.Leaf 1%n0 AVL.Leaf 1%n0)
+        2%n0
+        (AVL.Node AVL.Leaf 3%n0 AVL.Leaf 1%n0)
+        2%n0
+  := Identity.reflexivity _.
+
+Definition data_collection_all_computes_avl_insert_double_rotation
+  : AVL.insert Nat0.compare 2%n0
+      (AVL.insert Nat0.compare 1%n0 (AVL.insert Nat0.compare 3%n0 AVL.Leaf))
+    = AVL.Node
+        (AVL.Node AVL.Leaf 1%n0 AVL.Leaf 1%n0)
+        2%n0
+        (AVL.Node AVL.Leaf 3%n0 AVL.Leaf 1%n0)
+        2%n0
+  := Identity.reflexivity _.
+
+Definition data_collection_all_computes_avl_insert_sorted_height
+  : AVL.height
+      (AVL.insert Nat0.compare 7%n0
+        (AVL.insert Nat0.compare 6%n0
+          (AVL.insert Nat0.compare 5%n0
+            (AVL.insert Nat0.compare 4%n0
+              (AVL.insert Nat0.compare 3%n0
+                (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))))))
+    = 3%n0
+  := Identity.reflexivity _.
+
+Definition data_collection_all_computes_avl_to_tree
+  : AVL.to_tree (AVL.Node AVL.Leaf 5%n0 AVL.Leaf 1%n0)
+    = BinaryTree.Node BinaryTree.Leaf 5%n0 BinaryTree.Leaf
+  := Identity.reflexivity _.
+
+Definition data_collection_all_delivers_avl_construction_measurement
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured l -> AVL.Measured r -> AVL.Measured (AVL.node l a r)
+  := @AVL.construction.measurement.
+
+Definition data_collection_all_delivers_avl_measurement_specification
+  : forall (A : Type) (t : AVL A) .
+      AVL.Measured t -> AVL.height t = BinaryTree.height (AVL.to_tree t)
+  := @AVL.measurement.specification.
+
+Definition data_collection_all_delivers_avl_rotation_right_measurement
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured l -> AVL.Measured r -> AVL.Measured (AVL.rotate.right l a r)
+  := @AVL.rotation.right.measurement.
+
+Definition data_collection_all_delivers_avl_rotation_right_balance
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured l -> AVL.Balanced l -> AVL.Balanced r ->
+      AVL.height l = (++ (++ (AVL.height r)))%n0 -> AVL.Balanced (AVL.rotate.right l a r)
+  := @AVL.rotation.right.balance.
+
+Definition data_collection_all_delivers_avl_rotation_right_growth
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured l -> AVL.Balanced l -> AVL.height l = (++ (++ (AVL.height r)))%n0 ->
+      AVL.height (AVL.rotate.right l a r) = AVL.height l
+      \/ AVL.height (AVL.rotate.right l a r) = (++ (AVL.height l))%n0
+  := @AVL.rotation.right.growth.
+
+Definition data_collection_all_delivers_avl_rotation_left_measurement
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured l -> AVL.Measured r -> AVL.Measured (AVL.rotate.left l a r)
+  := @AVL.rotation.left.measurement.
+
+Definition data_collection_all_delivers_avl_rotation_left_balance
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured r -> AVL.Balanced l -> AVL.Balanced r ->
+      AVL.height r = (++ (++ (AVL.height l)))%n0 -> AVL.Balanced (AVL.rotate.left l a r)
+  := @AVL.rotation.left.balance.
+
+Definition data_collection_all_delivers_avl_rotation_left_growth
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured r -> AVL.Balanced r -> AVL.height r = (++ (++ (AVL.height l)))%n0 ->
+      AVL.height (AVL.rotate.left l a r) = AVL.height r
+      \/ AVL.height (AVL.rotate.left l a r) = (++ (AVL.height r))%n0
+  := @AVL.rotation.left.growth.
+
+Definition data_collection_all_delivers_avl_balancing_measurement
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured l -> AVL.Measured r -> AVL.Measured (AVL.balance l a r)
+  := @AVL.balancing.measurement.
+
+Definition data_collection_all_delivers_avl_balancing_balance
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      AVL.Measured l -> AVL.Measured r -> AVL.Balanced l -> AVL.Balanced r ->
+      AVL.height l = AVL.height r
+        \/ AVL.height l = (++ (AVL.height r))%n0
+        \/ AVL.height r = (++ (AVL.height l))%n0
+        \/ AVL.height l = (++ (++ (AVL.height r)))%n0
+        \/ AVL.height r = (++ (++ (AVL.height l)))%n0 ->
+      AVL.Balanced (AVL.balance l a r)
+  := @AVL.balancing.balance.
+
+Definition data_collection_all_delivers_avl_insertion_preservation_measurement
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.Measured t -> AVL.Measured (AVL.insert cmp a t)
+  := @AVL.insertion.preservation.measurement.
+
+Definition data_collection_all_delivers_avl_insertion_preservation_balance
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.Measured t -> AVL.Balanced t -> AVL.Balanced (AVL.insert cmp a t)
+  := @AVL.insertion.preservation.balance.
+
+Definition data_collection_all_delivers_avl_insertion_growth
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.Measured t -> AVL.Balanced t ->
+      AVL.height (AVL.insert cmp a t) = AVL.height t
+      \/ AVL.height (AVL.insert cmp a t) = (++ (AVL.height t))%n0
+  := @AVL.insertion.growth.
