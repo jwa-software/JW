@@ -10,7 +10,7 @@
 (source (github jwa-software/rocq-jwa))
 (license MIT)
 (authors "Junzhe Wang")
-(maintainers "Junzhe Wang <jwa.software@foobox.com>")
+(maintainers "Junzhe Wang <research@junzhewang.de>")
 
 (package
  (name rocq-jwa)

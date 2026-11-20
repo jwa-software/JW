@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* Umbrella for [jwa.Core]: re-exports every module of the layer, so a
  * client imports the whole layer with [From jwa Require Import Core.All].

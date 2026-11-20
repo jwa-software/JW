@@ -1,4 +1,7 @@
-<!-- Copyright (c) Junzhe Wang, licensed under the MIT License. -->
+<!--
+SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+SPDX-License-Identifier: MIT
+-->
 
 <!-- State what changes and why. Give a change that spans several subjects one section per subject. -->
 

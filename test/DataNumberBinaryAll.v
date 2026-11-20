@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* Guards [jwa.Data.Number.Binary.All] by importing that umbrella and nothing
  * else, so anything it fails to re-export is a build failure here. What

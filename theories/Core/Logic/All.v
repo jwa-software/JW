@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* Umbrella for [jwa.Core.Logic]: re-exports every connective, so a client
  * imports them all with [From jwa Require Import Core.Logic.All].
