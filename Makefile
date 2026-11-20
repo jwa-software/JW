@@ -4,6 +4,7 @@
 # Build entry points for rocq-jwa.
 #
 #   make            build every theory and the test suite (default target)
+#   make test       run the tests that execute, such as the extracted OCaml
 #   make fmt        format the dune files
 #   make fmt-check  report the dune files that are not formatted, changing none
 #   make clean      remove the build directory
@@ -15,10 +16,13 @@
 # `opam env`.
 OPAM_EXEC := opam exec --
 
-.PHONY: build fmt fmt-check clean opam deps
+.PHONY: build test fmt fmt-check clean opam deps
 
 build:
 	$(OPAM_EXEC) dune build
+
+test:
+	$(OPAM_EXEC) dune test
 
 fmt:
 	$(OPAM_EXEC) dune fmt || $(OPAM_EXEC) dune build @fmt

@@ -27,15 +27,9 @@
  (flags
   (:standard -w -a)))
 
-(executable
+; make build compiles the test; make test runs it.
+
+(test
  (name extraction_test)
  (modules extraction_test)
  (libraries jwa_extraction))
-
-; Running the test is part of the default build, so make build, and with it
-; the CI, runs the extracted code as well as compiling it.
-
-(rule
- (alias default)
- (action
-  (run %{exe:extraction_test.exe})))
