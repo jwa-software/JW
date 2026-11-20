@@ -27,6 +27,10 @@ Definition data_number_binary_all_delivers_bin_notation
       ((x + y) + z = x + (y + z))%b
   := Bin.addition.associativity.
 
+Definition data_number_binary_all_delivers_bin_subtraction_notation
+  : (11 - 1011)%b = (-1000)%b /\ ((1011 - 11) - 1)%b = 111%b
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
 Definition data_number_binary_all_delivers_bin_involution
   : forall (x : Bin) .
       Bin.negate (Bin.negate x) = x

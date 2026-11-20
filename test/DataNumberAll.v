@@ -66,6 +66,18 @@ Definition data_number_all_delivers_rational_addition_computes
     /\ Rational.denominator (Rational.add (Rational.make 1%z 2%n) (Rational.make 1%z 3%n)) = 6%n
   := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
 
+Definition data_number_all_delivers_integer_subtraction_notation
+  : (3 - 5)%z = (-2)%z /\ ((1 - 2) - 3)%z = (-4)%z /\ ((-3) - 2)%z = (-5)%z
+  := conjoin (Identity.reflexivity _),
+       (conjoin (Identity.reflexivity _), (Identity.reflexivity _)).
+
+Definition data_number_all_delivers_rational_subtraction_notation
+  : Rational.numerator ((Rational.make 1%z 2%n) - (Rational.make 1%z 3%n))%q = 1%z
+    /\ Rational.denominator ((Rational.make 1%z 2%n) - (Rational.make 1%z 3%n))%q = 6%n
+    /\ Rational.numerator (- (Rational.make 1%z 2%n))%q = (-1)%z
+  := conjoin (Identity.reflexivity _),
+       (conjoin (Identity.reflexivity _), (Identity.reflexivity _)).
+
 Definition data_number_all_delivers_gcd_divisibility
   : forall (b : Nat0) (a : Nat0) .
       Nat0.Divides (Nat0.gcd a b) a
