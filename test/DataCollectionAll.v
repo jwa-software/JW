@@ -649,8 +649,8 @@ Definition data_collection_all_delivers_avl_insertion_preservation_order
       forall (a : A) (t : AVL A) . AVL.Ordered lt t -> AVL.Ordered lt (AVL.insert cmp a t)
   := @AVL.insertion.preservation.order.
 
-Definition data_collection_all_computes_avl_pop_min
-  : AVL.pop.min
+Definition data_collection_all_computes_avl_pop
+  : AVL.pop
       (AVL.insert Nat0.compare 3%n0
         (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
     = Some
@@ -695,12 +695,12 @@ Definition data_collection_all_computes_avl_remove_rotation
   := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
 
 Definition data_collection_all_delivers_avl_extraction_absence_specification
-  : forall (A : Type) (t : AVL A) . AVL.pop.min t = None <-> t = AVL.Leaf
+  : forall (A : Type) (t : AVL A) . AVL.pop t = None <-> t = AVL.Leaf
   := @AVL.extraction.absence.specification.
 
 Definition data_collection_all_delivers_avl_extraction_membership
   : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
-      AVL.pop.min t = Some (Product.introduction m rest) ->
+      AVL.pop t = Some (Product.introduction m rest) ->
       forall (b : A) .
         BinaryTree.Contains b (AVL.to_tree t) <-> b = m \/ BinaryTree.Contains b (AVL.to_tree rest)
   := @AVL.extraction.membership.
@@ -709,7 +709,7 @@ Definition data_collection_all_delivers_avl_extraction_minimality
   : forall (A : Type) (lt : A -> A -> Prop) .
       (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
       forall (t : AVL A) (m : A) (rest : AVL A) .
-        AVL.Ordered lt t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+        AVL.Ordered lt t -> AVL.pop t = Some (Product.introduction m rest) ->
         BinaryTree.All (fun (b : A) . lt m b) (AVL.to_tree rest)
   := @AVL.extraction.minimality.
 
@@ -717,24 +717,24 @@ Definition data_collection_all_delivers_avl_extraction_preservation_order
   : forall (A : Type) (lt : A -> A -> Prop) .
       (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
       forall (t : AVL A) (m : A) (rest : AVL A) .
-        AVL.Ordered lt t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+        AVL.Ordered lt t -> AVL.pop t = Some (Product.introduction m rest) ->
         AVL.Ordered lt rest
   := @AVL.extraction.preservation.order.
 
 Definition data_collection_all_delivers_avl_extraction_preservation_measurement
   : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
-      AVL.Measured t -> AVL.pop.min t = Some (Product.introduction m rest) -> AVL.Measured rest
+      AVL.Measured t -> AVL.pop t = Some (Product.introduction m rest) -> AVL.Measured rest
   := @AVL.extraction.preservation.measurement.
 
 Definition data_collection_all_delivers_avl_extraction_preservation_balance
   : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
-      AVL.Measured t -> AVL.Balanced t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+      AVL.Measured t -> AVL.Balanced t -> AVL.pop t = Some (Product.introduction m rest) ->
       AVL.Balanced rest
   := @AVL.extraction.preservation.balance.
 
 Definition data_collection_all_delivers_avl_extraction_shrinkage
   : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
-      AVL.Measured t -> AVL.Balanced t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+      AVL.Measured t -> AVL.Balanced t -> AVL.pop t = Some (Product.introduction m rest) ->
       AVL.height rest = AVL.height t \/ (++ (AVL.height rest))%n0 = AVL.height t
   := @AVL.extraction.shrinkage.
 

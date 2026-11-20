@@ -205,24 +205,21 @@ Fixpoint insert {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : AVL A) : AV
       end
   end.
 
-Module pop. (* pop *)
-
-(* The smallest element of an ordered tree is its leftmost one. [pop.min]
- * answers with it and with the tree that is left, rebalancing each node on
- * the way back up, and with [None] on a leaf.
+(* The first element in order, the leftmost one, paired with the tree that
+ * is left, each node on the way back up rebalanced; [None] on a leaf. On an
+ * [Ordered] tree the first element is the smallest, by
+ * [extraction.minimality].
  *)
 (* [forall {A : Type} . AVL A -> Option (Product A (AVL A))] *)
-Fixpoint min {A : Type} (t : AVL A) : Option (Product A (AVL A)) :=
+Fixpoint pop {A : Type} (t : AVL A) : Option (Product A (AVL A)) :=
   match t with
   | AVL.Leaf         => None
   | AVL.Node l a r _ =>
-      match min l with
+      match pop l with
       | None                             => Some (Product.introduction a r)
       | Some (Product.introduction m l') => Some (Product.introduction m (balance l' a r))
       end
   end.
-
-End pop. (* pop *)
 
 (* One tree out of two, for an [l] that lies wholly below [r]: the smallest
  * element of [r] becomes the root, the one element that may stand between
@@ -230,7 +227,7 @@ End pop. (* pop *)
  *)
 (* [forall {A : Type} . AVL A -> AVL A -> AVL A] *)
 Definition join := fun {A : Type} (l : AVL A) (r : AVL A) .
-  match pop.min r with
+  match pop r with
   | None                             => l
   | Some (Product.introduction m r') => balance l m r'
   end.
@@ -2421,7 +2418,7 @@ Module absence. (* extraction.absence *)
 
 (* extraction.absence.specification *)
 Theorem specification
-  : forall {A : Type} (t : AVL A) . pop.min t = None <-> t = AVL.Leaf.
+  : forall {A : Type} (t : AVL A) . pop t = None <-> t = AVL.Leaf.
 Proof.
   intros A t.
   divide et impera.
@@ -2429,7 +2426,7 @@ Proof.
     + intro e.
       quod idem est.
     + simpl in |- *.
-      match (pop.min &l) with | None | Some p end |- found.
+      match (pop &l) with | None | Some p end |- found.
       * intro e.
         ex &e quodlibet.
       * match &p with | m l' end.
@@ -2449,7 +2446,7 @@ End absence. (* extraction.absence *)
 (* extraction.membership *)
 Theorem membership
   : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
-      pop.min t = Some (Product.introduction m rest) ->
+      pop t = Some (Product.introduction m rest) ->
       forall (b : A) .
         BinaryTree.Contains b (to_tree t) <-> b = m \/ BinaryTree.Contains b (to_tree rest).
 Proof.
@@ -2460,7 +2457,7 @@ Proof.
     ex &e quodlibet.
   - intros m rest.
     simpl in |- *.
-    match (pop.min &l) with | None | Some p end |- found.
+    match (pop &l) with | None | Some p end |- found.
     + intros e b.
       modus aequans (extraction.absence.specification &l), &found |- empty.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
@@ -2512,7 +2509,7 @@ Theorem minimality
   : forall {A : Type} {lt : A -> A -> Prop} .
       (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
       forall (t : AVL A) (m : A) (rest : AVL A) .
-        Ordered lt t -> pop.min t = Some (Product.introduction m rest) ->
+        Ordered lt t -> pop t = Some (Product.introduction m rest) ->
         BinaryTree.All (fun (b : A) . lt m b) (to_tree rest).
 Proof.
   intros A lt transitive t.
@@ -2527,7 +2524,7 @@ Proof.
     match &o1 with | above o2 end.
     match &o2 with | lower upper end.
     simpl in |- *.
-    match (pop.min &l) with | None | Some p end |- found.
+    match (pop &l) with | None | Some p end |- found.
     + intro e.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
       leibniz <- &am, <- &rr in |- *.
@@ -2593,7 +2590,7 @@ Theorem order
   : forall {A : Type} {lt : A -> A -> Prop} .
       (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
       forall (t : AVL A) (m : A) (rest : AVL A) .
-        Ordered lt t -> pop.min t = Some (Product.introduction m rest) -> Ordered lt rest.
+        Ordered lt t -> pop t = Some (Product.introduction m rest) -> Ordered lt rest.
 Proof.
   intros A lt transitive t.
   match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
@@ -2607,7 +2604,7 @@ Proof.
     match &o1 with | above o2 end.
     match &o2 with | lower upper end.
     simpl in |- *.
-    match (pop.min &l) with | None | Some p end |- found.
+    match (pop &l) with | None | Some p end |- found.
     + intro e.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
       leibniz <- &rr in |- *.
@@ -2645,7 +2642,7 @@ Qed.
 (* extraction.preservation.measurement *)
 Theorem measurement
   : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
-      Measured t -> pop.min t = Some (Product.introduction m rest) -> Measured rest.
+      Measured t -> pop t = Some (Product.introduction m rest) -> Measured rest.
 Proof.
   intros A t.
   match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
@@ -2657,7 +2654,7 @@ Proof.
     match &m0 with | _ m' end.
     match &m' with | ml mr end.
     simpl in |- *.
-    match (pop.min &l) with | None | Some p end |- found.
+    match (pop &l) with | None | Some p end |- found.
     + intro e.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | am rr end.
       leibniz <- &rr in |- *.
@@ -2671,14 +2668,14 @@ Proof.
       ipso (balancing.measurement &l' &a &r &ml' &mr).
 Qed.
 
-(* The balance of what [pop.min] leaves and its height are proved by one
+(* The balance of what [pop] leaves and its height are proved by one
  * induction, as for [insert]: the height bound keeps the two subtrees of
  * each rebuilt node within [balance]'s reach.
  *)
 (* extraction.preservation.invariance *)
 Lemma invariance
   : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
-      Measured t -> Balanced t -> pop.min t = Some (Product.introduction m rest) ->
+      Measured t -> Balanced t -> pop t = Some (Product.introduction m rest) ->
       Balanced rest /\ (height rest = height t \/ ++ (height rest) = height t).
 Proof.
   intros A t.
@@ -2694,7 +2691,7 @@ Proof.
     match &b0 with | rel b' end.
     match &b' with | bl br end.
     simpl in |- *.
-    match (pop.min &l) with | None | Some p end |- found.
+    match (pop &l) with | None | Some p end |- found.
     + intro e'.
       modus aequans (extraction.absence.specification &l), &found |- empty.
       match (Product.introduction.injectivity (Option.some.injectivity &e')) with | am rr end.
@@ -2745,7 +2742,7 @@ Qed.
 (* extraction.preservation.balance *)
 Theorem balance
   : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
-      Measured t -> Balanced t -> pop.min t = Some (Product.introduction m rest) ->
+      Measured t -> Balanced t -> pop t = Some (Product.introduction m rest) ->
       Balanced rest.
 Proof.
   intros A t m rest mt bt e.
@@ -2758,7 +2755,7 @@ End preservation. (* extraction.preservation *)
 (* extraction.shrinkage *)
 Theorem shrinkage
   : forall {A : Type} (t : AVL A) (m : A) (rest : AVL A) .
-      Measured t -> Balanced t -> pop.min t = Some (Product.introduction m rest) ->
+      Measured t -> Balanced t -> pop t = Some (Product.introduction m rest) ->
       height rest = height t \/ ++ (height rest) = height t.
 Proof.
   intros A t m rest mt bt e.
@@ -2778,7 +2775,7 @@ Theorem membership
 Proof.
   intros A l r b.
   simpl join in |- *.
-  match (pop.min &r) with | None | Some p end |- found.
+  match (pop &r) with | None | Some p end |- found.
   - modus aequans (extraction.absence.specification &r), &found |- empty.
     leibniz &empty in |- *.
     simpl in |- *.
@@ -2825,7 +2822,7 @@ Theorem order
 Proof.
   intros A lt transitive b l r below above lower upper.
   simpl join in |- *.
-  match (pop.min &r) with | None | Some p end |- found.
+  match (pop &r) with | None | Some p end |- found.
   - ipso &lower.
   - match &p with | m r' end.
     lemma inside : BinaryTree.Contains &m (to_tree &r).
@@ -2864,7 +2861,7 @@ Theorem measurement
 Proof.
   intros A l r ml mr.
   simpl join in |- *.
-  match (pop.min &r) with | None | Some p end |- found.
+  match (pop &r) with | None | Some p end |- found.
   - ipso &ml.
   - match &p with | m r' end.
     ipso
@@ -2884,7 +2881,7 @@ Theorem balance
 Proof.
   intros A l r ml mr bl br rel.
   simpl join in |- *.
-  match (pop.min &r) with | None | Some p end |- found.
+  match (pop &r) with | None | Some p end |- found.
   - ipso &bl.
   - match &p with | m r' end.
     let proof mr' := extraction.preservation.measurement &r &m &r' &mr &found.
@@ -3256,7 +3253,7 @@ Proof.
       * ipso (joining.preservation.balance &l &r &ml &mr &bl &br &rel).
       * leibniz &e in |- *.
         simpl join in |- *.
-        match (pop.min &r) with | None | Some p end |- found.
+        match (pop &r) with | None | Some p end |- found.
         -- modus aequans (extraction.absence.specification &r), &found |- empty.
            leibniz &empty in |- *.
            let proof z : height (@AVL.Leaf &A) = Nat0.Zero := Identity.reflexivity _.
