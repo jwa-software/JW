@@ -316,6 +316,9 @@ Definition sub_with_borrow := fun (borrow : Bit) (x : UInt32) (y : UInt32) .
 (* [UInt32 -> UInt32 -> UInt32] *)
 Definition sub := fun (x : UInt32) (y : UInt32) . (pi_2 (sub_with_borrow 0 x y))%product.
 
+Notation "x - y" := (sub x y) (only parsing)
+  : jwa_uint32_scope.
+
 (* The two's complement: [x] taken from [Zero], wrapping. *)
 (* [UInt32 -> UInt32] *)
 Definition negate := fun (x : UInt32) . sub Zero x.
@@ -1469,7 +1472,84 @@ Proof.
     ipso &left.
 Qed.
 
+Module inversion. (* addition.inversion *)
+
+(* The subtraction ripples a borrow, so this is read through the values
+ * modulo [modulus], as the other laws of the type are.
+ *)
+(* addition.inversion.subtraction *)
+Theorem subtraction : forall (x : UInt32) (y : UInt32) . (x - y) + y = x.
+Proof.
+  intros x y.
+  lemma facto : to_bin_with_zero ((&x - &y) + &y) = to_bin_with_zero &x.
+  {
+    leibniz (conversion.addition (&x - &y) &y) in |- *.
+    ipso (conversion.subtraction &x &y).
+  }
+  ipso (conversion.injectivity &facto).
+Qed.
+
+End inversion. (* addition.inversion *)
+
 End addition. (* addition *)
+
+Module subtraction. (* subtraction *)
+
+(* Adding [- y] to both sides of [addition.inversion.subtraction]. *)
+(* subtraction.specification *)
+Theorem specification : forall (x : UInt32) (y : UInt32) . x - y = x + (- y).
+Proof.
+  intros x y.
+  let proof shifted : ((&x - &y) + &y) + (- &y) = &x + (- &y)
+    := congru (fun (z : UInt32) . z + (- &y)), (addition.inversion.subtraction &x &y).
+  match (addition.inverse &y) with | _ r end.
+  match (addition.identity (&x - &y)) with | _ i end.
+  leibniz (addition.associativity (&x - &y) &y (- &y)), &r, &i in &shifted.
+  ipso &shifted.
+Qed.
+
+Module inversion. (* subtraction.inversion *)
+
+(* subtraction.inversion.addition *)
+Theorem addition : forall (x : UInt32) (y : UInt32) . (x + y) - y = x.
+Proof.
+  intros x y.
+  match (addition.inverse &y) with | _ r end.
+  match (addition.identity &x) with | _ i end.
+  leibniz
+    (subtraction.specification (&x + &y) &y),
+    (addition.associativity &x &y (- &y)),
+    &r,
+    &i
+    in |- *.
+  quod idem est.
+Qed.
+
+End inversion. (* subtraction.inversion *)
+
+Module right. (* subtraction.right *)
+
+(* subtraction.right.identity *)
+Theorem identity : forall (x : UInt32) . x - Zero = x.
+Proof.
+  intros x.
+  match (addition.identity (&x - Zero)) with | _ i end.
+  leibniz <- &i in |- *.
+  ipso (addition.inversion.subtraction &x Zero).
+Qed.
+
+End right. (* subtraction.right *)
+
+(* subtraction.annihilation *)
+Theorem annihilation : forall (x : UInt32) . x - x = Zero.
+Proof.
+  intros x.
+  match (addition.inverse &x) with | _ r end.
+  leibniz (subtraction.specification &x &x) in |- *.
+  ipso &r.
+Qed.
+
+End subtraction. (* subtraction *)
 
 Module multiplication. (* multiplication *)
 
