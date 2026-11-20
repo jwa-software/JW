@@ -191,11 +191,14 @@ Notation "x + y" := (add x y) (only parsing)
 
 Local Open Scope jwa_bin_scope.
 
-(* No infix [-]: the scope's [-] is the prefix negation that makes [(-1011)%b]
- * parse, and [Integer] declares none either.
- *)
 (* [Bin -> Bin -> Bin] *)
 Definition sub := fun (x : Bin) (y : Bin) . x + negate y.
+
+(* The infix coexists with the prefix [- p] above and with the scope's [- x]
+ * of negative literals, as [x + y] does with [+ p].
+ *)
+Notation "x - y" := (sub x y) (only parsing)
+  : jwa_bin_scope.
 
 (* The magnitudes multiply in [BinBase], and the sign is positive exactly when the
  * two signs agree.
