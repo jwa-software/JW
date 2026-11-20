@@ -1111,6 +1111,22 @@ Proof.
   - ipso (@addition.right.cancellation m k n).
 Qed.
 
+Module inversion. (* addition.inversion *)
+
+(* addition.inversion.subtraction *)
+Theorem subtraction
+  : forall (m : Integer) (n : Integer) . (m - n) + n = m.
+Proof.
+  intros m n.
+  let proof s : &m - &n = &m + negate &n := Identity.reflexivity _.
+  leibniz &s in |- *.
+  leibniz (addition.associativity &m (negate &n) &n) in |- *.
+  leibniz (addition.left.inverse &n) in |- *.
+  ipso (addition.right.identity &m).
+Qed.
+
+End inversion. (* addition.inversion *)
+
 Module order. (* addition.order *)
 
 Module strict. (* addition.order.strict *)
@@ -1138,6 +1154,14 @@ End addition. (* addition *)
 
 Module subtraction. (* subtraction *)
 
+(* subtraction.specification *)
+Theorem specification
+  : forall (m : Integer) (n : Integer) . m - n = m + negate n.
+Proof.
+  intros m n.
+  ipso (Identity.reflexivity _).
+Qed.
+
 Module inversion. (* subtraction.inversion *)
 
 (* subtraction.inversion.addition *)
@@ -1152,6 +1176,29 @@ Proof.
 Qed.
 
 End inversion. (* subtraction.inversion *)
+
+Module right. (* subtraction.right *)
+
+(* [n - 0] is [n + negate 0]; reading it through [addition.inversion]
+ * instead needs no fact about [negate 0].
+ *)
+(* subtraction.right.identity *)
+Theorem identity : forall (n : Integer) . n - 0 = n.
+Proof.
+  intros n.
+  leibniz <- (addition.right.identity (&n - 0)) in |- *.
+  ipso (addition.inversion.subtraction &n 0).
+Qed.
+
+End right. (* subtraction.right *)
+
+(* subtraction.annihilation *)
+Theorem annihilation : forall (n : Integer) . n - n = 0.
+Proof.
+  intros n.
+  leibniz (subtraction.specification &n &n) in |- *.
+  ipso (addition.right.inverse &n).
+Qed.
 
 End subtraction. (* subtraction *)
 

@@ -1012,7 +1012,73 @@ Proof.
   - ipso (@addition.right.cancellation &x &y &z).
 Qed.
 
+Module inversion. (* addition.inversion *)
+
+(* addition.inversion.subtraction *)
+Theorem subtraction
+  : forall (x : Bin) (y : Bin) . (x - y) + y = x.
+Proof.
+  intros x y.
+  let proof s : &x - &y = &x + negate &y := Identity.reflexivity _.
+  leibniz &s in |- *.
+  leibniz (addition.associativity &x (negate &y) &y) in |- *.
+  leibniz (addition.left.inverse &y) in |- *.
+  ipso (addition.right.identity &x).
+Qed.
+
+End inversion. (* addition.inversion *)
+
 End addition. (* addition *)
+
+Module subtraction. (* subtraction *)
+
+(* subtraction.specification *)
+Theorem specification
+  : forall (x : Bin) (y : Bin) . x - y = x + negate y.
+Proof.
+  intros x y.
+  ipso (Identity.reflexivity _).
+Qed.
+
+Module inversion. (* subtraction.inversion *)
+
+(* subtraction.inversion.addition *)
+Theorem addition
+  : forall (x : Bin) (y : Bin) . (x + y) - y = x.
+Proof.
+  intros x y.
+  leibniz (subtraction.specification (&x + &y) &y) in |- *.
+  leibniz (addition.associativity &x &y (negate &y)) in |- *.
+  leibniz (addition.right.inverse &y) in |- *.
+  ipso (addition.right.identity &x).
+Qed.
+
+End inversion. (* subtraction.inversion *)
+
+Module right. (* subtraction.right *)
+
+(* [x - 0] is [x + negate 0]; reading it through [addition.inversion]
+ * instead needs no fact about [negate 0].
+ *)
+(* subtraction.right.identity *)
+Theorem identity : forall (x : Bin) . x - 0 = x.
+Proof.
+  intros x.
+  leibniz <- (addition.right.identity (&x - 0)) in |- *.
+  ipso (addition.inversion.subtraction &x 0).
+Qed.
+
+End right. (* subtraction.right *)
+
+(* subtraction.annihilation *)
+Theorem annihilation : forall (x : Bin) . x - x = 0.
+Proof.
+  intros x.
+  leibniz (subtraction.specification &x &x) in |- *.
+  ipso (addition.right.inverse &x).
+Qed.
+
+End subtraction. (* subtraction *)
 
 Module order. (* order *)
 
