@@ -880,3 +880,50 @@ Definition data_collection_all_delivers_avl_validity_reflection
       forall (t : AVL A) .
         Assert (AVL.is_valid cmp t) <-> AVL.Measured t /\ AVL.Balanced t /\ AVL.Ordered lt t
   := @AVL.validity.reflection.
+
+Definition data_collection_all_delivers_sorted_set
+  : SortedSet Nat0.compare
+  := SortedSet.empty Nat0.compare.
+
+Definition data_collection_all_computes_sorted_set_to_list
+  : SortedSet.to_list
+      (SortedSet.insert 2%n0
+        (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))))
+    = (1%n0 :: 2%n0 :: 3%n0 :: [])%list
+  := Identity.reflexivity _.
+
+Definition data_collection_all_computes_sorted_set_contains
+  : SortedSet.contains 3%n0
+      (SortedSet.insert 2%n0
+        (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))))
+    = true
+    /\ SortedSet.contains 4%n0
+        (SortedSet.insert 2%n0
+          (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))))
+      = false
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_computes_sorted_set_insert_present
+  : SortedSet.insert 1%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))
+    = SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)
+  := SortedSet.conversion.injectivity
+       (SortedSet.insert 1%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)))
+       (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare))
+       (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_sorted_set_conversion_injectivity
+  : forall (A : Type) (cmp : A -> A -> Comparison) (s1 : SortedSet cmp) (s2 : SortedSet cmp) .
+      SortedSet.to_avl s1 = SortedSet.to_avl s2 -> s1 = s2
+  := @SortedSet.conversion.injectivity.
+
+Definition data_collection_all_delivers_sorted_set_emptiness
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) .
+      SortedSet.contains a (SortedSet.empty cmp) = false
+  := @SortedSet.emptiness.
+
+Definition data_collection_all_delivers_sorted_set_insertion_membership
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (b : A) (s : SortedSet cmp) .
+      SortedSet.contains b (SortedSet.insert a s) = true
+      <-> b = a \/ SortedSet.contains b s = true
+  := @SortedSet.insertion.membership.
