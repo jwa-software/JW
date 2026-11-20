@@ -28,10 +28,10 @@ Extraction Language OCaml.
  * fails to compile, the arities differing; for [Bool] it would compile and
  * swap [true] and [false], which [extraction_test.ml] would catch.
  *)
-Extract Inductive jwa.Data.Base.Bool.Bool.T => "bool" [ "true" "false" ].
-Extract Inductive jwa.Data.Option.Option.T => "option" [ "None" "Some" ].
-Extract Inductive jwa.Data.Product.Product.T => "( * )" [ "(,)" ].
-Extract Inductive jwa.Data.Collection.List.List.T => "list" [ "[]" "(::)" ].
+Extract Inductive jwa.Data.Base.Bool.Bool.T       => "bool"   [ "true" "false" ].
+Extract Inductive jwa.Data.Option.Option.T        => "option" [ "None" "Some" ].
+Extract Inductive jwa.Data.Product.Product.T      => "( * )"  [ "(,)" ].
+Extract Inductive jwa.Data.Collection.List.List.T => "list"   [ "[]" "(::)" ].
 
 (* Every module of [Data] that computes, into one file [jwa.ml]: the proofs
  * are erased, so [SortedSet.T] becomes the [AVL.T] it holds.
