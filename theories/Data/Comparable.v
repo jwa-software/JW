@@ -13,6 +13,7 @@ From jwa Require Import Relation.Order.PartialOrder.
 From jwa Require Import Relation.Order.StrictPartialOrder.
 From jwa Require Import Relation.Order.StrictTotalOrder.
 From jwa Require Import Relation.Order.TotalOrder.
+From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 From jwa Require Import Relation.Reflexive.
 From jwa Require Import Relation.Total.
@@ -90,7 +91,7 @@ Theorem reflexivity
 Proof.
   intros A compare lt C n.
   match (Comparable.specification n n) with | _ s end.
-  ipso (modus aequans s, (Identity.reflexivity n)).
+  ipso (modus aequans s, (refl n)).
 Qed.
 
 Module strict. (* comparison.strict *)
@@ -265,7 +266,7 @@ Theorem reflexivity
 Proof.
   intros A compare lt C n.
   simpl LessOrEqual in |- *.
-  ipso (disjoin (Identity.reflexivity n), _).
+  ipso (disjoin (refl n), _).
 Qed.
 
 (* order.antisymmetry *)
@@ -283,7 +284,7 @@ Proof.
   match h1 with | e1 | lt1 end.
   - ipso e1.
   - match h2 with | e2 | lt2 end.
-    + ipso (Identity.symmetry e2).
+    + ipso (symm e2).
     + let proof a := order.strict.asymmetry m n lt1.
       simpl (~ _) in a.
       modus ponens a, lt2 |- f.
@@ -392,13 +393,13 @@ Proof.
       ipso (disjoin _, (modus aequans s, c)).
     + match (Comparable.specification m n) with | _ s end.
       ipso (disjoin (modus aequans s, c), _).
-    + ipso (disjoin (Identity.symmetry e), _).
+    + ipso (disjoin (symm e), _).
   - intro h.
     match (compare m n) with | | | end |- c.
     + quod idem est.
     + quod idem est.
     + match h with | e | lt1 end.
-      * ipso (Identity.symmetry e).
+      * ipso (symm e).
       * match (Comparable.specification m n) with | s _ end.
         modus aequans s, lt1 |- e.
         leibniz e in c.
@@ -420,8 +421,8 @@ Proof.
   simpl min in |- *.
   simpl LessOrEqual in |- *.
   match (compare l r) with | | | end |- c.
-  - ipso (disjoin (Identity.reflexivity l), _).
-  - ipso (disjoin (Identity.reflexivity l), _).
+  - ipso (disjoin (refl l), _).
+  - ipso (disjoin (refl l), _).
   - ipso (disjoin _, (modus aequans
                          (comparison.strict.transposition.specification l r), c)).
 Qed.
@@ -447,7 +448,7 @@ Proof.
     ipso (disjoin _, (modus aequans s, c)).
   - match (Comparable.specification l r) with | _ s end.
     ipso (disjoin (modus aequans s, c), _).
-  - ipso (disjoin (Identity.reflexivity r), _).
+  - ipso (disjoin (refl r), _).
 Qed.
 
 End right. (* minimum.right *)
@@ -579,7 +580,7 @@ Proof.
     + ipso (disjoin e, _).
     + match (Comparable.specification m n) with | _ s end.
       modus aequans s, c |- e'.
-      ipso (disjoin (Identity.symmetry e'), _).
+      ipso (disjoin (symm e'), _).
     + ipso (disjoin _, (modus aequans
                            (comparison.strict.transposition.specification m n), c)).
   - intro h.
@@ -610,8 +611,8 @@ Proof.
   match (compare l r) with | | | end |- c.
   - match (Comparable.specification l r) with | s _ end.
     ipso (disjoin _, (modus aequans s, c)).
-  - ipso (disjoin (Identity.reflexivity l), _).
-  - ipso (disjoin (Identity.reflexivity l), _).
+  - ipso (disjoin (refl l), _).
+  - ipso (disjoin (refl l), _).
 Qed.
 
 End left. (* maximum.left *)
@@ -631,10 +632,10 @@ Proof.
   simpl max in |- *.
   simpl LessOrEqual in |- *.
   match (compare l r) with | | | end |- c.
-  - ipso (disjoin (Identity.reflexivity r), _).
+  - ipso (disjoin (refl r), _).
   - match (Comparable.specification l r) with | _ s end.
     modus aequans s, c |- e.
-    ipso (disjoin (Identity.symmetry e), _).
+    ipso (disjoin (symm e), _).
   - ipso (disjoin _, (modus aequans
                          (comparison.strict.transposition.specification l r), c)).
 Qed.

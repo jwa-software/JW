@@ -784,7 +784,7 @@ Proof.
       quod idem est.
   }
   match (encode &u) with | | v l end.
-  - ex (&n (Identity.reflexivity [])) quodlibet.
+  - ex (&n (refl [])) quodlibet.
   - simpl in &all.
     ipso &all.
 Qed.

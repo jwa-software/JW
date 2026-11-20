@@ -701,7 +701,9 @@ Theorem data_number_all_delivers_unwrap_of_a_narrowing
 Proof.
   intros n h.
   let proof r := Option.unwrapping.restoration (Rational.to_integer n) h.
-  ipso (Option.some.injectivity (trans r, (Rational.narrowing.integer.retraction n))).
+  ipso
+    (Option.some.injectivity
+      (Identity.transitivity r (Rational.narrowing.integer.retraction n))).
 Qed.
 
 Theorem data_number_all_delivers_coercion_nat_to_nat0

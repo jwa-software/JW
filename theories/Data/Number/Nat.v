@@ -694,7 +694,7 @@ Proof.
   -
     let proof id
       : 1 = 1
-      := Identity.reflexivity 1.
+      := refl 1.
     ipso (disjoin _, (disjoin id, _)).
   -
     lemma facto : 1 < Successor &n'.
@@ -795,7 +795,7 @@ Proof.
     +
       quod idem est.
     +
-      let proof IH2' := Identity.symmetry IH2.
+      let proof IH2' := symm IH2.
       leibniz IH2'
               in |- *.
       quod idem est.
@@ -867,7 +867,7 @@ Proof.
   match h with | d e end.
   simpl ( _ < _ ) in |- *.
   exists (k * d).
-  let proof dist := Identity.symmetry
+  let proof dist := symm
                 (multiplication.left.distributivity.over.addition k m d).
   leibniz dist in |- *.
   leibniz e    in |- *.
@@ -1372,7 +1372,7 @@ Proof.
   -
     simpl ( _ < _ ) in lt.
     match lt with | k e end.
-    let proof e' := Identity.symmetry e.
+    let proof e' := symm e.
     leibniz e' in |- *.
     rm e e'.
     match m with | | m' by IH end

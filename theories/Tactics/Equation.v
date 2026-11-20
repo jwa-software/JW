@@ -42,6 +42,30 @@ Ltac2 must_be_new (who : string) (p : Std.intro_pattern) :=
   | _ => ()
   end.
 
+(* The reflexivity of [=].
+ *
+ *   refl <x>    |- x = x
+ *
+ * Bare, it is a term: [ipso (refl &n)], [disjoin (refl unknown), _]. Only
+ * [refl <x> as <p>], or equally [refl <x> |- <p>], is a tactic, and <p> must
+ * be new. A goal [x = x] is closed by [quod idem est]. Nothing anywhere may
+ * be named [refl].
+ *)
+Notation "'refl' X" := (Identity.reflexivity X)
+  (only parsing).
+
+Ltac2 refl_as (x : unit -> constr) (p : Std.intro_pattern) :=
+  Control.enter (fun () =>
+    let c := Local.checked "refl" x in
+    must_be_new "refl" p;
+    Std.specialize (constr:(Identity.reflexivity $c), Std.NoBindings) (Some p)).
+
+Ltac2 Notation "refl" x(thunk(constr)) "as" p(intropattern) :=
+  refl_as x p.
+
+Ltac2 Notation "refl" x(thunk(constr)) "|-" p(intropattern) :=
+  refl_as x p.
+
 (* The symmetry of [=].
  *
  *   symm <H>    A = B |- B = A

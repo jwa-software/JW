@@ -65,7 +65,7 @@ Definition Zero :=
     (Nat0.gcd.nat.zero
       (Integer.abs Integer.Zero)
       (Nat.One)
-      ((Identity.reflexivity Nat0.Zero)
+      ((refl Nat0.Zero)
         : (Integer.abs Integer.Zero %. Nat.One)%n0 = Nat0.Zero)).
 
 (* [Rational] *)
@@ -74,7 +74,7 @@ Definition One :=
     (Nat0.gcd.nat.zero
       (Integer.abs Nat.One)
       (Nat.One)
-      ((Identity.reflexivity Nat0.Zero)
+      ((refl Nat0.Zero)
         : (Integer.abs Nat.One %. Nat.One)%n0 = Nat0.Zero)).
 
 (* [Rational -> Rational] *)
@@ -236,7 +236,7 @@ Proof.
     let proof i := Integer.multiplication.right.identity
                   (n /. Nat.One)%z.
     symm in i.
-    ipso (Identity.transitivity i e).
+    ipso (trans i, e).
   }
 
   lemma undivided : (d /. (Nat.One))%n0
@@ -248,7 +248,7 @@ Proof.
     let proof i := Nat0.multiplication.right.identity
                   (d /. (Nat.One))%n0.
     symm in i.
-    ipso (Identity.transitivity i e).
+    ipso (trans i, e).
   }
 
   lemma same : (d /. Nat0.gcd.nat (Integer.abs n) d)%n0
@@ -280,7 +280,7 @@ Proof.
                   (Nat0.divisibility.bottom d).
     leibniz undivided in s.
     let proof inj := Nat0.positive.injectivity s.
-    ipso (Identity.transitivity c inj).
+    ipso (trans c, inj).
   }
   ipso (extensionality _ _ &top &bottom).
 Qed.
@@ -418,7 +418,7 @@ Proof.
                 (Nat0.gcd.nat.right.divisibility (Integer.abs a) b))
             (Nat0.gcd.nat (Integer.abs a) b))
     in |- *.
-  let proof assoc := Identity.symmetry
+  let proof assoc := symm
                 (Integer.multiplication.associativity
                   (a /. Nat0.gcd.nat (Integer.abs a) b)%z
                   (Nat0.gcd.nat (Integer.abs a) b)
@@ -447,7 +447,7 @@ Proof.
     intros x y z.
     leibniz (Integer.multiplication.associativity x y z) in |- *.
     leibniz (Integer.multiplication.commutativity y z)   in |- *.
-    let proof h := Identity.symmetry (Integer.multiplication.associativity x z y).
+    let proof h := symm (Integer.multiplication.associativity x z y).
     leibniz h in |- *.
     quod idem est.
   }
@@ -502,7 +502,7 @@ Proof.
 
     leibniz (swap r b d) in Q1.
     symm in Q1.
-    let proof Q := Identity.transitivity Q1 Q2.
+    let proof Q := trans Q1, Q2.
     leibniz (swap a s d) in Q.
     leibniz (swap c s b) in Q.
     leibniz (Integer.multiplication.commutativity
@@ -539,7 +539,7 @@ Proof.
       leibniz (Integer.multiplication.commutativity q s) in |- *.
       leibniz (Integer.multiplication.interchange
                 c b s q) in |- *.
-      let proof P2' := Identity.symmetry P2.
+      let proof P2' := symm P2.
       leibniz P2' in |- *.
       leibniz (Integer.multiplication.commutativity b q) in |- *.
       leibniz (Integer.multiplication.interchange
@@ -596,7 +596,7 @@ Proof.
                     (Nat0.divisibility.reflexivity q).
       leibniz (Nat0.multiplication.commutativity
                 q (Integer.abs r)) in h.
-      let proof m' := Identity.symmetry m.
+      let proof m' := symm m.
       leibniz m' in h.
       ipso (Nat0.gcd.multiplication.cancellation
               q (Integer.abs p)
@@ -650,7 +650,7 @@ Proof.
 
   let proof criterion := make.characterisation Integer.Zero b Integer.Zero Nat.One.
   modus aequans criterion, cross |- joined.
-  ipso (Identity.transitivity joined unit).
+  ipso (trans joined, unit).
 Qed.
 
 Module addition. (* make.addition *)
@@ -1110,7 +1110,7 @@ Proof.
   simpl in h.
 
   symm in an.
-  ipso (Identity.transitivity am (Identity.transitivity h an)).
+  ipso (trans am, (trans h, an)).
 Qed.
 
 End left. (* addition.left *)
@@ -1189,7 +1189,7 @@ Proof.
   simpl in h.
 
   symm in am.
-  ipso (Identity.transitivity am (Identity.transitivity h an)).
+  ipso (trans am, (trans h, an)).
 Qed.
 
 End right. (* addition.right *)
@@ -1233,7 +1233,7 @@ Theorem subtraction
   : forall (x : Rational) (y : Rational) . (x - y) + y = x.
 Proof.
   intros x y.
-  let proof s : &x - &y = &x + (negate &y) := Identity.reflexivity _.
+  let proof s : &x - &y = &x + (negate &y) := refl _.
   leibniz &s in |- *.
   leibniz (addition.associativity &x (negate &y) &y) in |- *.
   leibniz (addition.left.inverse &y) in |- *.
@@ -1336,7 +1336,7 @@ Theorem specification
   : forall (x : Rational) (y : Rational) . x - y = x + (negate y).
 Proof.
   intros x y.
-  ipso (Identity.reflexivity _).
+  ipso (refl _).
 Qed.
 
 Module inversion. (* subtraction.inversion *)
@@ -1777,7 +1777,7 @@ Proof.
                     Nat.One
                     (Nat.One).
       modus aequans criterion, cross |- joined.
-      ipso (Identity.transitivity joined unit).
+      ipso (trans joined, unit).
     }
     ipso facto.
 
@@ -1819,7 +1819,7 @@ Proof.
                     Nat.One
                     (Nat.One).
       modus aequans criterion, cross |- joined.
-      ipso (Identity.transitivity joined unit).
+      ipso (trans joined, unit).
     }
     ipso facto.
 Qed.
@@ -1848,7 +1848,7 @@ Proof.
   lemma bridge : (f * (c * b))%z
           = (b * (c * f))%z.
   {
-    let proof h := Identity.symmetry
+    let proof h := symm
                   (Integer.multiplication.associativity
                     f c b).
     leibniz h in |- *.
@@ -1863,7 +1863,7 @@ Proof.
   lemma leftward : (f * (a * d))%z
           = (d * (a * f))%z.
   {
-    let proof h := Identity.symmetry
+    let proof h := symm
                   (Integer.multiplication.associativity
                     f a d).
     leibniz h in |- *.
@@ -1879,7 +1879,7 @@ Proof.
   lemma rightward : (b * (e * d))%z
           = (d * (e * b))%z.
   {
-    let proof h := Identity.symmetry
+    let proof h := symm
                   (Integer.multiplication.associativity
                     b
                     (e)
@@ -2100,7 +2100,7 @@ Proof.
               (Rational.introduction m Nat.One h)
               (Rational.introduction n Nat.One
                  (Nat0.gcd.nat.right.annihilation (Integer.abs n)))
-              f (Identity.reflexivity Nat.One)).
+              f (refl Nat.One)).
     + ex e quodlibet.
   - intro e.
     leibniz e in |- *.
@@ -2125,7 +2125,7 @@ Proof.
       ex c quodlibet.
   - intro ne.
     match d with | One | Successor d' end.
-    + ex (ne (Identity.reflexivity Nat.One)) quodlibet.
+    + ex (ne (refl Nat.One)) quodlibet.
     + quod idem est.
 Qed.
 

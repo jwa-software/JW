@@ -14,6 +14,7 @@ From jwa Require Import Data.Number.Nat0.
 From jwa Require Import Data.Option.
 From jwa Require Import Dialect.ExFalso.
 From jwa Require Import Dialect.Simpl.
+From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 
 Module NonEmptyList. (* NonEmptyList *)
@@ -431,7 +432,7 @@ Proof.
   - simpl in |- *.
     match (le b (maximum_of le x')) with end |- s.
     + ipso (disjoin _, IH).
-    + ipso (disjoin (Identity.reflexivity b), _).
+    + ipso (disjoin (refl b), _).
 Qed.
 
 End maximum. (* maximum *)
@@ -480,7 +481,7 @@ Proof.
     quod idem est.
   - simpl in |- *.
     match (le b (minimum_of le x')) with end |- s.
-    + ipso (disjoin (Identity.reflexivity b), _).
+    + ipso (disjoin (refl b), _).
     + ipso (disjoin _, IH).
 Qed.
 

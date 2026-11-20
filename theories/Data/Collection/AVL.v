@@ -293,7 +293,7 @@ Proof.
   intros A l a r ml mr.
   simpl node in |- *.
   simpl in |- *.
-  ipso (conjoin (Identity.reflexivity _), (conjoin &ml, &mr)).
+  ipso (conjoin (refl _), (conjoin &ml, &mr)).
 Qed.
 
 End construction. (* construction *)
@@ -744,9 +744,9 @@ Proof.
             (disjoin _, (Nat0.increment.order.extensivity (height &r))))
           in |- *.
         ipso
-          (conjoin (disjoin _, (disjoin _, (Identity.reflexivity _))),
+          (conjoin (disjoin _, (disjoin _, (refl _))),
             (conjoin &bll,
-              (conjoin (disjoin _, (disjoin (Identity.reflexivity _), _)), (conjoin &blr, &br)))).
+              (conjoin (disjoin _, (disjoin (refl _), _)), (conjoin &blr, &br)))).
     + match &rel' with | e | e end.
       (* The left subtree of [l] is the higher: a single rotation. *)
       * leibniz &e in &mx.
@@ -773,9 +773,9 @@ Proof.
            leibniz &mx2 in |- *.
            leibniz (Comparable.maximum.idempotence (height &r)) in |- *.
            ipso
-             (conjoin (disjoin (Identity.reflexivity _), _),
+             (conjoin (disjoin (refl _), _),
                (conjoin &bll,
-                 (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &blr, &br)))).
+                 (conjoin (disjoin (refl _), _), (conjoin &blr, &br)))).
       (* The right subtree of [l] is the higher: a double rotation. *)
       * leibniz &e in &mx.
         leibniz (Comparable.maximum.commutativity (height &ll) (++ (height &ll))) in &mx.
@@ -808,10 +808,10 @@ Proof.
                  leibniz &mx2 in |- *.
                  leibniz (Comparable.maximum.idempotence (height &r)) in |- *.
                  ipso
-                   (conjoin (disjoin (Identity.reflexivity _), _),
+                   (conjoin (disjoin (refl _), _),
                      (conjoin
-                       (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &bll, &blrl)),
-                       (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &blrr, &br)))).
+                       (conjoin (disjoin (refl _), _), (conjoin &bll, &blrl)),
+                       (conjoin (disjoin (refl _), _), (conjoin &blrr, &br)))).
               ** match &rel3 with | e3 | e3 end.
                  --- leibniz &e3 in &mx3.
                      leibniz
@@ -833,10 +833,10 @@ Proof.
                          (disjoin _, (Nat0.increment.order.extensivity (height &lrr))))
                        in |- *.
                      ipso
-                       (conjoin (disjoin (Identity.reflexivity _), _),
+                       (conjoin (disjoin (refl _), _),
                          (conjoin
-                           (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &bll, &blrl)),
-                           (conjoin (disjoin _, (disjoin _, (Identity.reflexivity _))),
+                           (conjoin (disjoin (refl _), _), (conjoin &bll, &blrl)),
+                           (conjoin (disjoin _, (disjoin _, (refl _))),
                              (conjoin &blrr, &br)))).
                  --- leibniz &e3 in &mx3.
                      leibniz
@@ -858,11 +858,11 @@ Proof.
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (height &lrl))) in |- *.
                      ipso
-                       (conjoin (disjoin (Identity.reflexivity _), _),
+                       (conjoin (disjoin (refl _), _),
                          (conjoin
-                           (conjoin (disjoin _, (disjoin (Identity.reflexivity _), _)),
+                           (conjoin (disjoin _, (disjoin (refl _), _)),
                              (conjoin &bll, &blrl)),
-                           (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &blrr, &br)))).
+                           (conjoin (disjoin (refl _), _), (conjoin &blrr, &br)))).
         -- modus aequans
              (Comparable.comparison.equality.reflection (height &lr) (++ (height &ll))), &e
              |- t'.
@@ -919,7 +919,7 @@ Proof.
             (Comparable.maximum.specification (++ (++ (height &r))) (++ (height &r))),
             (disjoin _, (Nat0.increment.order.extensivity (++ (height &r)))))
           in |- *.
-        ipso (disjoin _, (Identity.reflexivity _)).
+        ipso (disjoin _, (refl _)).
     + match &rel' with | e | e end.
       * leibniz &e in &mx.
         leibniz
@@ -951,7 +951,7 @@ Proof.
                (Comparable.maximum.specification (++ (height &r)) (height &r)),
                (disjoin _, (Nat0.increment.order.extensivity (height &r))))
              in |- *.
-           ipso (disjoin (Identity.reflexivity _), _).
+           ipso (disjoin (refl _), _).
       * leibniz &e in &mx.
         leibniz (Comparable.maximum.commutativity (height &ll) (++ (height &ll))) in &mx.
         leibniz
@@ -989,7 +989,7 @@ Proof.
                  leibniz &mx2 in |- *.
                  leibniz (Comparable.maximum.idempotence (height &r)) in |- *.
                  leibniz (Comparable.maximum.idempotence (++ (height &r))) in |- *.
-                 ipso (disjoin (Identity.reflexivity _), _).
+                 ipso (disjoin (refl _), _).
               ** match &rel3 with | e3 | e3 end.
                  --- leibniz &e3 in &mx3.
                      leibniz
@@ -1011,7 +1011,7 @@ Proof.
                          (disjoin _, (Nat0.increment.order.extensivity (height &lrr))))
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (++ (height &lrr)))) in |- *.
-                     ipso (disjoin (Identity.reflexivity _), _).
+                     ipso (disjoin (refl _), _).
                  --- leibniz &e3 in &mx3.
                      leibniz
                        (Comparable.maximum.commutativity (height &lrl) (++ (height &lrl)))
@@ -1032,7 +1032,7 @@ Proof.
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (height &lrl))) in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (++ (height &lrl)))) in |- *.
-                     ipso (disjoin (Identity.reflexivity _), _).
+                     ipso (disjoin (refl _), _).
         -- modus aequans
              (Comparable.comparison.equality.reflection (height &lr) (++ (height &ll))), &e
              |- t'.
@@ -1243,9 +1243,9 @@ Proof.
             (disjoin _, (Nat0.increment.order.extensivity (height &l))))
           in |- *.
         ipso
-          (conjoin (disjoin _, (disjoin (Identity.reflexivity _), _)),
+          (conjoin (disjoin _, (disjoin (refl _), _)),
             (conjoin
-              (conjoin (disjoin _, (disjoin _, (Identity.reflexivity _))), (conjoin &bl, &brl)),
+              (conjoin (disjoin _, (disjoin _, (refl _))), (conjoin &bl, &brl)),
               &brr)).
     + match &rel' with | e | e end.
       (* The left subtree of [r] is the higher: a double rotation. *)
@@ -1279,10 +1279,10 @@ Proof.
                  leibniz &mx2 in |- *.
                  leibniz (Comparable.maximum.idempotence (height &l)) in |- *.
                  ipso
-                   (conjoin (disjoin (Identity.reflexivity _), _),
+                   (conjoin (disjoin (refl _), _),
                      (conjoin
-                       (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &bl, &brll)),
-                       (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &brlr, &brr)))).
+                       (conjoin (disjoin (refl _), _), (conjoin &bl, &brll)),
+                       (conjoin (disjoin (refl _), _), (conjoin &brlr, &brr)))).
               ** match &rel3 with | e3 | e3 end.
                  --- leibniz &e3 in &mx3.
                      leibniz
@@ -1304,10 +1304,10 @@ Proof.
                          (disjoin _, (Nat0.increment.order.extensivity (height &rlr))))
                        in |- *.
                      ipso
-                       (conjoin (disjoin (Identity.reflexivity _), _),
+                       (conjoin (disjoin (refl _), _),
                          (conjoin
-                           (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &bl, &brll)),
-                           (conjoin (disjoin _, (disjoin _, (Identity.reflexivity _))),
+                           (conjoin (disjoin (refl _), _), (conjoin &bl, &brll)),
+                           (conjoin (disjoin _, (disjoin _, (refl _))),
                              (conjoin &brlr, &brr)))).
                  --- leibniz &e3 in &mx3.
                      leibniz
@@ -1329,11 +1329,11 @@ Proof.
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (height &rll))) in |- *.
                      ipso
-                       (conjoin (disjoin (Identity.reflexivity _), _),
+                       (conjoin (disjoin (refl _), _),
                          (conjoin
-                           (conjoin (disjoin _, (disjoin (Identity.reflexivity _), _)),
+                           (conjoin (disjoin _, (disjoin (refl _), _)),
                              (conjoin &bl, &brll)),
-                           (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &brlr, &brr)))).
+                           (conjoin (disjoin (refl _), _), (conjoin &brlr, &brr)))).
         -- modus aequans
              (Comparable.comparison.equality.reflection (height &rl) (++ (height &rr))), &e
              |- t'.
@@ -1365,9 +1365,9 @@ Proof.
            leibniz &mx2 in |- *.
            leibniz (Comparable.maximum.idempotence (height &l)) in |- *.
            ipso
-             (conjoin (disjoin (Identity.reflexivity _), _),
+             (conjoin (disjoin (refl _), _),
                (conjoin
-                 (conjoin (disjoin (Identity.reflexivity _), _), (conjoin &bl, &brl)),
+                 (conjoin (disjoin (refl _), _), (conjoin &bl, &brl)),
                  &brr)).
 Qed.
 
@@ -1417,7 +1417,7 @@ Proof.
             (Comparable.maximum.specification (++ (++ (height &l))) (++ (height &l))),
             (disjoin _, (Nat0.increment.order.extensivity (++ (height &l)))))
           in |- *.
-        ipso (disjoin _, (Identity.reflexivity _)).
+        ipso (disjoin _, (refl _)).
     + match &rel' with | e | e end.
       * leibniz &e in &mx.
         leibniz
@@ -1454,7 +1454,7 @@ Proof.
                  leibniz &mx2 in |- *.
                  leibniz (Comparable.maximum.idempotence (height &l)) in |- *.
                  leibniz (Comparable.maximum.idempotence (++ (height &l))) in |- *.
-                 ipso (disjoin (Identity.reflexivity _), _).
+                 ipso (disjoin (refl _), _).
               ** match &rel3 with | e3 | e3 end.
                  --- leibniz &e3 in &mx3.
                      leibniz
@@ -1476,7 +1476,7 @@ Proof.
                          (disjoin _, (Nat0.increment.order.extensivity (height &rlr))))
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (++ (height &rlr)))) in |- *.
-                     ipso (disjoin (Identity.reflexivity _), _).
+                     ipso (disjoin (refl _), _).
                  --- leibniz &e3 in &mx3.
                      leibniz
                        (Comparable.maximum.commutativity (height &rll) (++ (height &rll)))
@@ -1497,7 +1497,7 @@ Proof.
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (height &rll))) in |- *.
                      leibniz (Comparable.maximum.idempotence (++ (++ (height &rll)))) in |- *.
-                     ipso (disjoin (Identity.reflexivity _), _).
+                     ipso (disjoin (refl _), _).
         -- modus aequans
              (Comparable.comparison.equality.reflection (height &rl) (++ (height &rr))), &e
              |- t'.
@@ -1535,7 +1535,7 @@ Proof.
                (Comparable.maximum.specification (++ (height &l)) (height &l)),
                (disjoin _, (Nat0.increment.order.extensivity (height &l))))
              in |- *.
-           ipso (disjoin (Identity.reflexivity _), _).
+           ipso (disjoin (refl _), _).
 Qed.
 
 End left. (* rotation.left *)
@@ -1794,7 +1794,7 @@ Proof.
       match &rel with | q | rel' end.
       * match &g with | k | k end.
         -- leibniz &k in |- *.
-           ipso (disjoin (Identity.reflexivity _), _).
+           ipso (disjoin (refl _), _).
         -- trans (symm &q), (symm &k) |- rx.
            leibniz &q in |- *.
            leibniz &rx in |- *.
@@ -1805,11 +1805,11 @@ Proof.
                (disjoin _, (Nat0.increment.order.extensivity (height &l))))
              in |- *.
            leibniz (Comparable.maximum.idempotence (++ (height &l))) in |- *.
-           ipso (disjoin (Identity.reflexivity _), _).
+           ipso (disjoin (refl _), _).
       * match &rel' with | q | q end.
         -- match &g with | k | k end.
            ++ leibniz &k in |- *.
-              ipso (disjoin (Identity.reflexivity _), _).
+              ipso (disjoin (refl _), _).
            ++ let proof xr := Nat0.increment.injectivity (trans &k, &q).
               leibniz &xr, &q in |- *.
               leibniz (Comparable.maximum.idempotence (height &r)) in |- *.
@@ -1818,10 +1818,10 @@ Proof.
                   (Comparable.maximum.specification (++ (height &r)) (height &r)),
                   (disjoin _, (Nat0.increment.order.extensivity (height &r))))
                 in |- *.
-              ipso (disjoin _, (Identity.reflexivity _)).
+              ipso (disjoin _, (refl _)).
         -- match &g with | k | k end.
            ++ leibniz &k in |- *.
-              ipso (disjoin (Identity.reflexivity _), _).
+              ipso (disjoin (refl _), _).
            ++ leibniz (symm &k) in &q.
               modus aequans
                 (Comparable.comparison.equality.reflection (height &r) (++ (++ (height &l)))),
@@ -1957,7 +1957,7 @@ Proof.
       match &rel with | q | rel' end.
       * match &g with | k | k end.
         -- leibniz &k in |- *.
-           ipso (disjoin (Identity.reflexivity _), _).
+           ipso (disjoin (refl _), _).
         -- trans &q, (symm &k) |- ly.
            leibniz (symm &k) in |- *.
            leibniz &ly in |- *.
@@ -1967,11 +1967,11 @@ Proof.
                (disjoin _, (Nat0.increment.order.extensivity (height &r))))
              in |- *.
            leibniz (Comparable.maximum.idempotence (++ (height &r))) in |- *.
-           ipso (disjoin (Identity.reflexivity _), _).
+           ipso (disjoin (refl _), _).
       * match &rel' with | q | q end.
         -- match &g with | k | k end.
            ++ leibniz &k in |- *.
-              ipso (disjoin (Identity.reflexivity _), _).
+              ipso (disjoin (refl _), _).
            ++ leibniz (symm &k) in &q.
               modus aequans
                 (Comparable.comparison.equality.reflection (height &l) (++ (++ (height &r)))),
@@ -1981,7 +1981,7 @@ Proof.
               ex &t1 quodlibet.
         -- match &g with | k | k end.
            ++ leibniz &k in |- *.
-              ipso (disjoin (Identity.reflexivity _), _).
+              ipso (disjoin (refl _), _).
            ++ let proof yl := Nat0.increment.injectivity (trans &k, &q).
               leibniz &yl in |- *.
               leibniz &q in |- *.
@@ -1992,7 +1992,7 @@ Proof.
                   (Comparable.maximum.specification (++ (height &l)) (height &l)),
                   (disjoin _, (Nat0.increment.order.extensivity (height &l))))
                 in |- *.
-              ipso (disjoin _, (Identity.reflexivity _)).
+              ipso (disjoin _, (refl _)).
 Qed.
 
 End shrinkage. (* balancing.shrinkage *)
@@ -2236,8 +2236,8 @@ Proof.
     simpl in |- *.
     ipso
       (conjoin
-        (conjoin (disjoin (Identity.reflexivity _), _), (conjoin I, I)),
-        (disjoin _, (Identity.reflexivity _))).
+        (conjoin (disjoin (refl _), _), (conjoin I, I)),
+        (disjoin _, (refl _))).
   - intros m bt.
     let proof m0 := simpl &m.
     match &m0 with | e m' end.
@@ -2400,7 +2400,7 @@ Proof.
               match &rel with | q | rel' end.
               ** match &g with | k | k end.
                  --- leibniz &k in |- *.
-                     ipso (disjoin (Identity.reflexivity _), _).
+                     ipso (disjoin (refl _), _).
                  --- leibniz &k in |- *.
                      leibniz &q in |- *.
                      leibniz
@@ -2409,11 +2409,11 @@ Proof.
                          (disjoin _, (Nat0.increment.order.extensivity (height &r))))
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (height &r)) in |- *.
-                     ipso (disjoin _, (Identity.reflexivity _)).
+                     ipso (disjoin _, (refl _)).
               ** match &rel' with | q | q end.
                  --- match &g with | k | k end.
                      +++ leibniz &k in |- *.
-                         ipso (disjoin (Identity.reflexivity _), _).
+                         ipso (disjoin (refl _), _).
                      +++ leibniz &q in &k.
                          modus aequans
                            (Comparable.comparison.equality.reflection
@@ -2424,7 +2424,7 @@ Proof.
                          ex &t1 quodlibet.
                  --- match &g with | k | k end.
                      +++ leibniz &k in |- *.
-                         ipso (disjoin (Identity.reflexivity _), _).
+                         ipso (disjoin (refl _), _).
                      +++ leibniz &k in |- *.
                          leibniz &q in |- *.
                          leibniz (Comparable.maximum.idempotence (++ (height &l))) in |- *.
@@ -2436,10 +2436,10 @@ Proof.
                              (Comparable.maximum.specification (++ (height &l)) (height &l)),
                              (disjoin _, (Nat0.increment.order.extensivity (height &l))))
                            in |- *.
-                         ipso (disjoin (Identity.reflexivity _), _).
+                         ipso (disjoin (refl _), _).
     (* [a] is [b], already in the tree: nothing changes. *)
     + simpl in |- *.
-      ipso (conjoin &bt, (disjoin (Identity.reflexivity _), _)).
+      ipso (conjoin &bt, (disjoin (refl _), _)).
     (* [a] goes into the right subtree. *)
     + modus ponens &IHr, &mr |- IHr'.
       modus ponens &IHr', &br |- ih.
@@ -2605,7 +2605,7 @@ Proof.
               match &rel with | q | rel' end.
               ** match &g with | k | k end.
                  --- leibniz &k in |- *.
-                     ipso (disjoin (Identity.reflexivity _), _).
+                     ipso (disjoin (refl _), _).
                  --- leibniz &k in |- *.
                      leibniz &q in |- *.
                      leibniz
@@ -2617,11 +2617,11 @@ Proof.
                          (disjoin _, (Nat0.increment.order.extensivity (height &r))))
                        in |- *.
                      leibniz (Comparable.maximum.idempotence (height &r)) in |- *.
-                     ipso (disjoin _, (Identity.reflexivity _)).
+                     ipso (disjoin _, (refl _)).
               ** match &rel' with | q | q end.
                  --- match &g with | k | k end.
                      +++ leibniz &k in |- *.
-                         ipso (disjoin (Identity.reflexivity _), _).
+                         ipso (disjoin (refl _), _).
                      +++ leibniz &k in |- *.
                          leibniz &q in |- *.
                          leibniz (Comparable.maximum.idempotence (++ (height &r))) in |- *.
@@ -2630,10 +2630,10 @@ Proof.
                              (Comparable.maximum.specification (++ (height &r)) (height &r)),
                              (disjoin _, (Nat0.increment.order.extensivity (height &r))))
                            in |- *.
-                         ipso (disjoin (Identity.reflexivity _), _).
+                         ipso (disjoin (refl _), _).
                  --- match &g with | k | k end.
                      +++ leibniz &k in |- *.
-                         ipso (disjoin (Identity.reflexivity _), _).
+                         ipso (disjoin (refl _), _).
                      +++ leibniz &q in &k.
                          modus aequans
                            (Comparable.comparison.equality.reflection
@@ -2818,7 +2818,7 @@ Proof.
       simpl node in &bm.
       simpl in &bm.
       let proof spec
-        := &IHl &m' &l' (Identity.reflexivity (Some (Product.introduction &m' &l'))) &b.
+        := &IHl &m' &l' (refl (Some (Product.introduction &m' &l'))) &b.
       divide et impera.
       * intro h.
         match &h with | inside | others end.
@@ -2876,11 +2876,11 @@ Proof.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
       leibniz <- &mm, <- &nr in |- *.
       let proof smaller
-        := &IHl &m' &l' &lower (Identity.reflexivity (Some (Product.introduction &m' &l'))).
+        := &IHl &m' &l' &lower (refl (Some (Product.introduction &m' &l'))).
       lemma inside : BinaryTree.Contains &m' (to_tree &l).
       {
         modus aequans
-          (extraction.membership &l &m' &l' &found &m'), (disjoin (Identity.reflexivity &m'), _)
+          (extraction.membership &l &m' &l' &found &m'), (disjoin (refl &m'), _)
           |- member.
         ipso &member.
       }
@@ -2953,7 +2953,7 @@ Proof.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
       leibniz <- &nr in |- *.
       let proof kept
-        := &IHl &m' &l' &lower (Identity.reflexivity (Some (Product.introduction &m' &l'))).
+        := &IHl &m' &l' &lower (refl (Some (Product.introduction &m' &l'))).
       modus aequans
         (BinaryTree.quantification.all.specification (fun (b : &A) . &lt b &a) (to_tree &l)),
         &below
@@ -3003,7 +3003,7 @@ Proof.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
       leibniz <- &nr in |- *.
       let proof ml'
-        := &IHl &m'' &l' &ml (Identity.reflexivity (Some (Product.introduction &m'' &l'))).
+        := &IHl &m'' &l' &ml (refl (Some (Product.introduction &m'' &l'))).
       ipso (balancing.measurement &l' &a &r &ml' &mr).
 Qed.
 
@@ -3039,17 +3039,17 @@ Proof.
       * ipso &br.
       * leibniz &e in |- *.
         leibniz &empty in |- *.
-        let proof z : height (@AVL.Leaf &A) = Nat0.Zero := Identity.reflexivity _.
+        let proof z : height (@AVL.Leaf &A) = Nat0.Zero := refl _.
         leibniz &z in |- *.
         leibniz (Nat0.maximum.left.identity (height &r)) in |- *.
-        ipso (disjoin _, (Identity.reflexivity _)).
+        ipso (disjoin _, (refl _)).
     + match &p with | m'' l' end.
       intro e'.
       match (Product.introduction.injectivity (Option.some.injectivity &e')) with | mm nr end.
       leibniz <- &nr in |- *.
       let proof ml' := extraction.preservation.measurement &l &m'' &l' &ml &found.
       let proof ih
-        := &IHl &m'' &l' &ml &bl (Identity.reflexivity (Some (Product.introduction &m'' &l'))).
+        := &IHl &m'' &l' &ml &bl (refl (Some (Product.introduction &m'' &l'))).
       match &ih with | bl' g end.
       lemma near
         : height &l' = height &r
@@ -3126,7 +3126,7 @@ Proof.
       intro e.
       match (Product.introduction.injectivity (Option.some.injectivity &e)) with | mm nr end.
       let proof spec
-        := &IHl &m' &l' (Identity.reflexivity (Some (Product.introduction &m' &l'))).
+        := &IHl &m' &l' (refl (Some (Product.introduction &m' &l'))).
       leibniz <- &nr, (balancing.size &l' &a &r) in |- *.
       simpl node in |- *.
       simpl in |- *.
@@ -3241,7 +3241,7 @@ Proof.
     lemma inside : BinaryTree.Contains &m (to_tree &r).
     {
       modus aequans
-        (extraction.membership &r &m &r' &found &m), (disjoin (Identity.reflexivity &m), _)
+        (extraction.membership &r &m &r' &found &m), (disjoin (refl &m), _)
         |- member.
       ipso &member.
     }
@@ -3621,7 +3621,7 @@ Proof.
   intros A cmp a t.
   match &t with | Leaf | Node (l by IHl) c (r by IHr) h end per AVL.induction.
   - intros mt bt.
-    ipso (conjoin I, (disjoin (Identity.reflexivity _), _)).
+    ipso (conjoin I, (disjoin (refl _), _)).
   - intros mt bt.
     let proof m0 := simpl &mt.
     match &m0 with | e m' end.
@@ -3669,10 +3669,10 @@ Proof.
         match (pop &r) with | None | Some p end |- found.
         -- modus aequans (extraction.absence.specification &r), &found |- empty.
            leibniz &empty in |- *.
-           let proof z : height (@AVL.Leaf &A) = Nat0.Zero := Identity.reflexivity _.
+           let proof z : height (@AVL.Leaf &A) = Nat0.Zero := refl _.
            leibniz &z in |- *.
            leibniz (Nat0.maximum.right.identity (height &l)) in |- *.
-           ipso (disjoin _, (Identity.reflexivity _)).
+           ipso (disjoin _, (refl _)).
         -- match &p with | m r' end.
            let proof inv := extraction.preservation.invariance &r &m &r' &mr &br &found.
            match &inv with | br' g end.

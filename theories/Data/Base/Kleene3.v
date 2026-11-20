@@ -207,7 +207,7 @@ Proof.
   - ipso (disjoin _, I).
   - ipso (disjoin _, I).
   - ipso (disjoin _, I).
-  - ipso (disjoin (Identity.reflexivity unknown), _).
+  - ipso (disjoin (refl unknown), _).
   - ipso (disjoin _, I).
   - ipso (disjoin _, I).
   - ipso (disjoin _, I).
@@ -668,7 +668,7 @@ Theorem reflexivity : forall (v : Kleene3) . v [= v.
 Proof.
   intros v.
   simpl (_ [= _) in |- *.
-  ipso (disjoin _, (Identity.reflexivity &v)).
+  ipso (disjoin _, (refl &v)).
 Qed.
 
 (* information.antisymmetry *)
@@ -701,7 +701,7 @@ Theorem bottom : forall (v : Kleene3) . unknown [= v.
 Proof.
   intros v.
   simpl (_ [= _) in |- *.
-  ipso (disjoin (Identity.reflexivity unknown), _).
+  ipso (disjoin (refl unknown), _).
 Qed.
 
 (* information.incomparability *)
@@ -721,9 +721,9 @@ Proof.
   match &h with | a | e end.
   - leibniz &a in |- *.
     simpl in |- *.
-    ipso (disjoin (Identity.reflexivity unknown), _).
+    ipso (disjoin (refl unknown), _).
   - leibniz &e in |- *.
-    ipso (disjoin _, (Identity.reflexivity (! &v2))).
+    ipso (disjoin _, (refl (! &v2))).
 Qed.
 
 (* information.monotonicity.conjunction *)
@@ -736,24 +736,24 @@ Proof.
   match &h1 with | a1 | e1 end; match &h2 with | a2 | e2 end.
   - leibniz &a1, &a2 in |- *.
     simpl in |- *.
-    ipso (disjoin (Identity.reflexivity unknown), _).
+    ipso (disjoin (refl unknown), _).
   - leibniz &a1, &e2 in |- *.
     match &v2' with | | | end.
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
+      ipso (disjoin (refl unknown), _).
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
-    + match &v1' with | | | end; simpl in |- *; ipso (disjoin _, (Identity.reflexivity false)).
+      ipso (disjoin (refl unknown), _).
+    + match &v1' with | | | end; simpl in |- *; ipso (disjoin _, (refl false)).
   - leibniz &e1, &a2 in |- *.
     match &v1' with | | | end.
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
+      ipso (disjoin (refl unknown), _).
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
+      ipso (disjoin (refl unknown), _).
     + simpl in |- *.
-      ipso (disjoin _, (Identity.reflexivity false)).
+      ipso (disjoin _, (refl false)).
   - leibniz &e1, &e2 in |- *.
-    ipso (disjoin _, (Identity.reflexivity (&v1' && &v2'))).
+    ipso (disjoin _, (refl (&v1' && &v2'))).
 Qed.
 
 (* information.monotonicity.disjunction *)
@@ -766,24 +766,24 @@ Proof.
   match &h1 with | a1 | e1 end; match &h2 with | a2 | e2 end.
   - leibniz &a1, &a2 in |- *.
     simpl in |- *.
-    ipso (disjoin (Identity.reflexivity unknown), _).
+    ipso (disjoin (refl unknown), _).
   - leibniz &a1, &e2 in |- *.
     match &v2' with | | | end.
-    + match &v1' with | | | end; simpl in |- *; ipso (disjoin _, (Identity.reflexivity true)).
+    + match &v1' with | | | end; simpl in |- *; ipso (disjoin _, (refl true)).
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
+      ipso (disjoin (refl unknown), _).
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
+      ipso (disjoin (refl unknown), _).
   - leibniz &e1, &a2 in |- *.
     match &v1' with | | | end.
     + simpl in |- *.
-      ipso (disjoin _, (Identity.reflexivity true)).
+      ipso (disjoin _, (refl true)).
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
+      ipso (disjoin (refl unknown), _).
     + simpl in |- *.
-      ipso (disjoin (Identity.reflexivity unknown), _).
+      ipso (disjoin (refl unknown), _).
   - leibniz &e1, &e2 in |- *.
-    ipso (disjoin _, (Identity.reflexivity (&v1' || &v2'))).
+    ipso (disjoin _, (refl (&v1' || &v2'))).
 Qed.
 
 (* information.monotonicity.implication *)

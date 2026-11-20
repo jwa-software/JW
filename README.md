@@ -78,4 +78,5 @@ Every theory is built with `-noinit`, so **Rocq's prelude is never loaded**: a f
 `test/` is the theory `jwa_test`, **not part of the library**: `make` builds it, an opam installation leaves it out.
 
 - **One file per umbrella** (`DataAll.v`, `DataMachineAll.v`, ...), each importing that umbrella alone. An umbrella defines nothing, so only an import in isolation shows whether it forwards everything it should.
+- **The laws of `=` are named in full**, as `Identity.reflexivity` and `Identity.transitivity`, not as `refl` and `trans`. Those come from `Tactics.Equation`, which a data umbrella does not forward, and a notation would find the law even where the umbrella fails to.
 - **`TacticsAll.v`** checks every form of every tactic, and every refusal with `Fail`.
