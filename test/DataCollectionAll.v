@@ -927,3 +927,28 @@ Definition data_collection_all_delivers_sorted_set_insertion_membership
       SortedSet.contains b (SortedSet.insert a s) = true
       <-> b = a \/ SortedSet.contains b s = true
   := @SortedSet.insertion.membership.
+
+Definition data_collection_all_computes_sorted_set_remove
+  : SortedSet.to_list
+      (SortedSet.remove 2%n0
+        (SortedSet.insert 2%n0
+          (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)))))
+    = (1%n0 :: 3%n0 :: [])%list
+    /\ SortedSet.size
+        (SortedSet.remove 2%n0
+          (SortedSet.insert 2%n0
+            (SortedSet.insert 3%n0 (SortedSet.insert 1%n0 (SortedSet.empty Nat0.compare)))))
+      = 2%n0
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_sorted_set_removal_membership
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (b : A) (s : SortedSet cmp) .
+      SortedSet.contains b (SortedSet.remove a s) = true
+      <-> SortedSet.contains b s = true /\ ~ (b = a)
+  := @SortedSet.removal.membership.
+
+Definition data_collection_all_delivers_sorted_set_conversion_size
+  : forall (A : Type) (cmp : A -> A -> Comparison) (s : SortedSet cmp) .
+      (|| SortedSet.to_list s ||)%list = SortedSet.size s
+  := @SortedSet.conversion.size.
