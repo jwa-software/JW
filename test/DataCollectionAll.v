@@ -881,6 +881,39 @@ Definition data_collection_all_delivers_avl_validity_reflection
         Assert (AVL.is_valid cmp t) <-> AVL.Measured t /\ AVL.Balanced t /\ AVL.Ordered lt t
   := @AVL.validity.reflection.
 
+Definition data_collection_all_delivers_avl_balancing_size
+  : forall (A : Type) (l : AVL A) (a : A) (r : AVL A) .
+      BinaryTree.size (AVL.to_tree (AVL.balance l a r))
+      = BinaryTree.size (AVL.to_tree (AVL.node l a r))
+  := @AVL.balancing.size.
+
+Definition data_collection_all_delivers_avl_joining_size
+  : forall (A : Type) (l : AVL A) (r : AVL A) .
+      BinaryTree.size (AVL.to_tree (AVL.join l r))
+      = (BinaryTree.size (AVL.to_tree l) + BinaryTree.size (AVL.to_tree r))%n0
+  := @AVL.joining.size.
+
+Definition data_collection_all_delivers_avl_insertion_size_growth
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.contains cmp a t = false ->
+      BinaryTree.size (AVL.to_tree (AVL.insert cmp a t))
+      = (++ (BinaryTree.size (AVL.to_tree t)))%n0
+  := @AVL.insertion.size.growth.
+
+Definition data_collection_all_delivers_avl_removal_size_shrinkage
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.contains cmp a t = true ->
+      (++ (BinaryTree.size (AVL.to_tree (AVL.remove cmp a t))))%n0
+      = BinaryTree.size (AVL.to_tree t)
+  := @AVL.removal.size.shrinkage.
+
+Definition data_collection_all_computes_avl_insert_present_size
+  : BinaryTree.size
+      (AVL.to_tree
+        (AVL.insert Nat0.compare 1%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
+    = 1%n0
+  := Identity.reflexivity _.
+
 Definition data_collection_all_delivers_sorted_set
   : SortedSet Nat0.compare
   := SortedSet.empty Nat0.compare.
@@ -952,3 +985,29 @@ Definition data_collection_all_delivers_sorted_set_conversion_size
   : forall (A : Type) (cmp : A -> A -> Comparison) (s : SortedSet cmp) .
       (|| SortedSet.to_list s ||)%list = SortedSet.size s
   := @SortedSet.conversion.size.
+
+Definition data_collection_all_delivers_sorted_set_insertion_size_growth
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = false ->
+      SortedSet.size (SortedSet.insert a s) = (++ (SortedSet.size s))%n0
+  := @SortedSet.insertion.size.growth.
+
+Definition data_collection_all_delivers_sorted_set_insertion_size_invariance
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = true -> SortedSet.size (SortedSet.insert a s) = SortedSet.size s
+  := @SortedSet.insertion.size.invariance.
+
+Definition data_collection_all_delivers_sorted_set_removal_size_shrinkage
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = true ->
+      (++ (SortedSet.size (SortedSet.remove a s)))%n0 = SortedSet.size s
+  := @SortedSet.removal.size.shrinkage.
+
+Definition data_collection_all_delivers_sorted_set_removal_size_invariance
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop)
+      (C : Comparable cmp lt) (a : A) (s : SortedSet cmp) .
+      SortedSet.contains a s = false -> SortedSet.size (SortedSet.remove a s) = SortedSet.size s
+  := @SortedSet.removal.size.invariance.

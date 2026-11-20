@@ -10,6 +10,7 @@ From jwa Require Import Data.Collection.AVL.
 From jwa Require Import Data.Collection.BinaryTree.
 From jwa Require Import Data.Collection.List.
 From jwa Require Import Data.Comparable.
+From jwa Require Import Data.Number.Nat0.
 From jwa Require Import Tactics.Equation.
 From jwa Require Import Tactics.Modus.
 
@@ -190,6 +191,34 @@ Proof.
   ipso &shown.
 Qed.
 
+Module size. (* insertion.size *)
+
+(* insertion.size.growth *)
+Theorem growth
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop}
+      {C : Comparable cmp lt} (a : A) (s : SortedSet cmp) .
+      contains a s = false -> size (insert a s) = (++ (size s))%n0.
+Proof.
+  intros A cmp lt C a s.
+  match &s with | introduction t p end.
+  simpl contains, size, insert, to_avl in |- *.
+  ipso (AVL.insertion.size.growth &cmp &a &t).
+Qed.
+
+(* insertion.size.invariance *)
+Theorem invariance
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop}
+      {C : Comparable cmp lt} (a : A) (s : SortedSet cmp) .
+      contains a s = true -> size (insert a s) = size s.
+Proof.
+  intros A cmp lt C a s.
+  match &s with | introduction t p end.
+  simpl contains, size, insert, to_avl in |- *.
+  ipso (AVL.insertion.size.invariance &cmp &a &t).
+Qed.
+
+End size. (* insertion.size *)
+
 End insertion. (* insertion *)
 
 Module removal. (* removal *)
@@ -231,6 +260,34 @@ Proof.
   }
   ipso &shown.
 Qed.
+
+Module size. (* removal.size *)
+
+(* removal.size.shrinkage *)
+Theorem shrinkage
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop}
+      {C : Comparable cmp lt} (a : A) (s : SortedSet cmp) .
+      contains a s = true -> (++ (size (remove a s)))%n0 = size s.
+Proof.
+  intros A cmp lt C a s.
+  match &s with | introduction t p end.
+  simpl contains, size, remove, to_avl in |- *.
+  ipso (AVL.removal.size.shrinkage &cmp &a &t).
+Qed.
+
+(* removal.size.invariance *)
+Theorem invariance
+  : forall {A : Type} {cmp : A -> A -> Comparison} {lt : A -> A -> Prop}
+      {C : Comparable cmp lt} (a : A) (s : SortedSet cmp) .
+      contains a s = false -> size (remove a s) = size s.
+Proof.
+  intros A cmp lt C a s.
+  match &s with | introduction t p end.
+  simpl contains, size, remove, to_avl in |- *.
+  ipso (AVL.removal.size.invariance &cmp &a &t).
+Qed.
+
+End size. (* removal.size *)
 
 End removal. (* removal *)
 
