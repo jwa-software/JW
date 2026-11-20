@@ -648,3 +648,153 @@ Definition data_collection_all_delivers_avl_insertion_preservation_order
       Comparable cmp lt ->
       forall (a : A) (t : AVL A) . AVL.Ordered lt t -> AVL.Ordered lt (AVL.insert cmp a t)
   := @AVL.insertion.preservation.order.
+
+Definition data_collection_all_computes_avl_pop_min
+  : AVL.pop.min
+      (AVL.insert Nat0.compare 3%n0
+        (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
+    = Some
+        (Product.introduction
+          1%n0
+          (AVL.Node AVL.Leaf 2%n0 (AVL.Node AVL.Leaf 3%n0 AVL.Leaf 1%n0) 2%n0))
+  := Identity.reflexivity _.
+
+Definition data_collection_all_computes_avl_remove_root
+  : AVL.remove Nat0.compare 2%n0
+      (AVL.insert Nat0.compare 3%n0
+        (AVL.insert Nat0.compare 2%n0 (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))
+    = AVL.Node (AVL.Node AVL.Leaf 1%n0 AVL.Leaf 1%n0) 3%n0 AVL.Leaf 2%n0
+  := Identity.reflexivity _.
+
+Definition data_collection_all_computes_avl_remove_rotation
+  : BinaryTree.to_list
+      (AVL.to_tree
+        (AVL.remove Nat0.compare 2%n0
+          (AVL.remove Nat0.compare 3%n0
+            (AVL.remove Nat0.compare 1%n0
+              (AVL.insert Nat0.compare 7%n0
+                (AVL.insert Nat0.compare 6%n0
+                  (AVL.insert Nat0.compare 5%n0
+                    (AVL.insert Nat0.compare 4%n0
+                      (AVL.insert Nat0.compare 3%n0
+                        (AVL.insert Nat0.compare 2%n0
+                          (AVL.insert Nat0.compare 1%n0 AVL.Leaf)))))))))))
+    = (4%n0 :: 5%n0 :: 6%n0 :: 7%n0 :: [])%list
+    /\ AVL.height
+        (AVL.remove Nat0.compare 2%n0
+          (AVL.remove Nat0.compare 3%n0
+            (AVL.remove Nat0.compare 1%n0
+              (AVL.insert Nat0.compare 7%n0
+                (AVL.insert Nat0.compare 6%n0
+                  (AVL.insert Nat0.compare 5%n0
+                    (AVL.insert Nat0.compare 4%n0
+                      (AVL.insert Nat0.compare 3%n0
+                        (AVL.insert Nat0.compare 2%n0
+                          (AVL.insert Nat0.compare 1%n0 AVL.Leaf))))))))))
+      = 3%n0
+  := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
+
+Definition data_collection_all_delivers_avl_extraction_absence_specification
+  : forall (A : Type) (t : AVL A) . AVL.pop.min t = None <-> t = AVL.Leaf
+  := @AVL.extraction.absence.specification.
+
+Definition data_collection_all_delivers_avl_extraction_membership
+  : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
+      AVL.pop.min t = Some (Product.introduction m rest) ->
+      forall (b : A) .
+        BinaryTree.Contains b (AVL.to_tree t) <-> b = m \/ BinaryTree.Contains b (AVL.to_tree rest)
+  := @AVL.extraction.membership.
+
+Definition data_collection_all_delivers_avl_extraction_minimality
+  : forall (A : Type) (lt : A -> A -> Prop) .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (t : AVL A) (m : A) (rest : AVL A) .
+        AVL.Ordered lt t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+        BinaryTree.All (fun (b : A) . lt m b) (AVL.to_tree rest)
+  := @AVL.extraction.minimality.
+
+Definition data_collection_all_delivers_avl_extraction_preservation_order
+  : forall (A : Type) (lt : A -> A -> Prop) .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (t : AVL A) (m : A) (rest : AVL A) .
+        AVL.Ordered lt t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+        AVL.Ordered lt rest
+  := @AVL.extraction.preservation.order.
+
+Definition data_collection_all_delivers_avl_extraction_preservation_measurement
+  : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
+      AVL.Measured t -> AVL.pop.min t = Some (Product.introduction m rest) -> AVL.Measured rest
+  := @AVL.extraction.preservation.measurement.
+
+Definition data_collection_all_delivers_avl_extraction_preservation_balance
+  : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
+      AVL.Measured t -> AVL.Balanced t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+      AVL.Balanced rest
+  := @AVL.extraction.preservation.balance.
+
+Definition data_collection_all_delivers_avl_extraction_shrinkage
+  : forall (A : Type) (t : AVL A) (m : A) (rest : AVL A) .
+      AVL.Measured t -> AVL.Balanced t -> AVL.pop.min t = Some (Product.introduction m rest) ->
+      AVL.height rest = AVL.height t \/ (++ (AVL.height rest))%n0 = AVL.height t
+  := @AVL.extraction.shrinkage.
+
+Definition data_collection_all_delivers_avl_joining_membership
+  : forall (A : Type) (l : AVL A) (r : AVL A) (b : A) .
+      BinaryTree.Contains b (AVL.to_tree (AVL.join l r))
+      <-> BinaryTree.Contains b (AVL.to_tree l) \/ BinaryTree.Contains b (AVL.to_tree r)
+  := @AVL.joining.membership.
+
+Definition data_collection_all_delivers_avl_joining_preservation_order
+  : forall (A : Type) (lt : A -> A -> Prop) .
+      (forall (x : A) (y : A) (z : A) . lt x y -> lt y z -> lt x z) ->
+      forall (b : A) (l : AVL A) (r : AVL A) .
+        BinaryTree.All (fun (x : A) . lt x b) (AVL.to_tree l) ->
+        BinaryTree.All (fun (x : A) . lt b x) (AVL.to_tree r) ->
+        AVL.Ordered lt l -> AVL.Ordered lt r -> AVL.Ordered lt (AVL.join l r)
+  := @AVL.joining.preservation.order.
+
+Definition data_collection_all_delivers_avl_joining_preservation_measurement
+  : forall (A : Type) (l : AVL A) (r : AVL A) .
+      AVL.Measured l -> AVL.Measured r -> AVL.Measured (AVL.join l r)
+  := @AVL.joining.preservation.measurement.
+
+Definition data_collection_all_delivers_avl_joining_preservation_balance
+  : forall (A : Type) (l : AVL A) (r : AVL A) .
+      AVL.Measured l -> AVL.Measured r -> AVL.Balanced l -> AVL.Balanced r ->
+      AVL.height l = AVL.height r
+        \/ AVL.height l = (++ (AVL.height r))%n0
+        \/ AVL.height r = (++ (AVL.height l))%n0 ->
+      AVL.Balanced (AVL.join l r)
+  := @AVL.joining.preservation.balance.
+
+Definition data_collection_all_delivers_avl_removal_membership
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (a : A) (b : A) (t : AVL A) .
+        AVL.Ordered lt t ->
+        (BinaryTree.Contains b (AVL.to_tree (AVL.remove cmp a t))
+          <-> BinaryTree.Contains b (AVL.to_tree t) /\ ~ (b = a))
+  := @AVL.removal.membership.
+
+Definition data_collection_all_delivers_avl_removal_preservation_order
+  : forall (A : Type) (cmp : A -> A -> Comparison) (lt : A -> A -> Prop) .
+      Comparable cmp lt ->
+      forall (a : A) (t : AVL A) . AVL.Ordered lt t -> AVL.Ordered lt (AVL.remove cmp a t)
+  := @AVL.removal.preservation.order.
+
+Definition data_collection_all_delivers_avl_removal_preservation_measurement
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.Measured t -> AVL.Measured (AVL.remove cmp a t)
+  := @AVL.removal.preservation.measurement.
+
+Definition data_collection_all_delivers_avl_removal_preservation_balance
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.Measured t -> AVL.Balanced t -> AVL.Balanced (AVL.remove cmp a t)
+  := @AVL.removal.preservation.balance.
+
+Definition data_collection_all_delivers_avl_removal_shrinkage
+  : forall (A : Type) (cmp : A -> A -> Comparison) (a : A) (t : AVL A) .
+      AVL.Measured t -> AVL.Balanced t ->
+      AVL.height (AVL.remove cmp a t) = AVL.height t
+      \/ (++ (AVL.height (AVL.remove cmp a t)))%n0 = AVL.height t
+  := @AVL.removal.shrinkage.
