@@ -60,7 +60,11 @@ jobs:
               make opam
               git diff --exit-code opam/
             endGroup
-            startGroup "dune files formatted"
+            # .ocamlformat pins the version, and the image ships none.
+            startGroup "Install ocamlformat"
+              opam install --yes ocamlformat.0.29.0
+            endGroup
+            startGroup "dune and OCaml files formatted"
               make fmt-check
             endGroup
           # The default uninstall test would opam remove the package, which
