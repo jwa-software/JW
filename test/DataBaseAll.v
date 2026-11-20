@@ -58,6 +58,25 @@ Definition data_base_all_delivers_kleene3_kleene_condition
   : forall (v1 : Kleene3) (v2 : Kleene3) . (v1 && ! v1 <= v2 || ! v2)%k3
   := Kleene3.negation.kleene.
 
+Definition data_base_all_delivers_kleene3_information_bottom
+  : forall (v : Kleene3) . (Kleene3.unknown [= v)%k3
+  := Kleene3.information.bottom.
+
+Definition data_base_all_delivers_kleene3_information_incomparability
+  : ~ ((Kleene3.true [= Kleene3.false)%k3) /\ ~ ((Kleene3.false [= Kleene3.true)%k3)
+  := Kleene3.information.incomparability.
+
+Definition data_base_all_delivers_kleene3_information_monotonicity_conjunction
+  : forall (v1 : Kleene3) (v1' : Kleene3) (v2 : Kleene3) (v2' : Kleene3) .
+      (v1 [= v1')%k3 -> (v2 [= v2')%k3 -> (v1 && v2 [= v1' && v2')%k3
+  := @Kleene3.information.monotonicity.conjunction.
+
+Definition data_base_all_delivers_kleene3_information_monotonicity_implication
+  : forall (v1 : Kleene3) (v1' : Kleene3) (v2 : Kleene3) (v2' : Kleene3) .
+      (v1 [= v1')%k3 -> (v2 [= v2')%k3 ->
+      (Kleene3.implies v1 v2 [= Kleene3.implies v1' v2')%k3
+  := @Kleene3.information.monotonicity.implication.
+
 Definition data_base_all_delivers_unit
   : Unit
   := Unit.introduction.
