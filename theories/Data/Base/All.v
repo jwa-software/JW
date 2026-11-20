@@ -7,7 +7,7 @@
  *
  * A base type is built from no other type: every ctor takes no argument,
  * so the values can be listed. [Empty] has none, [Unit] one, [Bool] two,
- * [Comparison] three.
+ * [Comparison] and [Kleene3] three.
  *)
 (* The modules below only [Import] [Core.All], so the open scope reaches a
  * client of this umbrella only from here.
@@ -17,4 +17,5 @@ From jwa Require Export Core.All.
 From jwa Require Export Data.Base.Bool.
 From jwa Require Export Data.Base.Comparison.
 From jwa Require Export Data.Base.Empty.
+From jwa Require Export Data.Base.Kleene3.
 From jwa Require Export Data.Base.Unit.

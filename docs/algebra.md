@@ -41,7 +41,7 @@ SPDX-License-Identifier: MIT
 
 - **The problem.** An operation over a whole list needs an answer for the empty list: the sum of no numbers is `0`, the product of none is `1`, the join of no strings is `""`. Each of these values changes nothing where it is used: `0 + 5` and `5 + 0` are both `5`.
 - **The class.** `Monoid op e` holds `Semigroup op` and adds `Monoid.identity`: `op e x = x /\ op x e = x`, both sides in one field.
-- **Instances.** One type has several. `Nat0_add_monoid` is `+` with `0`, `Nat0_mul_monoid` is `*` with `1`, and `Nat0_max_monoid` is `Nat0.max` with `0`. `Bool_and_monoid` is `Bool.and` with `true`, and `Bool_or_monoid` is `Bool.or` with `false`. `List_concat_monoid` is `++` with `[]`, and `AsciiStr_concat_monoid` and `Utf8Str_concat_monoid` are `++` with `""`.
+- **Instances.** One type has several. `Nat0_add_monoid` is `+` with `0`, `Nat0_mul_monoid` is `*` with `1`, and `Nat0_max_monoid` is `Nat0.max` with `0`. `Bool_and_monoid` is `Bool.and` with `true`, and `Bool_or_monoid` is `Bool.or` with `false`; `Kleene3_and_monoid` and `Kleene3_or_monoid` are the same on `Kleene3`, with `Kleene3.true` and `Kleene3.false`. `List_concat_monoid` is `++` with `[]`, and `AsciiStr_concat_monoid` and `Utf8Str_concat_monoid` are `++` with `""`.
 - **In a proof.** `Monoid.identity x` gives the two equations as a conjunction.
 - **What it does not say.** That the operands change places: `("ab" ++ "c")%a` is `"abc"` and `("c" ++ "ab")%a` is `"cab"`. Nor that an operation can be undone: no `Nat0` added to `3` gives `0`.
 
@@ -61,7 +61,7 @@ SPDX-License-Identifier: MIT
 
 - **The problem.** `2 + 3` and `3 + 2` are both `5`: the operands change places. Not every operation allows it: `(5 - 3)%z` is `2`, and `(3 - 5)%z` is `-2`.
 - **The class.** `Commutative op` has one field, `Commutative.commutativity`: `op x y = op y x`.
-- **Instances.** `+` and `*` of the number types and of the fixed-width integers, as `Nat0_add_commutative` and `Nat0_mul_commutative`; `min` and `max`, as `Nat0_min_commutative`; and the `and`, `or` and `xor` of `Bool`, `Bit` and `Byte`, as `Bool_and_commutative`.
+- **Instances.** `+` and `*` of the number types and of the fixed-width integers, as `Nat0_add_commutative` and `Nat0_mul_commutative`; `min` and `max`, as `Nat0_min_commutative`; the `and`, `or` and `xor` of `Bool`, `Bit` and `Byte`, as `Bool_and_commutative`; and the `and` and `or` of `Kleene3`, as `Kleene3_and_commutative`.
 - **In a proof.** `Commutative.commutativity x y` is that equation for the operation of the goal.
 - **What it does not say.** Anything else. It holds no other class, so it gives neither associativity nor an identity.
 
