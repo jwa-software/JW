@@ -66,7 +66,9 @@ The fixed-width integers come in pairs, one per width: `UInt8` and `Int8` hold o
 
 ## Unsigned integers
 
-`UInt8`'s `+`, `UInt8.sub`, `-` (two's complement) and `*` wrap modulo `UInt8.modulus`: `(200 + 100)%uint8` is `44`.
+`UInt8`'s `+`, `-` and `*` wrap modulo `UInt8.modulus`, the `-` both the infix subtraction and the prefix two's complement: `(200 + 100)%uint8` is `44`, and `(3 - 5)%uint8` is `254`.
+
+- **Subtraction has the laws of the other number types.** `UInt8.subtraction.specification` states `x - y = x + (- y)`, beside `subtraction.inversion.addition`, `addition.inversion.subtraction`, `subtraction.right.identity` and `subtraction.annihilation`; every width, signed or not, has the same five.
 
 - **The carry and the borrow are returned.** `UInt8.add_with_carry` and `UInt8.sub_with_borrow` ripple a carry or a borrow through every place and return it with the result.
 - **Every operation is stated against the value.** `UInt8.conversion.addition` is `to_bin_with_zero (x + y)%uint8 = (x + y) %. modulus` in `BinWithZero`, the right side adding the values without wrapping, and `UInt8.conversion.left.shift` makes a shift to the left a multiplication by a power of two.
@@ -78,7 +80,7 @@ The fixed-width integers come in pairs, one per width: `UInt8` and `Int8` hold o
 
 ## Signed integers
 
-`Int8`'s `+`, `Int8.sub`, `-` and `*` wrap modulo `Int8.modulus` as well: `(127 + 1)%int8` is `-128`, and so is `(- (-128))%int8`.
+`Int8`'s `+`, `-` and `*` wrap modulo `Int8.modulus` as well: `(127 + 1)%int8` is `-128`, and so is `(- (-128))%int8`, while `(3 - 5)%int8` is `-2`.
 
 - **Every operation is stated against the signed value.** The laws go through `Int8.unsigned_value`, the value of the bit pattern from 0 to 255 (the `Int8.valuation` laws), and from it `Int8.to_bin` takes the signed value.
 - **The overflow is a flag.** `Int8.add_with_overflow` returns the sum with a flag, set when the operands share a sign that the sum does not; `Int8.conversion.addition` makes `to_bin (x + y)` the sum `to_bin x + to_bin y` in `Bin` whenever that flag is clear.
