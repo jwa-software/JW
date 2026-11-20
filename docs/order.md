@@ -27,7 +27,7 @@ An order is a relation that says which of two values comes first. `Relation/Orde
 
 - **The problem.** Some values are comparable and some are not. `2` divides `6`, and neither of `2` and `3` divides the other. A proof about such a relation still chains facts and still closes `x = y` from two bounds; it needs a name for exactly that much.
 - **The class.** `PartialOrder R` holds `Reflexive R`, `Antisymmetric R` and `Transitive R`.
-- **Instances.** `Nat0_divides_partial_order` for `Nat0.Divides`. Every `TotalOrder` holds one as well.
+- **Instances.** `Nat0_divides_partial_order` for `Nat0.Divides`, and `Kleene3_information_partial_order` for the information order of [`Kleene3`](base.md), where `true` and `false` are not comparable. Every `TotalOrder` holds one as well.
 - **In a proof.** `Reflexive.reflexivity n` proves `Nat0.Divides n n`, and `Antisymmetric.antisymmetry m n` takes the two divisibilities and proves `m = n`.
 - **What it does not say.** That two values compare. `Nat0.Divides` has no `Total` instance, so a proof by the two cases `x` divides `y` or `y` divides `x` is not available.
 

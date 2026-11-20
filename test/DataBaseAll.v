@@ -41,6 +41,42 @@ Definition data_base_all_delivers_kleene3_conversion_exclusion
   : forall (b : Bool) . ~ (Kleene3.from_bool b = Kleene3.unknown)
   := Kleene3.conversion.exclusion.
 
+Definition data_base_all_delivers_kleene3_compare
+  : Kleene3.compare Kleene3.unknown Kleene3.true = Comparison.Lt
+  := Identity.reflexivity Comparison.Lt.
+
+Definition data_base_all_delivers_kleene3_truth_order
+  : (Kleene3.false < Kleene3.true)%k3
+  := I.
+
+Definition data_base_all_delivers_kleene3_truth_strict_transitivity
+  : forall (v1 : Kleene3) (v2 : Kleene3) (v3 : Kleene3) .
+      (v1 < v2)%k3 -> (v2 < v3)%k3 -> (v1 < v3)%k3
+  := @Kleene3.truth.strict.transitivity.
+
+Definition data_base_all_delivers_kleene3_kleene_condition
+  : forall (v1 : Kleene3) (v2 : Kleene3) . (v1 && ! v1 <= v2 || ! v2)%k3
+  := Kleene3.negation.kleene.
+
+Definition data_base_all_delivers_kleene3_information_bottom
+  : forall (v : Kleene3) . (Kleene3.unknown [= v)%k3
+  := Kleene3.information.bottom.
+
+Definition data_base_all_delivers_kleene3_information_incomparability
+  : ~ ((Kleene3.true [= Kleene3.false)%k3) /\ ~ ((Kleene3.false [= Kleene3.true)%k3)
+  := Kleene3.information.incomparability.
+
+Definition data_base_all_delivers_kleene3_information_monotonicity_conjunction
+  : forall (v1 : Kleene3) (v1' : Kleene3) (v2 : Kleene3) (v2' : Kleene3) .
+      (v1 [= v1')%k3 -> (v2 [= v2')%k3 -> (v1 && v2 [= v1' && v2')%k3
+  := @Kleene3.information.monotonicity.conjunction.
+
+Definition data_base_all_delivers_kleene3_information_monotonicity_implication
+  : forall (v1 : Kleene3) (v1' : Kleene3) (v2 : Kleene3) (v2' : Kleene3) .
+      (v1 [= v1')%k3 -> (v2 [= v2')%k3 ->
+      (Kleene3.implies v1 v2 [= Kleene3.implies v1' v2')%k3
+  := @Kleene3.information.monotonicity.implication.
+
 Definition data_base_all_delivers_unit
   : Unit
   := Unit.introduction.

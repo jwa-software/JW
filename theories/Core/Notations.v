@@ -218,6 +218,9 @@ Reserved Notation "x > y"
   (at level 70, no associativity).
 Reserved Notation "x >= y"
   (at level 70, no associativity).
+(* The ASCII spelling of the information order's square [<=]. *)
+Reserved Notation "x [= y"
+  (at level 70, no associativity).
 Reserved Notation "x /\ y"
   (at level 80, right associativity).
 Reserved Notation "x _\/_ y"

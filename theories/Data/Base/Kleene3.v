@@ -7,6 +7,13 @@ From jwa Require Import Algebra.Monoid.
 From jwa Require Import Algebra.Semigroup.
 From jwa Require Import Core.All.
 From jwa Require Import Data.Base.Bool.
+From jwa Require Import Data.Base.Comparison.
+From jwa Require Import Data.Comparable.
+From jwa Require Import Relation.Antisymmetric.
+From jwa Require Import Relation.Order.PartialOrder.
+From jwa Require Import Relation.Reflexive.
+From jwa Require Import Relation.Transitive.
+From jwa Require Import Tactics.Equation.
 
 (* Kleene's strong three-valued logic. *)
 Module Kleene3. (* Kleene3 *)
@@ -80,6 +87,83 @@ Definition from_bool := fun (b : Bool) .
   | Bool.false => false
   end.
 
+(* The truth order, [false] below [unknown] below [true], read as the answer
+ * of a three-way comparison.
+ *)
+(* [Kleene3 -> Kleene3 -> Comparison] *)
+Definition compare := fun (v1 : Kleene3) (v2 : Kleene3) .
+  match v1 with
+  | true    =>
+      match v2 with
+      | true    => Comparison.Eq
+      | unknown => Comparison.Gt
+      | false   => Comparison.Gt
+      end
+  | unknown =>
+      match v2 with
+      | true    => Comparison.Lt
+      | unknown => Comparison.Eq
+      | false   => Comparison.Gt
+      end
+  | false   =>
+      match v2 with
+      | true    => Comparison.Lt
+      | unknown => Comparison.Lt
+      | false   => Comparison.Eq
+      end
+  end.
+
+(* The strict truth order, [false < unknown < true]. [<t] in the bilattice literature. *)
+(* [Kleene3 -> Kleene3 -> Prop] *)
+Definition TruthLessThan := fun (v1 : Kleene3) (v2 : Kleene3) .
+  match v1 with
+  | true    => Falsum
+  | unknown =>
+      match v2 with
+      | true    => Verum
+      | unknown => Falsum
+      | false   => Falsum
+      end
+  | false   =>
+      match v2 with
+      | true    => Verum
+      | unknown => Verum
+      | false   => Falsum
+      end
+  end.
+
+Notation "v1 < v2" := (TruthLessThan v1 v2) (only parsing)
+  : jwa_kleene3_scope.
+
+(* The truth order, [<=t] in the bilattice literature. *)
+(* [Kleene3 -> Kleene3 -> Prop] *)
+Definition TruthLessOrEqual := fun (v1 : Kleene3) (v2 : Kleene3) .
+  v1 = v2 \/ TruthLessThan v1 v2.
+
+Notation "v1 <= v2" := (TruthLessOrEqual v1 v2) (only parsing)
+  : jwa_kleene3_scope.
+
+Notation "v1 > v2" := (TruthLessThan v2 v1) (only parsing)
+  : jwa_kleene3_scope.
+Notation "v1 >= v2" := (TruthLessOrEqual v2 v1) (only parsing)
+  : jwa_kleene3_scope.
+
+Notation "'(<)'" := TruthLessThan (only parsing)
+  : jwa_kleene3_scope.
+Notation "'(<=)'" := TruthLessOrEqual (only parsing)
+  : jwa_kleene3_scope.
+
+(* The information order, [<=i] in the bilattice literature and more often
+ * written [<=k]: [unknown] lies below the two known values, which are not
+ * comparable, so the order is not total.
+ *)
+(* [Kleene3 -> Kleene3 -> Prop] *)
+Definition InformationLessOrEqual := fun (v1 : Kleene3) (v2 : Kleene3) .
+  v1 = unknown \/ v1 = v2.
+
+Notation "v1 [= v2" := (InformationLessOrEqual v1 v2) (only parsing)
+  : jwa_kleene3_scope.
+
 Module negation. (* negation *)
 
 (* negation.involution *)
@@ -108,6 +192,27 @@ Proof.
 Qed.
 
 End de_morgan. (* negation.de_morgan *)
+
+(* [v1 && ! v1] can only be either [false] or [unknown], and [v2 || ! v2]
+ * can only be either [true] or [unknown]; therefore the first is never
+ * above the second in the truth order.
+ *)
+(* negation.kleene *)
+Theorem kleene : forall (v1 : Kleene3) (v2 : Kleene3) . v1 && ! v1 <= v2 || ! v2.
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end; match &v2 with | | | end; simpl (_ <= _) in |- *;
+    simpl in |- *.
+  - ipso (disjoin _, I).
+  - ipso (disjoin _, I).
+  - ipso (disjoin _, I).
+  - ipso (disjoin _, I).
+  - ipso (disjoin (Identity.reflexivity unknown), _).
+  - ipso (disjoin _, I).
+  - ipso (disjoin _, I).
+  - ipso (disjoin _, I).
+  - ipso (disjoin _, I).
+Qed.
 
 End negation. (* negation *)
 
@@ -232,6 +337,15 @@ End over. (* conjunction.distributivity.over *)
 
 End distributivity. (* conjunction.distributivity *)
 
+(* conjunction.minimum *)
+Theorem minimum
+  : forall (v1 : Kleene3) (v2 : Kleene3) . v1 && v2 = Comparable.min compare v1 v2.
+Proof.
+  intros v1 v2.
+  simpl Comparable.min in |- *.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
 End conjunction. (* conjunction *)
 
 Module disjunction. (* disjunction *)
@@ -355,6 +469,15 @@ End over. (* disjunction.distributivity.over *)
 
 End distributivity. (* disjunction.distributivity *)
 
+(* disjunction.maximum *)
+Theorem maximum
+  : forall (v1 : Kleene3) (v2 : Kleene3) . v1 || v2 = Comparable.max compare v1 v2.
+Proof.
+  intros v1 v2.
+  simpl Comparable.max in |- *.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
 End disjunction. (* disjunction *)
 
 Module implication. (* implication *)
@@ -431,11 +554,260 @@ Qed.
 
 End conversion. (* conversion *)
 
+Module truth. (* truth *)
+
+Module strict. (* truth.strict *)
+
+(* truth.strict.transitivity *)
+Theorem transitivity
+  : forall {v1 : Kleene3} {v2 : Kleene3} {v3 : Kleene3} . v1 < v2 -> v2 < v3 -> v1 < v3.
+Proof.
+  intros v1 v2 v3 h1 h2.
+  match &v2 with | | | end.
+  - simpl in &h2.
+    ex &h2 quodlibet.
+  - match &v1 with | | | end.
+    + simpl in &h1.
+      ex &h1 quodlibet.
+    + simpl in &h1.
+      ex &h1 quodlibet.
+    + match &v3 with | | | end.
+      * simpl in |- *.
+        ipso I.
+      * simpl in &h2.
+        ex &h2 quodlibet.
+      * simpl in &h2.
+        ex &h2 quodlibet.
+  - match &v1 with | | | end; simpl in &h1; ex &h1 quodlibet.
+Qed.
+
+End strict. (* truth.strict *)
+
+End truth. (* truth *)
+
+Module comparison. (* comparison *)
+
+(* Nine cases in three shapes: [compare] answers [Eq] on the diagonal, [Lt]
+ * on the three pairs [TruthLessThan] holds of, and [Gt] on the other three.
+ *)
+(* comparison.specification *)
+Theorem specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      (compare v1 v2 = Comparison.Lt <-> v1 < v2) /\ (compare v1 v2 = Comparison.Eq <-> v1 = v2).
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *;
+    divide et impera; divide et impera; intro h.
+  (* true, true *)
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - quod idem est.
+  - quod idem est.
+  (* true, unknown *)
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  (* true, false *)
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  (* unknown, true *)
+  - ipso I.
+  - quod idem est.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  (* unknown, unknown *)
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - quod idem est.
+  - quod idem est.
+  (* unknown, false *)
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  (* false, true *)
+  - ipso I.
+  - quod idem est.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  (* false, unknown *)
+  - ipso I.
+  - quod idem est.
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  (* false, false *)
+  - ex &h quodlibet.
+  - ex &h quodlibet.
+  - quod idem est.
+  - quod idem est.
+Qed.
+
+(* comparison.antisymmetry *)
+Theorem antisymmetry
+  : forall (v1 : Kleene3) (v2 : Kleene3) . compare v1 v2 = Comparison.transpose (compare v2 v1).
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+End comparison. (* comparison *)
+
+Instance comparable
+  : Comparable compare (<) :=
+  {| Comparable.transitivity := @truth.strict.transitivity
+  ; Comparable.specification := comparison.specification
+  ; Comparable.antisymmetry := comparison.antisymmetry |}.
+
+Module information. (* information *)
+
+(* information.reflexivity *)
+Theorem reflexivity : forall (v : Kleene3) . v [= v.
+Proof.
+  intros v.
+  simpl (_ [= _) in |- *.
+  ipso (disjoin _, (Identity.reflexivity &v)).
+Qed.
+
+(* information.antisymmetry *)
+Theorem antisymmetry : forall {v1 : Kleene3} {v2 : Kleene3} . v1 [= v2 -> v2 [= v1 -> v1 = v2.
+Proof.
+  intros v1 v2 h1 h2.
+  simpl (_ [= _) in &h1, &h2.
+  match &h1 with | a1 | e1 end.
+  - match &h2 with | a2 | e2 end.
+    + leibniz &a1, &a2 in |- *.
+      quod idem est.
+    + ipso (symm &e2).
+  - ipso &e1.
+Qed.
+
+(* information.transitivity *)
+Theorem transitivity
+  : forall {v1 : Kleene3} {v2 : Kleene3} {v3 : Kleene3} . v1 [= v2 -> v2 [= v3 -> v1 [= v3.
+Proof.
+  intros v1 v2 v3 h1 h2.
+  simpl (_ [= _) in &h1, &h2 |- *.
+  match &h1 with | a1 | e1 end.
+  - ipso (disjoin &a1, _).
+  - leibniz &e1 in |- *.
+    ipso &h2.
+Qed.
+
+(* information.bottom *)
+Theorem bottom : forall (v : Kleene3) . unknown [= v.
+Proof.
+  intros v.
+  simpl (_ [= _) in |- *.
+  ipso (disjoin (Identity.reflexivity unknown), _).
+Qed.
+
+(* information.incomparability *)
+Theorem incomparability : ~ (true [= false) /\ ~ (false [= true).
+Proof.
+  divide et impera; simpl (~ _) in |- *; intro h; simpl (_ [= _) in &h;
+    match &h with | e | e end; ex &e quodlibet.
+Qed.
+
+Module monotonicity. (* information.monotonicity *)
+
+(* information.monotonicity.negation *)
+Theorem negation : forall {v1 : Kleene3} {v2 : Kleene3} . v1 [= v2 -> ! v1 [= ! v2.
+Proof.
+  intros v1 v2 h.
+  simpl (_ [= _) in &h |- *.
+  match &h with | a | e end.
+  - leibniz &a in |- *.
+    simpl in |- *.
+    ipso (disjoin (Identity.reflexivity unknown), _).
+  - leibniz &e in |- *.
+    ipso (disjoin _, (Identity.reflexivity (! &v2))).
+Qed.
+
+(* information.monotonicity.conjunction *)
+Theorem conjunction
+  : forall {v1 : Kleene3} {v1' : Kleene3} {v2 : Kleene3} {v2' : Kleene3} .
+      v1 [= v1' -> v2 [= v2' -> v1 && v2 [= v1' && v2'.
+Proof.
+  intros v1 v1' v2 v2' h1 h2.
+  simpl (_ [= _) in &h1, &h2 |- *.
+  match &h1 with | a1 | e1 end; match &h2 with | a2 | e2 end.
+  - leibniz &a1, &a2 in |- *.
+    simpl in |- *.
+    ipso (disjoin (Identity.reflexivity unknown), _).
+  - leibniz &a1, &e2 in |- *.
+    match &v2' with | | | end.
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+    + match &v1' with | | | end; simpl in |- *; ipso (disjoin _, (Identity.reflexivity false)).
+  - leibniz &e1, &a2 in |- *.
+    match &v1' with | | | end.
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+    + simpl in |- *.
+      ipso (disjoin _, (Identity.reflexivity false)).
+  - leibniz &e1, &e2 in |- *.
+    ipso (disjoin _, (Identity.reflexivity (&v1' && &v2'))).
+Qed.
+
+(* information.monotonicity.disjunction *)
+Theorem disjunction
+  : forall {v1 : Kleene3} {v1' : Kleene3} {v2 : Kleene3} {v2' : Kleene3} .
+      v1 [= v1' -> v2 [= v2' -> v1 || v2 [= v1' || v2'.
+Proof.
+  intros v1 v1' v2 v2' h1 h2.
+  simpl (_ [= _) in &h1, &h2 |- *.
+  match &h1 with | a1 | e1 end; match &h2 with | a2 | e2 end.
+  - leibniz &a1, &a2 in |- *.
+    simpl in |- *.
+    ipso (disjoin (Identity.reflexivity unknown), _).
+  - leibniz &a1, &e2 in |- *.
+    match &v2' with | | | end.
+    + match &v1' with | | | end; simpl in |- *; ipso (disjoin _, (Identity.reflexivity true)).
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+  - leibniz &e1, &a2 in |- *.
+    match &v1' with | | | end.
+    + simpl in |- *.
+      ipso (disjoin _, (Identity.reflexivity true)).
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+    + simpl in |- *.
+      ipso (disjoin (Identity.reflexivity unknown), _).
+  - leibniz &e1, &e2 in |- *.
+    ipso (disjoin _, (Identity.reflexivity (&v1' || &v2'))).
+Qed.
+
+(* information.monotonicity.implication *)
+Theorem implication
+  : forall {v1 : Kleene3} {v1' : Kleene3} {v2 : Kleene3} {v2' : Kleene3} .
+      v1 [= v1' -> v2 [= v2' -> implies v1 v2 [= implies v1' v2'.
+Proof.
+  intros v1 v1' v2 v2' h1 h2.
+  simpl implies in |- *.
+  ipso
+    (information.monotonicity.disjunction (information.monotonicity.negation &h1) &h2).
+Qed.
+
+End monotonicity. (* information.monotonicity *)
+
+End information. (* information *)
+
 End Kleene3. (* Kleene3 *)
 
 Abbreviation Kleene3 := Kleene3.T.
 
 Export (notations) Kleene3.
+
+Existing Instance Kleene3.comparable.
 
 Instance Kleene3_and_monoid
   : Monoid Kleene3.and Kleene3.true :=
@@ -456,3 +828,12 @@ Instance Kleene3_and_commutative
 Instance Kleene3_or_commutative
   : Commutative Kleene3.or :=
   {| Commutative.commutativity := Kleene3.disjunction.commutativity |}.
+
+Instance Kleene3_information_partial_order
+  : PartialOrder Kleene3.InformationLessOrEqual :=
+  {| PartialOrder.reflexivity :=
+       {| Reflexive.reflexivity := Kleene3.information.reflexivity |}
+   ; PartialOrder.antisymmetry :=
+       {| Antisymmetric.antisymmetry := @Kleene3.information.antisymmetry |}
+   ; PartialOrder.transitivity :=
+       {| Transitive.transitivity := @Kleene3.information.transitivity |} |}.
