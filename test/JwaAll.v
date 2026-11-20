@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import All.
+From JW Require Import All.
 
-Definition jwa_all_delivers
+Definition jw_all_delivers
   : forall (A : Prop) (T : Type) (o : Option T) .
       A /\ ~ A -> Option.map (fun (t : T) . t) o = o -> Verum
   := fun (A : Prop) (T : Type) (o : Option T)

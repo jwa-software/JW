@@ -2,18 +2,18 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
 
 Module Byte. (* Byte *)
 
@@ -37,11 +37,11 @@ Definition flip := fun (x : Byte) .
         (Bit.flip x3) (Bit.flip x2) (Bit.flip x1) (Bit.flip x0)
   end.
 
-(* The spellings and levels are those of [jwa_bit_scope]; [only parsing]
+(* The spellings and levels are those of [jw_bit_scope]; [only parsing]
  * keeps goals printing the operations by name.
  *)
 Notation "~. x" := (flip x) (only parsing)
-  : jwa_byte_scope.
+  : jw_byte_scope.
 
 (* [Byte -> Byte -> Byte] *)
 Definition and := fun (x : Byte) (y : Byte) .
@@ -56,7 +56,7 @@ Definition and := fun (x : Byte) (y : Byte) .
   end.
 
 Notation "x &. y" := (and x y) (only parsing)
-  : jwa_byte_scope.
+  : jw_byte_scope.
 
 (* [Byte -> Byte -> Byte] *)
 Definition or := fun (x : Byte) (y : Byte) .
@@ -71,7 +71,7 @@ Definition or := fun (x : Byte) (y : Byte) .
   end.
 
 Notation "x |. y" := (or x y) (only parsing)
-  : jwa_byte_scope.
+  : jw_byte_scope.
 
 (* [Byte -> Byte -> Byte] *)
 Definition xor := fun (x : Byte) (y : Byte) .
@@ -86,7 +86,7 @@ Definition xor := fun (x : Byte) (y : Byte) .
   end.
 
 Notation "x ^. y" := (xor x y) (only parsing)
-  : jwa_byte_scope.
+  : jw_byte_scope.
 
 (* [k] places toward the most significant end, each bit leaving there coming
  * back at the other; one place first, then [k - 1].
@@ -274,7 +274,7 @@ Definition to_numeral := fun (x : Byte) .
           (hexadecimal_digit x3 x2 x1 x0 Numeral.Hexadecimal.Digits.End))
   end.
 
-Local Open Scope jwa_byte_scope.
+Local Open Scope jw_byte_scope.
 
 (* Eight equal fields make equal bytes; each law below is its [Bit]
  * counterpart taken field by field through this.
@@ -691,12 +691,12 @@ Export (notations) Byte.
  * closed one prints the same way, in two digits.
  *)
 Number Notation Byte.T Byte.from_numeral Byte.to_numeral
-  : jwa_byte_scope.
+  : jw_byte_scope.
 
 (* Where a [Byte] is expected, a literal or a notation reads in this scope
  * without its [%byte].
  *)
-Bind Scope jwa_byte_scope with Byte.T.
+Bind Scope jw_byte_scope with Byte.T.
 
 Instance Byte_and_monoid
   : Monoid Byte.and (Byte.flip Byte.Zero) :=

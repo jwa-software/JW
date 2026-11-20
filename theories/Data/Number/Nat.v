@@ -2,22 +2,22 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Cancellative.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Relation.Accessible.
-From jwa Require Import Relation.WellFounded.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.Cancellative.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Relation.Accessible.
+From JW Require Import Relation.WellFounded.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 Module Nat. (* Nat *)
 
@@ -30,7 +30,7 @@ Inductive T : Type :=
 
 Abbreviation Nat := T.
 
-Local Open Scope jwa_nat_scope.
+Local Open Scope jw_nat_scope.
 
 Definition induction
   : forall (P : Nat -> Prop) .
@@ -65,39 +65,39 @@ Fixpoint mul (m : Nat) (n : Nat) : Nat :=
   end.
 
 Notation "m + n" := (add m n) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 Notation "m * n" := (mul m n) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 
 (* [Nat -> Nat] *)
 Definition inc := fun (n : Nat) . S n.
 
 Notation "++ n" := (inc n) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 (* [Nat -> Nat -> Prop] *)
 Definition LessThan := fun (m : Nat) (n : Nat) . forsome (k : Nat) . m + k = n.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 Notation "m < n" := (LessThan m n) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 (* [Nat -> Nat -> Prop] *)
 Definition LessOrEqual := fun (m : Nat) (n : Nat) . (m = n) \/ ( m < n ).
 
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 Notation "m <= n" := (LessOrEqual m n) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 Notation "m > n" := ( n < m ) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 Notation "m >= n" := (LessOrEqual n m) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 (* [Nat -> Nat -> Nat] *)
 Fixpoint power (m : Nat) (n : Nat) : Nat :=
@@ -107,7 +107,7 @@ Fixpoint power (m : Nat) (n : Nat) : Nat :=
   end.
 
 Notation "m ^ n" := (power m n) (only parsing)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 (* [Nat -> Nat -> Comparison] *)
 Fixpoint compare (m : Nat) (n : Nat) : Comparison :=
@@ -1531,12 +1531,12 @@ Export (notations) Nat.
  * warning.
  *)
 Number Notation Nat.T Nat.from_numeral Nat.to_numeral (warning after 5000)
-  : jwa_nat_scope.
+  : jw_nat_scope.
 
 (* Where a [Nat] is expected, a literal or a notation reads in this scope
  * without its [%n].
  *)
-Bind Scope jwa_nat_scope with Nat.T.
+Bind Scope jw_nat_scope with Nat.T.
 
 Instance Nat_less_than_well_founded
   : WellFounded (<)%n :=

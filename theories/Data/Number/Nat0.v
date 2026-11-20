@@ -2,32 +2,32 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianMonoid.
-From jwa Require Import Algebra.Cancellative.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Algebra.Semiring.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Dialect.Simpl.
-From jwa Require Import Relation.Accessible.
-From jwa Require Import Relation.Antisymmetric.
-From jwa Require Import Relation.Descent.
-From jwa Require Import Relation.Order.PartialOrder.
-From jwa Require Import Relation.Reflexive.
-From jwa Require Import Relation.Transitive.
-From jwa Require Import Relation.WellFounded.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.AbelianMonoid.
+From JW Require Import Algebra.Cancellative.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Algebra.Semiring.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Dialect.Simpl.
+From JW Require Import Relation.Accessible.
+From JW Require Import Relation.Antisymmetric.
+From JW Require Import Relation.Descent.
+From JW Require Import Relation.Order.PartialOrder.
+From JW Require Import Relation.Reflexive.
+From JW Require Import Relation.Transitive.
+From JW Require Import Relation.WellFounded.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 Module Nat0. (* Nat0 *)
 
@@ -70,11 +70,11 @@ Definition mul := fun (m : Nat0) (n : Nat0) .
   end.
 
 Notation "m + n" := (add m n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 Notation "m * n" := (mul m n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
-Local Open Scope jwa_nat0_scope.
+Local Open Scope jw_nat0_scope.
 
 (* [Nat0 -> Nat0] *)
 Definition inc := fun (n : Nat0) .
@@ -84,7 +84,7 @@ Definition inc := fun (n : Nat0) .
   end.
 
 Notation "++ n" := (inc n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
 (* [Nat0 -> Nat0 -> Nat0] *)
 Definition power := fun (m : Nat0) (n : Nat0) .
@@ -98,34 +98,34 @@ Definition power := fun (m : Nat0) (n : Nat0) .
   end.
 
 Notation "m ^ n" := (power m n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
 (* [Nat0 -> Nat0 -> Prop] *)
 Definition LessThan := fun (m : Nat0) (n : Nat0) .
   forsome (k : Nat) . m + (+ k) = n.
 
 Notation "m < n" := (LessThan m n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
 (* [Nat0 -> Nat0 -> Prop] *)
 Definition LessOrEqual := fun (m : Nat0) (n : Nat0) .
   m = n \/ m < n.
 
 Notation "m <= n" := (LessOrEqual m n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
 (* The reversed spellings name no new relation: [m > n] is [n < m] with the
  * arguments the other way round, so no law is stated for them.
  *)
 Notation "m > n" := (LessThan n m) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 Notation "m >= n" := (LessOrEqual n m) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
 (* [Nat0 -> Nat0 -> Comparison] *)
 Definition compare := fun (m : Nat0) (n : Nat0) .
@@ -207,7 +207,7 @@ Definition to_numeral := fun (n : Nat0) .
  * the remainder reaches the divisor. The divisor is a [Nat], so it is never
  * zero. The result is the pair of quotient and remainder.
  *)
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 Module div. (* div *)
 
@@ -253,11 +253,11 @@ Definition modulo := fun (n : Nat0) (divisor : Nat) . pi_2 (div n divisor).
  * never next to the one that ends a command or separates a binder.
  *)
 Notation "m /. n" := (divide m n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 Notation "m %. n" := (modulo m n) (only parsing)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
-Local Close Scope jwa_product_scope.
+Local Close Scope jw_product_scope.
 
 (* [d] divides [n] when some multiple of [d] is [n]. It is a partial order:
  * reflexive with [Positive Nat.One], transitive by multiplying the witnesses,
@@ -1731,7 +1731,7 @@ End subtraction. (* subtraction *)
 
 Module division. (* division *)
 
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 Module nat. (* division.nat *)
 
@@ -1930,7 +1930,7 @@ End quotient. (* division.nat.quotient *)
 
 End nat. (* division.nat *)
 
-Local Close Scope jwa_product_scope.
+Local Close Scope jw_product_scope.
 
 Module dividend. (* division.dividend *)
 
@@ -2740,7 +2740,7 @@ End divisibility. (* divisibility *)
 
 Module gcd. (* gcd *)
 
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 (* gcd.zero *)
 Theorem zero : forall (a : Nat0) . gcd a 0 = a.
@@ -3335,7 +3335,7 @@ Qed.
 
 End nat. (* gcd.nat *)
 
-Local Close Scope jwa_product_scope.
+Local Close Scope jw_product_scope.
 
 End gcd. (* gcd *)
 
@@ -3530,12 +3530,12 @@ Export (notations) Nat0.
  * until something computes it.
  *)
 Number Notation Nat0.T Nat0.from_numeral Nat0.to_numeral (abstract after 5000)
-  : jwa_nat0_scope.
+  : jw_nat0_scope.
 
 (* Where a [Nat0] is expected, a literal or a notation reads in this scope
  * without its [%n0].
  *)
-Bind Scope jwa_nat0_scope with Nat0.T.
+Bind Scope jw_nat0_scope with Nat0.T.
 
 (* A [Nat] stands wherever a [Nat0] is expected, read as its
  * [Positive], and the conversion is printed where it happened.

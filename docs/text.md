@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 # Text
 
-`jwa.Data` holds the text types under `Data/Text/`:
+`JW.Data` holds the text types under `Data/Text/`:
 
 | Type | What it is | Literals |
 |:---|:---|:---|

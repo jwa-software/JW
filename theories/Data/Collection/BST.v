@@ -2,17 +2,17 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Assert.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.BinaryTree.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Dialect.ExFalso.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Core.All.
+From JW Require Import Data.Assert.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.BinaryTree.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Dialect.ExFalso.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 (* A search tree is a [BinaryTree] whose elements stand in order: at every
  * node the left subtree holds what is below the node's element, and the
@@ -102,7 +102,7 @@ Fixpoint insert {A : Type} (cmp : A -> A -> Comparison) (a : A) (t : BinaryTree 
 (* [Product]'s scope is opened for the [(m, rest)] that [pop_minimum]
  * answers with.
  *)
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 (* The smallest element of an ordered tree is its leftmost one.
  * [pop_minimum] answers with it and with the tree that is left, and with

@@ -6,7 +6,7 @@
  * standard library, so loading it brings in nothing but the command.
  *)
 From Corelib Require Extraction.
-From jwa Require Import Data.All.
+From JW Require Import Data.All.
 
 (* Each name below is a module, and also the prefix of the abbreviation of
  * the same name inside it, as [Bool.Bool]; extraction warns of the two
@@ -28,55 +28,55 @@ Extraction Language OCaml.
  * fails to compile, the arities differing; for [Bool] it would compile and
  * swap [true] and [false], which [extraction_test.ml] would catch.
  *)
-Extract Inductive jwa.Data.Base.Bool.Bool.T       => "bool"   [ "true" "false" ].
-Extract Inductive jwa.Data.Option.Option.T        => "option" [ "None" "Some" ].
-Extract Inductive jwa.Data.Product.Product.T      => "( * )"  [ "(,)" ].
-Extract Inductive jwa.Data.Collection.List.List.T => "list"   [ "[]" "(::)" ].
+Extract Inductive JW.Data.Base.Bool.Bool.T       => "bool"   [ "true" "false" ].
+Extract Inductive JW.Data.Option.Option.T        => "option" [ "None" "Some" ].
+Extract Inductive JW.Data.Product.Product.T      => "( * )"  [ "(,)" ].
+Extract Inductive JW.Data.Collection.List.List.T => "list"   [ "[]" "(::)" ].
 
-(* Every module of [Data] that computes, into one file [jwa.ml]: the proofs
+(* Every module of [Data] that computes, into one file [JW.ml]: the proofs
  * are erased, so [SortedSet.T] becomes the [AVL.T] it holds.
  *)
-Extraction "jwa.ml"
-  jwa.Data.Base.Bool.Bool
-  jwa.Data.Base.Comparison.Comparison
-  jwa.Data.Base.Empty.Empty
-  jwa.Data.Base.Kleene3.Kleene3
-  jwa.Data.Base.Unit.Unit
-  jwa.Data.Comparable.Comparable
-  jwa.Data.Coproduct.Coproduct
-  jwa.Data.Option.Option
-  jwa.Data.Product.Product
-  jwa.Data.Number.Nat.Nat
-  jwa.Data.Number.Nat0.Nat0
-  jwa.Data.Number.Integer.Integer
-  jwa.Data.Number.Rational.Rational
-  jwa.Data.Number.Numeral.Numeral
-  jwa.Data.Number.Binary.BinBase.BinBase
-  jwa.Data.Number.Binary.BinWithZero.BinWithZero
-  jwa.Data.Number.Binary.Bin.Bin
-  jwa.Data.Machine.Bit.Bit
-  jwa.Data.Machine.Byte.Byte
-  jwa.Data.Machine.Endian.Endian
-  jwa.Data.Machine.HWord.HWord
-  jwa.Data.Machine.Word.Word
-  jwa.Data.Machine.DWord.DWord
-  jwa.Data.Machine.QWord.QWord
-  jwa.Data.Machine.UInt8.UInt8
-  jwa.Data.Machine.UInt16.UInt16
-  jwa.Data.Machine.UInt32.UInt32
-  jwa.Data.Machine.UInt64.UInt64
-  jwa.Data.Machine.Int8.Int8
-  jwa.Data.Machine.Int16.Int16
-  jwa.Data.Machine.Int32.Int32
-  jwa.Data.Machine.Int64.Int64
-  jwa.Data.Collection.List.List
-  jwa.Data.Collection.NonEmptyList.NonEmptyList
-  jwa.Data.Collection.BinaryTree.BinaryTree
-  jwa.Data.Collection.BST.BST
-  jwa.Data.Collection.AVL.AVL
-  jwa.Data.Collection.SortedSet.SortedSet
-  jwa.Data.Text.SourceByte.SourceByte
-  jwa.Data.Text.Ascii.Ascii
-  jwa.Data.Text.AsciiStr.AsciiStr
-  jwa.Data.Text.Utf8.Utf8
-  jwa.Data.Text.Utf8Str.Utf8Str.
+Extraction "JW.ml"
+  JW.Data.Base.Bool.Bool
+  JW.Data.Base.Comparison.Comparison
+  JW.Data.Base.Empty.Empty
+  JW.Data.Base.Kleene3.Kleene3
+  JW.Data.Base.Unit.Unit
+  JW.Data.Comparable.Comparable
+  JW.Data.Coproduct.Coproduct
+  JW.Data.Option.Option
+  JW.Data.Product.Product
+  JW.Data.Number.Nat.Nat
+  JW.Data.Number.Nat0.Nat0
+  JW.Data.Number.Integer.Integer
+  JW.Data.Number.Rational.Rational
+  JW.Data.Number.Numeral.Numeral
+  JW.Data.Number.Binary.BinBase.BinBase
+  JW.Data.Number.Binary.BinWithZero.BinWithZero
+  JW.Data.Number.Binary.Bin.Bin
+  JW.Data.Machine.Bit.Bit
+  JW.Data.Machine.Byte.Byte
+  JW.Data.Machine.Endian.Endian
+  JW.Data.Machine.HWord.HWord
+  JW.Data.Machine.Word.Word
+  JW.Data.Machine.DWord.DWord
+  JW.Data.Machine.QWord.QWord
+  JW.Data.Machine.UInt8.UInt8
+  JW.Data.Machine.UInt16.UInt16
+  JW.Data.Machine.UInt32.UInt32
+  JW.Data.Machine.UInt64.UInt64
+  JW.Data.Machine.Int8.Int8
+  JW.Data.Machine.Int16.Int16
+  JW.Data.Machine.Int32.Int32
+  JW.Data.Machine.Int64.Int64
+  JW.Data.Collection.List.List
+  JW.Data.Collection.NonEmptyList.NonEmptyList
+  JW.Data.Collection.BinaryTree.BinaryTree
+  JW.Data.Collection.BST.BST
+  JW.Data.Collection.AVL.AVL
+  JW.Data.Collection.SortedSet.SortedSet
+  JW.Data.Text.SourceByte.SourceByte
+  JW.Data.Text.Ascii.Ascii
+  JW.Data.Text.AsciiStr.AsciiStr
+  JW.Data.Text.Utf8.Utf8
+  JW.Data.Text.Utf8Str.Utf8Str.

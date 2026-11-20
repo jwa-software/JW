@@ -2,19 +2,19 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Literal.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Machine.UInt8.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Text.SourceByte.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Literal.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Machine.UInt8.
+From JW Require Import Data.Option.
+From JW Require Import Data.Text.SourceByte.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Module Ascii. (* Ascii *)
 
@@ -39,7 +39,7 @@ Definition from_byte := fun (b : Byte) . Ascii.introduction b.
 (* [Ascii -> UInt8] *)
 Definition code := fun (c : Ascii) . UInt8.from_byte (to_byte c).
 
-Local Open Scope jwa_list_scope.
+Local Open Scope jw_list_scope.
 
 (* Reads the UTF-8 bytes of a string literal as one character:
  *
@@ -90,23 +90,23 @@ Definition to_source_bytes := fun (c : Ascii) .
 Definition LessThan := fun (x : Ascii) (y : Ascii) . (code x < code y)%uint8.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jwa_ascii_scope.
+  : jw_ascii_scope.
 
 (* [Ascii -> Ascii -> Prop] *)
 Definition LessOrEqual := fun (x : Ascii) (y : Ascii) . x = y \/ LessThan x y.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jwa_ascii_scope.
+  : jw_ascii_scope.
 
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jwa_ascii_scope.
+  : jw_ascii_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jwa_ascii_scope.
+  : jw_ascii_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_ascii_scope.
+  : jw_ascii_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_ascii_scope.
+  : jw_ascii_scope.
 
 (* [Ascii -> Ascii -> Comparison] *)
 Definition compare := fun (x : Ascii) (y : Ascii) . UInt8.compare (code x) (code y).
@@ -171,7 +171,7 @@ Definition to_lower := fun (c : Ascii) .
   | false => c
   end.
 
-Local Open Scope jwa_ascii_scope.
+Local Open Scope jw_ascii_scope.
 
 Module conversion. (* conversion *)
 
@@ -622,12 +622,12 @@ Export (notations) Ascii.
  * ["A"%ac], and a closed one prints back so.
  *)
 String Notation Ascii.T Ascii.from_source_bytes Ascii.to_source_bytes
-  : jwa_ascii_scope.
+  : jw_ascii_scope.
 
 (* Where an [Ascii] is expected, a literal reads in this scope without its
  * [%ac].
  *)
-Bind Scope jwa_ascii_scope with Ascii.T.
+Bind Scope jw_ascii_scope with Ascii.T.
 
 (* Declared inside [Module Ascii], whose proofs use it; an instance declared
  * there is dropped at the module's [End], so it is announced again here.

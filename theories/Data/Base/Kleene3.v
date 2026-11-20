@@ -2,18 +2,18 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Relation.Antisymmetric.
-From jwa Require Import Relation.Order.PartialOrder.
-From jwa Require Import Relation.Reflexive.
-From jwa Require Import Relation.Transitive.
-From jwa Require Import Tactics.Equation.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Relation.Antisymmetric.
+From JW Require Import Relation.Order.PartialOrder.
+From JW Require Import Relation.Reflexive.
+From JW Require Import Relation.Transitive.
+From JW Require Import Tactics.Equation.
 
 (* Kleene's strong three-valued logic. *)
 Module Kleene3. (* Kleene3 *)
@@ -37,7 +37,7 @@ Definition negate := fun (v : Kleene3) .
   end.
 
 Notation "! v" := (negate v) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
 (* [Kleene3 -> Kleene3 -> Kleene3] *)
 Definition and := fun (v1 : Kleene3) (v2 : Kleene3) .
@@ -53,7 +53,7 @@ Definition and := fun (v1 : Kleene3) (v2 : Kleene3) .
   end.
 
 Notation "v1 && v2" := (and v1 v2) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
 (* [Kleene3 -> Kleene3 -> Kleene3] *)
 Definition or := fun (v1 : Kleene3) (v2 : Kleene3) .
@@ -69,9 +69,9 @@ Definition or := fun (v1 : Kleene3) (v2 : Kleene3) .
   end.
 
 Notation "v1 || v2" := (or v1 v2) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
-Local Open Scope jwa_kleene3_scope.
+Local Open Scope jw_kleene3_scope.
 
 (* Kleene's implication, [! v1 || v2]: [implies unknown unknown] is
  * [unknown], not [true], since neither side is known.
@@ -133,7 +133,7 @@ Definition TruthLessThan := fun (v1 : Kleene3) (v2 : Kleene3) .
   end.
 
 Notation "v1 < v2" := (TruthLessThan v1 v2) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
 (* The truth order, [<=t] in the bilattice literature. *)
 (* [Kleene3 -> Kleene3 -> Prop] *)
@@ -141,17 +141,17 @@ Definition TruthLessOrEqual := fun (v1 : Kleene3) (v2 : Kleene3) .
   v1 = v2 \/ TruthLessThan v1 v2.
 
 Notation "v1 <= v2" := (TruthLessOrEqual v1 v2) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
 Notation "v1 > v2" := (TruthLessThan v2 v1) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 Notation "v1 >= v2" := (TruthLessOrEqual v2 v1) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
 Notation "'(<)'" := TruthLessThan (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 Notation "'(<=)'" := TruthLessOrEqual (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
 (* The information order, [<=i] in the bilattice literature and more often
  * written [<=k]: [unknown] lies below the two known values, which are not
@@ -162,7 +162,7 @@ Definition InformationLessOrEqual := fun (v1 : Kleene3) (v2 : Kleene3) .
   v1 = unknown \/ v1 = v2.
 
 Notation "v1 [= v2" := (InformationLessOrEqual v1 v2) (only parsing)
-  : jwa_kleene3_scope.
+  : jw_kleene3_scope.
 
 Module negation. (* negation *)
 

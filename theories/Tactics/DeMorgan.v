@@ -2,16 +2,16 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Dialect.Context.
-From jwa Require Import Core.Logic.Biconditional.
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Logic.Conjunction.
-From jwa Require Import Core.Logic.Disjunction.
-From jwa Require Import Core.Logic.Exists.
-From jwa Require Import Core.Logic.Negation.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.Local.
-From jwa Require Import Dialect.Ltac.
+From JW Require Dialect.Context.
+From JW Require Import Core.Logic.Biconditional.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Logic.Conjunction.
+From JW Require Import Core.Logic.Disjunction.
+From JW Require Import Core.Logic.Exists.
+From JW Require Import Core.Logic.Negation.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.Local.
+From JW Require Import Dialect.Ltac.
 From Ltac2 Require Import Notations.
 From Ltac2 Require Constr Control List Message Std String.
 

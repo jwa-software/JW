@@ -2,25 +2,25 @@
  * SPDX-License-Identifier: MIT
  *)
 
-(* Umbrella for [jwa.Relation]: re-exports every module of the layer, so a
- * client imports the whole layer with [From jwa Require Import Relation.All].
+(* Umbrella for [JW.Relation]: re-exports every module of the layer, so a
+ * client imports the whole layer with [From JW Require Import Relation.All].
  *)
 
 (* The modules below only [Import] [Core.All], so the open scope reaches a
  * client of this umbrella only from here.
  *)
-From jwa Require Export Core.All.
+From JW Require Export Core.All.
 
-From jwa Require Export Relation.Accessible.
-From jwa Require Export Relation.Antisymmetric.
-From jwa Require Export Relation.Descent.
-From jwa Require Export Relation.Equivalence.
-From jwa Require Export Relation.Induced.
-From jwa Require Export Relation.Irreflexive.
-From jwa Require Export Relation.Order.All.
-From jwa Require Export Relation.Reflexive.
-From jwa Require Export Relation.Symmetric.
-From jwa Require Export Relation.Total.
-From jwa Require Export Relation.Transitive.
-From jwa Require Export Relation.Trichotomous.
-From jwa Require Export Relation.WellFounded.
+From JW Require Export Relation.Accessible.
+From JW Require Export Relation.Antisymmetric.
+From JW Require Export Relation.Descent.
+From JW Require Export Relation.Equivalence.
+From JW Require Export Relation.Induced.
+From JW Require Export Relation.Irreflexive.
+From JW Require Export Relation.Order.All.
+From JW Require Export Relation.Reflexive.
+From JW Require Export Relation.Symmetric.
+From JW Require Export Relation.Total.
+From JW Require Export Relation.Transitive.
+From JW Require Export Relation.Trichotomous.
+From JW Require Export Relation.WellFounded.

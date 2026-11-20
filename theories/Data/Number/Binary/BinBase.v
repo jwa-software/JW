@@ -2,24 +2,24 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Cancellative.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Relation.Accessible.
-From jwa Require Import Relation.Descent.
-From jwa Require Import Relation.Induced.
-From jwa Require Import Relation.WellFounded.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.Cancellative.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Relation.Accessible.
+From JW Require Import Relation.Descent.
+From JW Require Import Relation.Induced.
+From JW Require Import Relation.WellFounded.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 Module BinBase. (* BinBase *)
 
@@ -62,7 +62,7 @@ Fixpoint inc (b : BinBase) : BinBase :=
   end.
 
 Notation "++ b" := (inc b) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 (* [b] with [bit] written after its lowest bit: [2b], or [2b + 1] when [bit]
  * is [true]. [BinWithZero] carries the same operation on its own type, and
@@ -118,7 +118,7 @@ Fixpoint add_with_carry (carry : Bool) (a : BinBase) (b : BinBase) : BinBase :=
 Definition add := fun (a : BinBase) (b : BinBase) . add_with_carry false a b.
 
 Notation "a + b" := (add a b) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 (* Shift and add: [2a * b] is [a * b] shifted, [(2a + 1) * b] adds [b]. *)
 (* [BinBase -> BinBase -> BinBase] *)
@@ -130,9 +130,9 @@ Fixpoint mul (a : BinBase) (b : BinBase) : BinBase :=
   end.
 
 Notation "a * b" := (mul a b) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
-Local Open Scope jwa_bin_base_scope.
+Local Open Scope jw_bin_base_scope.
 
 (* [BinBase -> BinBase] *)
 Definition square := fun (b : BinBase) . b * b.
@@ -149,7 +149,7 @@ Fixpoint power (a : BinBase) (n : BinBase) : BinBase :=
   end.
 
 Notation "a ^ n" := (power a n) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 (* Where [a] sits relative to [b], which is all [a - b] can report when only
  * positives exist: less, equal, or greater by this much. [Comparison] gives
@@ -230,25 +230,25 @@ Definition diff := fun (a : BinBase) (b : BinBase) . difference_with_borrow fals
 Definition LessThan := fun (a : BinBase) (b : BinBase) . forsome (k : BinBase) . a + k = b.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 Notation "a < b" := (LessThan a b) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 (* [BinBase -> BinBase -> Prop] *)
 Definition LessOrEqual := fun (a : BinBase) (b : BinBase) . (a = b) \/ (a < b).
 
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 Notation "a <= b" := (LessOrEqual a b) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 Notation "a > b" := (b < a) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 Notation "a >= b" := (LessOrEqual b a) (only parsing)
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 (* [BinBase -> BinBase -> Comparison] *)
 Definition compare := fun (a : BinBase) (b : BinBase) .
@@ -1428,7 +1428,7 @@ Export (notations) BinBase.
  * any other digit, or opening with 0, is refused.
  *)
 Number Notation BinBase.T BinBase.from_numeral BinBase.to_numeral
-  : jwa_bin_base_scope.
+  : jw_bin_base_scope.
 
 Instance BinBase_less_than_well_founded
   : WellFounded (<)%bin_base :=

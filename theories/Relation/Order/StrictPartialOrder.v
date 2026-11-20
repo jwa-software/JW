@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
-From jwa Require Import Relation.Irreflexive.
-From jwa Require Import Relation.Transitive.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
+From JW Require Import Relation.Irreflexive.
+From JW Require Import Relation.Transitive.
 
 Module StrictPartialOrder. (* StrictPartialOrder *)
 

@@ -2,12 +2,12 @@
  * SPDX-License-Identifier: MIT
  *)
 
-(* Guards [jwa.Data.Number.Binary.All] by importing that umbrella and nothing
+(* Guards [JW.Data.Number.Binary.All] by importing that umbrella and nothing
  * else, so anything it fails to re-export is a build failure here. What
  * [Data.Number.All] forwards from it is guarded separately in
  * [DataNumberAll.v].
  *)
-From jwa Require Import Data.Number.Binary.All.
+From JW Require Import Data.Number.Binary.All.
 
 Definition data_number_binary_all_delivers_types
   : BinBase -> BinWithZero -> Bin -> Verum

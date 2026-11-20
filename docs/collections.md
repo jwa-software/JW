@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 # Collections
 
-`jwa.Data` holds the containers, and the interfaces they share, under `Data/Collection/`:
+`JW.Data` holds the containers, and the interfaces they share, under `Data/Collection/`:
 
 | Type | What it is | Written as |
 |:---|:---|:---|
@@ -17,13 +17,13 @@ SPDX-License-Identifier: MIT
 
 `BST` is a module beside them and not a type of its own: it holds the rule that makes a `BinaryTree` a search tree, and the operations that follow that rule.
 
-`From jwa Require Import Data.Collection.All` brings the five types, `BST`, the interfaces, and what their operations and laws name: the types `Nat0`, `Nat`, `Bool`, `Option`, `Product` and `Comparison`, the class `Comparable`, and `Assert`, which reads a `Bool` as a proposition. The examples on this page take their numbers in `Nat0` and are written with `jwa_list_scope` and `jwa_nat0_scope` open.
+`From JW Require Import Data.Collection.All` brings the five types, `BST`, the interfaces, and what their operations and laws name: the types `Nat0`, `Nat`, `Bool`, `Option`, `Product` and `Comparison`, the class `Comparable`, and `Assert`, which reads a `Bool` as a proposition. The examples on this page take their numbers in `Nat0` and are written with `jw_list_scope` and `jw_nat0_scope` open.
 
 ---
 
 ## List
 
-`List` has the ctors `List.Nil` and `List.Cons`, written `[]` and `a :: l`. Its notations live in `jwa_list_scope`, under the key `%list`.
+`List` has the ctors `List.Nil` and `List.Cons`, written `[]` and `a :: l`. Its notations live in `jw_list_scope`, under the key `%list`.
 
 - **Building:** `l1 ++ l2` is `List.concat`, and `List.append l a` puts `a` after the last element: `(1 :: 2 :: []) ++ (3 :: [])` and `List.append (1 :: 2 :: []) 3` are both `1 :: 2 :: 3 :: []`. `List.replicate 3 7` is `7 :: 7 :: 7 :: []`.
 - **Length and order:** `List.length l`, written `(|| l ||)`, is a `Nat0`, and `List.reverse (1 :: 2 :: 3 :: [])` is `3 :: 2 :: 1 :: []`.
@@ -43,7 +43,7 @@ SPDX-License-Identifier: MIT
 
 ## NonEmptyList
 
-`NonEmptyList` has the ctors `NonEmptyList.One` and `NonEmptyList.Cons`, written `[a]` and `a :: x`: a value ends with an element where a list ends with `[]`, so none is empty. Its notations live in `jwa_non_empty_list_scope`, under the key `%non_empty_list`.
+`NonEmptyList` has the ctors `NonEmptyList.One` and `NonEmptyList.Cons`, written `[a]` and `a :: x`: a value ends with an element where a list ends with `[]`, so none is empty. Its notations live in `jw_non_empty_list_scope`, under the key `%non_empty_list`.
 
 - **The ends are total.** `NonEmptyList.head` and `NonEmptyList.last` return the element itself, with no `Option`: on `5 :: 6 :: [7]` they are `5` and `7`.
 - **The length is a `Nat`**, the number type with no zero: `NonEmptyList.length (5 :: 6 :: [7])` is `3%n`.

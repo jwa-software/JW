@@ -2,23 +2,23 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Assert.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Literal.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Text.Ascii.
-From jwa Require Import Data.Text.AsciiStr.
-From jwa Require Import Data.Text.SourceByte.
-From jwa Require Import Data.Text.Utf8.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Assert.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Literal.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Option.
+From JW Require Import Data.Text.Ascii.
+From JW Require Import Data.Text.AsciiStr.
+From JW Require Import Data.Text.SourceByte.
+From JW Require Import Data.Text.Utf8.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Module Utf8Str. (* Utf8Str *)
 
@@ -28,7 +28,7 @@ Inductive T : Type :=
 
 Abbreviation Utf8Str := T.
 
-Local Open Scope jwa_list_scope.
+Local Open Scope jw_list_scope.
 
 (* [Utf8Str -> List Utf8] *)
 Definition to_list := fun (s : Utf8Str) .
@@ -48,7 +48,7 @@ Definition concat := fun (s : Utf8Str) (t : Utf8Str) .
 
 (* [only parsing] keeps goals printing the operation by name. *)
 Notation "s ++ t" := (concat s t) (only parsing)
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 
 (* The number of characters, which is not the number of bytes. *)
 (* [Utf8Str -> Nat0] *)
@@ -177,23 +177,23 @@ Definition LessThan := fun (s : Utf8Str) (t : Utf8Str) .
   List.LessThan Utf8.compare (to_list s) (to_list t).
 
 Notation "s < t" := (LessThan s t) (only parsing)
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 
 (* [Utf8Str -> Utf8Str -> Prop] *)
 Definition LessOrEqual := fun (s : Utf8Str) (t : Utf8Str) . s = t \/ LessThan s t.
 
 Notation "s <= t" := (LessOrEqual s t) (only parsing)
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 
 Notation "s > t" := (LessThan t s) (only parsing)
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 Notation "s >= t" := (LessOrEqual t s) (only parsing)
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 
 (* [Utf8Str -> Utf8Str -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
@@ -816,7 +816,7 @@ End Utf8Str. (* Utf8Str *)
 Abbreviation Utf8Str := Utf8Str.T.
 
 (* Makes [++] usable in every file that imports this one, as [(s ++ t)%u8] or
- * under an opened [jwa_utf8_str_scope].
+ * under an opened [jw_utf8_str_scope].
  *)
 Export (notations) Utf8Str.
 
@@ -824,12 +824,12 @@ Export (notations) Utf8Str.
  * closed one prints back so.
  *)
 String Notation Utf8Str.T Utf8Str.from_source_bytes Utf8Str.to_source_bytes
-  : jwa_utf8_str_scope.
+  : jw_utf8_str_scope.
 
 (* Where a [Utf8Str] is expected, a literal reads in this scope without its
  * [%u8].
  *)
-Bind Scope jwa_utf8_str_scope with Utf8Str.T.
+Bind Scope jw_utf8_str_scope with Utf8Str.T.
 
 (* Declared inside [Module Utf8Str]; an instance declared there is dropped
  * at the module's [End], so it is announced again here.

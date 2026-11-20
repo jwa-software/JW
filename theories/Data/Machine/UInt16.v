@@ -2,29 +2,29 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Machine.Endian.
-From jwa Require Import Data.Machine.HWord.
-From jwa Require Import Data.Number.Binary.Bin.
-From jwa Require Import Data.Number.Binary.BinBase.
-From jwa Require Import Data.Number.Binary.BinWithZero.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Machine.Endian.
+From JW Require Import Data.Machine.HWord.
+From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 (* An unsigned integer of sixteen bits: two [Byte]s read as a number from 0 to
  * 65535 (2^16 - 1), its arithmetic wrapping modulo 65536 (2^16). In this file
@@ -197,7 +197,7 @@ Definition add := fun (x : UInt16) (y : UInt16) . (pi_2 (add_with_carry 0 x y))%
 
 (* [only parsing] keeps goals printing the operations by name. *)
 Notation "x + y" := (add x y) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* The borrow out and the difference of [x - y - borrow], the borrow
  * rippling up as the carry does in [add_with_carry].
@@ -241,7 +241,7 @@ Definition sub_with_borrow := fun (borrow : Bit) (x : UInt16) (y : UInt16) .
 Definition sub := fun (x : UInt16) (y : UInt16) . (pi_2 (sub_with_borrow 0 x y))%product.
 
 Notation "x - y" := (sub x y) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* The two's complement: [x] taken from [Zero], wrapping. *)
 (* [UInt16 -> UInt16] *)
@@ -249,7 +249,7 @@ Definition negate := fun (x : UInt16) . sub Zero x.
 
 Notation "- x" := (negate x)
   (at level 35, right associativity, only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* [y]'s bits from the most significant, each step doubling the product so
  * far and adding [x] for a 1, all modulo 65536.
@@ -270,7 +270,7 @@ Definition mul := fun (x : UInt16) (y : UInt16) .
   end.
 
 Notation "x * y" := (mul x y) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* [p] modulo 65536, its bits appended from the most significant. *)
 (* [BinBase -> UInt16] *)
@@ -314,7 +314,7 @@ Definition divide := fun (x : UInt16) (y : UInt16) .
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* The remainder through [BinWithZero], [None] when [y] is zero. *)
 (* [UInt16 -> UInt16 -> Option UInt16] *)
@@ -325,30 +325,30 @@ Definition modulo := fun (x : UInt16) (y : UInt16) .
   end.
 
 Notation "x %. y" := (modulo x y) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* [UInt16 -> UInt16 -> Prop] *)
 Definition LessThan := fun (x : UInt16) (y : UInt16) .
   (to_bin_with_zero x < to_bin_with_zero y)%bin_with_zero.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* [UInt16 -> UInt16 -> Prop] *)
 Definition LessOrEqual := fun (x : UInt16) (y : UInt16) . x = y \/ LessThan x y.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* [UInt16 -> UInt16 -> Comparison] *)
 Definition compare := fun (x : UInt16) (y : UInt16) .
@@ -387,7 +387,7 @@ Definition from_numeral := fun (u : Numeral.Unsigned) .
 Definition to_numeral := fun (x : UInt16) .
   Numeral.Unsigned.Decimal (BinWithZero.to_decimal (to_bin_with_zero x)).
 
-Local Open Scope jwa_uint16_scope.
+Local Open Scope jw_uint16_scope.
 
 Module conversion. (* conversion *)
 
@@ -1564,12 +1564,12 @@ Export (notations) UInt16.
  * scope, [200%uint16] or [0xFF%uint16], and a closed one prints in decimal.
  *)
 Number Notation UInt16.T UInt16.from_numeral UInt16.to_numeral
-  : jwa_uint16_scope.
+  : jw_uint16_scope.
 
 (* Where a [UInt16] is expected, a literal or a notation reads in this scope
  * without its [%uint16].
  *)
-Bind Scope jwa_uint16_scope with UInt16.T.
+Bind Scope jw_uint16_scope with UInt16.T.
 
 (* A [UInt16] stands wherever a [BinWithZero] is expected, read as its value,
  * and wherever a [Nat0] is, through that value; each conversion is printed

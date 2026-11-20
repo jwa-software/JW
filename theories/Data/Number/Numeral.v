@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Literal.
+From JW Require Import Core.All.
+From JW Require Import Data.Literal.
 
 (* The types a numeral literal is read into. The plugin behind
  * [Number Notation] reads the literal into them and hands that to the parsing

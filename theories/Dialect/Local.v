@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Export Dialect.Ltac.
+From JW Require Export Dialect.Ltac.
 From Ltac2 Require Char Constr Control Fresh Ident Int List Message Std String.
 
 (* A name of the context is written [&h] in every tactic of this library: a

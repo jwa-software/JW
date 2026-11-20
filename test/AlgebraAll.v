@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.All.
+From JW Require Import Algebra.All.
 
 Definition algebra_all_delivers
   : forall (A : Type) (op : A -> A -> A) (e : A) .

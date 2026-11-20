@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 The library lives under `theories/`, **one directory per layer**. Each layer:
 
-- is one dune theory under the logical root `jwa`: `theories/Data/` is `jwa.Data`;
+- is one dune theory under the logical root `JW`: `theories/Data/` is `JW.Data`;
 - has an umbrella module `All` that re-exports the whole layer;
 - lists `Ltac2` among its dependencies.
 
@@ -17,16 +17,16 @@ The library lives under `theories/`, **one directory per layer**. Each layer:
 
 | Layer | Purpose | Depends on |
 |:---|:---|:---|
-| `jwa.Dialect` | The tactic language: Ltac2 with Rocq's tactic syntax hidden, and the tactics that name no definition of the library | -- |
-| `jwa.Core` | Base definitions, notations, the connectives and equality, the instance hint database and the minimal lemmas everything else shares | Dialect |
-| `jwa.Tactics` | Tactics that apply the laws of Core: the rules of inference by name, the laws of `=` as terms, witnesses | Dialect, Core |
-| `jwa.Algebra` | Algebraic structures, from semigroups to rings, and their theory | Dialect, Core |
-| `jwa.Relation` | Orders, well-founded and equivalence relations | Dialect, Core, Tactics |
-| `jwa.Data` | Concrete data types: the base types, the machine units, products, coproducts, options, the numbers, lists, text, and the functor class they instantiate | Dialect, Core, Tactics, Algebra, Relation |
-| `jwa.Assumption` | Axioms: classical principles, extensionality, decidability; the layer holds only its umbrella | Dialect, Core |
-| `jwa.All` | `From jwa Require Import All` brings in every layer except Assumption | every layer but Assumption |
+| `JW.Dialect` | The tactic language: Ltac2 with Rocq's tactic syntax hidden, and the tactics that name no definition of the library | -- |
+| `JW.Core` | Base definitions, notations, the connectives and equality, the instance hint database and the minimal lemmas everything else shares | Dialect |
+| `JW.Tactics` | Tactics that apply the laws of Core: the rules of inference by name, the laws of `=` as terms, witnesses | Dialect, Core |
+| `JW.Algebra` | Algebraic structures, from semigroups to rings, and their theory | Dialect, Core |
+| `JW.Relation` | Orders, well-founded and equivalence relations | Dialect, Core, Tactics |
+| `JW.Data` | Concrete data types: the base types, the machine units, products, coproducts, options, the numbers, lists, text, and the functor class they instantiate | Dialect, Core, Tactics, Algebra, Relation |
+| `JW.Assumption` | Axioms: classical principles, extensionality, decidability; the layer holds only its umbrella | Dialect, Core |
+| `JW.All` | `From JW Require Import All` brings in every layer except Assumption | every layer but Assumption |
 
-**`Assumption` is the only layer that may introduce axioms**, and no other layer depends on it, so everything else stays axiom-free under `Print Assumptions`, the command its name is taken from. Import it explicitly, with `From jwa Require Import Assumption.All`, when a development needs it.
+**`Assumption` is the only layer that may introduce axioms**, and no other layer depends on it, so everything else stays axiom-free under `Print Assumptions`, the command its name is taken from. Import it explicitly, with `From JW Require Import Assumption.All`, when a development needs it.
 
 ---
 
@@ -36,14 +36,14 @@ Two directories sit beside `theories/` and are not part of the library: an opam 
 
 | Directory | Holds |
 |:---|:---|
-| `test/` | The theory `jwa_test`: one file per umbrella, each importing that umbrella alone, and `TacticsAll.v` for the tactics |
+| `test/` | The theory `jw_test`: one file per umbrella, each importing that umbrella alone, and `TacticsAll.v` for the tactics |
 | `extraction/` | `Extract.v`, which extracts the computing modules of `Data` to OCaml, and `extraction_test.ml`, which runs the result; see [Extraction](extraction.md) |
 
 ---
 
 ## Groups inside a layer
 
-In `Core`, `Relation` and `Data`, whose `dune` files carry `(include_subdirs qualified)`, a subdirectory groups related modules and **becomes a segment of the module path**: `theories/Core/Logic/Conjunction.v` is `jwa.Core.Logic.Conjunction`. Each group has its own umbrella, such as `From jwa Require Import Core.Logic.All`.
+In `Core`, `Relation` and `Data`, whose `dune` files carry `(include_subdirs qualified)`, a subdirectory groups related modules and **becomes a segment of the module path**: `theories/Core/Logic/Conjunction.v` is `JW.Core.Logic.Conjunction`. Each group has its own umbrella, such as `From JW Require Import Core.Logic.All`.
 
 | Group | Holds |
 |:---|:---|

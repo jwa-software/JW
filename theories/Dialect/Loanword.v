@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Export Dialect.Ltac.
+From JW Require Export Dialect.Ltac.
 From Ltac2 Require Control Std.
 
 (* Rocq's own tactics that this dialect keeps, each borrowed as it is.

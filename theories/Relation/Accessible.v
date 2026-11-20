@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Dialect.Simpl.
-From jwa Require Import Relation.Descent.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Core.All.
+From JW Require Import Dialect.Simpl.
+From JW Require Import Relation.Descent.
+From JW Require Import Tactics.Modus.
 
 Module Accessible. (* Accessible *)
 

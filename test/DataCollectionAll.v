@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Data.Collection.All.
+From JW Require Import Data.Collection.All.
 
 Definition data_collection_all_delivers
   : forall (A : Type) (a : A) . List A

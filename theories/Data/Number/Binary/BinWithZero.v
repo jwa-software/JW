@@ -2,31 +2,31 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.AbelianMonoid.
-From jwa Require Import Algebra.Cancellative.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Algebra.Semiring.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Binary.BinBase.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Relation.Accessible.
-From jwa Require Import Relation.Descent.
-From jwa Require Import Relation.Induced.
-From jwa Require Import Relation.WellFounded.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.AbelianMonoid.
+From JW Require Import Algebra.Cancellative.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Algebra.Semiring.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Relation.Accessible.
+From JW Require Import Relation.Descent.
+From JW Require Import Relation.Induced.
+From JW Require Import Relation.WellFounded.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 Module BinWithZero. (* BinWithZero *)
 
@@ -70,11 +70,11 @@ Definition mul := fun (m : BinWithZero) (n : BinWithZero) .
   end.
 
 Notation "m + n" := (add m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 Notation "m * n" := (mul m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
-Local Open Scope jwa_bin_with_zero_scope.
+Local Open Scope jw_bin_with_zero_scope.
 
 (* [BinWithZero -> BinWithZero] *)
 Definition inc := fun (n : BinWithZero) .
@@ -84,7 +84,7 @@ Definition inc := fun (n : BinWithZero) .
   end.
 
 Notation "++ n" := (inc n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* [BinWithZero -> BinWithZero -> BinWithZero] *)
 Definition power := fun (m : BinWithZero) (n : BinWithZero) .
@@ -98,31 +98,31 @@ Definition power := fun (m : BinWithZero) (n : BinWithZero) .
   end.
 
 Notation "m ^ n" := (power m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* [BinWithZero -> BinWithZero -> Prop] *)
 Definition LessThan := fun (m : BinWithZero) (n : BinWithZero) .
   forsome (k : BinBase) . m + (+ k) = n.
 
 Notation "m < n" := (LessThan m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* [BinWithZero -> BinWithZero -> Prop] *)
 Definition LessOrEqual := fun (m : BinWithZero) (n : BinWithZero) .
   m = n \/ m < n.
 
 Notation "m <= n" := (LessOrEqual m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 Notation "m > n" := (LessThan n m) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 Notation "m >= n" := (LessOrEqual n m) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* [BinWithZero -> BinWithZero -> Comparison] *)
 Definition compare := fun (m : BinWithZero) (n : BinWithZero) .
@@ -237,7 +237,7 @@ Definition halve := fun (n : BinWithZero) .
   | + BinBase.b1 p => + p
   end.
 
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 (* One step of long division: [bit] is written after the remainder, and the
  * divisor [d] is taken away from the result when it fits, the quotient
@@ -281,11 +281,11 @@ Definition divide := fun (n : BinWithZero) (d : BinBase) . pi_1 (div n d).
 Definition modulo := fun (n : BinWithZero) (d : BinBase) . pi_2 (div n d).
 
 Notation "m /. n" := (divide m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 Notation "m %. n" := (modulo m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
-Local Close Scope jwa_product_scope.
+Local Close Scope jw_product_scope.
 
 (* [d] divides [n] when some multiple of [d] is [n]. *)
 (* [BinWithZero -> BinWithZero -> Prop] *)
@@ -349,7 +349,7 @@ Definition and := fun (m : BinWithZero) (n : BinWithZero) .
   end.
 
 Notation "m && n" := (and m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* As [and_positive], each bit the disjunction of the two. *)
 (* [BinBase -> BinBase -> BinWithZero] *)
@@ -378,7 +378,7 @@ Definition or := fun (m : BinWithZero) (n : BinWithZero) .
   end.
 
 Notation "m || n" := (or m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* As [and_positive], each bit the exclusive disjunction of the two. *)
 (* [BinBase -> BinBase -> BinWithZero] *)
@@ -407,7 +407,7 @@ Definition xor := fun (m : BinWithZero) (n : BinWithZero) .
   end.
 
 Notation "m ^^ n" := (xor m n) (only parsing)
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* [BinWithZero -> Nat -> BinWithZero] *)
 Fixpoint shift_left_nat (n : BinWithZero) (k : Nat) : BinWithZero :=
@@ -1192,7 +1192,7 @@ Qed.
 
 End right. (* conversion.right *)
 
-Local Open Scope jwa_product_scope.
+Local Open Scope jw_product_scope.
 
 Module division. (* conversion.division *)
 
@@ -1445,7 +1445,7 @@ Qed.
 
 End division. (* conversion.division *)
 
-Local Close Scope jwa_product_scope.
+Local Close Scope jw_product_scope.
 
 (* conversion.division *)
 Theorem division
@@ -3154,7 +3154,7 @@ Export (notations) BinWithZero.
  * [Bin], whose literals carry a sign as well.
  *)
 Number Notation BinWithZero.T BinWithZero.from_numeral BinWithZero.to_numeral
-  : jwa_bin_with_zero_scope.
+  : jw_bin_with_zero_scope.
 
 (* A [BinBase] stands wherever a [BinWithZero] is expected, read as its
  * [Positive], and the conversion is printed where it happened.

@@ -1,22 +1,22 @@
 (lang dune 3.21)
 (using rocq 0.11)
 
-(name rocq-jwa)
+(name JW)
 (version 0.1.0)
 (generate_opam_files true)
 (opam_file_location inside_opam_directory)
 (formatting (enabled_for dune ocaml))
 
-(source (github jwa-software/rocq-jwa))
+(source (github jwa-software/JW))
 (license MIT)
 (authors "Junzhe Wang")
 (maintainers "Junzhe Wang <research@junzhewang.de>")
 
 (package
- (name rocq-jwa)
+ (name JW)
  (synopsis "A layered Rocq library of data structures, algebra, relations and tactics")
  (description
-  "rocq-jwa is a general-purpose Rocq library organised in layers, each a separate theory under the logical root jwa: Dialect, Core, Tactics, Algebra, Relation, Data and Assumption. Clients import a layer with From jwa Require Import <Layer>.All, or everything but the axiom layer with From jwa Require Import All.")
+  "JW is a general-purpose Rocq library organised in layers, each a separate theory under the logical root JW: Dialect, Core, Tactics, Algebra, Relation, Data and Assumption. Clients import a layer with From JW Require Import <Layer>.All, or everything but the axiom layer with From JW Require Import All.")
  (depends
   (rocq-core (and (>= 9.3) (< 9.4))))
- (tags (rocq "logpath:jwa")))
+ (tags (rocq "logpath:JW")))

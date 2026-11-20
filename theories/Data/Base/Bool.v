@@ -2,13 +2,13 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
 
 Module Bool. (* Bool *)
 
@@ -27,7 +27,7 @@ Definition negate := fun (b : Bool) .
   end.
 
 Notation "! b" := (negate b) (only parsing)
-  : jwa_bool_scope.
+  : jw_bool_scope.
 
 (* [Bool -> Bool -> Bool] *)
 Definition and := fun (b1 : Bool) (b2 : Bool) .
@@ -37,7 +37,7 @@ Definition and := fun (b1 : Bool) (b2 : Bool) .
   end.
 
 Notation "b1 && b2" := (and b1 b2) (only parsing)
-  : jwa_bool_scope.
+  : jw_bool_scope.
 
 (* [Bool -> Bool -> Bool] *)
 Definition or := fun (b1 : Bool) (b2 : Bool) .
@@ -47,7 +47,7 @@ Definition or := fun (b1 : Bool) (b2 : Bool) .
   end.
 
 Notation "b1 || b2" := (or b1 b2) (only parsing)
-  : jwa_bool_scope.
+  : jw_bool_scope.
 
 (* [Bool -> Bool -> Bool] *)
 Definition xor := fun (b1 : Bool) (b2 : Bool) .
@@ -57,9 +57,9 @@ Definition xor := fun (b1 : Bool) (b2 : Bool) .
   end.
 
 Notation "b1 ^^ b2" := (xor b1 b2) (only parsing)
-  : jwa_bool_scope.
+  : jw_bool_scope.
 
-Local Open Scope jwa_bool_scope.
+Local Open Scope jw_bool_scope.
 
 Module distinctness. (* distinctness *)
 

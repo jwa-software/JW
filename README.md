@@ -3,10 +3,10 @@ SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
 SPDX-License-Identifier: MIT
 -->
 
-# rocq-jwa
+# JW
 Library for Rocq
 
-A general-purpose Rocq library in layers, under the logical root `jwa`. Import a layer with `From jwa Require Import <Layer>.All`, or everything with `From jwa Require Import All`.
+A general-purpose Rocq library in layers, under the logical root `JW`. Import a layer with `From JW Require Import <Layer>.All`, or everything with `From JW Require Import All`.
 
 ---
 
@@ -23,13 +23,13 @@ An opam switch holding these packages, all from the default opam repository:
 The versions tested are `rocq-core` 9.3.0, `dune` 3.23.1 and `ocaml` 5.4.1. From a fresh opam installation:
 
 ```
-opam switch create rocq-jwa ocaml-base-compiler.5.4.1
-eval $(opam env --switch=rocq-jwa)
+opam switch create JW ocaml-base-compiler.5.4.1
+eval $(opam env --switch=JW)
 make deps
 make
 ```
 
-`make deps` installs what `opam/rocq-jwa.opam` declares into the active switch. Every other `make` target runs its command inside the switch through `opam exec`, so the shell need not have run `opam env` for those.
+`make deps` installs what `opam/JW.opam` declares into the active switch. Every other `make` target runs its command inside the switch through `opam exec`, so the shell need not have run `opam env` for those.
 
 ---
 
@@ -40,12 +40,12 @@ make
 | `make` | Compiles every layer to `.vo` under `_build/default/theories/`, the test suite, and the library extracted to OCaml under `_build/default/extraction/`. Silent on success. | After any change to a `.v` or `dune` file. |
 | `make test` | Runs the tests that execute: the extracted OCaml on known values. CI runs it after the build. | After `make`, before committing. |
 | `opam exec -- dune build theories/Data` | Compiles one layer and the layers it depends on. | Iterating on a single layer. |
-| `make opam` | Regenerates `opam/rocq-jwa.opam` from `dune-project`, rewriting it in place. | After changing a field of `dune-project` that ends up in the opam file: version, depends, synopsis, description, authors, maintainers, license, source, tags. |
+| `make opam` | Regenerates `opam/JW.opam` from `dune-project`, rewriting it in place. | After changing a field of `dune-project` that ends up in the opam file: version, depends, synopsis, description, authors, maintainers, license, source, tags. |
 | `make fmt-check` | Prints the formatting diff of the `dune` and OCaml files without touching them; CI runs it. The OCaml files need `ocamlformat` 0.29.0, the version `.ocamlformat` pins, which `make deps` does not install. | Before committing, to see what `make fmt` would change. |
 | `make fmt` | Reformats the `dune` and OCaml files in place. `.v` files are never touched. | When `make fmt-check` reports a diff you agree with. |
 | `opam exec -- dune build @install` | Builds exactly what an opam installation of the package would build. | Before a release, as a self-check. |
 | `make clean` | Deletes `_build/`. | When a build result looks stale or inconsistent. |
-| `make deps` | Installs the dependencies declared in `opam/rocq-jwa.opam` into the active switch. | Once, on a new switch. |
+| `make deps` | Installs the dependencies declared in `opam/JW.opam` into the active switch. | Once, on a new switch. |
 
 ---
 
@@ -77,7 +77,7 @@ Every theory is built with `-noinit`, so **Rocq's prelude is never loaded**: a f
 
 ## Tests
 
-`test/` is the theory `jwa_test`, **not part of the library**: `make` builds it, an opam installation leaves it out.
+`test/` is the theory `jw_test`, **not part of the library**: `make` builds it, an opam installation leaves it out.
 
 - **One file per umbrella** (`DataAll.v`, `DataMachineAll.v`, ...), each importing that umbrella alone. An umbrella defines nothing, so only an import in isolation shows whether it forwards everything it should.
 - **The laws of `=` are named in full**, as `Identity.reflexivity` and `Identity.transitivity`, not as `refl` and `trans`. Those come from `Tactics.Equation`, which a data umbrella does not forward, and a notation would find the law even where the umbrella fails to.

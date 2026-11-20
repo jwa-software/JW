@@ -2,11 +2,11 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Dialect.Context.
-From jwa Require Import Core.Logic.Negation.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.Local.
-From jwa Require Import Dialect.Ltac.
+From JW Require Dialect.Context.
+From JW Require Import Core.Logic.Negation.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.Local.
+From JW Require Import Dialect.Ltac.
 From Ltac2 Require Import Notations.
 From Ltac2 Require Constr Control List Message Std.
 

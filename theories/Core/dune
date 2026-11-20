@@ -2,7 +2,7 @@
 ; SPDX-License-Identifier: MIT
 
 ; A subdirectory becomes a segment of the module path: Logic/Conjunction.v
-; is the module jwa.Core.Logic.Conjunction.
+; is the module JW.Core.Logic.Conjunction.
 
 (include_subdirs qualified)
 
@@ -10,6 +10,6 @@
 ; so the position of this layer in the stack can be read off this file.
 
 (rocq.theory
- (name jwa.Core)
- (package rocq-jwa)
- (theories Ltac2 jwa.Dialect))
+ (name JW.Core)
+ (package JW)
+ (theories Ltac2 JW.Dialect))

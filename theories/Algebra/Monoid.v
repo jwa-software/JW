@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
 
 Module Monoid. (* Monoid *)
 

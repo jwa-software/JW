@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Export Dialect.Ltac.
+From JW Require Export Dialect.Ltac.
 From Ltac2 Require Array Constr Control Int Message Std.
 
 (* quod idem est    closes a goal <a> = <b> whose two sides are the same term

@@ -2,7 +2,7 @@
 ; SPDX-License-Identifier: MIT
 
 ; A subdirectory becomes a segment of the module path: Order/TotalOrder.v
-; is the module jwa.Relation.Order.TotalOrder.
+; is the module JW.Relation.Order.TotalOrder.
 
 ; The full dependency closure is listed, not only the direct dependencies,
 ; so the position of this layer in the stack can be read off this file.
@@ -10,6 +10,6 @@
 (include_subdirs qualified)
 
 (rocq.theory
- (name jwa.Relation)
- (package rocq-jwa)
- (theories Ltac2 jwa.Dialect jwa.Core jwa.Tactics))
+ (name JW.Relation)
+ (package JW)
+ (theories Ltac2 JW.Dialect JW.Core JW.Tactics))

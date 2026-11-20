@@ -2,29 +2,29 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.AbelianGroup.
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Ring.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Number.Binary.Bin.
-From jwa Require Import Data.Number.Binary.BinBase.
-From jwa Require Import Data.Number.Binary.BinWithZero.
-From jwa Require Import Data.Number.Integer.
-From jwa Require Import Data.Number.Nat.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Number.Numeral.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Product.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
-From jwa Require Import Tactics.Witness.
+From JW Require Import Algebra.AbelianGroup.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Ring.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Integer.
+From JW Require Import Data.Number.Nat.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
+From JW Require Import Data.Option.
+From JW Require Import Data.Product.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 (* A signed integer of eight bits: a [Byte] read in two's complement, from
  * -128 (-2^7) to 127 (2^7 - 1), its arithmetic wrapping modulo 256 (2^8). In
@@ -169,7 +169,7 @@ Definition add := fun (x : Int8) (y : Int8) . (pi_2 (add_with_carry 0 x y))%prod
 
 (* [only parsing] keeps goals printing the operations by name. *)
 Notation "x + y" := (add x y) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* The borrow out and the difference of [x - y - borrow], the borrow
  * rippling up as the carry does in [add_with_carry].
@@ -200,7 +200,7 @@ Definition sub_with_borrow := fun (borrow : Bit) (x : Int8) (y : Int8) .
 Definition sub := fun (x : Int8) (y : Int8) . (pi_2 (sub_with_borrow 0 x y))%product.
 
 Notation "x - y" := (sub x y) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* [x] taken from [Zero], wrapping. *)
 (* [Int8 -> Int8] *)
@@ -211,7 +211,7 @@ Definition negate := fun (x : Int8) . sub Zero x.
  *)
 Notation "- x" := (negate x)
   (at level 35, right associativity, only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* [y]'s bits from the most significant, each step doubling the product so
  * far and adding [x] for a 1, all modulo 256.
@@ -230,7 +230,7 @@ Definition mul := fun (x : Int8) (y : Int8) .
   end.
 
 Notation "x * y" := (mul x y) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* The bit pattern of [p] modulo 256, its bits appended from the most
  * significant.
@@ -276,7 +276,7 @@ Definition divide := fun (x : Int8) (y : Int8) .
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* [x] modulo 256 into the range -128 to 127. *)
 (* [Integer -> Int8] *)
@@ -303,23 +303,23 @@ Definition add_with_overflow := fun (x : Int8) (y : Int8) .
 Definition LessThan := fun (x : Int8) (y : Int8) . (to_bin x < to_bin y)%b.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* [Int8 -> Int8 -> Prop] *)
 Definition LessOrEqual := fun (x : Int8) (y : Int8) . x = y \/ LessThan x y.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* [Int8 -> Int8 -> Comparison] *)
 Definition compare := fun (x : Int8) (y : Int8) . Bin.compare (to_bin x) (to_bin y).
@@ -380,7 +380,7 @@ Definition to_numeral := fun (x : Int8) .
         (Numeral.Decimal.Signed.Positive (BinWithZero.to_decimal (BinWithZero.Positive p)))
   end.
 
-Local Open Scope jwa_int8_scope.
+Local Open Scope jw_int8_scope.
 
 Module valuation. (* valuation *)
 
@@ -2185,12 +2185,12 @@ Export (notations) Int8.
  * in decimal.
  *)
 Number Notation Int8.T Int8.from_numeral Int8.to_numeral
-  : jwa_int8_scope.
+  : jw_int8_scope.
 
 (* Where an [Int8] is expected, a literal or a notation reads in this scope
  * without its [%int8].
  *)
-Bind Scope jwa_int8_scope with Int8.T.
+Bind Scope jw_int8_scope with Int8.T.
 
 (* An [Int8] stands wherever a [Bin] is expected, read as its value in two's
  * complement, and wherever an [Integer] is, through that value; each

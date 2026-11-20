@@ -19,7 +19,7 @@ An order is a relation that says which of two values comes first. `Relation/Orde
 - **None of the four adds a law.** Each is a name for properties held together, so each gives the fields of those properties: `Transitive.transitivity`, `Total.totality`.
 - **`Comparable` is where the orders of the library come from.** One instance of it gives a type its `<`, its `<=`, and all four order classes.
 
-`From jwa Require Import Relation.Order.All` brings the four classes, and `Data.Comparable` the fifth. The examples on this page are in `Nat0`, under the key `%n0`.
+`From JW Require Import Relation.Order.All` brings the four classes, and `Data.Comparable` the fifth. The examples on this page are in `Nat0`, under the key `%n0`.
 
 ---
 
@@ -79,8 +79,8 @@ An order is a relation that says which of two values comes first. `Relation/Orde
 A law stated over an order class is proved once and holds of every order of that kind:
 
 ```
-From jwa Require Import Relation.All.
-From jwa Require Import Data.All.
+From JW Require Import Relation.All.
+From JW Require Import Data.All.
 
 Theorem asymmetry
   : forall {A : Type} {R : A -> A -> Prop} {S : StrictPartialOrder R} (x : A) (y : A) .

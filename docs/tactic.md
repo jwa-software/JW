@@ -7,8 +7,8 @@ SPDX-License-Identifier: MIT
 
 Proofs are written in **Ltac2, with Rocq's own tactic syntax hidden**. `theories/Dialect/Ltac.v` exports `Ltac2.Init` but never `Ltac2.Notations`, so `exact` is an `Unbound value`: a tactic exists only once this library declares it.
 
-- **`jwa.Dialect`** declares the tactics that name no definition of the library.
-- **`jwa.Tactics`** declares those that apply laws of `jwa.Core`.
+- **`JW.Dialect`** declares the tactics that name no definition of the library.
+- **`JW.Tactics`** declares those that apply laws of `JW.Core`.
 
 **Every file with a proof imports the language**, through `Core.All` or `Dialect.All`. A file that does not falls back to Rocq's default proof mode, where every built-in tactic is open again.
 
@@ -53,7 +53,7 @@ Each tactic file opens with its grammar in a comment. In outline:
 
 ## Rules of inference
 
-`jwa.Tactics` also names the rules of inference:
+`JW.Tactics` also names the rules of inference:
 
 - `modus ponens`, `modus tollens`, `modus tollendo ponens`, `modus ponendo tollens` and `modus aequans`;
 - `hs` (hypothetical syllogism) and `barbara`;
@@ -80,4 +80,4 @@ Bare, each is a term: `ipso (modus ponens &hab, &a)`. Followed by `as <p>` or `|
 
 ## Writing Ltac2 code
 
-**`let` and `match` take over Ltac2's own `let ... in` and `match ... with ... end`.** In a proof, and in any file that imports `Dialect.All` or `Core.All`, those two Ltac2 constructs no longer parse. Ltac2 code is therefore written only in files that import `Dialect.Ltac` alone, as the files of `jwa.Dialect` and `jwa.Tactics` do, each helper declared before any notation of the same file that shadows what it uses.
+**`let` and `match` take over Ltac2's own `let ... in` and `match ... with ... end`.** In a proof, and in any file that imports `Dialect.All` or `Core.All`, those two Ltac2 constructs no longer parse. Ltac2 code is therefore written only in files that import `Dialect.Ltac` alone, as the files of `JW.Dialect` and `JW.Tactics` do, each helper declared before any notation of the same file that shadows what it uses.

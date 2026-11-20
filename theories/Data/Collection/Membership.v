@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
+From JW Require Import Core.All.
 
 Module Membership. (* Membership *)
 

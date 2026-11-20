@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 The package is not in the default opam repository. Pin it into your switch from GitHub:
 
 ```
-opam pin add rocq-jwa git+https://github.com/jwa-software/rocq-jwa.git
+opam pin add JW git+https://github.com/jwa-software/JW.git
 ```
 
 ## 2. Declare the dependency
@@ -22,13 +22,13 @@ In a dune project whose `dune-project` declares `(using rocq 0.11)`, list `Ltac2
  (name my_theory)
  (theories
   Ltac2
-  jwa
-  jwa.Dialect
-  jwa.Core
-  jwa.Tactics
-  jwa.Algebra
-  jwa.Relation
-  jwa.Data)
+  JW
+  JW.Dialect
+  JW.Core
+  JW.Tactics
+  JW.Algebra
+  JW.Relation
+  JW.Data)
  (flags :standard -noinit))
 ```
 
@@ -37,7 +37,7 @@ In a dune project whose `dune-project` declares `(using rocq 0.11)`, list `Ltac2
 A file of that theory imports the layers it needs. This one proves the commutativity of `Nat0` addition from the library's own law, and checks that `UInt8` addition wraps:
 
 ```
-From jwa Require Import Data.All.
+From JW Require Import Data.All.
 
 Theorem commutation
   : forall (m : Nat0) (n : Nat0) . (m + n = n + m)%n0.

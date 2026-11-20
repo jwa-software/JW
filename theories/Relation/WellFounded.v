@@ -2,12 +2,12 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
-From jwa Require Import Dialect.Simpl.
-From jwa Require Import Relation.Accessible.
-From jwa Require Import Relation.Descent.
-From jwa Require Import Relation.Induced.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
+From JW Require Import Dialect.Simpl.
+From JW Require Import Relation.Accessible.
+From JW Require Import Relation.Descent.
+From JW Require Import Relation.Induced.
 
 (* [R] points downwards here: [R y x] says that [y] is below [x]. *)
 

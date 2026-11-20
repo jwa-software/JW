@@ -2,11 +2,11 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Biconditional.
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Logic.Conjunction.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Logic.Biconditional.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Logic.Conjunction.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 Module Disjunction. (* Disjunction *)
 
@@ -24,7 +24,7 @@ Arguments Disjunction.introduction_right {A} {B} b.
 Abbreviation Disjunction := T.
 
 Notation "A \/ B" := (Disjunction A B)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* [disjoin a, _] : [A \/ B] from [a : A], and [disjoin _, b] from [b : B];
  * the side written [_] comes from the expected type.

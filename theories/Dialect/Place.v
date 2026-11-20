@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Export Dialect.Ltac.
+From JW Require Export Dialect.Ltac.
 From Ltac2 Require List Std.
 
 (* The four places a step of this layer acts on, each spelled with [in]:

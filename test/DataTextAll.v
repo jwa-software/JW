@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Data.Text.All.
+From JW Require Import Data.Text.All.
 
 Definition data_text_all_delivers_source_byte
   : SourceByte

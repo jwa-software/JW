@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Biconditional.
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Logic.Biconditional.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 Module Conjunction. (* Conjunction *)
 
@@ -17,7 +17,7 @@ Arguments Conjunction.introduction {A} {B} a b.
 Abbreviation Conjunction := T.
 
 Notation "A /\ B" := (Conjunction A B)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* [conjoin a, b] : [A /\ B], from [a : A] and [b : B]. *)
 Notation "'conjoin' a , b" := (Conjunction.introduction a b) (only parsing).

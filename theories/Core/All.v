@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: MIT
  *)
 
-(* Umbrella for [jwa.Core]: re-exports every module of the layer, so a
- * client imports the whole layer with [From jwa Require Import Core.All].
+(* Umbrella for [JW.Core]: re-exports every module of the layer, so a
+ * client imports the whole layer with [From JW Require Import Core.All].
  *)
 
 (* [Require Export], not a plain [Require]: a notation and an open scope reach
@@ -13,8 +13,8 @@
  * takes [Core] writes its proofs, and without the dialect it would fall back
  * to Rocq's default proof mode, where every built-in tactic is open again.
  *)
-From jwa Require Export Core.Class.
-From jwa Require Export Core.Identity.
-From jwa Require Export Core.Logic.All.
-From jwa Require Export Core.Notations.
-From jwa Require Export Dialect.All.
+From JW Require Export Core.Class.
+From JW Require Export Core.Identity.
+From JW Require Export Core.Logic.All.
+From JW Require Export Core.Notations.
+From JW Require Export Dialect.All.

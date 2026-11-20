@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-(* Umbrella for [jwa.Assumption]: re-exports every module of the layer, so a
- * client imports the whole layer with [From jwa Require Import Assumption.All].
+(* Umbrella for [JW.Assumption]: re-exports every module of the layer, so a
+ * client imports the whole layer with [From JW Require Import Assumption.All].
  * Importing it is opting in to the axioms it contains.
  *)

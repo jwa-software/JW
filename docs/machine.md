@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 # Machine units
 
-`jwa.Data` holds the units of fixed width, and the byte order of the wider ones, under `Data/Machine/`:
+`JW.Data` holds the units of fixed width, and the byte order of the wider ones, under `Data/Machine/`:
 
 | Type | What it is | Literals |
 |:---|:---|:---|

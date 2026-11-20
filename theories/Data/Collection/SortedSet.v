@@ -2,17 +2,17 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.All.
-From jwa Require Import Data.Assert.
-From jwa Require Import Data.Base.Bool.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.AVL.
-From jwa Require Import Data.Collection.BinaryTree.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Core.All.
+From JW Require Import Data.Assert.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.AVL.
+From JW Require Import Data.Collection.BinaryTree.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 (* A set of elements kept in the order [cmp] decides: an AVL tree together
  * with the proof that it passes [AVL.is_valid], so that every value of the

@@ -2,21 +2,21 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Monoid.
-From jwa Require Import Algebra.Semigroup.
-From jwa Require Import Core.All.
-From jwa Require Import Data.Base.Comparison.
-From jwa Require Import Data.Collection.List.
-From jwa Require Import Data.Comparable.
-From jwa Require Import Data.Literal.
-From jwa Require Import Data.Machine.Bit.
-From jwa Require Import Data.Machine.Byte.
-From jwa Require Import Data.Number.Nat0.
-From jwa Require Import Data.Option.
-From jwa Require Import Data.Text.Ascii.
-From jwa Require Import Data.Text.SourceByte.
-From jwa Require Import Tactics.Equation.
-From jwa Require Import Tactics.Modus.
+From JW Require Import Algebra.Monoid.
+From JW Require Import Algebra.Semigroup.
+From JW Require Import Core.All.
+From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Collection.List.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Literal.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Option.
+From JW Require Import Data.Text.Ascii.
+From JW Require Import Data.Text.SourceByte.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Module AsciiStr. (* AsciiStr *)
 
@@ -26,7 +26,7 @@ Inductive T : Type :=
 
 Abbreviation AsciiStr := T.
 
-Local Open Scope jwa_list_scope.
+Local Open Scope jw_list_scope.
 
 (* [AsciiStr -> List Ascii] *)
 Definition to_list := fun (s : AsciiStr) .
@@ -46,7 +46,7 @@ Definition concat := fun (s : AsciiStr) (t : AsciiStr) .
 
 (* [only parsing] keeps goals printing the operation by name. *)
 Notation "s ++ t" := (concat s t) (only parsing)
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 
 (* [AsciiStr -> Nat0] *)
 Definition length := fun (s : AsciiStr) . List.length (to_list s).
@@ -86,23 +86,23 @@ Definition LessThan := fun (s : AsciiStr) (t : AsciiStr) .
   List.LessThan Ascii.compare (to_list s) (to_list t).
 
 Notation "s < t" := (LessThan s t) (only parsing)
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 
 (* [AsciiStr -> AsciiStr -> Prop] *)
 Definition LessOrEqual := fun (s : AsciiStr) (t : AsciiStr) . s = t \/ LessThan s t.
 
 Notation "s <= t" := (LessOrEqual s t) (only parsing)
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 
 Notation "s > t" := (LessThan t s) (only parsing)
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 Notation "s >= t" := (LessOrEqual t s) (only parsing)
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 
 (* [AsciiStr -> AsciiStr -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
@@ -562,7 +562,7 @@ End AsciiStr. (* AsciiStr *)
 Abbreviation AsciiStr := AsciiStr.T.
 
 (* Makes [++] usable in every file that imports this one, as [(s ++ t)%a] or
- * under an opened [jwa_ascii_str_scope].
+ * under an opened [jw_ascii_str_scope].
  *)
 Export (notations) AsciiStr.
 
@@ -570,12 +570,12 @@ Export (notations) AsciiStr.
  * closed one prints back so.
  *)
 String Notation AsciiStr.T AsciiStr.from_source_bytes AsciiStr.to_source_bytes
-  : jwa_ascii_str_scope.
+  : jw_ascii_str_scope.
 
 (* Where an [AsciiStr] is expected, a literal reads in this scope without its
  * [%a].
  *)
-Bind Scope jwa_ascii_str_scope with AsciiStr.T.
+Bind Scope jw_ascii_str_scope with AsciiStr.T.
 
 (* Declared inside [Module AsciiStr]; an instance declared there is dropped
  * at the module's [End], so it is announced again here.

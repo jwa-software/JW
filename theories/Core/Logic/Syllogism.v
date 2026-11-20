@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 (* The syllogisms of traditional logic, each under the mediaeval name that
  * encodes its form. [S], [M] and [P] are the minor, middle and major terms,

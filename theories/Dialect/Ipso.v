@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Export Dialect.Ltac.
-From jwa Require Import Dialect.Local.
+From JW Require Export Dialect.Ltac.
+From JW Require Import Dialect.Local.
 From Ltac2 Require Constr Control Std.
 
 (* ipso <H>    closes the goal with <H>, as Rocq's [exact <H>] does

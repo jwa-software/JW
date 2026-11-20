@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Algebra.Commutative.
-From jwa Require Import Algebra.Group.
-From jwa Require Import Core.All.
-From jwa Require Import Core.Class.
+From JW Require Import Algebra.Commutative.
+From JW Require Import Algebra.Group.
+From JW Require Import Core.All.
+From JW Require Import Core.Class.
 
 Module AbelianGroup. (* AbelianGroup *)
 

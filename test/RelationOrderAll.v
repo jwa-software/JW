@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Relation.Order.All.
+From JW Require Import Relation.Order.All.
 
 Definition relation_order_all_delivers
   : forall (A : Type) (R : A -> A -> Prop) .

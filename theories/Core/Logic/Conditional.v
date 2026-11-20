@@ -2,14 +2,14 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.All.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.All.
 
 (* Conditional is the conditional, [if A then B]. [->] is the kernel's
  * non-dependent [forall], which this line only gives a spelling.
  *)
 Notation "A -> B" := (forall (_ : A) . B)
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* No type is declared for [->], so the module carries the connective's
  * name by itself; its laws read [Conditional.transitivity].

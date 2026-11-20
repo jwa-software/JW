@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Conditional.
-From jwa Require Import Core.Notations.
+From JW Require Import Core.Logic.Conditional.
+From JW Require Import Core.Notations.
 
 Module Exists. (* Exists *)
 
@@ -22,7 +22,7 @@ Abbreviation Exists := T.
  * one [Exists] each. The dot matches [fun x . body] and [forall x . p].
  *)
 Notation "'forsome' x .. y '.' p" := (Exists (fun x . .. (Exists (fun y . p)) ..))
-  : jwa_type_scope.
+  : jw_type_scope.
 
 (* A witness, then a proof of [P] at it. [false] cannot be the witness here:
  * the second argument would have to prove [false = true].

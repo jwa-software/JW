@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: MIT
  *)
 
-open Jwa
+open JW
 
 (* The extracted numbers are unary, so OCaml integers go in and come out
    through these conversions. *)
@@ -18,7 +18,7 @@ let int_of_nat0 = function
   | Nat0.Positive p -> int_of_nat p
 ;;
 
-(* [Jwa] has a [List] module of its own, which [open Jwa] puts in front of
+(* [JW] has a [List] module of its own, which [open JW] puts in front of
    OCaml's. *)
 let ints l = Stdlib.List.map int_of_nat0 l
 let check name ok = if not ok then failwith ("extraction test failed: " ^ name)

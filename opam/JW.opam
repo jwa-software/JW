@@ -4,13 +4,13 @@ version: "0.1.0"
 synopsis:
   "A layered Rocq library of data structures, algebra, relations and tactics"
 description:
-  "rocq-jwa is a general-purpose Rocq library organised in layers, each a separate theory under the logical root jwa: Dialect, Core, Tactics, Algebra, Relation, Data and Assumption. Clients import a layer with From jwa Require Import <Layer>.All, or everything but the axiom layer with From jwa Require Import All."
+  "JW is a general-purpose Rocq library organised in layers, each a separate theory under the logical root JW: Dialect, Core, Tactics, Algebra, Relation, Data and Assumption. Clients import a layer with From JW Require Import <Layer>.All, or everything but the axiom layer with From JW Require Import All."
 maintainer: ["Junzhe Wang <research@junzhewang.de>"]
 authors: ["Junzhe Wang"]
 license: "MIT"
-tags: ["rocq" "logpath:jwa"]
-homepage: "https://github.com/jwa-software/rocq-jwa"
-bug-reports: "https://github.com/jwa-software/rocq-jwa/issues"
+tags: ["rocq" "logpath:JW"]
+homepage: "https://github.com/jwa-software/JW"
+bug-reports: "https://github.com/jwa-software/JW/issues"
 depends: [
   "dune" {>= "3.21"}
   "rocq-core" {>= "9.3" & < "9.4"}
@@ -30,5 +30,5 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/jwa-software/rocq-jwa.git"
+dev-repo: "git+https://github.com/jwa-software/JW.git"
 x-maintenance-intent: ["(latest)"]

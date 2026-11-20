@@ -6,6 +6,6 @@
 ; name is that command's word for what this theory adds.
 
 (rocq.theory
- (name jwa.Assumption)
- (package rocq-jwa)
- (theories Ltac2 jwa.Dialect jwa.Core))
+ (name JW.Assumption)
+ (package JW)
+ (theories Ltac2 JW.Dialect JW.Core))

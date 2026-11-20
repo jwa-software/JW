@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Import Core.Logic.Exists.
-From jwa Require Import Core.Notations.
-From jwa Require Import Dialect.Local.
-From jwa Require Import Dialect.Ltac.
+From JW Require Import Core.Logic.Exists.
+From JW Require Import Core.Notations.
+From JW Require Import Dialect.Local.
+From JW Require Import Dialect.Ltac.
 From Ltac2 Require Array Constr Control Int List Message Std.
 
 (* The introduction of [forsome], goal first:

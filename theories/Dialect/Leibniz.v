@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: MIT
  *)
 
-From jwa Require Dialect.Context.
-From jwa Require Export Dialect.Ltac.
-From jwa Require Import Dialect.Idem.
-From jwa Require Import Dialect.Local.
+From JW Require Dialect.Context.
+From JW Require Export Dialect.Ltac.
+From JW Require Import Dialect.Idem.
+From JW Require Import Dialect.Local.
 From Ltac2 Require Array Bool Constr Control Ident Int List Message Std.
 
 (* Leibniz's law, x = y, P x |- P y: what is equal may be put for what it
