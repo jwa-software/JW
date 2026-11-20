@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 From jwa Require Import Algebra.Commutative.
 From jwa Require Import Algebra.Group.

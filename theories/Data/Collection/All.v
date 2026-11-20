@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* Umbrella for [jwa.Data.Collection]: re-exports every collection type and
  * every interface they answer to, so a client imports them with

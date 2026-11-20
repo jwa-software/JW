@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* Umbrella for [jwa.Data.Number]: re-exports the seven number types, so a
  * client imports them with [From jwa Require Import Data.Number.All]. The

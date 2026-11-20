@@ -1,4 +1,5 @@
-; Copyright (c) Junzhe Wang, licensed under the MIT License.
+; SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+; SPDX-License-Identifier: MIT
 
 ; -noinit keeps Corelib.Init.Prelude out of every theory: a file has nothing
 ; in scope that it did not require by name. It removes the tactic language and

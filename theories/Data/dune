@@ -1,4 +1,5 @@
-; Copyright (c) Junzhe Wang, licensed under the MIT License.
+; SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+; SPDX-License-Identifier: MIT
 
 ; A subdirectory becomes a segment of the module path: Number/Integer.v
 ; is the module jwa.Data.Number.Integer.

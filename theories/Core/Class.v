@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* Instance resolution looks up a hint database named [typeclass_instances],
  * and [class_tactics.ml] expects it to already exist rather than creating it.

@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* Umbrella for [jwa.Relation.Order]: re-exports the four order classes, and
  * the six classes their fields hold, so a client imports them with

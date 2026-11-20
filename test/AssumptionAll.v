@@ -1,4 +1,6 @@
-(* Copyright (c) Junzhe Wang, licensed under the MIT License. *)
+(* SPDX-FileCopyrightText: Junzhe Wang <research@junzhewang.de>
+ * SPDX-License-Identifier: MIT
+ *)
 
 (* [Assumption] holds no module, so this guard checks only that its umbrella
  * loads. No other guard reaches this layer, [jwa.All] leaving it out, so this
