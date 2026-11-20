@@ -1435,6 +1435,37 @@ Proof.
   quod idem est.
 Qed.
 
+Theorem tactics_all_delivers_refl
+  : forall (n : Nat) . n = n.
+Proof.
+  intros n.
+  ipso (refl &n).
+Qed.
+
+Theorem tactics_all_delivers_refl_as
+  : forall (n : Nat) . n = n.
+Proof.
+  intros n.
+  refl &n as e.
+  ipso &e.
+Qed.
+
+Theorem tactics_all_delivers_refl_turnstile
+  : forall (n : Nat) . n = n.
+Proof.
+  intros n.
+  refl &n |- e.
+  ipso &e.
+Qed.
+
+Theorem tactics_all_delivers_refl_refusing
+  : forall (n : Nat) . n = n -> n = n.
+Proof.
+  intros n e.
+  Fail refl &n as e.
+  ipso &e.
+Qed.
+
 Theorem tactics_all_delivers_symm
   : forall (m : Nat) (n : Nat) . m = n -> n = m.
 Proof.

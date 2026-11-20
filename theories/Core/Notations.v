@@ -329,10 +329,12 @@ Reserved Notation "'dne' H"
 Reserved Notation "'de' 'morgan' H"
   (at level 10, H at next level).
 
-(* The symmetry, the transitivity and the congruence of [=] written as terms,
- * for the same reason and at the same level. Their meanings belong to
- * [Tactics.Equation].
+(* The reflexivity, the symmetry, the transitivity and the congruence of [=]
+ * written as terms, for the same reason and at the same level. Their meanings
+ * belong to [Tactics.Equation].
  *)
+Reserved Notation "'refl' X"
+  (at level 10, X at next level).
 Reserved Notation "'symm' H"
   (at level 10, H at next level).
 Reserved Notation "'trans' H1 , H2"
