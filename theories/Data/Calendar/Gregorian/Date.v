@@ -3059,6 +3059,22 @@ Proof.
   ex &f quodlibet.
 Qed.
 
+(* The weekday's place counted from 0 is the remainder by 7, since its
+ * [None] case never occurs.
+ *)
+(* weekday.specification *)
+Theorem specification
+  : forall (n : Days) .
+      Weekday.to_b0 (weekday_of_day_number n) = n %. Weekday.days_in_week.
+Proof.
+  intro n.
+  simpl weekday_of_day_number in |- *.
+  match (Weekday.from_b0 (&n %. Weekday.days_in_week)) with | | w end |- e.
+  - ex (weekday.totality &n &e) quodlibet.
+  - ipso (modus aequans
+            (Weekday.conversion.bin0.specification (&n %. Weekday.days_in_week) &w), &e).
+Qed.
+
 (* The remainder by 7 either steps up by one or wraps from 6 to 0, and the
  * weekday follows it; every remainder from 6 on is refused by computing its
  * comparison with 7.
