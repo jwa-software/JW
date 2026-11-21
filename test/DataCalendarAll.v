@@ -18,6 +18,14 @@ Definition data_calendar_all_delivers_month_conversion_bin_specification
   : forall (n : Bin) (m : Month) . Month.from_b n = Some m <-> Month.to_b m = n
   := Month.conversion.bin.specification.
 
+Definition data_calendar_all_delivers_month_conversion_bin0_retraction
+  : forall (m : Month) . Month.from_b0 (Month.to_b0 m) = Some m
+  := Month.conversion.bin0.retraction.
+
+Definition data_calendar_all_delivers_month_conversion_bin0_specification
+  : forall (k : Bin0) (m : Month) . Month.from_b0 k = Some m <-> Month.to_b0 m = k
+  := Month.conversion.bin0.specification.
+
 Definition data_calendar_all_delivers_month_succession_forward_inverse
   : forall (m : Month) . Month.prev (Month.next m) = m
   := Month.succession.forward.inverse.
@@ -42,6 +50,18 @@ Definition data_calendar_all_computes_month_from_b_refusal
   : Month.from_b 13 = None
   := Identity.reflexivity _.
 
+Definition data_calendar_all_computes_month_to_b0
+  : Month.to_b0 Month.December = 11%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_month_from_b0
+  : Month.from_b0 0%b0_decimal = Some Month.January
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_month_from_b0_refusal
+  : Month.from_b0 12%b0_decimal = None
+  := Identity.reflexivity _.
+
 Definition data_calendar_all_computes_month_next
   : Month.next Month.December = Month.January
   := Identity.reflexivity _.
@@ -52,6 +72,58 @@ Definition data_calendar_all_computes_month_prev
 
 Definition data_calendar_all_computes_month_compare
   : Month.compare Month.March Month.October = Comparison.Lt
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_delivers_weekday
+  : Weekday
+  := Weekday.Monday.
+
+Definition data_calendar_all_delivers_weekday_conversion_bin_retraction
+  : forall (w : Weekday) . Weekday.from_b (Weekday.to_b w) = Some w
+  := Weekday.conversion.bin.retraction.
+
+Definition data_calendar_all_delivers_weekday_conversion_bin_specification
+  : forall (n : Bin) (w : Weekday) . Weekday.from_b n = Some w <-> Weekday.to_b w = n
+  := Weekday.conversion.bin.specification.
+
+Definition data_calendar_all_delivers_weekday_conversion_bin0_retraction
+  : forall (w : Weekday) . Weekday.from_b0 (Weekday.to_b0 w) = Some w
+  := Weekday.conversion.bin0.retraction.
+
+Definition data_calendar_all_delivers_weekday_conversion_bin0_specification
+  : forall (k : Bin0) (w : Weekday) . Weekday.from_b0 k = Some w <-> Weekday.to_b0 w = k
+  := Weekday.conversion.bin0.specification.
+
+Definition data_calendar_all_delivers_weekday_succession_forward_inverse
+  : forall (w : Weekday) . Weekday.prev (Weekday.next w) = w
+  := Weekday.succession.forward.inverse.
+
+Definition data_calendar_all_delivers_weekday_succession_backward_inverse
+  : forall (w : Weekday) . Weekday.next (Weekday.prev w) = w
+  := Weekday.succession.backward.inverse.
+
+Definition data_calendar_all_computes_weekday_to_b
+  : Weekday.to_b Weekday.Sunday = 7
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_weekday_from_b_refusal
+  : Weekday.from_b 8 = None
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_weekday_to_b0
+  : Weekday.to_b0 Weekday.Sunday = 6%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_weekday_from_b0_refusal
+  : Weekday.from_b0 7%b0_decimal = None
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_weekday_next
+  : Weekday.next Weekday.Sunday = Weekday.Monday
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_weekday_prev
+  : Weekday.prev Weekday.Monday = Weekday.Sunday
   := Identity.reflexivity _.
 
 Definition data_calendar_all_delivers_date
@@ -273,3 +345,162 @@ Definition data_calendar_all_delivers_date_number_injectivity
 Definition data_calendar_all_delivers_date_comparable
   : Comparable Date.compare Date.LessThan
   := _.
+
+Definition data_calendar_all_delivers_date_calendar_boundedness
+  : forall (y : Bin) (days : Bin0) .
+      (days < Date.days_in_year y)%b0
+      -> (Date.days_before_month y (Date.month_after_days y days) <= days)%b0
+         /\ (days
+             < Date.days_before_month y (Date.month_after_days y days)
+               + Date.days_in_month y (Date.month_after_days y days))%b0
+  := Date.calendar.boundedness.
+
+Definition data_calendar_all_delivers_date_calendar_validity
+  : forall (y : Bin) (days : Bin0) .
+      (days < Date.days_in_year y)%b0
+      -> Assert
+           (Date.is_valid y (Date.month_after_days y days) (Date.day_of_month_after_days y days))
+  := Date.calendar.validity.
+
+Definition data_calendar_all_delivers_date_calendar_ordinal_validity
+  : forall (y : Bin) (d : Bin) .
+      Assert (Comparable.le Bin.compare d (Date.days_in_year y))
+      -> Assert
+           (Date.is_valid y
+              (Date.month_after_days y (Bin0.saturating_sub d 1))
+              (Date.day_of_month_after_days y (Bin0.saturating_sub d 1)))
+  := Date.calendar.ordinal.validity.
+
+Definition data_calendar_all_delivers_date_calendar_inversion
+  : forall (y : Bin) (m : Month) (d : Bin) .
+      Assert (Date.is_valid y m d)
+      -> Date.calendar_date_after_days y
+           (Date.days_before_month y m + Bin0.saturating_sub d 1)%b0
+         = (m, d)%product
+  := Date.calendar.inversion.
+
+Definition data_calendar_all_delivers_date_calendar_reconstruction
+  : forall (y : Bin) (days : Bin0) .
+      (days < Date.days_in_year y)%b0
+      -> (Date.days_before_month y (Date.month_after_days y days)
+            + Bin0.saturating_sub (Date.day_of_month_after_days y days) 1)%b0
+         = days
+  := Date.calendar.reconstruction.
+
+Definition data_calendar_all_delivers_date_division_boundedness
+  : forall (n : Bin0) .
+      (Product.second (Date.div_year n)
+       < Date.days_in_year (Bin0.successor (Product.first (Date.div_year n))))%b0
+  := Date.division.boundedness.
+
+Definition data_calendar_all_delivers_date_division_reconstruction
+  : forall (n : Bin0) .
+      (Date.days_before_year (Bin0.successor (Product.first (Date.div_year n)))
+         + Product.second (Date.div_year n))%b0
+      = n
+  := Date.division.reconstruction.
+
+Definition data_calendar_all_delivers_date_ordinal_section
+  : forall (x : Date) . Date.from_day_of_year (Date.year x) (Date.day_of_year x) = Some x
+  := Date.ordinal.section.
+
+Definition data_calendar_all_delivers_date_number_retraction
+  : forall (n : Bin0) . Date.day_number (Date.from_day_number n) = n
+  := Date.number.retraction.
+
+Definition data_calendar_all_delivers_date_number_section
+  : forall (x : Date) . Date.from_day_number (Date.day_number x) = x
+  := Date.number.section.
+
+Definition data_calendar_all_delivers_date_weekday_totality
+  : forall (n : Bin0) . ~ (Weekday.from_b0 (Bin0.modulo n Weekday.days_in_week) = None)
+  := Date.weekday.totality.
+
+Definition data_calendar_all_delivers_date_weekday_succession
+  : forall (n : Bin0) .
+      Date.weekday_of_day_number (n + 1%b_decimal)%b0
+      = Weekday.next (Date.weekday_of_day_number n)
+  := Date.weekday.succession.
+
+Definition data_calendar_all_delivers_date_weekday_periodicity
+  : forall (n : Bin0) .
+      Date.weekday_of_day_number (n + Weekday.days_in_week)%b0 = Date.weekday_of_day_number n
+  := Date.weekday.periodicity.
+
+Definition data_calendar_all_delivers_date_weekday_quadricentennium_periodicity
+  : forall (n : Bin0) .
+      Date.weekday_of_day_number (n + Date.days_in_quadricentennium)%b0
+      = Date.weekday_of_day_number n
+  := Date.weekday.quadricentennium.periodicity.
+
+Definition data_calendar_all_computes_date_from_day_number_0
+  : Date.compare (Date.from_day_number 0%b0_decimal) (Date.introduction 1 Month.January 1 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_number_1460
+  : Date.compare (Date.from_day_number 1460%b0_decimal) (Date.introduction 4 Month.December 31 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_number_36523
+  : Date.compare
+      (Date.from_day_number 36523%b0_decimal) (Date.introduction 100 Month.December 31 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_number_146096
+  : Date.compare
+      (Date.from_day_number 146096%b0_decimal) (Date.introduction 400 Month.December 31 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_number_738944
+  : Date.compare
+      (Date.from_day_number 738944%b0_decimal) (Date.introduction 2024 Month.February 29 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_number_739940
+  : Date.compare
+      (Date.from_day_number 739940%b0_decimal) (Date.introduction 2026 Month.November 21 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_number_3652058
+  : Date.compare
+      (Date.from_day_number 3652058%b0_decimal) (Date.introduction 9999 Month.December 31 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_of_year_2024_60
+  : Option.map Date.day_number (Date.from_day_of_year 2024 60) = Some 738944%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_of_year_2024_366
+  : Option.map Date.day_number (Date.from_day_of_year 2024 366) = Some 739250%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_day_of_year_refusal_2023_366
+  : Option.map Date.day_number (Date.from_day_of_year 2023 366) = None
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_weekday_0001_01_01
+  : Date.weekday (Date.introduction 1 Month.January 1 I) = Weekday.Monday
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_weekday_0400_12_31
+  : Date.weekday (Date.introduction 400 Month.December 31 I) = Weekday.Sunday
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_weekday_1970_01_01
+  : Date.weekday (Date.introduction 1970 Month.January 1 I) = Weekday.Thursday
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_weekday_2000_01_01
+  : Date.weekday (Date.introduction 2000 Month.January 1 I) = Weekday.Saturday
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_weekday_2026_11_21
+  : Date.weekday (Date.introduction 2026 Month.November 21 I) = Weekday.Saturday
+  := Identity.reflexivity _.
