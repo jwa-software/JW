@@ -34,6 +34,9 @@ Abbreviation Month := T.
 (* A month's place is written in decimal. *)
 Local Open Scope jw_bin_decimal_scope.
 
+(* [Bin] *)
+Definition months_in_year : Bin := 12.
+
 (* The month's place in the year, [January] being 1. *)
 (* [Month -> Bin] *)
 Definition to_b := fun (m : Month) .

@@ -83,6 +83,31 @@ let from_day_of_year y d =
   | None -> None
 ;;
 
+(* The date [y]-[m]-[d] moved by [f], as its year, month and day. *)
+let moved f y m d =
+  match date y m d with
+  | Some x -> Some (calendar (f x))
+  | None -> None
+;;
+
+let days_between (y1, m1, d1) (y2, m2, d2) =
+  match date y1 m1 d1, date y2 m2 d2 with
+  | Some x1, Some x2 -> Some (int_of_signed_bin (Date.days_between x1 x2))
+  | _ -> None
+;;
+
+let unix_day y m d =
+  match date y m d with
+  | Some x -> Some (int_of_signed_bin (Date.unix_day x))
+  | None -> None
+;;
+
+let from_unix_day u =
+  match Date.from_unix_day (signed_bin u) with
+  | Some x -> Some (calendar x)
+  | None -> None
+;;
+
 (* [JW] has a [List] module of its own, which [open JW] puts in front of
    OCaml's. *)
 let ints l = Stdlib.List.map int_of_nat0 l
@@ -159,6 +184,29 @@ let () =
     (date 2023 Month.February 29 = None
      && date 1900 Month.February 29 = None
      && date 2024 Month.April 31 = None);
+  check
+    "Date.add_days 2024-02-28 1"
+    (moved (fun x -> Date.add_days x (bin0 1)) 2024 Month.February 28
+     = Some (2024, Month.February, 29));
+  check
+    "Date.days_between 2000-01-01 2024-02-29"
+    (days_between (2000, Month.January, 1) (2024, Month.February, 29) = Some 8825);
+  check
+    "Date.add_months 2024-01-31 1"
+    (moved (fun x -> Date.add_months x (bin0 1)) 2024 Month.January 31
+     = Some (2024, Month.February, 29));
+  check
+    "Date.add_years 2024-02-29 1"
+    (moved (fun x -> Date.add_years x (bin0 1)) 2024 Month.February 29
+     = Some (2025, Month.February, 28));
+  check
+    "Date.unix_day"
+    (unix_day 1970 Month.January 1 = Some 0
+     && unix_day 2000 Month.January 1 = Some 10957
+     && unix_day 1 Month.January 1 = Some (-719162));
+  check
+    "Date.from_unix_day"
+    (from_unix_day 0 = Some (1970, Month.January, 1) && from_unix_day (-719163) = None);
   check
     "Int8.add_with_overflow 100 27"
     (int8_flagged (Int8.add_with_overflow (int8 100) (int8 27)) = (false, 127));

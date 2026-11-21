@@ -335,7 +335,7 @@ Definition data_calendar_all_delivers_date_number_comparison
 
 Definition data_calendar_all_delivers_date_number_order
   : forall (x1 : Date) (x2 : Date) .
-      Date.LessThan x1 x2 <-> (Date.day_number x1 < Date.day_number x2)%b0
+      (x1 < x2)%date <-> (Date.day_number x1 < Date.day_number x2)%b0
   := Date.number.order.
 
 Definition data_calendar_all_delivers_date_number_injectivity
@@ -503,4 +503,352 @@ Definition data_calendar_all_computes_date_weekday_2000_01_01
 
 Definition data_calendar_all_computes_date_weekday_2026_11_21
   : Date.weekday (Date.introduction 2026 Month.November 21 I) = Weekday.Saturday
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_delivers_date_extensionality
+  : forall (x1 : Date) (x2 : Date) .
+      Date.year x1 = Date.year x2 -> Date.month x1 = Date.month x2 -> Date.day x1 = Date.day x2
+      -> x1 = x2
+  := Date.extensionality.
+
+Definition data_calendar_all_delivers_date_year_antecedence_section
+  : forall (y : Bin) . Bin0.successor (Date.years_before y) = y
+  := Date.year.antecedence.section.
+
+Definition data_calendar_all_delivers_date_month_validity_minimum
+  : forall (y : Bin) (m : Month) . Assert (Date.is_valid y m 1)
+  := Date.month.validity.minimum.
+
+Definition data_calendar_all_delivers_date_month_validity_maximum
+  : forall (y : Bin) (m : Month) . Assert (Date.is_valid y m (Date.days_in_month y m))
+  := Date.month.validity.maximum.
+
+Definition data_calendar_all_delivers_date_month_validity_clamping
+  : forall (y : Bin) (m : Month) (n : Bin) .
+      Assert (Date.is_valid y m (Bin.min n (Date.days_in_month y m)))
+  := Date.month.validity.clamping.
+
+Definition data_calendar_all_delivers_date_month_totality
+  : forall (n : Bin0) . ~ (Month.from_b0 (n %. Month.months_in_year)%b0 = None)
+  := Date.month.totality.
+
+Definition data_calendar_all_delivers_date_first_month_specification
+  : forall (d : Date) .
+      Date.year (Date.first_day_of_month d) = Date.year d
+      /\ Date.month (Date.first_day_of_month d) = Date.month d
+      /\ Date.day (Date.first_day_of_month d) = 1
+  := Date.first.month.specification.
+
+Definition data_calendar_all_delivers_date_first_month_decomposition
+  : forall (d : Date) .
+      Date.day_number (Date.first_day_of_month d)
+      = (Date.days_before_year (Date.year d) + Date.days_before_month (Date.year d) (Date.month d))%b0
+  := Date.first.month.decomposition.
+
+Definition data_calendar_all_delivers_date_first_month_order
+  : forall (d : Date) . (Date.day_number (Date.first_day_of_month d) <= Date.day_number d)%b0
+  := Date.first.month.order.
+
+Definition data_calendar_all_delivers_date_first_year_specification
+  : forall (d : Date) .
+      Date.year (Date.first_day_of_year d) = Date.year d
+      /\ Date.month (Date.first_day_of_year d) = Month.January
+      /\ Date.day (Date.first_day_of_year d) = 1
+  := Date.first.year.specification.
+
+Definition data_calendar_all_delivers_date_first_year_decomposition
+  : forall (d : Date) . Date.day_number (Date.first_day_of_year d) = Date.days_before_year (Date.year d)
+  := Date.first.year.decomposition.
+
+Definition data_calendar_all_delivers_date_first_year_order
+  : forall (d : Date) . (Date.day_number (Date.first_day_of_year d) <= Date.day_number d)%b0
+  := Date.first.year.order.
+
+Definition data_calendar_all_delivers_date_last_month_specification
+  : forall (d : Date) .
+      Date.year (Date.last_day_of_month d) = Date.year d
+      /\ Date.month (Date.last_day_of_month d) = Date.month d
+      /\ Date.day (Date.last_day_of_month d) = Date.days_in_month (Date.year d) (Date.month d)
+  := Date.last.month.specification.
+
+Definition data_calendar_all_delivers_date_last_month_decomposition
+  : forall (d : Date) .
+      (Date.day_number (Date.last_day_of_month d) + 1
+       = Date.days_before_year (Date.year d)
+         + (Date.days_before_month (Date.year d) (Date.month d)
+            + Date.days_in_month (Date.year d) (Date.month d)))%b0
+  := Date.last.month.decomposition.
+
+Definition data_calendar_all_delivers_date_last_month_order
+  : forall (d : Date) . (Date.day_number d <= Date.day_number (Date.last_day_of_month d))%b0
+  := Date.last.month.order.
+
+Definition data_calendar_all_delivers_date_last_year_specification
+  : forall (d : Date) .
+      Date.year (Date.last_day_of_year d) = Date.year d
+      /\ Date.month (Date.last_day_of_year d) = Month.December
+      /\ Date.day (Date.last_day_of_year d) = 31
+  := Date.last.year.specification.
+
+Definition data_calendar_all_delivers_date_last_year_decomposition
+  : forall (d : Date) .
+      (Date.day_number (Date.last_day_of_year d) + 1
+       = Date.days_before_year (Date.year d) + Date.days_in_year (Date.year d))%b0
+  := Date.last.year.decomposition.
+
+Definition data_calendar_all_delivers_date_last_year_order
+  : forall (d : Date) . (Date.day_number d <= Date.day_number (Date.last_day_of_year d))%b0
+  := Date.last.year.order.
+
+Definition data_calendar_all_delivers_date_addition_specification
+  : forall (x : Date) (k : Bin0) .
+      Date.day_number (Date.add_days x k) = (Date.day_number x + k)%b0
+  := Date.addition.specification.
+
+Definition data_calendar_all_delivers_date_addition_identity
+  : forall (x : Date) . Date.add_days x 0%b0 = x
+  := Date.addition.identity.
+
+Definition data_calendar_all_delivers_date_addition_associativity
+  : forall (x : Date) (k : Bin0) (l : Bin0) .
+      Date.add_days (Date.add_days x k) l = Date.add_days x (k + l)%b0
+  := Date.addition.associativity.
+
+Definition data_calendar_all_delivers_date_addition_month_specification
+  : forall (d : Date) (k : Bin0) .
+      Date.month_number (Date.add_months d k) = (Date.month_number d + k)%b0
+      /\ Date.day (Date.add_months d k)
+         = Bin.min (Date.day d)
+             (Date.days_in_month (Date.year (Date.add_months d k)) (Date.month (Date.add_months d k)))
+  := Date.addition.month.specification.
+
+Definition data_calendar_all_delivers_date_addition_month_preservation
+  : forall (d : Date) (k : Bin0) .
+      (Date.day d
+       <= Date.days_in_month (Date.year (Date.add_months d k)) (Date.month (Date.add_months d k)))%b
+      -> Date.day (Date.add_months d k) = Date.day d
+  := Date.addition.month.preservation.
+
+Definition data_calendar_all_delivers_date_addition_month_identity
+  : forall (d : Date) . Date.add_months d 0%b0 = d
+  := Date.addition.month.identity.
+
+Definition data_calendar_all_delivers_date_addition_year_specification
+  : forall (d : Date) (k : Bin0) .
+      (Date.year (Date.add_years d k) : Bin0) = (Date.year d + k)%b0
+      /\ Date.month (Date.add_years d k) = Date.month d
+      /\ Date.day (Date.add_years d k)
+         = Bin.min (Date.day d) (Date.days_in_month (Date.year (Date.add_years d k)) (Date.month d))
+  := Date.addition.year.specification.
+
+Definition data_calendar_all_delivers_date_addition_year_preservation
+  : forall (d : Date) (k : Bin0) .
+      (Date.day d <= Date.days_in_month (Date.year (Date.add_years d k)) (Date.month d))%b
+      -> Date.day (Date.add_years d k) = Date.day d
+  := Date.addition.year.preservation.
+
+Definition data_calendar_all_delivers_date_addition_year_identity
+  : forall (d : Date) . Date.add_years d 0%b0 = d
+  := Date.addition.year.identity.
+
+Definition data_calendar_all_delivers_date_addition_year_reduction
+  : forall (d : Date) (k : Bin0) .
+      Date.add_years d k = Date.add_months d (k * Month.months_in_year)%b0
+  := Date.addition.year.reduction.
+
+Definition data_calendar_all_delivers_date_subtraction_inversion_addition
+  : forall (x : Date) (k : Bin0) . Date.subtract_days (Date.add_days x k) k = Some x
+  := Date.subtraction.inversion.addition.
+
+Definition data_calendar_all_delivers_date_subtraction_specification
+  : forall (x : Date) (k : Bin0) (y : Date) .
+      Date.subtract_days x k = Some y <-> Date.add_days y k = x
+  := Date.subtraction.specification.
+
+Definition data_calendar_all_delivers_date_subtraction_failure
+  : forall (x : Date) (k : Bin0) .
+      Date.subtract_days x k = None <-> (Date.day_number x < k)%b0
+  := Date.subtraction.failure.
+
+Definition data_calendar_all_delivers_date_succession_specification
+  : forall (x : Date) . Date.day_number (Date.next_day x) = (Date.day_number x + 1)%b0
+  := Date.succession.specification.
+
+Definition data_calendar_all_delivers_date_succession_inversion
+  : forall (x : Date) (y : Date) . Date.previous_day x = Some y <-> Date.next_day y = x
+  := Date.succession.inversion.
+
+Definition data_calendar_all_delivers_date_succession_origin
+  : forall (d : Date) .
+      Date.previous_day d = None <-> (Date.year d = 1 /\ d = Date.first_day_of_year d)
+  := Date.succession.origin.
+
+Definition data_calendar_all_delivers_date_difference_specification
+  : forall (x : Date) (k : Bin0) . Date.days_between x (Date.add_days x k) = k
+  := Date.difference.specification.
+
+Definition data_calendar_all_delivers_date_unix_addition
+  : forall (d : Date) (k : Bin0) .
+      Date.unix_day (Date.add_days d k) = (Date.unix_day d + k)%b_signed
+  := Date.unix.addition.
+
+Definition data_calendar_all_delivers_date_unix_section
+  : forall (d : Date) . Date.from_unix_day (Date.unix_day d) = Some d
+  := Date.unix.section.
+
+Definition data_calendar_all_delivers_date_unix_specification
+  : forall (u : SignedBin) (d : Date) . Date.from_unix_day u = Some d <-> Date.unix_day d = u
+  := Date.unix.specification.
+
+Definition data_calendar_all_computes_date_less_or_equal
+  : (Date.introduction 1970 Month.January 1 I <= Date.introduction 2000 Month.January 1 I)%date
+  := Disjunction.introduction_right (Identity.reflexivity _).
+
+Definition data_calendar_all_computes_date_next_day_2023_12_31
+  : Date.compare
+      (Date.next_day (Date.introduction 2023 Month.December 31 I))
+      (Date.introduction 2024 Month.January 1 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_days_2024_02_28
+  : Date.compare
+      (Date.add_days (Date.introduction 2024 Month.February 28 I) 1%b0_decimal)
+      (Date.introduction 2024 Month.February 29 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_subtract_days_2024_03_01
+  : Option.map Date.day_number
+      (Date.subtract_days (Date.introduction 2024 Month.March 1 I) 1%b0_decimal)
+    = Some 738944%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_previous_day_refusal_0001_01_01
+  : Date.previous_day (Date.introduction 1 Month.January 1 I) = None
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_days_between_2000_01_01_2024_02_29
+  : Date.days_between
+      (Date.introduction 2000 Month.January 1 I) (Date.introduction 2024 Month.February 29 I)
+    = 8825%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_days_between_2024_02_29_2000_01_01
+  : Date.days_between
+      (Date.introduction 2024 Month.February 29 I) (Date.introduction 2000 Month.January 1 I)
+    = (- 8825%b0_decimal)%b_signed
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_first_day_of_month_2024_07_15
+  : Date.compare
+      (Date.first_day_of_month (Date.introduction 2024 Month.July 15 I))
+      (Date.introduction 2024 Month.July 1 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_last_day_of_month_2024_02_10
+  : Date.compare
+      (Date.last_day_of_month (Date.introduction 2024 Month.February 10 I))
+      (Date.introduction 2024 Month.February 29 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_last_day_of_month_2023_02_10
+  : Date.compare
+      (Date.last_day_of_month (Date.introduction 2023 Month.February 10 I))
+      (Date.introduction 2023 Month.February 28 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_first_day_of_year_2024_07_15
+  : Date.compare
+      (Date.first_day_of_year (Date.introduction 2024 Month.July 15 I))
+      (Date.introduction 2024 Month.January 1 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_last_day_of_year_2024_07_15
+  : Date.compare
+      (Date.last_day_of_year (Date.introduction 2024 Month.July 15 I))
+      (Date.introduction 2024 Month.December 31 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_month_number_2024_03_15
+  : Date.month_number (Date.introduction 2024 Month.March 15 I) = 24278%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_months_2024_01_31
+  : Date.compare
+      (Date.add_months (Date.introduction 2024 Month.January 31 I) 1%b0_decimal)
+      (Date.introduction 2024 Month.February 29 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_months_2023_01_31
+  : Date.compare
+      (Date.add_months (Date.introduction 2023 Month.January 31 I) 1%b0_decimal)
+      (Date.introduction 2023 Month.February 28 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_months_2024_03_15
+  : Date.compare
+      (Date.add_months (Date.introduction 2024 Month.March 15 I) 11%b0_decimal)
+      (Date.introduction 2025 Month.February 15 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_months_stepwise_2024_01_31
+  : Date.compare
+      (Date.add_months
+         (Date.add_months (Date.introduction 2024 Month.January 31 I) 1%b0_decimal) 1%b0_decimal)
+      (Date.introduction 2024 Month.March 29 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_months_whole_2024_01_31
+  : Date.compare
+      (Date.add_months (Date.introduction 2024 Month.January 31 I) 2%b0_decimal)
+      (Date.introduction 2024 Month.March 31 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_years_2024_02_29
+  : Date.compare
+      (Date.add_years (Date.introduction 2024 Month.February 29 I) 1%b0_decimal)
+      (Date.introduction 2025 Month.February 28 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_add_years_2024_02_29_by_4
+  : Date.compare
+      (Date.add_years (Date.introduction 2024 Month.February 29 I) 4%b0_decimal)
+      (Date.introduction 2028 Month.February 29 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_unix_epoch
+  : Date.day_number Date.unix_epoch = 719162%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_unix_day_1970_01_01
+  : Date.unix_day (Date.introduction 1970 Month.January 1 I) = 0%b_signed
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_unix_day_2000_01_01
+  : Date.unix_day (Date.introduction 2000 Month.January 1 I) = 10957%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_unix_day_0001_01_01
+  : Date.unix_day (Date.introduction 1 Month.January 1 I) = (- 719162%b0_decimal)%b_signed
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_unix_day_0
+  : Option.map Date.day_number (Date.from_unix_day 0%b_signed) = Some 719162%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_date_from_unix_day_refusal
+  : Date.from_unix_day (- 719163%b0_decimal)%b_signed = None
   := Identity.reflexivity _.

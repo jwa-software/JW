@@ -247,6 +247,34 @@ Definition data_number_binary_all_delivers_difference_invariance
       SignedBin.b0_difference a b = SignedBin.b0_difference c d
   := @SignedBin.difference.invariance.
 
+Definition data_number_binary_all_delivers_difference_identity
+  : forall (a : Bin0) . SignedBin.b0_difference a 0%b0 = a
+  := SignedBin.difference.identity.
+
+Definition data_number_binary_all_delivers_difference_negation
+  : forall (b : Bin0) . SignedBin.b0_difference 0%b0 b = (- b)%b_signed
+  := SignedBin.difference.negation.
+
+Definition data_number_binary_all_delivers_narrowing_bin0_retraction
+  : forall (n : Bin0) . SignedBin.to_b0 n = Some n
+  := SignedBin.narrowing.bin0.retraction.
+
+Definition data_number_binary_all_delivers_narrowing_bin0_specification
+  : forall (x : SignedBin) (n : Bin0) . SignedBin.to_b0 x = Some n <-> x = n
+  := SignedBin.narrowing.bin0.specification.
+
+Definition data_number_binary_all_delivers_addition_order_monotonicity
+  : forall (k : Bin0) (m : Bin0) (n : Bin0) . (m <= n -> k + m <= k + n)%b0
+  := Bin0.addition.order.monotonicity.
+
+Definition data_number_binary_all_delivers_addition_order_cancellation
+  : forall (k : Bin0) (m : Bin0) (n : Bin0) . (k + m <= k + n -> m <= n)%b0
+  := Bin0.addition.order.cancellation.
+
+Definition data_number_binary_all_delivers_order_discreteness
+  : forall (n : Bin0) . (n < 1 -> n = 0)%b0
+  := Bin0.order.discreteness.
+
 (* The types the operations above take and return, named rather than merely
  * produced: a client who cannot write them cannot state anything about them.
  *)

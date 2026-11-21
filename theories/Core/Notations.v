@@ -223,6 +223,11 @@ Delimit Scope jw_bin0_decimal_scope with b0_decimal.
 Declare Scope jw_signed_bin_scope.
 Delimit Scope jw_signed_bin_scope with b_signed.
 
+(* The order of [Date], delimited but not opened, so that its [<] and the
+   numbers' [<] can share a file: [(x1 < x2)%date]. *)
+Declare Scope jw_date_scope.
+Delimit Scope jw_date_scope with date.
+
 (* Precedence follows the textbook order, [~] tightest and [->] loosest with
    [forsome] beyond them, so a formula reads without parentheses; [_\/_] sits
    between [/\] and [\/] as [^^] sits between [&&] and [||], and [!] is to

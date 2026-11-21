@@ -1932,6 +1932,42 @@ Qed.
 
 End strict. (* addition.order.strict *)
 
+(* addition.order.monotonicity *)
+Theorem monotonicity
+  : forall (k : Bin0) (m : Bin0) (n : Bin0) . m <= n -> k + m <= k + n.
+Proof.
+  intros k m n h.
+  lemma reflexive : k <= k.
+  {
+    ipso (disjoin (refl &k), _).
+  }
+  match &h with | same | smaller end.
+  - leibniz &same in |- *.
+    ipso (disjoin (refl (&k + &n)), _).
+  - ipso (disjoin _, (addition.order.strict.monotonicity &k &m &k &n &reflexive &smaller)).
+Qed.
+
+(* addition.order.cancellation *)
+Theorem cancellation
+  : forall (k : Bin0) (m : Bin0) (n : Bin0) . k + m <= k + n -> m <= n.
+Proof.
+  intros k m n h.
+  match (addition.cancellation &k &m &n) with | cancel _ end.
+  match &h with | same | smaller end.
+  - ipso (disjoin (&cancel &same), _).
+  - simpl LessThan in &smaller.
+    match &smaller with | j e end.
+    leibniz (addition.associativity &k &m (+ &j)) in &e.
+    match (addition.cancellation &k (&m + (+ &j)) &n) with | shifted _ end.
+    lemma facto : m < n.
+    {
+      simpl LessThan in |- *.
+      exists &j.
+      ipso (&shifted &e).
+    }
+    ipso (disjoin _, &facto).
+Qed.
+
 End order. (* addition.order *)
 
 End addition. (* addition *)
@@ -2160,6 +2196,25 @@ Proof.
       ipso &e.
     }
     ipso (disjoin _, (modus aequans (conversion.order (&m + (+ Bin.One)) &n), &facto)).
+Qed.
+
+(* Below 1 there is only 0: [n + 1 <= 1] by [succession], and [n + 1 < 1]
+ * contradicts [1 <= n + 1].
+ *)
+(* order.discreteness *)
+Theorem discreteness : forall (n : Bin0) . n < (+ Bin.One) -> n = 0.
+Proof.
+  intros n h.
+  let proof s := order.succession &n (+ Bin.One) &h.
+  let proof g := addition.right.order.extensivity &n (+ Bin.One).
+  match (addition.cancellation &n (+ Bin.One) 0) with | _ cancel end.
+  match &s with | same | smaller end.
+  - ipso (&cancel &same).
+  - match &g with | same | larger end.
+    + leibniz <- &same in &smaller.
+      ex (order.strict.irreflexivity (+ Bin.One) &smaller) quodlibet.
+    + ex (order.strict.irreflexivity (+ Bin.One) (order.strict.transitivity &larger &smaller))
+        quodlibet.
 Qed.
 
 End order. (* order *)

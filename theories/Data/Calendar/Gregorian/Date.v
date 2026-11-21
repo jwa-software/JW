@@ -11,6 +11,7 @@ From JW Require Import Data.Calendar.Weekday.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
+From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Option.
@@ -218,6 +219,13 @@ Definition day_number := fun (x : Date) .
     + days_before_month (year x) (month x)
     + Bin0.saturating_sub (day x) 1.
 
+(* The months from January of year 1 to the date's month, January of year 1
+ * being 0.
+ *)
+(* [Date -> Bin0] *)
+Definition month_number := fun (d : Date) .
+  years_before (year d) * Month.months_in_year + Month.to_b0 (month d).
+
 (* The weekday of day number [n], 0001-01-01 being a Monday. The remainder
  * by 7 is below 7, so [Weekday.from_b0] never gives [None] here.
  *)
@@ -334,6 +342,20 @@ Definition compare := fun (x1 : Date) (x2 : Date) .
 (* [Date -> Date -> Prop] *)
 Definition LessThan := fun (x1 : Date) (x2 : Date) . compare x1 x2 = Comparison.Lt.
 
+Notation "x1 < x2" := (LessThan x1 x2) (only parsing)
+  : jw_date_scope.
+
+(* [Date -> Date -> Prop] *)
+Definition LessOrEqual := fun (x1 : Date) (x2 : Date) . x1 = x2 \/ LessThan x1 x2.
+
+Notation "x1 <= x2" := (LessOrEqual x1 x2) (only parsing)
+  : jw_date_scope.
+
+Notation "x1 > x2" := (LessThan x2 x1) (only parsing)
+  : jw_date_scope.
+Notation "x1 >= x2" := (LessOrEqual x2 x1) (only parsing)
+  : jw_date_scope.
+
 (* antisymmetry *)
 Theorem antisymmetry
   : forall (x1 : Date) (x2 : Date) . compare x1 x2 = Comparison.transpose (compare x2 x1).
@@ -380,6 +402,26 @@ Proof.
       quod idem est.
     + ex &h quodlibet.
   - ex &h quodlibet.
+Qed.
+
+(* Two proofs of one validity are equal, so a date is its year, month and day. *)
+(* extensionality *)
+Theorem extensionality
+  : forall (x1 : Date) (x2 : Date) .
+      year x1 = year x2 -> month x1 = month x2 -> day x1 = day x2 -> x1 = x2.
+Proof.
+  intros x1 x2.
+  match &x1 with | introduction y1 m1 d1 a1 end.
+  match &x2 with | introduction y2 m2 d2 a2 end.
+  simpl year, month, day in |- *.
+  intros ey em ed.
+  extro &a2.
+  match &ey with | end.
+  match &em with | end.
+  match &ed with | end.
+  intro a2.
+  leibniz (Assert.uniqueness _ &a1 &a2) in |- *.
+  quod idem est.
 Qed.
 
 Module leap. (* leap *)
@@ -584,6 +626,165 @@ Proof.
           &facto).
 Qed.
 
+Module validity. (* month.validity *)
+
+(* month.validity.minimum *)
+Theorem minimum : forall (y : Year) (m : Month) . Assert (is_valid y m 1).
+Proof.
+  intros y m.
+  lemma facto : is_valid y m 1 = true.
+  {
+    simpl is_valid, days_in_month, Comparable.le, Bin.compare in |- *.
+    match (is_leap &y) with | | end;
+      match &m with
+      | January | February | March | April | May | June
+      | July | August | September | October | November | December
+      end; simpl in |- *; quod idem est.
+  }
+  ipso (modus aequans (Assert.specification _), &facto).
+Qed.
+
+(* month.validity.maximum *)
+Theorem maximum : forall (y : Year) (m : Month) . Assert (is_valid y m (days_in_month y m)).
+Proof.
+  intros y m.
+  lemma facto : is_valid y m (days_in_month y m) = true.
+  {
+    simpl is_valid, days_in_month, Comparable.le, Bin.compare in |- *.
+    match (is_leap &y) with | | end;
+      match &m with
+      | January | February | March | April | May | June
+      | July | August | September | October | November | December
+      end; simpl in |- *; quod idem est.
+  }
+  ipso (modus aequans (Assert.specification _), &facto).
+Qed.
+
+(* A day held at the month's length is at most the month's length. *)
+(* month.validity.clamping *)
+Theorem clamping
+  : forall (y : Year) (m : Month) (n : Day) .
+      Assert (is_valid y m (Bin.min n (days_in_month y m))).
+Proof.
+  intros y m n.
+  let proof below :=
+    @Comparable.minimum.right.projection _ Bin.compare Bin.LessThan _ &n (days_in_month &y &m).
+  let proof checked :=
+    modus aequans
+      (Comparable.order.reflection (Bin.min &n (days_in_month &y &m)) (days_in_month &y &m)),
+      &below.
+  simpl is_valid in |- *.
+  ipso (modus aequans (Assert.specification _), &checked).
+Qed.
+
+End validity. (* month.validity *)
+
+(* The remainder by 12 is one of 0 to 11, pinned from 11 down, and each has
+ * its month; so a month always answers it.
+ *)
+(* month.totality *)
+Theorem totality
+  : forall (n : Bin0) . ~ (Month.from_b0 (n %. Month.months_in_year) = None).
+Proof.
+  intro n.
+  match (Bin0.division.specification n Month.months_in_year) with | _ below end.
+  let r := n %. Month.months_in_year in &below |- *.
+  let proof r := &r.
+  lemma pin : forall (k : Bin0) . r < k + 1 -> r = k \/ r < k.
+  {
+    intros k h.
+    match (Comparable.order.strict.trichotomy r k) with | smaller | rest end.
+    - ipso (disjoin _, &smaller).
+    - match &rest with | same | greater end.
+      + ipso (disjoin &same, _).
+      + let proof after := Bin0.order.succession &k &r &greater.
+        let proof loop := Comparable.order.mixed.left.transitivity &after &h.
+        ex (Bin0.order.strict.irreflexivity (&k + 1) &loop) quodlibet.
+  }
+  simpl (~ _) in |- *.
+  intro e.
+  match (&pin 11 &below) with | eleven | below11 end.
+  {
+    leibniz &eleven in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 10 &below11) with | ten | below10 end.
+  {
+    leibniz &ten in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 9 &below10) with | nine | below9 end.
+  {
+    leibniz &nine in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 8 &below9) with | eight | below8 end.
+  {
+    leibniz &eight in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 7 &below8) with | seven | below7 end.
+  {
+    leibniz &seven in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 6 &below7) with | six | below6 end.
+  {
+    leibniz &six in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 5 &below6) with | five | below5 end.
+  {
+    leibniz &five in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 4 &below5) with | four | below4 end.
+  {
+    leibniz &four in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 3 &below4) with | three | below3 end.
+  {
+    leibniz &three in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 2 &below3) with | two | below2 end.
+  {
+    leibniz &two in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 1 &below2) with | one | below1 end.
+  {
+    leibniz &one in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 0%b0 &below1) with | zero | below0 end.
+  {
+    leibniz &zero in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match &below0 with | k f end.
+  match &r with | | p end.
+  {
+    simpl in &f.
+    ex &f quodlibet.
+  }
+  simpl in &f.
+  ex &f quodlibet.
+Qed.
+
 End month. (* month *)
 
 Module year. (* year *)
@@ -690,6 +891,15 @@ Proof.
       quod idem est.
   }
   ipso (Bin0.conversion.injectivity &facto).
+Qed.
+
+(* year.antecedence.section *)
+Theorem section : forall (y : Year) . Bin0.successor (years_before y) = y.
+Proof.
+  intro y.
+  let proof e :=
+    trans (Bin0.successor.specification (years_before &y)), (year.antecedence.restoration &y).
+  ipso (Option.some.injectivity (congru Bin0.to_b, &e)).
 Qed.
 
 End antecedence. (* year.antecedence *)
@@ -2208,8 +2418,11 @@ End division. (* division *)
 Definition from_day_number := fun (n : Days) .
   let y := Bin0.successor (pi_1 (div_year n)) in
   let days := pi_2 (div_year n) in
-  Date.introduction y (month_after_days y days) (day_of_month_after_days y days)
-    (calendar.validity y days (division.boundedness n)).
+  Date.introduction y
+    (month_after_days y days)
+    (day_of_month_after_days y days)
+    (calendar.validity y days
+    (division.boundedness n)).
 
 (* The date that is day [d] of year [y], [None] when the year has fewer than
  * [d] days. It stands below [calendar.ordinal.validity] because its ctor takes
@@ -2223,15 +2436,94 @@ Definition from_day_of_year := fun (y : Year) (d : Day) .
        Date.introduction y (month_after_days y days) (day_of_month_after_days y days)
          (calendar.ordinal.validity y d a)).
 
+(* The date [k] days after [x]. *)
+(* [Date -> Days -> Date] *)
+Definition add_days := fun (x : Date) (k : Days) . from_day_number (day_number x + k).
+
+(* The date [k] days before [x], [None] when it would fall before 0001-01-01. *)
+(* [Date -> Days -> Option Date] *)
+Definition subtract_days := fun (x : Date) (k : Days) .
+  match Bin0.le k (day_number x) with
+  | true  => Some (from_day_number (Bin0.saturating_sub (day_number x) k))
+  | false => None
+  end.
+
+(* [Date -> Date] *)
+Definition next_day := fun (d : Date) . add_days d 1.
+
+(* [Date -> Option Date] *)
+Definition previous_day := fun (d : Date) . subtract_days d 1.
+
+(* The days from [d1] to [d2], negative when [d2] is the earlier. *)
+(* [Date -> Date -> SignedBin] *)
+Definition days_between := fun (d1 : Date) (d2 : Date) .
+  SignedBin.b0_difference (day_number d2) (day_number d1).
+
+(* [Date -> Date] *)
+Definition first_day_of_month := fun (d : Date) .
+  Date.introduction (year d) (month d) 1 (month.validity.minimum (year d) (month d)).
+
+(* [Date -> Date] *)
+Definition last_day_of_month := fun (d : Date) .
+  Date.introduction (year d) (month d) (days_in_month (year d) (month d))
+    (month.validity.maximum (year d) (month d)).
+
+(* [Date -> Date] *)
+Definition first_day_of_year := fun (d : Date) .
+  Date.introduction (year d) Month.January 1 (month.validity.minimum (year d) Month.January).
+
+(* [Date -> Date] *)
+Definition last_day_of_year := fun (d : Date) .
+  Date.introduction (year d) Month.December (days_in_month (year d) Month.December)
+    (month.validity.maximum (year d) Month.December).
+
+(* The date [k] months after [d], its day held at the length of the month it
+ * lands in. The remainder by 12 always has a month, so the [None] case never
+ * occurs, by [month.totality].
+ *)
+(* [Date -> Bin0 -> Date] *)
+Definition add_months := fun (d : Date) (k : Bin0) .
+  let n := month_number d + k in
+  let y := Bin0.successor (n /. Month.months_in_year) in
+  let m :=
+    match Month.from_b0 (n %. Month.months_in_year) with
+    | Some m => m
+    | None   => Month.January
+    end in
+  Date.introduction y m (Bin.min (day d) (days_in_month y m)) (month.validity.clamping y m (day d)).
+
+(* The date [k] years after [d], its day held at the length of its month in
+ * the new year, so February 29 becomes February 28 in a common year.
+ *)
+(* [Date -> Bin0 -> Date] *)
+Definition add_years := fun (d : Date) (k : Bin0) .
+  let y := Bin0.successor (years_before (year d) + k) in
+  Date.introduction y (month d) (Bin.min (day d) (days_in_month y (month d)))
+    (month.validity.clamping y (month d) (day d)).
+
+(* 1970-01-01, the day the Unix day counts from. *)
+(* [Date] *)
+Definition unix_epoch : Date :=
+  Date.introduction 1970 Month.January 1 (month.validity.minimum 1970 Month.January).
+
+(* The days from 1970-01-01 to [d], negative before it. *)
+(* [Date -> SignedBin] *)
+Definition unix_day := fun (d : Date) . days_between unix_epoch d.
+
+(* The date of Unix day [u], [None] before 0001-01-01. *)
+(* [SignedBin -> Option Date] *)
+Definition from_unix_day := fun (u : SignedBin) .
+  Option.map from_day_number (SignedBin.to_b0 (u + day_number unix_epoch)%b_signed).
+
 Module ordinal. (* ordinal *)
 
 (* ordinal.decomposition *)
 Theorem decomposition
-  : forall (x : Date) . (day_of_year x : Bin0) = days_before_month (year x) (month x) + day x.
+  : forall (d : Date) . (day_of_year d : Bin0) = days_before_month (year d) (month d) + day d.
 Proof.
-  intro x.
+  intro d.
   simpl day_of_year in |- *.
-  match (days_before_month (year &x) (month &x)) with | | p end.
+  match (days_before_month (year &d) (month &d)) with | | p end.
   - simpl in |- *.
     quod idem est.
   - simpl in |- *.
@@ -2239,11 +2531,11 @@ Proof.
 Qed.
 
 (* ordinal.boundedness *)
-Theorem boundedness : forall (x : Date) . day_of_year x <= days_in_year (year x).
+Theorem boundedness : forall (d : Date) . day_of_year d <= days_in_year (year d).
 Proof.
-  intro x.
-  leibniz (ordinal.decomposition &x) in |- *.
-  match &x with | introduction y m d a end.
+  intro d.
+  leibniz (ordinal.decomposition &d) in |- *.
+  match &d with | introduction y m d a end.
   simpl year, month, day in |- *.
   simpl is_valid in &a.
   let proof t := modus aequans (Assert.specification _), &a.
@@ -2283,10 +2575,10 @@ Qed.
  * month search finds the date back by [calendar.inversion].
  *)
 (* ordinal.section *)
-Theorem section : forall (x : Date) . from_day_of_year (year x) (day_of_year x) = Some x.
+Theorem section : forall (d : Date) . from_day_of_year (year d) (day_of_year d) = Some d.
 Proof.
-  intro x.
-  match &x with | introduction y m d a end.
+  intro d.
+  match &d with | introduction y m d a end.
   let X := introduction y m d a in |- *.
   lemma within : Assert (Comparable.le Bin.compare (day_of_year X) (days_in_year y)).
   {
@@ -2372,10 +2664,10 @@ Module validity. (* validity *)
 
 (* The ctor's proof, read as an order between numbers. *)
 (* validity.boundedness *)
-Theorem boundedness : forall (x : Date) . day x <= days_in_month (year x) (month x).
+Theorem boundedness : forall (d : Date) . day d <= days_in_month (year d) (month d).
 Proof.
-  intro x.
-  match &x with | introduction y m d a end.
+  intro d.
+  match &d with | introduction y m d a end.
   simpl year, month, day in |- *.
   simpl is_valid in &a.
   let proof t := modus aequans (Assert.specification _), &a.
@@ -2401,24 +2693,24 @@ Module number. (* number *)
  *)
 (* number.decomposition *)
 Theorem decomposition
-  : forall (x : Date) . day_number x + 1 = days_before_year (year x) + day_of_year x.
+  : forall (d : Date) . day_number d + 1 = days_before_year (year d) + day_of_year d.
 Proof.
-  intro x.
+  intro d.
   simpl day_number in |- *.
-  leibniz (ordinal.decomposition &x) in |- *.
+  leibniz (ordinal.decomposition &d) in |- *.
   leibniz
     (Bin0.addition.associativity
-       (days_before_year (year &x) + days_before_month (year &x) (month &x))
-       (Bin0.saturating_sub (day &x) 1) 1)
+       (days_before_year (year &d) + days_before_month (year &d) (month &d))
+       (Bin0.saturating_sub (day &d) 1) 1)
     in |- *.
-  lemma restored : Bin0.saturating_sub (day x) 1 + 1 = day x.
+  lemma restored : Bin0.saturating_sub (day d) 1 + 1 = day d.
   {
-    ipso (year.antecedence.restoration (day &x)).
+    ipso (year.antecedence.restoration (day &d)).
   }
   leibniz &restored in |- *.
   leibniz
     (Bin0.addition.associativity
-       (days_before_year (year &x)) (days_before_month (year &x) (month &x)) (day &x))
+       (days_before_year (year &d)) (days_before_month (year &d) (month &d)) (day &d))
     in |- *.
   quod idem est.
 Qed.
@@ -2430,9 +2722,9 @@ Qed.
  *)
 (* number.monotonicity *)
 Theorem monotonicity
-  : forall (x1 : Date) (x2 : Date) . LessThan x1 x2 -> day_number x1 < day_number x2.
+  : forall (d1 : Date) (d2 : Date) . (d1 < d2)%date -> day_number d1 < day_number d2.
 Proof.
-  intros x1 x2 h.
+  intros d1 d2 h.
   simpl LessThan in &h.
   lemma cancelled
     : forall (a : Bin0) (b : Bin0) . a + 1 < b + 1 -> a < b.
@@ -2450,19 +2742,19 @@ Proof.
     ipso (&right &e).
   }
   lemma widened
-    : forall (d1 : Bin) (d2 : Bin) . (d1 < d2)%b -> (d1 : Bin0) < d2.
+    : forall (n1 : Bin) (n2 : Bin) . (n1 < n2)%b -> (n1 : Bin0) < n2.
   {
-    intros d1 d2 g.
+    intros n1 n2 g.
     match &g with | k e end.
     simpl Bin0.LessThan in |- *.
     exists &k.
     ipso (congru Bin0.Positive, &e).
   }
   lemma ordered
-    : days_before_year (year x1) + day_of_year x1 < days_before_year (year x2) + day_of_year x2.
+    : days_before_year (year d1) + day_of_year d1 < days_before_year (year d2) + day_of_year d2.
   {
-    match &x1 with | introduction y1 m1 d1 a1 end.
-    match &x2 with | introduction y2 m2 d2 a2 end.
+    match &d1 with | introduction y1 m1 d1 a1 end.
+    match &d2 with | introduction y2 m2 d2 a2 end.
     simpl compare, year, month, day in &h.
     match (Bin.compare &y1 &y2) with | | | end |- cy.
     - match (Bin.comparison.specification &y1 &y2) with | year_order _ end.
@@ -2585,37 +2877,37 @@ Proof.
               (disjoin (refl (days_before_year &y1)), _) &inner).
     - ex &h quodlibet.
   }
-  leibniz <- (number.decomposition &x1), <- (number.decomposition &x2) in &ordered.
-  ipso (&cancelled (day_number &x1) (day_number &x2) &ordered).
+  leibniz <- (number.decomposition &d1), <- (number.decomposition &d2) in &ordered.
+  ipso (&cancelled (day_number &d1) (day_number &d2) &ordered).
 Qed.
 
 (* Spec law 9: the order of dates is the order of their day numbers. *)
 (* number.comparison *)
 Theorem comparison
-  : forall (x1 : Date) (x2 : Date) .
-      compare x1 x2 = Bin0.compare (day_number x1) (day_number x2).
+  : forall (d1 : Date) (d2 : Date) .
+      compare d1 d2 = Bin0.compare (day_number d1) (day_number d2).
 Proof.
-  intros x1 x2.
-  match (compare &x1 &x2) with | | | end |- c.
-  - let proof smaller := number.monotonicity &x1 &x2 &c.
-    match (Bin0.comparison.specification (day_number &x1) (day_number &x2))
+  intros d1 d2.
+  match (compare &d1 &d2) with | | | end |- c.
+  - let proof smaller := number.monotonicity &d1 &d2 &c.
+    match (Bin0.comparison.specification (day_number &d1) (day_number &d2))
       with | strict _ end.
     ipso (symm (modus aequans &strict, &smaller)).
-  - match (separation &x1 &x2 &c) with | end.
+  - match (separation &d1 &d2 &c) with | end.
     ipso (symm (@Comparable.comparison.reflexivity _ Bin0.compare Bin0.LessThan _
-                  (day_number &x1))).
-  - lemma reversed : compare x2 x1 = Comparison.Lt.
+                  (day_number &d1))).
+  - lemma reversed : compare d2 d1 = Comparison.Lt.
     {
-      leibniz (antisymmetry &x2 &x1), &c in |- *.
+      leibniz (antisymmetry &d2 &d1), &c in |- *.
       simpl in |- *.
       quod idem est.
     }
-    let proof smaller := number.monotonicity &x2 &x1 &reversed.
-    match (Bin0.comparison.specification (day_number &x2) (day_number &x1))
+    let proof smaller := number.monotonicity &d2 &d1 &reversed.
+    match (Bin0.comparison.specification (day_number &d2) (day_number &d1))
       with | strict _ end.
     let proof below := modus aequans &strict, &smaller.
     leibniz
-      (Bin0.comparison.antisymmetry (day_number &x1) (day_number &x2)), &below
+      (Bin0.comparison.antisymmetry (day_number &d1) (day_number &d2)), &below
       in |- *.
     simpl in |- *.
     quod idem est.
@@ -2624,15 +2916,15 @@ Qed.
 (* Spec law 9, as an order. *)
 (* number.order *)
 Theorem order
-  : forall (x1 : Date) (x2 : Date) . LessThan x1 x2 <-> day_number x1 < day_number x2.
+  : forall (d1 : Date) (d2 : Date) . (d1 < d2)%date <-> day_number d1 < day_number d2.
 Proof.
-  intros x1 x2.
+  intros d1 d2.
   divide et impera.
-  - ipso (number.monotonicity &x1 &x2).
+  - ipso (number.monotonicity &d1 &d2).
   - intro smaller.
     simpl LessThan in |- *.
-    leibniz (number.comparison &x1 &x2) in |- *.
-    match (Bin0.comparison.specification (day_number &x1) (day_number &x2))
+    leibniz (number.comparison &d1 &d2) in |- *.
+    match (Bin0.comparison.specification (day_number &d1) (day_number &d2))
       with | strict _ end.
     ipso (modus aequans &strict, &smaller).
 Qed.
@@ -2640,16 +2932,16 @@ Qed.
 (* Spec law 10. *)
 (* number.injectivity *)
 Theorem injectivity
-  : forall {x1 : Date} {x2 : Date} . day_number x1 = day_number x2 -> x1 = x2.
+  : forall {d1 : Date} {d2 : Date} . day_number d1 = day_number d2 -> d1 = d2.
 Proof.
-  intros x1 x2 e.
-  lemma same : compare x1 x2 = Comparison.Eq.
+  intros d1 d2 e.
+  lemma same : compare d1 d2 = Comparison.Eq.
   {
-    leibniz (number.comparison &x1 &x2), &e in |- *.
+    leibniz (number.comparison &d1 &d2), &e in |- *.
     ipso (@Comparable.comparison.reflexivity _ Bin0.compare Bin0.LessThan _
-            (day_number &x2)).
+            (day_number &d2)).
   }
-  ipso (separation &x1 &x2 &same).
+  ipso (separation &d1 &d2 &same).
 Qed.
 
 (* The days before the month and the day give back the days of the year
@@ -2917,6 +3209,930 @@ End quadricentennium. (* weekday.quadricentennium *)
 
 End weekday. (* weekday *)
 
+Module first. (* first *)
+
+Module month. (* first.month *)
+
+(* first.month.specification *)
+Theorem specification
+  : forall (d : Date) .
+      year (first_day_of_month d) = year d
+      /\ month (first_day_of_month d) = month d
+      /\ day (first_day_of_month d) = 1.
+Proof.
+  intro d.
+  ipso (conjoin (refl (year &d)), (conjoin (refl (month &d)), (refl 1))).
+Qed.
+
+(* first.month.decomposition *)
+Theorem decomposition
+  : forall (d : Date) .
+      day_number (first_day_of_month d)
+      = days_before_year (year d) + days_before_month (year d) (month d).
+Proof.
+  intro d.
+  match (first.month.specification &d) with | year_kept rest end.
+  match &rest with | month_kept day_one end.
+  simpl day_number in |- *.
+  leibniz &year_kept, &month_kept, &day_one in |- *.
+  lemma zero : Bin0.saturating_sub 1 1 = 0%b0.
+  {
+    ipso (refl 0%b0).
+  }
+  leibniz &zero in |- *.
+  match (Bin0.addition.identity
+           (days_before_year (year &d) + days_before_month (year &d) (month &d)))
+    with | _ vanishing end.
+  ipso &vanishing.
+Qed.
+
+(* first.month.order *)
+Theorem order : forall (d : Date) . day_number (first_day_of_month d) <= day_number d.
+Proof.
+  intro d.
+  leibniz (first.month.decomposition &d) in |- *.
+  simpl day_number in |- *.
+  leibniz
+    (Bin0.addition.commutativity
+       (days_before_year (year &d) + days_before_month (year &d) (month &d))
+       (Bin0.saturating_sub (day &d) 1))
+    in |- *.
+  ipso (Bin0.addition.right.order.extensivity
+          (Bin0.saturating_sub (day &d) 1)
+          (days_before_year (year &d) + days_before_month (year &d) (month &d))).
+Qed.
+
+End month. (* first.month *)
+
+Module year. (* first.year *)
+
+(* first.year.specification *)
+Theorem specification
+  : forall (d : Date) .
+      year (first_day_of_year d) = year d
+      /\ month (first_day_of_year d) = Month.January
+      /\ day (first_day_of_year d) = 1.
+Proof.
+  intro d.
+  ipso (conjoin (refl (year &d)), (conjoin (refl Month.January), (refl 1))).
+Qed.
+
+(* first.year.decomposition *)
+Theorem decomposition
+  : forall (d : Date) . day_number (first_day_of_year d) = days_before_year (year d).
+Proof.
+  intro d.
+  match (first.year.specification &d) with | year_kept rest end.
+  match &rest with | january day_one end.
+  simpl day_number in |- *.
+  leibniz &year_kept, &january, &day_one in |- *.
+  lemma start : days_before_month (year d) Month.January = 0%b0.
+  {
+    ipso (refl 0%b0).
+  }
+  lemma zero : Bin0.saturating_sub 1 1 = 0%b0.
+  {
+    ipso (refl 0%b0).
+  }
+  leibniz &start, &zero in |- *.
+  match (Bin0.addition.identity (days_before_year (year &d))) with | _ vanishing end.
+  leibniz &vanishing in |- *.
+  ipso &vanishing.
+Qed.
+
+(* first.year.order *)
+Theorem order : forall (d : Date) . day_number (first_day_of_year d) <= day_number d.
+Proof.
+  intro d.
+  leibniz (first.year.decomposition &d) in |- *.
+  simpl day_number in |- *.
+  leibniz
+    (Bin0.addition.associativity
+       (days_before_year (year &d)) (days_before_month (year &d) (month &d))
+       (Bin0.saturating_sub (day &d) 1))
+    in |- *.
+  leibniz
+    (Bin0.addition.commutativity
+       (days_before_year (year &d))
+       (days_before_month (year &d) (month &d) + Bin0.saturating_sub (day &d) 1))
+    in |- *.
+  ipso (Bin0.addition.right.order.extensivity
+          (days_before_month (year &d) (month &d) + Bin0.saturating_sub (day &d) 1)
+          (days_before_year (year &d))).
+Qed.
+
+End year. (* first.year *)
+
+End first. (* first *)
+
+Module last. (* last *)
+
+Module month. (* last.month *)
+
+(* last.month.specification *)
+Theorem specification
+  : forall (d : Date) .
+      year (last_day_of_month d) = year d
+      /\ month (last_day_of_month d) = month d
+      /\ day (last_day_of_month d) = days_in_month (year d) (month d).
+Proof.
+  intro d.
+  ipso (conjoin (refl (year &d)),
+          (conjoin (refl (month &d)), (refl (days_in_month (year &d) (month &d))))).
+Qed.
+
+(* One more than the day number of the month's last day counts the days
+ * through the month.
+ *)
+(* last.month.decomposition *)
+Theorem decomposition
+  : forall (d : Date) .
+      day_number (last_day_of_month d) + 1
+      = days_before_year (year d)
+        + (days_before_month (year d) (month d) + days_in_month (year d) (month d)).
+Proof.
+  intro d.
+  leibniz
+    (number.decomposition (last_day_of_month &d)),
+    (ordinal.decomposition (last_day_of_month &d))
+    in |- *.
+  match (last.month.specification &d) with | year_kept rest end.
+  match &rest with | month_kept day_last end.
+  leibniz &year_kept, &month_kept, &day_last in |- *.
+  quod idem est.
+Qed.
+
+(* The day is at most the month's length, so the days through it are at most
+ * the days through the month.
+ *)
+(* last.month.order *)
+Theorem order : forall (d : Date) . day_number d <= day_number (last_day_of_month d).
+Proof.
+  intro d.
+  lemma raised : day_number d + 1 <= day_number (last_day_of_month d) + 1.
+  {
+    leibniz
+      (number.decomposition &d),
+      (ordinal.decomposition &d),
+      (last.month.decomposition &d)
+      in |- *.
+    ipso (Bin0.addition.order.monotonicity (days_before_year (year &d)) _ _
+            (Bin0.addition.order.monotonicity (days_before_month (year &d) (month &d)) _ _
+               (validity.boundedness &d))).
+  }
+  leibniz
+    (Bin0.addition.commutativity (day_number &d) 1),
+    (Bin0.addition.commutativity (day_number (last_day_of_month &d)) 1)
+    in &raised.
+  ipso (Bin0.addition.order.cancellation 1 (day_number &d) (day_number (last_day_of_month &d))
+          &raised).
+Qed.
+
+End month. (* last.month *)
+
+Module year. (* last.year *)
+
+(* last.year.specification *)
+Theorem specification
+  : forall (d : Date) .
+      year (last_day_of_year d) = year d
+      /\ month (last_day_of_year d) = Month.December
+      /\ day (last_day_of_year d) = 31.
+Proof.
+  intro d.
+  ipso (conjoin (refl (year &d)), (conjoin (refl Month.December), (refl 31))).
+Qed.
+
+(* One more than the day number of the year's last day counts the days
+ * through the year.
+ *)
+(* last.year.decomposition *)
+Theorem decomposition
+  : forall (d : Date) .
+      day_number (last_day_of_year d) + 1 = days_before_year (year d) + days_in_year (year d).
+Proof.
+  intro d.
+  leibniz
+    (number.decomposition (last_day_of_year &d)),
+    (ordinal.decomposition (last_day_of_year &d))
+    in |- *.
+  match (last.year.specification &d) with | year_kept rest end.
+  match &rest with | december day_last end.
+  leibniz &year_kept, &december, &day_last in |- *.
+  leibniz (month.completion (year &d)) in |- *.
+  quod idem est.
+Qed.
+
+(* The day's place in its year is at most the year's length. *)
+(* last.year.order *)
+Theorem order : forall (d : Date) . day_number d <= day_number (last_day_of_year d).
+Proof.
+  intro d.
+  lemma raised : day_number d + 1 <= day_number (last_day_of_year d) + 1.
+  {
+    leibniz (number.decomposition &d), (last.year.decomposition &d) in |- *.
+    ipso (Bin0.addition.order.monotonicity (days_before_year (year &d)) _ _
+            (ordinal.boundedness &d)).
+  }
+  leibniz
+    (Bin0.addition.commutativity (day_number &d) 1),
+    (Bin0.addition.commutativity (day_number (last_day_of_year &d)) 1)
+    in &raised.
+  ipso (Bin0.addition.order.cancellation 1 (day_number &d) (day_number (last_day_of_year &d))
+          &raised).
+Qed.
+
+End year. (* last.year *)
+
+End last. (* last *)
+
+Module addition. (* addition *)
+
+(* addition.specification *)
+Theorem specification
+  : forall (x : Date) (k : Days) . day_number (add_days x k) = day_number x + k.
+Proof.
+  intros x k.
+  simpl add_days in |- *.
+  ipso (number.retraction (day_number &x + &k)).
+Qed.
+
+(* addition.identity *)
+Theorem identity : forall (x : Date) . add_days x 0%b0 = x.
+Proof.
+  intro x.
+  lemma facto : day_number (add_days x 0%b0) = day_number x.
+  {
+    match (Bin0.addition.identity (day_number &x)) with | _ zero end.
+    leibniz (addition.specification &x 0%b0), &zero in |- *.
+    quod idem est.
+  }
+  ipso (number.injectivity &facto).
+Qed.
+
+(* addition.associativity *)
+Theorem associativity
+  : forall (x : Date) (k : Days) (l : Days) . add_days (add_days x k) l = add_days x (k + l).
+Proof.
+  intros x k l.
+  lemma facto : day_number (add_days (add_days x k) l) = day_number (add_days x (k + l)).
+  {
+    leibniz
+      (addition.specification (add_days &x &k) &l),
+      (addition.specification &x &k),
+      (addition.specification &x (&k + &l))
+      in |- *.
+    ipso (Bin0.addition.associativity (day_number &x) &k &l).
+  }
+  ipso (number.injectivity &facto).
+Qed.
+
+Module month. (* addition.month *)
+
+(* The new year and month are the quotient and the remainder by 12 of the
+ * month number, which [division.specification] puts back together.
+ *)
+(* addition.month.specification *)
+Theorem specification
+  : forall (d : Date) (k : Bin0) .
+      month_number (add_months d k) = month_number d + k
+      /\ day (add_months d k)
+         = Bin.min (day d) (days_in_month (year (add_months d k)) (month (add_months d k))).
+Proof.
+  intros d k.
+  lemma facto
+    : let n := month_number d + k in
+      let y := Bin0.successor (n /. Month.months_in_year) in
+      let m :=
+        match Month.from_b0 (n %. Month.months_in_year) with
+        | Some m => m
+        | None   => Month.January
+        end in
+      years_before y * Month.months_in_year + Month.to_b0 m = n.
+  {
+    intros n y m.
+    lemma restored : years_before y = n /. Month.months_in_year.
+    {
+      simpl years_before, &y in |- *.
+      leibniz (Bin0.successor.specification (&n /. Month.months_in_year)) in |- *.
+      ipso (Bin0.subtraction.saturating.inversion.addition (&n /. Month.months_in_year) 1).
+    }
+    lemma placed : Month.to_b0 m = n %. Month.months_in_year.
+    {
+      simpl &m in |- *.
+      match (Month.from_b0 (&n %. Month.months_in_year)) with | | found end |- e.
+      - ex (month.totality &n &e) quodlibet.
+      - ipso (modus aequans
+                (Month.conversion.bin0.specification (&n %. Month.months_in_year) &found), &e).
+    }
+    leibniz &restored, &placed in |- *.
+    match (Bin0.division.specification &n Month.months_in_year) with | e _ end.
+    ipso &e.
+  }
+  ipso (conjoin &facto, (refl (day (add_months &d &k)))).
+Qed.
+
+(* addition.month.preservation *)
+Theorem preservation
+  : forall (d : Date) (k : Bin0) .
+      (day d <= days_in_month (year (add_months d k)) (month (add_months d k)))%b
+      -> day (add_months d k) = day d.
+Proof.
+  intros d k h.
+  lemma below
+    : Comparable.LessOrEqual Bin.LessThan
+        (day d) (days_in_month (year (add_months d k)) (month (add_months d k))).
+  {
+    ipso &h.
+  }
+  lemma facto
+    : Bin.min (day d) (days_in_month (year (add_months d k)) (month (add_months d k))) = day d.
+  {
+    ipso (modus aequans
+            (Comparable.minimum.specification
+               (day &d) (days_in_month (year (add_months &d &k)) (month (add_months &d &k)))),
+            &below).
+  }
+  ipso facto.
+Qed.
+
+(* The month number of [d] divides by 12 into the years before it and its
+ * month's place, below 12, so every part comes back.
+ *)
+(* addition.month.identity *)
+Theorem identity : forall (d : Date) . add_months d 0%b0 = d.
+Proof.
+  intro d.
+  match &d with | introduction y m n a end.
+  let X := Date.introduction y m n a in |- *.
+  lemma bounded : Month.to_b0 m < Month.months_in_year.
+  {
+    lemma facto : Bin0.compare (Month.to_b0 m) Month.months_in_year = Comparison.Lt.
+    {
+      simpl Month.months_in_year, Bin0.compare, Bin.compare in |- *.
+      match &m with
+      | January | February | March | April | May | June
+      | July | August | September | October | November | December
+      end; simpl in |- *; quod idem est.
+    }
+    match (Bin0.comparison.specification (Month.to_b0 &m) Month.months_in_year)
+      with | strict _ end.
+    ipso (modus aequans &strict, &facto).
+  }
+  match (Bin0.division.uniqueness
+           (years_before &y * Month.months_in_year + Month.to_b0 &m) Month.months_in_year
+           (years_before &y) (Month.to_b0 &m)
+           (conjoin (refl (years_before &y * Month.months_in_year + Month.to_b0 &m)), &bounded))
+    with | quotient remainder end.
+  match (Bin0.addition.identity (years_before &y * Month.months_in_year + Month.to_b0 &m))
+    with | _ vanishing end.
+  lemma same_year : year (add_months X 0%b0) = year X.
+  {
+    lemma facto
+      : Bin0.successor
+          ((years_before y * Month.months_in_year + Month.to_b0 m + 0%b0) /. Month.months_in_year)
+        = y.
+    {
+      leibniz &vanishing, &quotient in |- *.
+      ipso (year.antecedence.section &y).
+    }
+    ipso facto.
+  }
+  lemma same_month : month (add_months X 0%b0) = month X.
+  {
+    lemma facto
+      : match
+          Month.from_b0
+            ((years_before y * Month.months_in_year + Month.to_b0 m + 0%b0) %. Month.months_in_year)
+        with
+        | Some m' => m'
+        | None    => Month.January
+        end
+        = m.
+    {
+      leibniz &vanishing, &remainder, (Month.conversion.bin0.retraction &m) in |- *.
+      ipso (refl &m).
+    }
+    ipso facto.
+  }
+  lemma same_day : day (add_months X 0%b0) = day X.
+  {
+    lemma below : Comparable.LessOrEqual Bin.LessThan n (days_in_month y m).
+    {
+      ipso (modus aequans (Comparable.order.reflection &n (days_in_month &y &m)),
+              (modus aequans (Assert.specification _), &a)).
+    }
+    lemma facto
+      : Bin.min n (days_in_month (year (add_months X 0%b0)) (month (add_months X 0%b0))) = n.
+    {
+      leibniz &same_year, &same_month in |- *.
+      ipso (modus aequans (Comparable.minimum.specification &n (days_in_month &y &m)), &below).
+    }
+    ipso facto.
+  }
+  ipso (extensionality (add_months &X 0%b0) &X &same_year &same_month &same_day).
+Qed.
+
+End month. (* addition.month *)
+
+Module year. (* addition.year *)
+
+(* addition.year.specification *)
+Theorem specification
+  : forall (d : Date) (k : Bin0) .
+      (year (add_years d k) : Bin0) = year d + k
+      /\ month (add_years d k) = month d
+      /\ day (add_years d k) = Bin.min (day d) (days_in_month (year (add_years d k)) (month d)).
+Proof.
+  intros d k.
+  lemma facto : (Bin0.successor (years_before (year d) + k) : Bin0) = year d + k.
+  {
+    leibniz (Bin0.successor.specification (years_before (year &d) + &k)) in |- *.
+    leibniz
+      (Bin0.addition.associativity (years_before (year &d)) &k 1),
+      (Bin0.addition.commutativity &k 1),
+      <- (Bin0.addition.associativity (years_before (year &d)) 1 &k)
+      in |- *.
+    leibniz (year.antecedence.restoration (year &d)) in |- *.
+    quod idem est.
+  }
+  ipso (conjoin &facto, (conjoin (refl (month &d)), (refl (day (add_years &d &k))))).
+Qed.
+
+(* addition.year.preservation *)
+Theorem preservation
+  : forall (d : Date) (k : Bin0) .
+      (day d <= days_in_month (year (add_years d k)) (month d))%b
+      -> day (add_years d k) = day d.
+Proof.
+  intros d k h.
+  lemma below
+    : Comparable.LessOrEqual Bin.LessThan (day d) (days_in_month (year (add_years d k)) (month d)).
+  {
+    ipso &h.
+  }
+  lemma facto : Bin.min (day d) (days_in_month (year (add_years d k)) (month d)) = day d.
+  {
+    ipso (modus aequans
+            (Comparable.minimum.specification
+               (day &d) (days_in_month (year (add_years &d &k)) (month &d))),
+            &below).
+  }
+  ipso facto.
+Qed.
+
+(* addition.year.identity *)
+Theorem identity : forall (d : Date) . add_years d 0%b0 = d.
+Proof.
+  intro d.
+  match &d with | introduction y m n a end.
+  let X := Date.introduction y m n a in |- *.
+  match (Bin0.addition.identity (years_before &y)) with | _ vanishing end.
+  lemma same_year : year (add_years X 0%b0) = year X.
+  {
+    lemma facto : Bin0.successor (years_before y + 0%b0) = y.
+    {
+      leibniz &vanishing in |- *.
+      ipso (year.antecedence.section &y).
+    }
+    ipso facto.
+  }
+  lemma same_month : month (add_years X 0%b0) = month X.
+  {
+    ipso (refl &m).
+  }
+  lemma same_day : day (add_years X 0%b0) = day X.
+  {
+    lemma below : Comparable.LessOrEqual Bin.LessThan n (days_in_month y m).
+    {
+      ipso (modus aequans (Comparable.order.reflection &n (days_in_month &y &m)),
+              (modus aequans (Assert.specification _), &a)).
+    }
+    lemma facto : Bin.min n (days_in_month (year (add_years X 0%b0)) m) = n.
+    {
+      leibniz &same_year in |- *.
+      ipso (modus aequans (Comparable.minimum.specification &n (days_in_month &y &m)), &below).
+    }
+    ipso facto.
+  }
+  ipso (extensionality (add_years &X 0%b0) &X &same_year &same_month &same_day).
+Qed.
+
+(* [k] years are [k * 12] months: the month number plus [k * 12] divides by 12
+ * into the years before plus [k], with the month's place left over.
+ *)
+(* addition.year.reduction *)
+Theorem reduction
+  : forall (d : Date) (k : Bin0) . add_years d k = add_months d (k * Month.months_in_year).
+Proof.
+  intros d k.
+  match &d with | introduction y m n a end.
+  let X := Date.introduction y m n a in |- *.
+  lemma bounded : Month.to_b0 m < Month.months_in_year.
+  {
+    lemma facto : Bin0.compare (Month.to_b0 m) Month.months_in_year = Comparison.Lt.
+    {
+      simpl Month.months_in_year, Bin0.compare, Bin.compare in |- *.
+      match &m with
+      | January | February | March | April | May | June
+      | July | August | September | October | November | December
+      end; simpl in |- *; quod idem est.
+    }
+    match (Bin0.comparison.specification (Month.to_b0 &m) Month.months_in_year)
+      with | strict _ end.
+    ipso (modus aequans &strict, &facto).
+  }
+  lemma balanced
+    : (years_before y + k) * Month.months_in_year + Month.to_b0 m
+      = years_before y * Month.months_in_year + Month.to_b0 m + k * Month.months_in_year.
+  {
+    match (Bin0.multiplication.distributivity.over.addition
+             Month.months_in_year (years_before &y) &k)
+      with | _ distributed end.
+    leibniz &distributed in |- *.
+    leibniz
+      (Bin0.addition.associativity
+         (years_before &y * Month.months_in_year) (&k * Month.months_in_year) (Month.to_b0 &m)),
+      (Bin0.addition.commutativity (&k * Month.months_in_year) (Month.to_b0 &m)),
+      <- (Bin0.addition.associativity
+            (years_before &y * Month.months_in_year) (Month.to_b0 &m) (&k * Month.months_in_year))
+      in |- *.
+    quod idem est.
+  }
+  match (Bin0.division.uniqueness
+           (years_before &y * Month.months_in_year + Month.to_b0 &m + &k * Month.months_in_year)
+           Month.months_in_year (years_before &y + &k) (Month.to_b0 &m)
+           (conjoin &balanced, &bounded))
+    with | quotient remainder end.
+  lemma same_year : year (add_years X k) = year (add_months X (k * Month.months_in_year)).
+  {
+    lemma facto
+      : Bin0.successor (years_before y + k)
+        = Bin0.successor
+            ((years_before y * Month.months_in_year + Month.to_b0 m + k * Month.months_in_year)
+               /. Month.months_in_year).
+    {
+      leibniz &quotient in |- *.
+      quod idem est.
+    }
+    ipso facto.
+  }
+  lemma same_month : month (add_years X k) = month (add_months X (k * Month.months_in_year)).
+  {
+    lemma facto
+      : m
+        = match
+            Month.from_b0
+              ((years_before y * Month.months_in_year + Month.to_b0 m + k * Month.months_in_year)
+                 %. Month.months_in_year)
+          with
+          | Some m' => m'
+          | None    => Month.January
+          end.
+    {
+      leibniz &remainder, (Month.conversion.bin0.retraction &m) in |- *.
+      ipso (refl &m).
+    }
+    ipso facto.
+  }
+  lemma same_day : day (add_years X k) = day (add_months X (k * Month.months_in_year)).
+  {
+    lemma facto
+      : Bin.min n (days_in_month (year (add_years X k)) (month (add_years X k)))
+        = Bin.min n
+            (days_in_month
+               (year (add_months X (k * Month.months_in_year)))
+               (month (add_months X (k * Month.months_in_year)))).
+    {
+      leibniz <- &same_year, <- &same_month in |- *.
+      quod idem est.
+    }
+    ipso facto.
+  }
+  ipso (extensionality (add_years &X &k) (add_months &X (&k * Month.months_in_year))
+          &same_year &same_month &same_day).
+Qed.
+
+End year. (* addition.year *)
+
+End addition. (* addition *)
+
+Module subtraction. (* subtraction *)
+
+Module inversion. (* subtraction.inversion *)
+
+(* subtraction.inversion.addition *)
+Theorem addition : forall (x : Date) (k : Days) . subtract_days (add_days x k) k = Some x.
+Proof.
+  intros x k.
+  simpl subtract_days in |- *.
+  leibniz (addition.specification &x &k) in |- *.
+  lemma below : Bin0.le k (day_number x + k) = true.
+  {
+    ipso (modus aequans (Comparable.order.reflection &k (day_number &x + &k)),
+            (Bin0.addition.right.order.extensivity (day_number &x) &k)).
+  }
+  leibniz &below in |- *.
+  lemma facto : Some (from_day_number (Bin0.saturating_sub (day_number x + k) k)) = Some x.
+  {
+    leibniz
+      (Bin0.subtraction.saturating.inversion.addition (day_number &x) &k),
+      (number.section &x)
+      in |- *.
+    quod idem est.
+  }
+  ipso facto.
+Qed.
+
+End inversion. (* subtraction.inversion *)
+
+(* [subtract_days] takes the saturating difference only when [k] is at most
+ * the day number, where adding [k] back restores it.
+ *)
+(* subtraction.specification *)
+Theorem specification
+  : forall (x : Date) (k : Days) (y : Date) . subtract_days x k = Some y <-> add_days y k = x.
+Proof.
+  intros x k y.
+  divide et impera.
+  -
+    simpl subtract_days in |- *.
+    match (Bin0.le &k (day_number &x)) with | | end |- c.
+    +
+      intro e.
+      let proof same := Option.some.injectivity &e.
+      leibniz <- &same in |- *.
+      lemma below : k <= day_number x.
+      {
+        ipso (modus aequans (Comparable.order.reflection &k (day_number &x)), &c).
+      }
+      lemma facto
+        : day_number (add_days (from_day_number (Bin0.saturating_sub (day_number x) k)) k)
+          = day_number x.
+      {
+        leibniz
+          (addition.specification (from_day_number (Bin0.saturating_sub (day_number &x) &k)) &k),
+          (number.retraction (Bin0.saturating_sub (day_number &x) &k)),
+          (Bin0.addition.commutativity (Bin0.saturating_sub (day_number &x) &k) &k)
+          in |- *.
+        ipso (Bin0.subtraction.saturating.specification &below).
+      }
+      ipso (number.injectivity &facto).
+    +
+      intro e.
+      ex &e quodlibet.
+  -
+    intro e.
+    leibniz <- &e in |- *.
+    ipso (subtraction.inversion.addition &y &k).
+Qed.
+
+(* subtraction.failure *)
+Theorem failure : forall (x : Date) (k : Days) . subtract_days x k = None <-> day_number x < k.
+Proof.
+  intros x k.
+  simpl subtract_days in |- *.
+  match (Bin0.le &k (day_number &x)) with | | end |- c.
+  -
+    lemma below : k <= day_number x.
+    {
+      ipso (modus aequans (Comparable.order.reflection &k (day_number &x)), &c).
+    }
+    divide et impera.
+    +
+      intro e.
+      ex &e quodlibet.
+    +
+      intro h.
+      match &below with | same | smaller end.
+      *
+        leibniz &same in &h.
+        ex (Bin0.order.strict.irreflexivity (day_number &x) &h) quodlibet.
+      *
+        ex (Bin0.order.strict.irreflexivity &k (Bin0.order.strict.transitivity &smaller &h))
+          quodlibet.
+  -
+    divide et impera.
+    +
+      intro e.
+      match (Comparable.order.strict.trichotomy (day_number &x) &k) with | smaller | rest end.
+      *
+        ipso &smaller.
+      *
+        lemma reached : k <= day_number x.
+        {
+          match &rest with | same | greater end.
+          - ipso (disjoin (symm &same), _).
+          - ipso (disjoin _, &greater).
+        }
+        let proof t := modus aequans (Comparable.order.reflection &k (day_number &x)), &reached.
+        leibniz &c in &t.
+        ex &t quodlibet.
+    +
+      intro h.
+      ipso (refl (@None Date)).
+Qed.
+
+End subtraction. (* subtraction *)
+
+Module succession. (* succession *)
+
+(* succession.specification *)
+Theorem specification : forall (x : Date) . day_number (next_day x) = day_number x + 1.
+Proof.
+  intro x.
+  simpl next_day in |- *.
+  ipso (addition.specification &x 1).
+Qed.
+
+(* succession.inversion *)
+Theorem inversion : forall (x : Date) (y : Date) . previous_day x = Some y <-> next_day y = x.
+Proof.
+  intros x y.
+  simpl previous_day, next_day in |- *.
+  ipso (subtraction.specification &x 1 &y).
+Qed.
+
+(* Only day number 0 has no day before it, and that is the first day of
+ * year 1.
+ *)
+(* succession.origin *)
+Theorem origin
+  : forall (d : Date) . previous_day d = None <-> (year d = 1 /\ d = first_day_of_year d).
+Proof.
+  intro d.
+  simpl previous_day in |- *.
+  divide et impera.
+  -
+    intro e.
+    let proof below := modus aequans (subtraction.failure &d 1), &e.
+    let proof zero := Bin0.order.discreteness (day_number &d) &below.
+    lemma start : d = from_day_number 0%b0.
+    {
+      leibniz <- &zero in |- *.
+      symm in |- *.
+      ipso (number.section &d).
+    }
+    leibniz &start in |- *.
+    divide et impera.
+    +
+      ipso (refl 1).
+    +
+      lemma same
+        : day_number (from_day_number 0%b0)
+          = day_number (first_day_of_year (from_day_number 0%b0)).
+      {
+        leibniz
+          (number.retraction 0%b0),
+          (first.year.decomposition (from_day_number 0%b0))
+          in |- *.
+        ipso (refl 0%b0).
+      }
+      ipso (number.injectivity &same).
+  -
+    intro h.
+    match &h with | one same end.
+    lemma below : day_number d < 1.
+    {
+      leibniz &same in |- *.
+      leibniz (first.year.decomposition &d), &one in |- *.
+      simpl Bin0.LessThan in |- *.
+      exists Bin.One.
+      ipso (refl (Bin0.Positive Bin.One)).
+    }
+    ipso (modus aequans (subtraction.failure &d 1), &below).
+Qed.
+
+End succession. (* succession *)
+
+Module difference. (* difference *)
+
+(* The days from [x] to [k] days later balance as [k] against none. *)
+(* difference.specification *)
+Theorem specification
+  : forall (x : Date) (k : Days) . days_between x (add_days x k) = SignedBin.from_b0 k.
+Proof.
+  intros x k.
+  simpl days_between in |- *.
+  leibniz (addition.specification &x &k) in |- *.
+  lemma balanced : (day_number x + k) + 0%b0 = k + day_number x.
+  {
+    match (Bin0.addition.identity (day_number &x + &k)) with | _ zero end.
+    leibniz &zero, (Bin0.addition.commutativity (day_number &x) &k) in |- *.
+    quod idem est.
+  }
+  leibniz (SignedBin.difference.invariance &balanced) in |- *.
+  rm &balanced.
+  match &k with | | p end; simpl in |- *; quod idem est.
+Qed.
+
+End difference. (* difference *)
+
+Module unix. (* unix *)
+
+(* unix.addition *)
+Theorem addition
+  : forall (d : Date) (k : Days) . unix_day (add_days d k) = (unix_day d + k)%b_signed.
+Proof.
+  intros d k.
+  simpl unix_day, days_between in |- *.
+  leibniz (addition.specification &d &k) in |- *.
+  leibniz <- (SignedBin.difference.identity &k) in |- *.
+  leibniz
+    (SignedBin.difference.additivity (day_number &d) (day_number unix_epoch) &k 0%b0)
+    in |- *.
+  match (Bin0.addition.identity (day_number unix_epoch)) with | _ vanishing end.
+  leibniz &vanishing in |- *.
+  quod idem est.
+Qed.
+
+(* Adding the epoch's day number back to the Unix day gives the day number,
+ * which [SignedBin.to_b0] keeps.
+ *)
+(* unix.section *)
+Theorem section : forall (d : Date) . from_unix_day (unix_day d) = Some d.
+Proof.
+  intro d.
+  lemma shifted : (unix_day d + day_number unix_epoch)%b_signed = day_number d.
+  {
+    simpl unix_day, days_between in |- *.
+    leibniz <- (SignedBin.difference.identity (day_number unix_epoch)) in |- *.
+    leibniz
+      (SignedBin.difference.additivity
+         (day_number &d) (day_number unix_epoch) (day_number unix_epoch) 0%b0)
+      in |- *.
+    match (Bin0.addition.identity (day_number unix_epoch)) with | _ vanishing end.
+    leibniz &vanishing in |- *.
+    match (Bin0.addition.identity (day_number &d + day_number unix_epoch)) with | _ balanced end.
+    leibniz (SignedBin.difference.invariance &balanced) in |- *.
+    ipso (SignedBin.difference.identity (day_number &d)).
+  }
+  simpl from_unix_day in |- *.
+  leibniz &shifted, (SignedBin.narrowing.bin0.retraction (day_number &d)) in |- *.
+  lemma facto : Some (from_day_number (day_number d)) = Some d.
+  {
+    leibniz (number.section &d) in |- *.
+    quod idem est.
+  }
+  ipso facto.
+Qed.
+
+(* A Unix day with a date gives back the day number of that date, and the
+ * epoch's day number added and taken away again cancels.
+ *)
+(* unix.specification *)
+Theorem specification
+  : forall (u : SignedBin) (d : Date) . from_unix_day u = Some d <-> unix_day d = u.
+Proof.
+  intros u d.
+  divide et impera.
+  -
+    simpl from_unix_day in |- *.
+    match (SignedBin.to_b0 (&u + day_number unix_epoch)%b_signed) with | | n end |- e.
+    +
+      intro h.
+      simpl in &h.
+      ex &h quodlibet.
+    +
+      intro h.
+      let proof same := Option.some.injectivity &h.
+      leibniz <- &same in |- *.
+      lemma facto
+        : unix_day (from_day_number n) = (n + (- day_number unix_epoch))%b_signed.
+      {
+        simpl unix_day, days_between in |- *.
+        leibniz (number.retraction &n) in |- *.
+        leibniz
+          <- (SignedBin.difference.identity &n),
+          <- (SignedBin.difference.negation (day_number unix_epoch))
+          in |- *.
+        leibniz (SignedBin.difference.additivity &n 0%b0 0%b0 (day_number unix_epoch)) in |- *.
+        match (Bin0.addition.identity &n) with | _ right_zero end.
+        match (Bin0.addition.identity (day_number unix_epoch)) with | left_zero _ end.
+        leibniz &right_zero, &left_zero in |- *.
+        quod idem est.
+      }
+      leibniz &facto in |- *.
+      modus aequans
+        (SignedBin.narrowing.bin0.specification (&u + day_number unix_epoch)%b_signed &n), &e
+        |- g.
+      leibniz <- &g in |- *.
+      leibniz
+        (SignedBin.addition.associativity
+           &u (SignedBin.from_b0 (day_number unix_epoch))
+           (SignedBin.negate (SignedBin.from_b0 (day_number unix_epoch)))),
+        (SignedBin.addition.right.inverse (SignedBin.from_b0 (day_number unix_epoch))),
+        (SignedBin.addition.right.identity &u)
+        in |- *.
+      quod idem est.
+  -
+    intro e.
+    leibniz <- &e in |- *.
+    ipso (unix.section &d).
+Qed.
+
+End unix. (* unix *)
+
 Module order. (* order *)
 
 Module strict. (* order.strict *)
@@ -2924,7 +4140,7 @@ Module strict. (* order.strict *)
 (* order.strict.transitivity *)
 Theorem transitivity
   : forall {x1 : Date} {x2 : Date} {x3 : Date} .
-      LessThan x1 x2 -> LessThan x2 x3 -> LessThan x1 x3.
+      (x1 < x2)%date -> (x2 < x3)%date -> (x1 < x3)%date.
 Proof.
   intros x1 x2 x3 h1 h2.
   let proof n1 := modus aequans (number.order &x1 &x2), &h1.
@@ -2941,7 +4157,7 @@ Module comparison. (* comparison *)
 (* comparison.specification *)
 Theorem specification
   : forall (x1 : Date) (x2 : Date) .
-      (compare x1 x2 = Comparison.Lt <-> LessThan x1 x2)
+      (compare x1 x2 = Comparison.Lt <-> (x1 < x2)%date)
       /\ (compare x1 x2 = Comparison.Eq <-> x1 = x2).
 Proof.
   intros x1 x2.
@@ -2971,5 +4187,7 @@ Instance comparable
 End Date. (* Date *)
 
 Abbreviation Date := Date.T.
+
+Export (notations) Date.
 
 Existing Instance Date.comparable.
