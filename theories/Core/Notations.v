@@ -208,16 +208,16 @@ Declare Scope jw_rational_scope.
 Delimit Scope jw_rational_scope with q.
 Declare Scope jw_bin_base_scope.
 Delimit Scope jw_bin_base_scope with bin_base.
-Declare Scope jw_bin_with_zero_scope.
-Delimit Scope jw_bin_with_zero_scope with bin_with_zero.
+Declare Scope jw_bin0_scope.
+Delimit Scope jw_bin0_scope with b0.
 Declare Scope jw_bin_base_decimal_scope.
 Delimit Scope jw_bin_base_decimal_scope with bin_base_decimal.
-Declare Scope jw_bin_with_zero_decimal_scope.
-Delimit Scope jw_bin_with_zero_decimal_scope with bin_with_zero_decimal.
+Declare Scope jw_bin0_decimal_scope.
+Delimit Scope jw_bin0_decimal_scope with b0_decimal.
 
 (* [b] is the shortest key in the tree and it goes to the type whose literals
    cover the most ground: [SignedBin] reads both [1011%b_signed] and [(-1011)%b_signed],
-   where [BinWithZero] could never spell the second. A key is worth its
+   where [Bin0] could never spell the second. A key is worth its
    brevity when literals are written under it, not when the type is named
    briefly. *)
 Declare Scope jw_signed_bin_scope.

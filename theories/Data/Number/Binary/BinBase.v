@@ -27,7 +27,7 @@ Module BinBase. (* BinBase *)
 (* A positive number in binary, its leading bit innermost: [One] is 1, [b0]
  * appends a 0 at the low end and [b1] appends a 1, so six, 110 in binary, is
  * [b0 (b1 One)]. The leading bit is always 1, so every positive number has
- * exactly one term; [Nat0]'s counterpart [BinWithZero] adds zero on
+ * exactly one term; [Nat0]'s counterpart [Bin0] adds zero on
  * top.
  *)
 Inductive T : Type :=
@@ -66,7 +66,7 @@ Notation "++ b" := (inc b) (only parsing)
   : jw_bin_base_scope.
 
 (* [b] with [bit] written after its lowest bit: [2b], or [2b + 1] when [bit]
- * is [true]. [BinWithZero] carries the same operation on its own type, and
+ * is [true]. [Bin0] carries the same operation on its own type, and
  * takes its arguments in the same order.
  *)
 (* [Bool -> BinBase -> BinBase] *)

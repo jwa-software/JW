@@ -14,7 +14,7 @@ From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Number.Binary.BinBase.
-From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Integer.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -34,7 +34,7 @@ Module SignedBin. (* SignedBin *)
  * binary and the arithmetic reduces to [BinBase]'s, as [Integer]'s reduces to
  * [Nat]'s.
  *
- * Three cases rather than a sign beside a [BinWithZero]: [BinBase] has no zero,
+ * Three cases rather than a sign beside a [Bin0]: [BinBase] has no zero,
  * so zero has exactly one spelling here. A sign paired with a magnitude that
  * can itself be zero admits both [+ 0] and [- 0], and equality on this type
  * is structural.
@@ -82,42 +82,42 @@ Definition negate := fun (x : SignedBin) .
   | + p => - p
   end.
 
-(* [SignedBin -> BinWithZero] *)
+(* [SignedBin -> Bin0] *)
 Definition abs := fun (x : SignedBin) .
   match x with
-  | - p => BinWithZero.Positive p
-  | 0   => BinWithZero.Zero
-  | + p => BinWithZero.Positive p
+  | - p => Bin0.Positive p
+  | 0   => Bin0.Zero
+  | + p => Bin0.Positive p
   end.
 
 (* The positive part, zero below it; [add] is written from it. *)
-(* [SignedBin -> BinWithZero] *)
+(* [SignedBin -> Bin0] *)
 Definition ramp := fun (x : SignedBin) .
   match x with
-  | - _ => BinWithZero.Zero
-  | 0   => BinWithZero.Zero
-  | + p => BinWithZero.Positive p
+  | - _ => Bin0.Zero
+  | 0   => Bin0.Zero
+  | + p => Bin0.Positive p
   end.
 
 (* [BinBase -> SignedBin] *)
 Definition from_bin_base := fun (p : BinBase) . (+ p).
 
-(* [BinWithZero -> SignedBin] *)
-Definition from_bin_with_zero := fun (n : BinWithZero) .
+(* [Bin0 -> SignedBin] *)
+Definition from_b0 := fun (n : Bin0) .
   match n return SignedBin with
-  | BinWithZero.Zero       => 0
-  | BinWithZero.Positive p => + p
+  | Bin0.Zero       => 0
+  | Bin0.Positive p => + p
   end.
 
-(* The conversions down: [None] below zero for [BinWithZero], and at or below
+(* The conversions down: [None] below zero for [Bin0], and at or below
  * it for [BinBase], which has no zero to answer with.
  *)
-(* [SignedBin -> Option BinWithZero] *)
-Definition to_bin_with_zero := fun (x : SignedBin) .
+(* [SignedBin -> Option Bin0] *)
+Definition to_b0 := fun (x : SignedBin) .
   match x with
   | - _ => None
-  | 0   => Some BinWithZero.Zero
-  | + p => Some (BinWithZero.Positive p)
+  | 0   => Some Bin0.Zero
+  | + p => Some (Bin0.Positive p)
   end.
 
 (* [SignedBin -> Option BinBase] *)
@@ -154,13 +154,13 @@ Definition bin_base_difference := fun (p : BinBase) (q : BinBase) .
   | _, _            => 0
   end.
 
-(* [BinWithZero -> BinWithZero -> SignedBin] *)
-Definition bin_with_zero_difference := fun (a : BinWithZero) (b : BinWithZero) .
+(* [Bin0 -> Bin0 -> SignedBin] *)
+Definition b0_difference := fun (a : Bin0) (b : Bin0) .
   match a, b with
-  | BinWithZero.Zero, BinWithZero.Zero             => 0
-  | BinWithZero.Zero, BinWithZero.Positive q       => - q
-  | BinWithZero.Positive p, BinWithZero.Zero       => + p
-  | BinWithZero.Positive p, BinWithZero.Positive q => bin_base_difference p q
+  | Bin0.Zero, Bin0.Zero             => 0
+  | Bin0.Zero, Bin0.Positive q       => - q
+  | Bin0.Positive p, Bin0.Zero       => + p
+  | Bin0.Positive p, Bin0.Positive q => bin_base_difference p q
   end.
 
 (* Every value is [ramp x] less [ramp (negate x)], one of which is always
@@ -169,8 +169,8 @@ Definition bin_with_zero_difference := fun (a : BinWithZero) (b : BinWithZero) .
  *)
 (* [SignedBin -> SignedBin -> SignedBin] *)
 Definition add := fun (x : SignedBin) (y : SignedBin) .
-  bin_with_zero_difference (ramp x + ramp y)%bin_with_zero
-                           (ramp (negate x) + ramp (negate y))%bin_with_zero.
+  b0_difference (ramp x + ramp y)%b0
+                           (ramp (negate x) + ramp (negate y))%b0.
 
 (* The prefix [+ p] above is a separate notation and coexists with this one. *)
 Notation "x + y" := (add x y) (only parsing)
@@ -217,9 +217,9 @@ Notation "x * y" := (mul x y) (only parsing)
 (* [SignedBin -> BinBase -> SignedBin] *)
 Definition divide := fun (x : SignedBin) (d : BinBase) .
   match x with
-  | - p => negate (from_bin_with_zero (p /. d)%bin_with_zero)
+  | - p => negate (from_b0 (p /. d)%b0)
   | 0   => 0
-  | + p => from_bin_with_zero (p /. d)%bin_with_zero
+  | + p => from_b0 (p /. d)%b0
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
@@ -289,7 +289,7 @@ Abbreviation min := (Comparable.min compare).
 (* [SignedBin -> SignedBin -> SignedBin] *)
 Abbreviation max := (Comparable.max compare).
 
-(* [BinWithZero] reads the magnitude, the sign is applied after. [- 0] reads as
+(* [Bin0] reads the magnitude, the sign is applied after. [- 0] reads as
  * zero, this type having one zero and [negate] sending it to itself.
  * Hexadecimal is refused there too, so a literal carries only [0] and [1].
  *)
@@ -297,10 +297,10 @@ Abbreviation max := (Comparable.max compare).
 Definition from_numeral := fun (s : Numeral.Signed) .
   match s with
   | Numeral.Signed.Decimal (Numeral.Decimal.Signed.Positive d) =>
-      Option.map from_bin_with_zero (BinWithZero.from_digits BinWithZero.Zero d)
+      Option.map from_b0 (Bin0.from_digits Bin0.Zero d)
   | Numeral.Signed.Decimal (Numeral.Decimal.Signed.Negative d) =>
-      Option.map (fun (n : BinWithZero) . negate (from_bin_with_zero n))
-        (BinWithZero.from_digits BinWithZero.Zero d)
+      Option.map (fun (n : Bin0) . negate (from_b0 n))
+        (Bin0.from_digits Bin0.Zero d)
   | Numeral.Signed.Hexadecimal _ => None
   end.
 
@@ -486,10 +486,10 @@ Module difference. (* conversion.difference *)
 (* [difference] with the zero cases added. *)
 (* conversion.difference.extension *)
 Theorem extension
-  : forall (a : BinWithZero) (b : BinWithZero) .
-      to_integer (bin_with_zero_difference a b)
+  : forall (a : Bin0) (b : Bin0) .
+      to_integer (b0_difference a b)
     = Integer.nat0_difference
-        (BinWithZero.to_nat0 a) (BinWithZero.to_nat0 b).
+        (Bin0.to_nat0 a) (Bin0.to_nat0 b).
 Proof.
   intros a b.
   match &a with | | p end.
@@ -620,9 +620,9 @@ Theorem division
 Proof.
   intros x d.
   lemma embedding
-    : forall (n : BinWithZero) .
-        to_integer (from_bin_with_zero n)
-        = Integer.from_nat0 (BinWithZero.to_nat0 n).
+    : forall (n : Bin0) .
+        to_integer (from_b0 n)
+        = Integer.from_nat0 (Bin0.to_nat0 n).
   {
     intro n.
     match n with | | q end.
@@ -636,33 +636,33 @@ Proof.
   match &x with | p | | p end.
   -
     let proof c
-      : BinWithZero.to_nat0 (p /. &d)%bin_with_zero
+      : Bin0.to_nat0 (p /. &d)%b0
         = (BinBase.to_nat &p /. BinBase.to_nat &d)%n0
-      := BinWithZero.conversion.division p &d.
+      := Bin0.conversion.division p &d.
     simpl divide in |- *.
     simpl to_integer at 2 in |- *.
     simpl Integer.divide in |- *.
-    leibniz (conversion.negation (from_bin_with_zero (p /. &d)%bin_with_zero)),
-      (&embedding (p /. &d)%bin_with_zero), &c in |- *.
+    leibniz (conversion.negation (from_b0 (p /. &d)%b0)),
+      (&embedding (p /. &d)%b0), &c in |- *.
     quod idem est.
   -
     simpl in |- *.
     quod idem est.
   -
     let proof c
-      : BinWithZero.to_nat0 (p /. &d)%bin_with_zero
+      : Bin0.to_nat0 (p /. &d)%b0
         = (BinBase.to_nat &p /. BinBase.to_nat &d)%n0
-      := BinWithZero.conversion.division p &d.
+      := Bin0.conversion.division p &d.
     simpl divide in |- *.
     simpl to_integer at 2 in |- *.
     simpl Integer.divide in |- *.
-    leibniz (&embedding (p /. &d)%bin_with_zero), &c in |- *.
+    leibniz (&embedding (p /. &d)%b0), &c in |- *.
     quod idem est.
 Qed.
 
 (* conversion.ramp *)
 Theorem ramp
-  : forall (x : SignedBin) . BinWithZero.to_nat0 (ramp x) = Integer.ramp (to_integer x).
+  : forall (x : SignedBin) . Bin0.to_nat0 (ramp x) = Integer.ramp (to_integer x).
 Proof.
   intros x.
   match &x with | Negative p | Zero | Positive p end; simpl in |- *; quod idem est.
@@ -670,7 +670,7 @@ Qed.
 
 End conversion. (* conversion *)
 
-(* The laws of [bin_with_zero_difference], read through [to_integer] as those
+(* The laws of [b0_difference], read through [to_integer] as those
  * of [Integer.nat0_difference].
  *)
 Module difference. (* difference *)
@@ -678,18 +678,18 @@ Module difference. (* difference *)
 (* Two differences agree when their sides balance crosswise. *)
 (* difference.invariance *)
 Theorem invariance
-  : forall {a : BinWithZero} {b : BinWithZero} {c : BinWithZero} {d : BinWithZero} .
-      (a + d = c + b)%bin_with_zero ->
-      bin_with_zero_difference a b = bin_with_zero_difference c d.
+  : forall {a : Bin0} {b : Bin0} {c : Bin0} {d : Bin0} .
+      (a + d = c + b)%b0 ->
+      b0_difference a b = b0_difference c d.
 Proof.
   intros a b c d e.
-  let proof f := congru BinWithZero.to_nat0, &e.
+  let proof f := congru Bin0.to_nat0, &e.
   leibniz
-    (BinWithZero.conversion.addition &a &d),
-    (BinWithZero.conversion.addition &c &b)
+    (Bin0.conversion.addition &a &d),
+    (Bin0.conversion.addition &c &b)
     in &f.
   lemma facto
-    : to_integer (bin_with_zero_difference &a &b) = to_integer (bin_with_zero_difference &c &d).
+    : to_integer (b0_difference &a &b) = to_integer (b0_difference &c &d).
   {
     leibniz
       (conversion.difference.extension &a &b),
@@ -702,28 +702,28 @@ Qed.
 
 (* difference.additivity *)
 Theorem additivity
-  : forall (a : BinWithZero) (b : BinWithZero) (c : BinWithZero) (d : BinWithZero) .
-      bin_with_zero_difference a b + bin_with_zero_difference c d
-      = bin_with_zero_difference (a + c)%bin_with_zero (b + d)%bin_with_zero.
+  : forall (a : Bin0) (b : Bin0) (c : Bin0) (d : Bin0) .
+      b0_difference a b + b0_difference c d
+      = b0_difference (a + c)%b0 (b + d)%b0.
 Proof.
   intros a b c d.
   lemma facto
-    : to_integer (bin_with_zero_difference &a &b + bin_with_zero_difference &c &d)
+    : to_integer (b0_difference &a &b + b0_difference &c &d)
       = to_integer
-          (bin_with_zero_difference (&a + &c)%bin_with_zero (&b + &d)%bin_with_zero).
+          (b0_difference (&a + &c)%b0 (&b + &d)%b0).
   {
     leibniz
-      (conversion.addition (bin_with_zero_difference &a &b) (bin_with_zero_difference &c &d)),
+      (conversion.addition (b0_difference &a &b) (b0_difference &c &d)),
       (conversion.difference.extension &a &b),
       (conversion.difference.extension &c &d),
-      (conversion.difference.extension (&a + &c)%bin_with_zero (&b + &d)%bin_with_zero),
-      (BinWithZero.conversion.addition &a &c),
-      (BinWithZero.conversion.addition &b &d)
+      (conversion.difference.extension (&a + &c)%b0 (&b + &d)%b0),
+      (Bin0.conversion.addition &a &c),
+      (Bin0.conversion.addition &b &d)
       in |- *.
     ipso
       (Integer.difference.nat0.additivity
-        (BinWithZero.to_nat0 &a) (BinWithZero.to_nat0 &b)
-        (BinWithZero.to_nat0 &c) (BinWithZero.to_nat0 &d)).
+        (Bin0.to_nat0 &a) (Bin0.to_nat0 &b)
+        (Bin0.to_nat0 &c) (Bin0.to_nat0 &d)).
   }
   ipso (conversion.injectivity &facto).
 Qed.
@@ -731,28 +731,28 @@ Qed.
 (* The difference's positive part with [b] is its negative part with [a]. *)
 (* difference.specification *)
 Theorem specification
-  : forall (a : BinWithZero) (b : BinWithZero) .
-      (ramp (bin_with_zero_difference a b) + b
-        = ramp (negate (bin_with_zero_difference a b)) + a)%bin_with_zero.
+  : forall (a : Bin0) (b : Bin0) .
+      (ramp (b0_difference a b) + b
+        = ramp (negate (b0_difference a b)) + a)%b0.
 Proof.
   intros a b.
   lemma facto
-    : BinWithZero.to_nat0 (ramp (bin_with_zero_difference &a &b) + &b)%bin_with_zero
-      = BinWithZero.to_nat0
-          (ramp (negate (bin_with_zero_difference &a &b)) + &a)%bin_with_zero.
+    : Bin0.to_nat0 (ramp (b0_difference &a &b) + &b)%b0
+      = Bin0.to_nat0
+          (ramp (negate (b0_difference &a &b)) + &a)%b0.
   {
     leibniz
-      (BinWithZero.conversion.addition (ramp (bin_with_zero_difference &a &b)) &b),
-      (BinWithZero.conversion.addition (ramp (negate (bin_with_zero_difference &a &b))) &a),
-      (conversion.ramp (bin_with_zero_difference &a &b)),
-      (conversion.ramp (negate (bin_with_zero_difference &a &b))),
-      (conversion.negation (bin_with_zero_difference &a &b)),
+      (Bin0.conversion.addition (ramp (b0_difference &a &b)) &b),
+      (Bin0.conversion.addition (ramp (negate (b0_difference &a &b))) &a),
+      (conversion.ramp (b0_difference &a &b)),
+      (conversion.ramp (negate (b0_difference &a &b))),
+      (conversion.negation (b0_difference &a &b)),
       (conversion.difference.extension &a &b)
       in |- *.
     ipso
-      (Integer.difference.nat0.specification (BinWithZero.to_nat0 &a) (BinWithZero.to_nat0 &b)).
+      (Integer.difference.nat0.specification (Bin0.to_nat0 &a) (Bin0.to_nat0 &b)).
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 End difference. (* difference *)
@@ -804,8 +804,8 @@ Module embedding. (* embedding *)
 
 (* embedding.injectivity *)
 Theorem injectivity
-  : forall {m : BinWithZero} {n : BinWithZero} .
-      from_bin_with_zero m = from_bin_with_zero n -> m = n.
+  : forall {m : Bin0} {n : Bin0} .
+      from_b0 m = from_b0 n -> m = n.
 Proof.
   intros m n e.
   match &m with | | p end; match &n with | | q end.
@@ -1435,26 +1435,26 @@ Qed.
 
 Module embedding. (* order.embedding *)
 
-(* Both orders are a positive difference added, and [from_bin_with_zero]
+(* Both orders are a positive difference added, and [from_b0]
  * carries a sum with a positive [k] to the same sum, case by case.
  *)
 (* order.embedding.preservation *)
 Theorem preservation
-  : forall (m : BinWithZero) (n : BinWithZero) .
-      (m < n)%bin_with_zero <-> from_bin_with_zero m < from_bin_with_zero n.
+  : forall (m : Bin0) (n : Bin0) .
+      (m < n)%b0 <-> from_b0 m < from_b0 n.
 Proof.
   intros m n.
   lemma additivity
-    : forall (a : BinWithZero) (k : BinBase) .
-        from_bin_with_zero (a + BinWithZero.Positive k)%bin_with_zero
-        = from_bin_with_zero a + (+ k).
+    : forall (a : Bin0) (k : BinBase) .
+        from_b0 (a + Bin0.Positive k)%b0
+        = from_b0 a + (+ k).
   {
     intros a k.
     match &a with | | p end; simpl add in |- *; simpl in |- *; quod idem est.
   }
   divide et impera.
   - intro h.
-    simpl BinWithZero.LessThan in &h.
+    simpl Bin0.LessThan in &h.
     match &h with | k e end.
     simpl LessThan in |- *.
     exists &k.
@@ -1463,14 +1463,14 @@ Proof.
   - intro h.
     simpl LessThan in &h.
     match &h with | k e end.
-    simpl BinWithZero.LessThan in |- *.
+    simpl Bin0.LessThan in |- *.
     exists &k.
     leibniz <- (&additivity &m &k) in &e.
     ipso (embedding.injectivity &e).
 Qed.
 
 (* order.embedding.nonnegativity *)
-Theorem nonnegativity : forall (n : BinWithZero) . 0 <= from_bin_with_zero n.
+Theorem nonnegativity : forall (n : Bin0) . 0 <= from_b0 n.
 Proof.
   intro n.
   match &n with | | p end.
@@ -1624,7 +1624,7 @@ Qed.
 (* multiplication.magnitude *)
 Theorem magnitude
   : forall (x : SignedBin) (y : SignedBin) .
-      abs (x * y) = (abs x * abs y)%bin_with_zero.
+      abs (x * y) = (abs x * abs y)%b0.
 Proof.
   intros x y.
   match &x with | p | | p end; match &y with | q | | q end; simpl in |- *; quod idem est.
@@ -1781,23 +1781,23 @@ Module division. (* division *)
 (* division.magnitude *)
 Theorem magnitude
   : forall (x : SignedBin) (d : BinBase) .
-      abs (x /. d) = (abs x /. d)%bin_with_zero.
+      abs (x /. d) = (abs x /. d)%b0.
 Proof.
   intros x d.
   match &x with | p | | p end.
   -
     simpl divide, abs in |- *.
-    match (p /. &d)%bin_with_zero with | | k end;
-      simpl from_bin_with_zero, negate in |- *; quod idem est.
+    match (p /. &d)%b0 with | | k end;
+      simpl from_b0, negate in |- *; quod idem est.
   -
     simpl divide, abs in |- *.
-    simpl BinWithZero.divide, BinWithZero.div in |- *.
+    simpl Bin0.divide, Bin0.div in |- *.
     simpl in |- *.
     quod idem est.
   -
     simpl divide, abs in |- *.
-    match (p /. &d)%bin_with_zero with | | k end;
-      simpl from_bin_with_zero in |- *; quod idem est.
+    match (p /. &d)%b0 with | | k end;
+      simpl from_b0 in |- *; quod idem est.
 Qed.
 
 (* division.invariance *)
@@ -2024,24 +2024,24 @@ Number Notation SignedBin.T SignedBin.from_numeral SignedBin.to_numeral
   : jw_signed_bin_scope.
 
 (* A [BinBase] stands wherever a [SignedBin] is expected, read as its [Positive],
- * and a [BinWithZero] through [from_bin_with_zero]; both are printed where
+ * and a [Bin0] through [from_b0]; both are printed where
  * they happened. The direct [BinBase >-> SignedBin] and the indirect one through
- * [BinWithZero] give the same term, as [Nat]'s two paths into [Integer] do.
+ * [Bin0] give the same term, as [Nat]'s two paths into [Integer] do.
  *)
 Coercion SignedBin.Positive : BinBase >-> SignedBin.
-Coercion SignedBin.from_bin_with_zero : BinWithZero >-> SignedBin.
+Coercion SignedBin.from_b0 : Bin0 >-> SignedBin.
 Add Printing Coercion SignedBin.Positive.
-Add Printing Coercion SignedBin.from_bin_with_zero.
+Add Printing Coercion SignedBin.from_b0.
 
 (* [<] is not well founded on a signed type, there being no least value, so
- * the descent is on the magnitude: [abs] lands in [BinWithZero], where [<]
+ * the descent is on the magnitude: [abs] lands in [Bin0], where [<]
  * is well founded, and [Induced] pulls that back. [Integer] descends the same
  * way over [Nat0].
  *)
 Instance Bin_magnitude_well_founded
-  : WellFounded (Induced (<)%bin_with_zero SignedBin.abs) :=
-  WellFounded.induced (<)%bin_with_zero SignedBin.abs
-    BinWithZero_less_than_well_founded.
+  : WellFounded (Induced (<)%b0 SignedBin.abs) :=
+  WellFounded.induced (<)%b0 SignedBin.abs
+    Bin0_less_than_well_founded.
 
 Instance Bin_comparable
   : Comparable SignedBin.compare (<)%b_signed :=
@@ -2061,7 +2061,7 @@ Instance Bin_add_cancellative : Cancellative SignedBin.add :=
 Instance Bin_add_commutative : Commutative SignedBin.add :=
   {| Commutative.commutativity := SignedBin.addition.commutativity |}.
 
-(* What the signed type buys over [BinWithZero]: every value has an inverse,
+(* What the signed type buys over [Bin0]: every value has an inverse,
  * so the additive monoid becomes a group.
  *)
 Instance Bin_add_group
