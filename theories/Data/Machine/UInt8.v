@@ -13,6 +13,7 @@ From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Machine.Unsigned.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
@@ -86,6 +87,13 @@ Definition One :=
   UInt8.introduction
     (Byte.introduction
       0 0 0 0 0 0 0 1).
+
+(* The greatest value, 255: every bit set. *)
+(* [UInt8] *)
+Definition Max :=
+  UInt8.introduction
+    (Byte.introduction
+      1 1 1 1 1 1 1 1).
 
 (* [UInt8 -> Nat0 -> UInt8] *)
 Definition shift_left := fun (x : UInt8) (k : Nat0) .
@@ -1405,6 +1413,119 @@ Instance comparable
   {| Comparable.transitivity := @order.strict.transitivity
   ; Comparable.specification := comparison.specification
   ; Comparable.antisymmetry := comparison.antisymmetry |}.
+
+(* [UInt8] as an [Unsigned.Width]: its operations, the laws above, and its
+ * modulus, 256. The facts about fixed values are closed computations,
+ * checked by the kernel.
+ *)
+Module Width <: Unsigned.Width.
+
+Definition T := T.
+Definition Zero := Zero.
+Definition One := One.
+Definition Max := Max.
+Definition to_bin_with_zero := to_bin_with_zero.
+Definition add := add.
+Definition sub := sub.
+Definition LessThan := LessThan.
+Definition LessOrEqual := LessOrEqual.
+Definition add_with_carry := add_with_carry.
+Definition sub_with_borrow := sub_with_borrow.
+Definition modulus := modulus.
+
+Module order. (* Width.order *)
+
+Module strict. (* Width.order.strict *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      LessThan x y <-> (to_bin_with_zero x < to_bin_with_zero y)%bin_with_zero.
+Proof.
+  intros x y.
+  divide et impera.
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
+Qed.
+
+End strict. (* Width.order.strict *)
+
+Theorem specification : forall (x : T) (y : T) . LessOrEqual x y <-> x = y \/ LessThan x y.
+Proof.
+  intros x y.
+  divide et impera.
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
+Qed.
+
+End order. (* Width.order *)
+
+Module conversion. (* Width.conversion *)
+
+Definition zero := UInt8.conversion.zero.
+Definition one := UInt8.conversion.one.
+Definition boundedness := UInt8.conversion.boundedness.
+Definition injectivity := @UInt8.conversion.injectivity.
+
+End conversion. (* Width.conversion *)
+
+Module flag. (* Width.flag *)
+
+Module addition. (* Width.flag.addition *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (to_bin_with_zero x + to_bin_with_zero y
+       = BinWithZero.Positive modulus
+           * Bit.to_bin_with_zero (pi_1 (add_with_carry 0 x y))%product
+         + to_bin_with_zero (add x y))%bin_with_zero.
+Proof.
+  intros x y.
+  ipso (UInt8.conversion.carry 0 &x &y).
+Qed.
+
+End addition. (* Width.flag.addition *)
+
+Module subtraction. (* Width.flag.subtraction *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (to_bin_with_zero x
+         + BinWithZero.Positive modulus
+             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 x y))%product
+       = to_bin_with_zero y + to_bin_with_zero (sub x y))%bin_with_zero.
+Proof.
+  intros x y.
+  let proof b
+    : (to_bin_with_zero &x
+         + BinWithZero.Positive modulus
+             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product
+       = (to_bin_with_zero &y + 0) + to_bin_with_zero (sub &x &y))%bin_with_zero
+    := UInt8.conversion.borrow 0 &x &y.
+  match (BinWithZero.addition.identity (to_bin_with_zero &y)) with | _ r end.
+  leibniz &r in &b.
+  ipso &b.
+Qed.
+
+End subtraction. (* Width.flag.subtraction *)
+
+End flag. (* Width.flag *)
+
+Module maximum. (* Width.maximum *)
+
+Theorem specification : (to_bin_with_zero Max + 1 = BinWithZero.Positive modulus)%bin_with_zero.
+Proof.
+  ipso (refl (BinWithZero.Positive modulus)).
+Qed.
+
+End maximum. (* Width.maximum *)
+
+End Width.
+
+Include Unsigned.Laws Width.
 
 End UInt8. (* UInt8 *)
 
