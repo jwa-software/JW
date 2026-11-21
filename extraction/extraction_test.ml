@@ -19,37 +19,37 @@ let int_of_nat0 = function
 ;;
 
 (* The binary numbers carry their bits, lowest outermost. *)
-let rec bin_base k =
+let rec bin k =
   if k = 1
-  then BinBase.One
+  then Bin.One
   else if k mod 2 = 0
-  then BinBase.Coq_b0 (bin_base (k / 2))
-  else BinBase.Coq_b1 (bin_base (k / 2))
+  then Bin.Coq_b0 (bin (k / 2))
+  else Bin.Coq_b1 (bin (k / 2))
 ;;
 
-let rec int_of_bin_base = function
-  | BinBase.One -> 1
-  | BinBase.Coq_b0 b -> 2 * int_of_bin_base b
-  | BinBase.Coq_b1 b -> (2 * int_of_bin_base b) + 1
+let rec int_of_bin = function
+  | Bin.One -> 1
+  | Bin.Coq_b0 b -> 2 * int_of_bin b
+  | Bin.Coq_b1 b -> (2 * int_of_bin b) + 1
 ;;
 
 let int_of_bin0 = function
   | Bin0.Zero -> 0
-  | Bin0.Positive p -> int_of_bin_base p
+  | Bin0.Positive p -> int_of_bin p
 ;;
 
 let signed_bin k =
   if k = 0
   then SignedBin.Zero
   else if k > 0
-  then SignedBin.Positive (bin_base k)
-  else SignedBin.Negative (bin_base (-k))
+  then SignedBin.Positive (bin k)
+  else SignedBin.Negative (bin (-k))
 ;;
 
 let int_of_signed_bin = function
   | SignedBin.Zero -> 0
-  | SignedBin.Positive p -> int_of_bin_base p
-  | SignedBin.Negative p -> -int_of_bin_base p
+  | SignedBin.Positive p -> int_of_bin p
+  | SignedBin.Negative p -> -int_of_bin p
 ;;
 
 (* A flag and an [Int8] result, as OCaml integers. *)
@@ -60,10 +60,10 @@ let int8 k = Int8.from_b_signed (signed_bin k)
 let uint8_flagged (flag, x) = flag = Bit.One, int_of_bin0 (UInt8.to_b0 x)
 let uint8 k = UInt8.from_b_signed (signed_bin k)
 
-(* [2^n - 1] and [2^n] as [BinBase] values, for numbers past OCaml's [int]. *)
-let rec ones n = if n = 1 then BinBase.One else BinBase.Coq_b1 (ones (n - 1))
-let rec power2 n = if n = 0 then BinBase.One else BinBase.Coq_b0 (power2 (n - 1))
-let date y m d = Date.make (bin_base y) m (bin_base d)
+(* [2^n - 1] and [2^n] as [Bin] values, for numbers past OCaml's [int]. *)
+let rec ones n = if n = 1 then Bin.One else Bin.Coq_b1 (ones (n - 1))
+let rec power2 n = if n = 0 then Bin.One else Bin.Coq_b0 (power2 (n - 1))
+let date y m d = Date.make (bin y) m (bin d)
 
 let day_number y m d =
   match date y m d with
@@ -111,10 +111,10 @@ let () =
   check "list" (ints (List.concat [ nat0 1 ] [ nat0 2; nat0 3 ]) = [ 1; 2; 3 ]);
   check
     "Date.is_leap"
-    ((not (Date.is_leap (bin_base 1900)))
-     && Date.is_leap (bin_base 2000)
-     && (not (Date.is_leap (bin_base 2023)))
-     && Date.is_leap (bin_base 2024));
+    ((not (Date.is_leap (bin 1900)))
+     && Date.is_leap (bin 2000)
+     && (not (Date.is_leap (bin 2023)))
+     && Date.is_leap (bin 2024));
   check "Date.day_number 0001-01-01" (day_number 1 Month.January 1 = 0);
   check "Date.day_number 1970-01-01" (day_number 1970 Month.January 1 = 719162);
   check "Date.day_number 2000-01-01" (day_number 2000 Month.January 1 = 730119);
@@ -122,7 +122,7 @@ let () =
   check "Date.day_number 9999-12-31" (day_number 9999 Month.December 31 = 3652058);
   check
     "Date.days_before_year 2001"
-    (int_of_bin0 (Date.days_before_year (bin_base 2001)) = 730485);
+    (int_of_bin0 (Date.days_before_year (bin 2001)) = 730485);
   check
     "Date.make, refusal"
     (date 2023 Month.February 29 = None
@@ -170,15 +170,15 @@ let () =
   (let flag, sum =
      Int64.add_with_overflow
        (Int64.from_b_signed (SignedBin.Positive (ones 63)))
-       (Int64.from_b_signed (SignedBin.Positive BinBase.One))
+       (Int64.from_b_signed (SignedBin.Positive Bin.One))
    in
    check
      "Int64.add_with_overflow 9223372036854775807 1"
      (flag = Bit.One && Int64.to_b_signed sum = SignedBin.Negative (power2 63)));
   let flag, sum =
     Int64.add_with_overflow
-      (Int64.from_b_signed (SignedBin.Positive (BinBase.Coq_b0 (ones 62))))
-      (Int64.from_b_signed (SignedBin.Positive BinBase.One))
+      (Int64.from_b_signed (SignedBin.Positive (Bin.Coq_b0 (ones 62))))
+      (Int64.from_b_signed (SignedBin.Positive Bin.One))
   in
   check
     "Int64.add_with_overflow 9223372036854775806 1"

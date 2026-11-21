@@ -82,7 +82,7 @@ Definition data_machine_all_delivers_uint8
   := UInt8.One.
 
 Definition data_machine_all_computes_uint8_modulus
-  : UInt8.modulus = 100000000%bin_base
+  : UInt8.modulus = 100000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint8_carry
@@ -156,13 +156,13 @@ Definition data_machine_all_computes_uint8_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint8_division
-  : forall (x : UInt8) (y : UInt8) (d : BinBase) .
+  : forall (x : UInt8) (y : UInt8) (d : Bin) .
       UInt8.to_b0 y = Bin0.Positive d
       -> Option.map UInt8.to_b0 (x /. y)%uint8 = Some (x /. d)%b0
   := UInt8.conversion.division.
 
 Definition data_machine_all_delivers_uint8_modulo
-  : forall (x : UInt8) (y : UInt8) (d : BinBase) .
+  : forall (x : UInt8) (y : UInt8) (d : Bin) .
       UInt8.to_b0 y = Bin0.Positive d
       -> Option.map UInt8.to_b0 (x %. y)%uint8 = Some (x %. d)%b0
   := UInt8.conversion.modulo.
@@ -271,7 +271,7 @@ Definition data_machine_all_delivers_int8
   := Int8.One.
 
 Definition data_machine_all_computes_int8_modulus
-  : Int8.modulus = 100000000%bin_base
+  : Int8.modulus = 100000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int8_addition
@@ -297,14 +297,14 @@ Definition data_machine_all_computes_int8_from_bin
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int8_division_positive
-  : forall (x : Int8) (y : Int8) (d : BinBase) .
+  : forall (x : Int8) (y : Int8) (d : Bin) .
       Int8.to_b_signed y = SignedBin.Positive d -> Option.map Int8.to_b_signed (x /. y)%int8 = Some (x /. d)%b_signed
   := Int8.conversion.division.positive.
 
 Definition data_machine_all_delivers_int8_division_negative
-  : forall (x : Int8) (y : Int8) (d : BinBase) .
+  : forall (x : Int8) (y : Int8) (d : Bin) .
       Int8.to_b_signed y = SignedBin.Negative d
-      -> ~ (Int8.to_b_signed x = (-10000000)%b_signed /\ d = BinBase.One)
+      -> ~ (Int8.to_b_signed x = (-10000000)%b_signed /\ d = Bin.One)
       -> Option.map Int8.to_b_signed (x /. y)%int8 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int8.conversion.division.negative.
 
@@ -315,7 +315,7 @@ Definition data_machine_all_delivers_int8_retraction_nonnegative
   := Int8.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int8_retraction_negative
-  : forall (p : BinBase) .
+  : forall (p : Bin) .
       (p <= 10000000)%b0
       -> Int8.to_b_signed (Int8.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int8.conversion.retraction.negative.
@@ -964,7 +964,7 @@ Definition data_machine_all_delivers_uint16
   := UInt16.One.
 
 Definition data_machine_all_computes_uint16_modulus
-  : UInt16.modulus = 10000000000000000%bin_base
+  : UInt16.modulus = 10000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint16_carry
@@ -1038,13 +1038,13 @@ Definition data_machine_all_computes_uint16_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint16_division
-  : forall (x : UInt16) (y : UInt16) (d : BinBase) .
+  : forall (x : UInt16) (y : UInt16) (d : Bin) .
       UInt16.to_b0 y = Bin0.Positive d
       -> Option.map UInt16.to_b0 (x /. y)%uint16 = Some (x /. d)%b0
   := UInt16.conversion.division.
 
 Definition data_machine_all_delivers_uint16_modulo
-  : forall (x : UInt16) (y : UInt16) (d : BinBase) .
+  : forall (x : UInt16) (y : UInt16) (d : Bin) .
       UInt16.to_b0 y = Bin0.Positive d
       -> Option.map UInt16.to_b0 (x %. y)%uint16 = Some (x %. d)%b0
   := UInt16.conversion.modulo.
@@ -1130,7 +1130,7 @@ Definition data_machine_all_delivers_int16
   := Int16.One.
 
 Definition data_machine_all_computes_int16_modulus
-  : Int16.modulus = 10000000000000000%bin_base
+  : Int16.modulus = 10000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int16_addition
@@ -1156,14 +1156,14 @@ Definition data_machine_all_computes_int16_from_bin
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int16_division_positive
-  : forall (x : Int16) (y : Int16) (d : BinBase) .
+  : forall (x : Int16) (y : Int16) (d : Bin) .
       Int16.to_b_signed y = SignedBin.Positive d -> Option.map Int16.to_b_signed (x /. y)%int16 = Some (x /. d)%b_signed
   := Int16.conversion.division.positive.
 
 Definition data_machine_all_delivers_int16_division_negative
-  : forall (x : Int16) (y : Int16) (d : BinBase) .
+  : forall (x : Int16) (y : Int16) (d : Bin) .
       Int16.to_b_signed y = SignedBin.Negative d
-      -> ~ (Int16.to_b_signed x = (-1000000000000000)%b_signed /\ d = BinBase.One)
+      -> ~ (Int16.to_b_signed x = (-1000000000000000)%b_signed /\ d = Bin.One)
       -> Option.map Int16.to_b_signed (x /. y)%int16 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int16.conversion.division.negative.
 
@@ -1174,7 +1174,7 @@ Definition data_machine_all_delivers_int16_retraction_nonnegative
   := Int16.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int16_retraction_negative
-  : forall (p : BinBase) .
+  : forall (p : Bin) .
       (p <= 1000000000000000)%b0
       -> Int16.to_b_signed (Int16.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int16.conversion.retraction.negative.
@@ -1369,7 +1369,7 @@ Definition data_machine_all_delivers_uint32
   := UInt32.One.
 
 Definition data_machine_all_computes_uint32_modulus
-  : UInt32.modulus = 100000000000000000000000000000000%bin_base
+  : UInt32.modulus = 100000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint32_carry
@@ -1443,13 +1443,13 @@ Definition data_machine_all_computes_uint32_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint32_division
-  : forall (x : UInt32) (y : UInt32) (d : BinBase) .
+  : forall (x : UInt32) (y : UInt32) (d : Bin) .
       UInt32.to_b0 y = Bin0.Positive d
       -> Option.map UInt32.to_b0 (x /. y)%uint32 = Some (x /. d)%b0
   := UInt32.conversion.division.
 
 Definition data_machine_all_delivers_uint32_modulo
-  : forall (x : UInt32) (y : UInt32) (d : BinBase) .
+  : forall (x : UInt32) (y : UInt32) (d : Bin) .
       UInt32.to_b0 y = Bin0.Positive d
       -> Option.map UInt32.to_b0 (x %. y)%uint32 = Some (x %. d)%b0
   := UInt32.conversion.modulo.
@@ -1537,7 +1537,7 @@ Definition data_machine_all_delivers_int32
   := Int32.One.
 
 Definition data_machine_all_computes_int32_modulus
-  : Int32.modulus = 100000000000000000000000000000000%bin_base
+  : Int32.modulus = 100000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int32_addition
@@ -1563,14 +1563,14 @@ Definition data_machine_all_computes_int32_from_bin
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int32_division_positive
-  : forall (x : Int32) (y : Int32) (d : BinBase) .
+  : forall (x : Int32) (y : Int32) (d : Bin) .
       Int32.to_b_signed y = SignedBin.Positive d -> Option.map Int32.to_b_signed (x /. y)%int32 = Some (x /. d)%b_signed
   := Int32.conversion.division.positive.
 
 Definition data_machine_all_delivers_int32_division_negative
-  : forall (x : Int32) (y : Int32) (d : BinBase) .
+  : forall (x : Int32) (y : Int32) (d : Bin) .
       Int32.to_b_signed y = SignedBin.Negative d
-      -> ~ (Int32.to_b_signed x = (-10000000000000000000000000000000)%b_signed /\ d = BinBase.One)
+      -> ~ (Int32.to_b_signed x = (-10000000000000000000000000000000)%b_signed /\ d = Bin.One)
       -> Option.map Int32.to_b_signed (x /. y)%int32 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int32.conversion.division.negative.
 
@@ -1581,7 +1581,7 @@ Definition data_machine_all_delivers_int32_retraction_nonnegative
   := Int32.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int32_retraction_negative
-  : forall (p : BinBase) .
+  : forall (p : Bin) .
       (p <= 10000000000000000000000000000000)%b0
       -> Int32.to_b_signed (Int32.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int32.conversion.retraction.negative.
@@ -1765,7 +1765,7 @@ Definition data_machine_all_delivers_uint64
   := UInt64.One.
 
 Definition data_machine_all_computes_uint64_modulus
-  : UInt64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%bin_base
+  : UInt64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint64_carry
@@ -1843,13 +1843,13 @@ Definition data_machine_all_computes_uint64_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint64_division
-  : forall (x : UInt64) (y : UInt64) (d : BinBase) .
+  : forall (x : UInt64) (y : UInt64) (d : Bin) .
       UInt64.to_b0 y = Bin0.Positive d
       -> Option.map UInt64.to_b0 (x /. y)%uint64 = Some (x /. d)%b0
   := UInt64.conversion.division.
 
 Definition data_machine_all_delivers_uint64_modulo
-  : forall (x : UInt64) (y : UInt64) (d : BinBase) .
+  : forall (x : UInt64) (y : UInt64) (d : Bin) .
       UInt64.to_b0 y = Bin0.Positive d
       -> Option.map UInt64.to_b0 (x %. y)%uint64 = Some (x %. d)%b0
   := UInt64.conversion.modulo.
@@ -1938,7 +1938,7 @@ Definition data_machine_all_delivers_int64
   := Int64.One.
 
 Definition data_machine_all_computes_int64_modulus
-  : Int64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%bin_base
+  : Int64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int64_addition
@@ -1965,15 +1965,15 @@ Definition data_machine_all_computes_int64_from_bin
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int64_division_positive
-  : forall (x : Int64) (y : Int64) (d : BinBase) .
+  : forall (x : Int64) (y : Int64) (d : Bin) .
       Int64.to_b_signed y = SignedBin.Positive d -> Option.map Int64.to_b_signed (x /. y)%int64 = Some (x /. d)%b_signed
   := Int64.conversion.division.positive.
 
 Definition data_machine_all_delivers_int64_division_negative
-  : forall (x : Int64) (y : Int64) (d : BinBase) .
+  : forall (x : Int64) (y : Int64) (d : Bin) .
       Int64.to_b_signed y = SignedBin.Negative d
       -> ~ (Int64.to_b_signed x = (-1000000000000000000000000000000000000000000000000000000000000000)%b_signed
-            /\ d = BinBase.One)
+            /\ d = Bin.One)
       -> Option.map Int64.to_b_signed (x /. y)%int64 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int64.conversion.division.negative.
 
@@ -1984,7 +1984,7 @@ Definition data_machine_all_delivers_int64_retraction_nonnegative
   := Int64.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int64_retraction_negative
-  : forall (p : BinBase) .
+  : forall (p : Bin) .
       (p <= 1000000000000000000000000000000000000000000000000000000000000000)%b0
       -> Int64.to_b_signed (Int64.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int64.conversion.retraction.negative.

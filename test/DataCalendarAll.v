@@ -4,7 +4,7 @@
 
 From JW Require Import Data.Calendar.All.
 
-Local Open Scope jw_bin_base_decimal_scope.
+Local Open Scope jw_bin_decimal_scope.
 
 Definition data_calendar_all_delivers_month
   : Month
@@ -15,7 +15,7 @@ Definition data_calendar_all_delivers_month_conversion_retraction
   := Month.conversion.retraction.
 
 Definition data_calendar_all_delivers_month_conversion_specification
-  : forall (n : BinBase) (m : Month) . Month.from_number n = Some m <-> Month.to_number m = n
+  : forall (n : Bin) (m : Month) . Month.from_number n = Some m <-> Month.to_number m = n
   := Month.conversion.specification.
 
 Definition data_calendar_all_delivers_month_succession_forward_inverse
@@ -157,39 +157,39 @@ Definition data_calendar_all_computes_date_compare
   := Identity.reflexivity _.
 
 Definition data_calendar_all_delivers_date_leap_periodicity
-  : forall (y : BinBase) . Date.is_leap (y + 400%bin_base_decimal)%bin_base = Date.is_leap y
+  : forall (y : Bin) . Date.is_leap (y + 400%b_decimal)%b = Date.is_leap y
   := Date.leap.periodicity.
 
 Definition data_calendar_all_delivers_date_month_length_boundedness
-  : forall (y : BinBase) (m : Month) .
-      (28%bin_base_decimal <= Date.days_in_month y m
-       /\ Date.days_in_month y m <= 31%bin_base_decimal)%bin_base
+  : forall (y : Bin) (m : Month) .
+      (28%b_decimal <= Date.days_in_month y m
+       /\ Date.days_in_month y m <= 31%b_decimal)%b
   := Date.month.length.boundedness.
 
 Definition data_calendar_all_delivers_date_month_succession
-  : forall (y : BinBase) (m : Month) .
+  : forall (y : Bin) (m : Month) .
       ~ (m = Month.December)
       -> Date.days_before_month y (Month.next m)
          = (Date.days_before_month y m + Date.days_in_month y m)%b0
   := Date.month.succession.
 
 Definition data_calendar_all_delivers_date_month_completion
-  : forall (y : BinBase) .
-      (Date.days_before_month y Month.December + 31%bin_base_decimal)%b0
+  : forall (y : Bin) .
+      (Date.days_before_month y Month.December + 31%b_decimal)%b0
       = Date.days_in_year y
   := Date.month.completion.
 
 Definition data_calendar_all_delivers_date_month_boundedness
-  : forall (y : BinBase) (m : Month) .
+  : forall (y : Bin) (m : Month) .
       (Date.days_before_month y m + Date.days_in_month y m <= Date.days_in_year y)%b0
   := Date.month.boundedness.
 
 Definition data_calendar_all_delivers_date_year_length_dichotomy
-  : forall (y : BinBase) . Date.days_in_year y = 365 \/ Date.days_in_year y = 366
+  : forall (y : Bin) . Date.days_in_year y = 365 \/ Date.days_in_year y = 366
   := Date.year.length.dichotomy.
 
 Definition data_calendar_all_delivers_date_year_length_specification
-  : forall (y : BinBase) . Date.days_in_year y = 366 <-> Date.is_leap y = true
+  : forall (y : Bin) . Date.days_in_year y = 366 <-> Date.is_leap y = true
   := Date.year.length.specification.
 
 Definition data_calendar_all_delivers_date_ordinal_positivity
@@ -201,34 +201,34 @@ Definition data_calendar_all_delivers_date_ordinal_boundedness
   := Date.ordinal.boundedness.
 
 Definition data_calendar_all_delivers_date_year_antecedence_translation
-  : forall (y : BinBase) (k : BinBase) .
-      Date.years_before (y + k)%bin_base = (Date.years_before y + k)%b0
+  : forall (y : Bin) (k : Bin) .
+      Date.years_before (y + k)%b = (Date.years_before y + k)%b0
   := Date.year.antecedence.translation.
 
 Definition data_calendar_all_delivers_date_year_periodicity
-  : forall (y : BinBase) .
-      Date.days_before_year (y + 400%bin_base_decimal)%bin_base
+  : forall (y : Bin) .
+      Date.days_before_year (y + 400%b_decimal)%b
       = (Date.days_before_year y + Date.days_in_quadricentennium)%b0
   := Date.year.periodicity.
 
 Definition data_calendar_all_delivers_date_year_antecedence_restoration
-  : forall (y : BinBase) . (Date.years_before y + 1%bin_base_decimal)%b0 = y
+  : forall (y : Bin) . (Date.years_before y + 1%b_decimal)%b0 = y
   := Date.year.antecedence.restoration.
 
 Definition data_calendar_all_delivers_date_year_succession
-  : forall (y : BinBase) .
-      Date.days_before_year (y + 1)%bin_base
+  : forall (y : Bin) .
+      Date.days_before_year (y + 1)%b
       = (Date.days_before_year y + Date.days_in_year y)%b0
   := Date.year.succession.
 
 Definition data_calendar_all_delivers_date_year_monotonicity
-  : forall (y : BinBase) (k : BinBase) .
+  : forall (y : Bin) (k : Bin) .
       (Date.days_before_year y + Date.days_in_year y
-       <= Date.days_before_year (y + k)%bin_base)%b0
+       <= Date.days_before_year (y + k)%b)%b0
   := Date.year.monotonicity.
 
 Definition data_calendar_all_delivers_date_month_monotonicity
-  : forall (y : BinBase) (m1 : Month) (m2 : Month) .
+  : forall (y : Bin) (m1 : Month) (m2 : Month) .
       Month.compare m1 m2 = Comparison.Lt
       -> (Date.days_before_month y m1 + Date.days_in_month y m1
           <= Date.days_before_month y m2)%b0
@@ -250,7 +250,7 @@ Definition data_calendar_all_delivers_date_separation
 
 Definition data_calendar_all_delivers_date_number_decomposition
   : forall (x : Date) .
-      (Date.day_number x + 1%bin_base_decimal)%b0
+      (Date.day_number x + 1%b_decimal)%b0
       = (Date.days_before_year (Date.year x) + Date.day_of_year x)%b0
   := Date.number.decomposition.
 

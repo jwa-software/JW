@@ -10,12 +10,12 @@
 From JW Require Import Data.Number.Binary.All.
 
 Definition data_number_binary_all_delivers_types
-  : BinBase -> Bin0 -> SignedBin -> Verum
-  := fun (_ : BinBase) (_ : Bin0) (_ : SignedBin) . I.
+  : Bin -> Bin0 -> SignedBin -> Verum
+  := fun (_ : Bin) (_ : Bin0) (_ : SignedBin) . I.
 
-Definition data_number_binary_all_delivers_bin_base_notation
-  : forall (a : BinBase) (b : BinBase) . (a + b)%bin_base = (b + a)%bin_base
-  := BinBase.addition.commutativity.
+Definition data_number_binary_all_delivers_bin_notation
+  : forall (a : Bin) (b : Bin) . (a + b)%b = (b + a)%b
+  := Bin.addition.commutativity.
 
 Definition data_number_binary_all_delivers_bin0_notation
   : forall (m : Bin0) (n : Bin0) .
@@ -62,7 +62,7 @@ Definition data_number_binary_all_delivers_signed_bin_distributivity
   := SignedBin.multiplication.distributivity.over.addition.
 
 Definition data_number_binary_all_delivers_bin0_division_specification
-  : forall (n : Bin0) (d : BinBase) .
+  : forall (n : Bin0) (d : Bin) .
       ((n /. d) * d + (n %. d) = n /\ (n %. d) < d)%b0
   := Bin0.division.specification.
 
@@ -71,29 +71,29 @@ Definition data_number_binary_all_delivers_bin0_gcd_commutativity
   := Bin0.gcd.commutativity.
 
 Definition data_number_binary_all_delivers_bin0_shift_quotient
-  : forall (n : Bin0) (k : BinBase) .
-      Bin0.shift_right n (BinBase.to_nat k) = (n /. (10 ^ k)%bin_base)%b0
+  : forall (n : Bin0) (k : Bin) .
+      Bin0.shift_right n (Bin.to_nat k) = (n /. (10 ^ k)%b)%b0
   := Bin0.shift.right.quotient.
 
 Definition data_number_binary_all_delivers_signed_bin_division_magnitude
-  : forall (x : SignedBin) (d : BinBase) .
+  : forall (x : SignedBin) (d : Bin) .
       SignedBin.abs (x /. d)%b_signed = (SignedBin.abs x /. d)%b0
   := SignedBin.division.magnitude.
 
-Definition data_number_binary_all_delivers_bin_base_literal
-  : (1011 + 1)%bin_base = 1100%bin_base
+Definition data_number_binary_all_delivers_bin_literal
+  : (1011 + 1)%b = 1100%b
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_bin0_literal
   : (1011 + 1)%b0 = 1100%b0
   := Identity.reflexivity _.
 
-Definition data_number_binary_all_delivers_bin_base_decimal_literal
-  : 2024%bin_base_decimal = 11111101000%bin_base
+Definition data_number_binary_all_delivers_bin_decimal_literal
+  : 2024%b_decimal = 11111101000%b
   := Identity.reflexivity _.
 
-Definition data_number_binary_all_delivers_bin_base_decimal_digits
-  : BinBase.to_decimal 11111101000%bin_base
+Definition data_number_binary_all_delivers_bin_decimal_digits
+  : Bin.to_decimal 11111101000%b
     = Numeral.Decimal.Digits.Two
         (Numeral.Decimal.Digits.Zero
           (Numeral.Decimal.Digits.Two
@@ -121,11 +121,11 @@ Definition data_number_binary_all_delivers_signed_bin_multiplication_computes
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_bin0_division_computes
-  : (1011 /. 11%bin_base)%b0 = 11%b0
+  : (1011 /. 11%b)%b0 = 11%b0
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_bin0_modulo_computes
-  : (1011 %. 11%bin_base)%b0 = 10%b0
+  : (1011 %. 11%b)%b0 = 10%b0
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_bin0_gcd_computes
@@ -133,12 +133,12 @@ Definition data_number_binary_all_delivers_bin0_gcd_computes
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_signed_bin_division_computes
-  : ((-1011) /. 11%bin_base)%b_signed = (-11)%b_signed
+  : ((-1011) /. 11%b)%b_signed = (-11)%b_signed
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_large_division_computes
   : (1111111111111111111111111111111111111111111111111111111111111111
-      /. 100000000000000000000000000000001%bin_base)%b0
+      /. 100000000000000000000000000000001%b)%b0
     = 11111111111111111111111111111111%b0
   := Identity.reflexivity _.
 
@@ -149,16 +149,16 @@ Definition data_number_binary_all_delivers_large_gcd_computes
     = 100000000000000000000000000000001%b0
   := Identity.reflexivity _.
 
-Definition data_number_binary_all_delivers_bin_base_comparison
-  : BinBase.compare (BinBase.b1 BinBase.One) (BinBase.b0 BinBase.One) = Comparison.Gt
+Definition data_number_binary_all_delivers_bin_comparison
+  : Bin.compare (Bin.b1 Bin.One) (Bin.b0 Bin.One) = Comparison.Gt
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_signed_bin_comparison
   : SignedBin.compare (-1011)%b_signed 1011%b_signed = Comparison.Lt
   := Identity.reflexivity _.
 
-Definition data_number_binary_all_delivers_bin_base_maximum_computes
-  : BinBase.max (BinBase.b1 BinBase.One) (BinBase.b0 BinBase.One) = BinBase.b1 BinBase.One
+Definition data_number_binary_all_delivers_bin_maximum_computes
+  : Bin.max (Bin.b1 Bin.One) (Bin.b0 Bin.One) = Bin.b1 Bin.One
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_signed_bin_maximum_computes
@@ -170,40 +170,40 @@ Definition data_number_binary_all_delivers_signed_bin_minimum_computes
   := Identity.reflexivity _.
 
 Definition data_number_binary_all_delivers_modulo_identity
-  : forall (n : Bin0) (d : BinBase) .
+  : forall (n : Bin0) (d : Bin) .
       (n < Bin0.Positive d -> n %. d = n)%b0
   := Bin0.modulo.identity.
 
 Definition data_number_binary_all_delivers_modulo_sum_absorption
-  : forall (a : Bin0) (b : Bin0) (d : BinBase) .
+  : forall (a : Bin0) (b : Bin0) (d : Bin) .
       (((a %. d) + b) %. d = (a + b) %. d)%b0
   := Bin0.modulo.sum.left.absorption.
 
 Definition data_number_binary_all_delivers_modulo_sum_invariance
-  : forall (a : Bin0) (b : Bin0) (d : BinBase) .
+  : forall (a : Bin0) (b : Bin0) (d : Bin) .
       (b %. d = 0 -> (a + b) %. d = a %. d)%b0
   := Bin0.modulo.sum.right.invariance.
 
 Definition data_number_binary_all_delivers_division_translation
-  : forall (n : Bin0) (d : BinBase) .
+  : forall (n : Bin0) (d : Bin) .
       ((n + Bin0.Positive d) /. d = (n /. d) + 1)%b0
   := Bin0.division.translation.
 
 Definition data_number_binary_all_delivers_division_succession_interior
-  : forall (n : Bin0) (d : BinBase) .
+  : forall (n : Bin0) (d : Bin) .
       ((n %. d) + 1 < Bin0.Positive d
        -> ((n + 1) /. d = n /. d) /\ ((n + 1) %. d = (n %. d) + 1))%b0
   := Bin0.division.succession.interior.
 
 Definition data_number_binary_all_delivers_division_succession_carry
-  : forall (n : Bin0) (d : BinBase) .
+  : forall (n : Bin0) (d : Bin) .
       ((n %. d) + 1 = Bin0.Positive d
        -> ((n + 1) /. d = (n /. d) + 1) /\ ((n + 1) %. d = 0))%b0
   := Bin0.division.succession.carry.
 
 Definition data_number_binary_all_delivers_modulo_nesting
-  : forall (n : Bin0) (d : BinBase) (k : BinBase) .
-      ((n %. (d * k)%bin_base) %. d = n %. d)%b0
+  : forall (n : Bin0) (d : Bin) (k : Bin) .
+      ((n %. (d * k)%b) %. d = n %. d)%b0
   := Bin0.modulo.nesting.
 
 Definition data_number_binary_all_delivers_order_succession
@@ -211,7 +211,7 @@ Definition data_number_binary_all_delivers_order_succession
   := Bin0.order.succession.
 
 Definition data_number_binary_all_delivers_modulo_product_absorption
-  : forall (a : Bin0) (b : Bin0) (d : BinBase) .
+  : forall (a : Bin0) (b : Bin0) (d : Bin) .
       (((a %. d) * b) %. d = (a * b) %. d)%b0
   := Bin0.modulo.product.left.absorption.
 
@@ -252,19 +252,19 @@ Definition data_number_binary_all_delivers_difference_invariance
  *)
 Definition data_number_binary_all_delivers_bool
   : Bool
-  := BinBase.eq BinBase.One BinBase.One.
+  := Bin.eq Bin.One Bin.One.
 
 Definition data_number_binary_all_delivers_option
-  : Option BinBase
-  := BinBase.sub (BinBase.b0 BinBase.One) BinBase.One.
+  : Option Bin
+  := Bin.sub (Bin.b0 Bin.One) Bin.One.
 
 Definition data_number_binary_all_delivers_product
   : Product Bin0 Bin0
-  := Bin0.div 1011%b0 11%bin_base.
+  := Bin0.div 1011%b0 11%b.
 
 Definition data_number_binary_all_delivers_nat
   : Nat
-  := BinBase.to_nat BinBase.One.
+  := Bin.to_nat Bin.One.
 
 Definition data_number_binary_all_delivers_nat0
   : Nat0
@@ -303,11 +303,11 @@ Definition data_number_binary_all_delivers_signed_bin_addition_order_accumulatio
   := SignedBin.addition.order.accumulation.
 
 Definition data_number_binary_all_delivers_signed_bin_order_sign_negativity
-  : forall (p : BinBase) . (SignedBin.Negative p < 0)%b_signed
+  : forall (p : Bin) . (SignedBin.Negative p < 0)%b_signed
   := SignedBin.order.sign.negativity.
 
 Definition data_number_binary_all_delivers_signed_bin_order_sign_positivity
-  : forall (p : BinBase) . (0 < SignedBin.Positive p)%b_signed
+  : forall (p : Bin) . (0 < SignedBin.Positive p)%b_signed
   := SignedBin.order.sign.positivity.
 
 Definition data_number_binary_all_delivers_signed_bin_order_negation_strict_reversal
