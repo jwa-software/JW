@@ -541,93 +541,25 @@ Fixpoint from_hexadecimal (n : BinWithZero) (h : Numeral.Hexadecimal.Digits) : B
       from_hexadecimal (n * (+ 10000%bin_base) + (+ 1111%bin_base)) h'
   end.
 
-(* The digit [high] before [rest] when [carry] is set, [low] otherwise. *)
-(* [Bool -> (Numeral.Decimal.Digits -> Numeral.Decimal.Digits)
- *   -> (Numeral.Decimal.Digits -> Numeral.Decimal.Digits)
- *   -> Numeral.Decimal.Digits -> Numeral.Decimal.Digits]
- *)
-Definition select_digit :=
-  fun (carry : Bool)
-      (low : Numeral.Decimal.Digits -> Numeral.Decimal.Digits)
-      (high : Numeral.Decimal.Digits -> Numeral.Decimal.Digits)
-      (rest : Numeral.Decimal.Digits) .
-    match carry with
-    | true  => high rest
-    | false => low rest
-    end.
-
-(* The carry out and the digits of twice [d] plus [carry], [d] the most
- * significant digit first: [carry] goes in at the lowest digit and each
- * digit passes its own carry up.
- *)
-(* [Bool -> Numeral.Decimal.Digits -> Product Bool Numeral.Decimal.Digits] *)
-Fixpoint double_decimal (carry : Bool) (d : Numeral.Decimal.Digits)
-  : Product Bool Numeral.Decimal.Digits :=
-  match d with
-  | Numeral.Decimal.Digits.End      => (carry, Numeral.Decimal.Digits.End)
-  | Numeral.Decimal.Digits.Zero d'  =>
-      let r := double_decimal carry d' in
-      (false,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Zero Numeral.Decimal.Digits.One (pi_2 r))
-  | Numeral.Decimal.Digits.One d'   =>
-      let r := double_decimal carry d' in
-      (false,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Two Numeral.Decimal.Digits.Three (pi_2 r))
-  | Numeral.Decimal.Digits.Two d'   =>
-      let r := double_decimal carry d' in
-      (false,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Four Numeral.Decimal.Digits.Five (pi_2 r))
-  | Numeral.Decimal.Digits.Three d' =>
-      let r := double_decimal carry d' in
-      (false,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Six Numeral.Decimal.Digits.Seven (pi_2 r))
-  | Numeral.Decimal.Digits.Four d'  =>
-      let r := double_decimal carry d' in
-      (false,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Eight Numeral.Decimal.Digits.Nine (pi_2 r))
-  | Numeral.Decimal.Digits.Five d'  =>
-      let r := double_decimal carry d' in
-      (true,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Zero Numeral.Decimal.Digits.One (pi_2 r))
-  | Numeral.Decimal.Digits.Six d'   =>
-      let r := double_decimal carry d' in
-      (true,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Two Numeral.Decimal.Digits.Three (pi_2 r))
-  | Numeral.Decimal.Digits.Seven d' =>
-      let r := double_decimal carry d' in
-      (true,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Four Numeral.Decimal.Digits.Five (pi_2 r))
-  | Numeral.Decimal.Digits.Eight d' =>
-      let r := double_decimal carry d' in
-      (true,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Six Numeral.Decimal.Digits.Seven (pi_2 r))
-  | Numeral.Decimal.Digits.Nine d'  =>
-      let r := double_decimal carry d' in
-      (true,
-        select_digit (pi_1 r) Numeral.Decimal.Digits.Eight Numeral.Decimal.Digits.Nine (pi_2 r))
-  end%product.
-
-(* The decimal digits of [p], built bit by bit from the most significant: each
- * bit doubles the digits so far and adds itself, so no division is needed.
- *)
-(* [BinBase -> Numeral.Decimal.Digits] *)
-Fixpoint to_decimal_positive (p : BinBase) : Numeral.Decimal.Digits :=
-  let grow := fun (r : Product Bool Numeral.Decimal.Digits) .
-    (select_digit (pi_1 r) (fun (rest : Numeral.Decimal.Digits) . rest)
-      Numeral.Decimal.Digits.One (pi_2 r))%product in
-  match p with
-  | BinBase.One   => Numeral.Decimal.Digits.One Numeral.Decimal.Digits.End
-  | BinBase.b0 p' => grow (double_decimal false (to_decimal_positive p'))
-  | BinBase.b1 p' => grow (double_decimal true (to_decimal_positive p'))
-  end.
-
 (* [n] in decimal digits, the most significant first. *)
 (* [BinWithZero -> Numeral.Decimal.Digits] *)
 Definition to_decimal := fun (n : BinWithZero) .
   match n with
   | 0   => Numeral.Decimal.Digits.Zero Numeral.Decimal.Digits.End
-  | + p => to_decimal_positive p
+  | + p => BinBase.to_decimal p
   end.
+
+(* The number a literal's digits spell in decimal. *)
+(* [Numeral.Unsigned -> Option BinWithZero] *)
+Definition from_decimal_numeral := fun (u : Numeral.Unsigned) .
+  match u with
+  | Numeral.Unsigned.Decimal d     => Some (from_decimal 0 d)
+  | Numeral.Unsigned.Hexadecimal _ => None
+  end.
+
+(* [BinWithZero -> Numeral.Unsigned] *)
+Definition to_decimal_numeral := fun (n : BinWithZero) .
+  Numeral.Unsigned.Decimal (to_decimal n).
 
 (* The conversions to and from [Nat0], used to state the laws: they
  * go through [Nat], which is unary, so they are for proofs, not for
@@ -3151,8 +3083,15 @@ Export (notations) BinWithZero.
 (* A number of the type is written in binary digits under its scope,
  * [1011%bin_with_zero] for eleven, and a closed one prints that way; a
  * literal with any other digit is refused. The short key [b] belongs to
- * [Bin], whose literals carry a sign as well.
+ * [Bin], whose literals carry a sign as well. It is also written in decimal
+ * digits under the decimal scope, [11%bin_with_zero_decimal] for the same
+ * eleven. The binary notation is declared again last, so a closed number
+ * prints in binary unless the decimal scope is open.
  *)
+Number Notation BinWithZero.T BinWithZero.from_numeral BinWithZero.to_numeral
+  : jw_bin_with_zero_scope.
+Number Notation BinWithZero.T BinWithZero.from_decimal_numeral BinWithZero.to_decimal_numeral
+  : jw_bin_with_zero_decimal_scope.
 Number Notation BinWithZero.T BinWithZero.from_numeral BinWithZero.to_numeral
   : jw_bin_with_zero_scope.
 

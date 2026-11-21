@@ -88,6 +88,26 @@ Definition data_number_binary_all_delivers_bin_with_zero_literal
   : (1011 + 1)%bin_with_zero = 1100%bin_with_zero
   := Identity.reflexivity _.
 
+Definition data_number_binary_all_delivers_bin_base_decimal_literal
+  : 2024%bin_base_decimal = 11111101000%bin_base
+  := Identity.reflexivity _.
+
+Definition data_number_binary_all_delivers_bin_base_decimal_digits
+  : BinBase.to_decimal 11111101000%bin_base
+    = Numeral.Decimal.Digits.Two
+        (Numeral.Decimal.Digits.Zero
+          (Numeral.Decimal.Digits.Two
+            (Numeral.Decimal.Digits.Four Numeral.Decimal.Digits.End)))
+  := Identity.reflexivity _.
+
+Definition data_number_binary_all_delivers_bin_with_zero_decimal_literal
+  : 738944%bin_with_zero_decimal = 10110100011010000000%bin_with_zero
+  := Identity.reflexivity _.
+
+Definition data_number_binary_all_delivers_bin_with_zero_decimal_zero
+  : 0%bin_with_zero_decimal = 0%bin_with_zero
+  := Identity.reflexivity _.
+
 Definition data_number_binary_all_delivers_bin_literal
   : (1011 + 1)%b = 1100%b
   := Identity.reflexivity _.

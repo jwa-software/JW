@@ -192,6 +192,10 @@ Declare Scope jw_bin_base_scope.
 Delimit Scope jw_bin_base_scope with bin_base.
 Declare Scope jw_bin_with_zero_scope.
 Delimit Scope jw_bin_with_zero_scope with bin_with_zero.
+Declare Scope jw_bin_base_decimal_scope.
+Delimit Scope jw_bin_base_decimal_scope with bin_base_decimal.
+Declare Scope jw_bin_with_zero_decimal_scope.
+Delimit Scope jw_bin_with_zero_decimal_scope with bin_with_zero_decimal.
 
 (* [b] is the shortest key in the tree and it goes to the type whose literals
    cover the most ground: [Bin] reads both [1011%b] and [(-1011)%b],
