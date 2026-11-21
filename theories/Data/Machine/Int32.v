@@ -396,6 +396,23 @@ Definition mul := fun (x : Int32) (y : Int32) .
 Notation "x * y" := (mul x y) (only parsing)
   : jw_int32_scope.
 
+(* The flag and the wrapped product: the flag is set when the product of the
+ * signed values lies outside the range, below [Min] or above [Max].
+ *)
+(* [Int32 -> Int32 -> Product Bit Int32] *)
+Definition mul_with_overflow := fun (x : Int32) (y : Int32) .
+  (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+   | Comparison.Lt => 1%bit
+   | Comparison.Eq => 0%bit
+   | Comparison.Gt =>
+       match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+       | Comparison.Lt => 0%bit
+       | Comparison.Eq => 0%bit
+       | Comparison.Gt => 1%bit
+       end
+   end,
+   mul x y)%product.
+
 (* The bit pattern of [p] modulo 4294967296, its bits appended from the most
  * significant.
  *)
@@ -2380,6 +2397,8 @@ Definition LessOrEqual := LessOrEqual.
 Definition add_with_overflow := add_with_overflow.
 Definition sub_with_overflow := sub_with_overflow.
 Definition compare := compare.
+Definition mul := mul.
+Definition mul_with_overflow := mul_with_overflow.
 Definition half := 10000000000000000000000000000000%bin_base.
 Definition modulus := modulus.
 Definition beyond := 110000000000000000000000000000000%bin_base.
@@ -2473,6 +2492,9 @@ End conversion. (* Width.conversion *)
 Module reinterpretation. (* Width.reinterpretation *)
 
 Definition boundedness := Int32.reinterpretation.boundedness.
+Definition injectivity := @Int32.reinterpretation.injectivity.
+Definition multiplication := Int32.reinterpretation.multiplication.
+Definition reduction := Int32.reinterpretation.reduction.
 
 Module reduction. (* Width.reinterpretation.reduction *)
 
@@ -2495,6 +2517,24 @@ Definition identity := Int32.addition.identity.
 Definition inverse := Int32.addition.inverse.
 
 End addition. (* Width.addition *)
+
+Module multiplication. (* Width.multiplication *)
+
+Definition annihilation := Int32.multiplication.annihilation.
+
+Module left. (* Width.multiplication.left *)
+
+Definition negation := Int32.multiplication.left.negation.
+
+End left. (* Width.multiplication.left *)
+
+Module right. (* Width.multiplication.right *)
+
+Definition negation := Int32.multiplication.right.negation.
+
+End right. (* Width.multiplication.right *)
+
+End multiplication. (* Width.multiplication *)
 
 Module subtraction. (* Width.subtraction *)
 
@@ -2530,6 +2570,29 @@ Proof.
 Qed.
 
 End subtraction. (* Width.flag.subtraction *)
+
+Module multiplication. (* Width.flag.multiplication *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      mul_with_overflow x y
+      = (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+         | Comparison.Lt => 1%bit
+         | Comparison.Eq => 0%bit
+         | Comparison.Gt =>
+             match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+             | Comparison.Lt => 0%bit
+             | Comparison.Eq => 0%bit
+             | Comparison.Gt => 1%bit
+             end
+         end,
+         mul x y)%product.
+Proof.
+  intros x y.
+  ipso (refl (mul_with_overflow &x &y)).
+Qed.
+
+End multiplication. (* Width.flag.multiplication *)
 
 End flag. (* Width.flag *)
 

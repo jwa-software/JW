@@ -538,6 +538,20 @@ Definition mul := fun (x : UInt64) (y : UInt64) .
 Notation "x * y" := (mul x y) (only parsing)
   : jw_uint64_scope.
 
+(* The flag and the wrapped product: the flag is set when the product of the
+ * values is not below the modulus, as the high half of the full product is
+ * then not zero.
+ *)
+(* [UInt64 -> UInt64 -> Product Bit UInt64] *)
+Definition mul_with_overflow := fun (x : UInt64) (y : UInt64) .
+  (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
+           (BinWithZero.Positive modulus) with
+   | Comparison.Lt => 0%bit
+   | Comparison.Eq => 1%bit
+   | Comparison.Gt => 1%bit
+   end,
+   mul x y)%product.
+
 (* [p] modulo 18446744073709551616, its bits appended from the most significant. *)
 (* [BinBase -> UInt64] *)
 Fixpoint from_bin_base (p : BinBase) : UInt64 :=
@@ -1888,6 +1902,8 @@ Definition LessOrEqual := LessOrEqual.
 Definition add_with_carry := add_with_carry.
 Definition sub_with_borrow := sub_with_borrow.
 Definition compare := compare.
+Definition mul := mul.
+Definition mul_with_overflow := mul_with_overflow.
 Definition modulus := modulus.
 
 Module order. (* Width.order *)
@@ -1935,6 +1951,8 @@ Proof.
   ipso (refl (compare &x &y)).
 Qed.
 
+Definition multiplication := UInt64.conversion.multiplication.
+
 End conversion. (* Width.conversion *)
 
 Module flag. (* Width.flag *)
@@ -1976,6 +1994,25 @@ Proof.
 Qed.
 
 End subtraction. (* Width.flag.subtraction *)
+
+Module multiplication. (* Width.flag.multiplication *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      mul_with_overflow x y
+      = (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
+                 (BinWithZero.Positive modulus) with
+         | Comparison.Lt => 0%bit
+         | Comparison.Eq => 1%bit
+         | Comparison.Gt => 1%bit
+         end,
+         mul x y)%product.
+Proof.
+  intros x y.
+  ipso (refl (mul_with_overflow &x &y)).
+Qed.
+
+End multiplication. (* Width.flag.multiplication *)
 
 End flag. (* Width.flag *)
 
