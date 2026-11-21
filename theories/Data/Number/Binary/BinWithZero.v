@@ -2053,21 +2053,6 @@ Qed.
 
 End strict. (* order.strict *)
 
-Module mixed. (* order.mixed *)
-
-(* order.mixed.transitivity *)
-Theorem transitivity
-  : forall {l : BinWithZero} {m : BinWithZero} {n : BinWithZero} . l <= m -> m < n -> l < n.
-Proof.
-  intros l m n h k.
-  match &h with | same | smaller end.
-  - leibniz &same in |- *.
-    ipso &k.
-  - ipso (order.strict.transitivity &smaller &k).
-Qed.
-
-End mixed. (* order.mixed *)
-
 (* Read in [Nat0], where [m < n] gives [m + k = n] for a [k] that is [1] or
  * a successor: [1] gives [m + 1 = n], a successor [m + 1 < n].
  *)

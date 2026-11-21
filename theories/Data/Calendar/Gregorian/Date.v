@@ -1256,7 +1256,7 @@ Proof.
         leibniz &plus_zero in &s.
         ipso &s.
       }
-      ipso (BinWithZero.order.mixed.transitivity
+      ipso (Comparable.order.mixed.left.transitivity
               (@Comparable.order.transitivity _ BinWithZero.compare BinWithZero.LessThan _
                  (days_before_year &y1 + day_of_year (introduction &y1 &m1 &d1 &a1))
                  (days_before_year &y1 + days_in_year &y1)
@@ -1306,7 +1306,7 @@ Proof.
             leibniz &plus_zero in &s.
             ipso &s.
           }
-          ipso (BinWithZero.order.mixed.transitivity
+          ipso (Comparable.order.mixed.left.transitivity
                   (@Comparable.order.transitivity _ BinWithZero.compare BinWithZero.LessThan _
                      (days_before_month &y1 &m1 + d1)
                      (days_before_month &y1 &m1 + days_in_month &y1 &m1)

@@ -1899,7 +1899,7 @@ Proof.
     leibniz <- &sp in &bound.
     ex
       (BinWithZero.order.strict.irreflexivity _
-        (BinWithZero.order.mixed.transitivity
+        (Comparable.order.mixed.left.transitivity
           (BinWithZero.addition.right.order.extensivity p modulus) &bound))
       quodlibet.
 Qed.
@@ -1999,7 +1999,7 @@ Proof.
       leibniz &value in &big.
       ex
         (BinWithZero.order.strict.irreflexivity _
-          (BinWithZero.order.mixed.transitivity &big &h))
+          (Comparable.order.mixed.left.transitivity &big &h))
         quodlibet.
   }
   leibniz (conversion.bin.nonnegative &n) in |- *.
@@ -2175,7 +2175,7 @@ Proof.
           - leibniz &same in &b.
             ipso &b.
           - simpl BinWithZero.LessOrEqual in |- *.
-            ipso (disjoin _, (BinWithZero.order.mixed.transitivity &b &smaller)).
+            ipso (disjoin _, (Comparable.order.mixed.left.transitivity &b &smaller)).
         }
         ipso (conversion.retraction.negative &q &bounded).
     - simpl Bin.divide in |- *.
@@ -2185,7 +2185,7 @@ Proof.
       simpl Bin.divide in |- *.
       ipso
         (conversion.retraction.nonnegative (p /. &d)%bin_with_zero
-          (BinWithZero.order.mixed.transitivity &b &r)).
+          (Comparable.order.mixed.left.transitivity &b &r)).
   }
   simpl divide in |- *.
   leibniz &e in |- *.
@@ -2248,7 +2248,7 @@ Proof.
             leibniz <- &same in |- *.
             ipso (BinWithZero.division.quotient.strict.boundedness &p (BinBase.b1 &d') &differ).
         - ipso
-            (BinWithZero.order.mixed.transitivity
+            (Comparable.order.mixed.left.transitivity
               (BinWithZero.division.quotient.boundedness p &d) &smaller).
       }
       simpl Bin.divide in |- *.
@@ -2266,7 +2266,7 @@ Proof.
         lemma bounded : (q <= 1000000000000000)%bin_with_zero.
         {
           simpl BinWithZero.LessOrEqual in |- *.
-          ipso (disjoin _, (BinWithZero.order.mixed.transitivity &b &r)).
+          ipso (disjoin _, (Comparable.order.mixed.left.transitivity &b &r)).
         }
         ipso (conversion.retraction.negative &q &bounded).
   }
