@@ -54,6 +54,7 @@ From JW Require Export Data.Machine.Int16.
 From JW Require Export Data.Machine.Int32.
 From JW Require Export Data.Machine.Int64.
 From JW Require Export Data.Machine.Int8.
+From JW Require Export Data.Machine.Modular.
 From JW Require Export Data.Machine.QWord.
 From JW Require Export Data.Machine.Signed.
 From JW Require Export Data.Machine.UInt16.

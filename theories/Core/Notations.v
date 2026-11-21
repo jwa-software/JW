@@ -102,6 +102,12 @@ Delimit Scope jw_int64_scope with int64.
 Declare Scope jw_signed_scope.
 Delimit Scope jw_signed_scope with signed.
 
+(* The arithmetic of the width that [Modular.Laws] takes, delimited but not
+ * opened.
+ *)
+Declare Scope jw_modular_scope.
+Delimit Scope jw_modular_scope with modular.
+
 (* The arithmetic of the width that [Unsigned.Laws] takes, delimited but not
  * opened.
  *)
