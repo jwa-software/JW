@@ -2337,7 +2337,7 @@ Abbreviation Integer := Integer.T.
 
 Export (notations) Integer.
 
-(* What makes the minus of a negative literal parse, as for [Bin]:
+(* What makes the minus of a negative literal parse, as for [SignedBin]:
  * [Numeral.Signed] lets [from_numeral] receive a sign but puts none in the
  * grammar. Scoped, so [-] keeps whatever else it means elsewhere.
  *)

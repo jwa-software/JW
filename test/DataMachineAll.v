@@ -72,9 +72,9 @@ Definition data_machine_all_delivers_bit_carry
 
 Definition data_machine_all_delivers_bit_binary_carry
   : forall (carry : Bit) (a : Bit) (b : Bit) .
-      (Bit.to_bin_with_zero carry + Bit.to_bin_with_zero a + Bit.to_bin_with_zero b
-        = 10 * Bit.to_bin_with_zero (pi_1 (Bit.add_with_carry carry a b))%product
-          + Bit.to_bin_with_zero (pi_2 (Bit.add_with_carry carry a b))%product)%bin_with_zero
+      (Bit.to_b0 carry + Bit.to_b0 a + Bit.to_b0 b
+        = 10 * Bit.to_b0 (pi_1 (Bit.add_with_carry carry a b))%product
+          + Bit.to_b0 (pi_2 (Bit.add_with_carry carry a b))%product)%b0
   := Bit.conversion.binary.carry.
 
 Definition data_machine_all_delivers_uint8
@@ -82,52 +82,52 @@ Definition data_machine_all_delivers_uint8
   := UInt8.One.
 
 Definition data_machine_all_computes_uint8_modulus
-  : UInt8.modulus = 100000000%bin_base
+  : UInt8.modulus = 100000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint8_carry
   : forall (carry : Bit) (x : UInt8) (y : UInt8) .
-      (Bit.to_bin_with_zero carry + x + y
-        = UInt8.modulus * Bit.to_bin_with_zero (pi_1 (UInt8.add_with_carry carry x y))%product
-          + (pi_2 (UInt8.add_with_carry carry x y))%product)%bin_with_zero
+      (Bit.to_b0 carry + x + y
+        = UInt8.modulus * Bit.to_b0 (pi_1 (UInt8.add_with_carry carry x y))%product
+          + (pi_2 (UInt8.add_with_carry carry x y))%product)%b0
   := UInt8.conversion.carry.
 
 Definition data_machine_all_delivers_uint8_addition
   : forall (x : UInt8) (y : UInt8) .
-      (UInt8.to_bin_with_zero (x + y)%uint8 = (x + y) %. UInt8.modulus)%bin_with_zero
+      (UInt8.to_b0 (x + y)%uint8 = (x + y) %. UInt8.modulus)%b0
   := UInt8.conversion.addition.
 
 Definition data_machine_all_delivers_uint8_multiplication
   : forall (x : UInt8) (y : UInt8) .
-      (UInt8.to_bin_with_zero (x * y)%uint8 = (x * y) %. UInt8.modulus)%bin_with_zero
+      (UInt8.to_b0 (x * y)%uint8 = (x * y) %. UInt8.modulus)%b0
   := UInt8.conversion.multiplication.
 
 Definition data_machine_all_delivers_uint8_negation
   : forall (x : UInt8) .
-      (((- x)%uint8 + x) %. UInt8.modulus = 0)%bin_with_zero
+      (((- x)%uint8 + x) %. UInt8.modulus = 0)%b0
   := UInt8.conversion.negation.
 
 Definition data_machine_all_delivers_uint8_left_shift
   : forall (x : UInt8) (k : Nat0) .
-      (UInt8.to_bin_with_zero (UInt8.shift_left x k)
-        = BinWithZero.shift_left x k %. UInt8.modulus)%bin_with_zero
+      (UInt8.to_b0 (UInt8.shift_left x k)
+        = Bin0.shift_left x k %. UInt8.modulus)%b0
   := UInt8.conversion.left.shift.
 
 Definition data_machine_all_delivers_uint8_right_shift
   : forall (x : UInt8) (k : Nat0) .
-      UInt8.to_bin_with_zero (UInt8.shift_right x k) = BinWithZero.shift_right x k
+      UInt8.to_b0 (UInt8.shift_right x k) = Bin0.shift_right x k
   := UInt8.conversion.right.shift.
 
 Definition data_machine_all_delivers_uint8_section
-  : forall (x : UInt8) . UInt8.from_bin_with_zero (UInt8.to_bin_with_zero x) = x
+  : forall (x : UInt8) . UInt8.from_b0 (UInt8.to_b0 x) = x
   := UInt8.conversion.section.
 
 Definition data_machine_all_computes_uint8_value
-  : UInt8.to_bin_with_zero 200%uint8 = 11001000%bin_with_zero
+  : UInt8.to_b0 200%uint8 = 11001000%b0
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint8_to_bin
-  : UInt8.to_bin 200%uint8 = 11001000%b
+  : UInt8.to_b_signed 200%uint8 = 11001000%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint8_distributivity
@@ -156,20 +156,20 @@ Definition data_machine_all_computes_uint8_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint8_division
-  : forall (x : UInt8) (y : UInt8) (d : BinBase) .
-      UInt8.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt8.to_bin_with_zero (x /. y)%uint8 = Some (x /. d)%bin_with_zero
+  : forall (x : UInt8) (y : UInt8) (d : Bin) .
+      UInt8.to_b0 y = Bin0.Positive d
+      -> Option.map UInt8.to_b0 (x /. y)%uint8 = Some (x /. d)%b0
   := UInt8.conversion.division.
 
 Definition data_machine_all_delivers_uint8_modulo
-  : forall (x : UInt8) (y : UInt8) (d : BinBase) .
-      UInt8.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt8.to_bin_with_zero (x %. y)%uint8 = Some (x %. d)%bin_with_zero
+  : forall (x : UInt8) (y : UInt8) (d : Bin) .
+      UInt8.to_b0 y = Bin0.Positive d
+      -> Option.map UInt8.to_b0 (x %. y)%uint8 = Some (x %. d)%b0
   := UInt8.conversion.modulo.
 
-Definition data_machine_all_delivers_uint8_bin_section
-  : forall (x : UInt8) . UInt8.from_bin (UInt8.to_bin x) = x
-  := UInt8.conversion.bin.section.
+Definition data_machine_all_delivers_uint8_signed_bin_section
+  : forall (x : UInt8) . UInt8.from_b_signed (UInt8.to_b_signed x) = x
+  := UInt8.conversion.signed_bin.section.
 
 Definition data_machine_all_computes_uint8_division
   : (200 /. 7)%uint8 = Some 28%uint8
@@ -184,7 +184,7 @@ Definition data_machine_all_computes_uint8_division_by_zero
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint8_from_bin
-  : UInt8.from_bin (-1)%b = 255%uint8
+  : UInt8.from_b_signed (-1)%b_signed = 255%uint8
   := Identity.reflexivity _.
 
 Definition data_machine_all_reads_bit_literal
@@ -243,9 +243,9 @@ Definition data_machine_all_delivers_uint8_byte_section
   : forall (x : UInt8) . UInt8.from_byte (UInt8.to_byte x) = x
   := UInt8.conversion.byte.section.
 
-Theorem data_machine_all_delivers_coercion_uint8_to_bin_with_zero
+Theorem data_machine_all_delivers_coercion_uint8_to_bin0
   : forall (x : UInt8) .
-      BinWithZero.add x x = BinWithZero.add (UInt8.to_bin_with_zero x) (UInt8.to_bin_with_zero x).
+      Bin0.add x x = Bin0.add (UInt8.to_b0 x) (UInt8.to_b0 x).
 Proof.
   intro x.
   quod idem est.
@@ -271,53 +271,53 @@ Definition data_machine_all_delivers_int8
   := Int8.One.
 
 Definition data_machine_all_computes_int8_modulus
-  : Int8.modulus = 100000000%bin_base
+  : Int8.modulus = 100000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int8_addition
   : forall (x : Int8) (y : Int8) .
       (pi_1 (Int8.add_with_overflow x y))%product = 0%bit ->
-      Int8.to_bin (x + y)%int8 = (x + y)%b
+      Int8.to_b_signed (x + y)%int8 = (x + y)%b_signed
   := Int8.conversion.addition.
 
 Definition data_machine_all_delivers_int8_section
-  : forall (x : Int8) . Int8.from_bin (Int8.to_bin x) = x
+  : forall (x : Int8) . Int8.from_b_signed (Int8.to_b_signed x) = x
   := Int8.conversion.section.
 
 Definition data_machine_all_delivers_int8_reinterpretation_section
-  : forall (x : Int8) . Int8.from_bin_with_zero (Int8.unsigned_value x) = x
+  : forall (x : Int8) . Int8.from_b0 (Int8.unsigned_value x) = x
   := Int8.reinterpretation.section.
 
 Definition data_machine_all_computes_int8_value
-  : Int8.to_bin (-128)%int8 = (-10000000)%b
+  : Int8.to_b_signed (-128)%int8 = (-10000000)%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_int8_from_bin
-  : Int8.from_bin 11001000%b = (-56)%int8
+  : Int8.from_b_signed 11001000%b_signed = (-56)%int8
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int8_division_positive
-  : forall (x : Int8) (y : Int8) (d : BinBase) .
-      Int8.to_bin y = Bin.Positive d -> Option.map Int8.to_bin (x /. y)%int8 = Some (x /. d)%b
+  : forall (x : Int8) (y : Int8) (d : Bin) .
+      Int8.to_b_signed y = SignedBin.Positive d -> Option.map Int8.to_b_signed (x /. y)%int8 = Some (x /. d)%b_signed
   := Int8.conversion.division.positive.
 
 Definition data_machine_all_delivers_int8_division_negative
-  : forall (x : Int8) (y : Int8) (d : BinBase) .
-      Int8.to_bin y = Bin.Negative d
-      -> ~ (Int8.to_bin x = (-10000000)%b /\ d = BinBase.One)
-      -> Option.map Int8.to_bin (x /. y)%int8 = Some (Bin.negate (x /. d)%b)
+  : forall (x : Int8) (y : Int8) (d : Bin) .
+      Int8.to_b_signed y = SignedBin.Negative d
+      -> ~ (Int8.to_b_signed x = (-10000000)%b_signed /\ d = Bin.One)
+      -> Option.map Int8.to_b_signed (x /. y)%int8 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int8.conversion.division.negative.
 
 Definition data_machine_all_delivers_int8_retraction_nonnegative
-  : forall (n : BinWithZero) .
-      (n < 10000000)%bin_with_zero
-      -> Int8.to_bin (Int8.from_bin (Bin.from_bin_with_zero n)) = Bin.from_bin_with_zero n
+  : forall (n : Bin0) .
+      (n < 10000000)%b0
+      -> Int8.to_b_signed (Int8.from_b_signed (SignedBin.from_b0 n)) = SignedBin.from_b0 n
   := Int8.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int8_retraction_negative
-  : forall (p : BinBase) .
-      (p <= 10000000)%bin_with_zero
-      -> Int8.to_bin (Int8.from_bin (Bin.Negative p)) = Bin.Negative p
+  : forall (p : Bin) .
+      (p <= 10000000)%b0
+      -> Int8.to_b_signed (Int8.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int8.conversion.retraction.negative.
 
 Definition data_machine_all_computes_int8_division
@@ -398,44 +398,44 @@ Definition data_machine_all_delivers_int8_negation_minimum
   := Int8.negation.minimum.
 
 Definition data_machine_all_delivers_int8_wrapping_negation
-  : forall (a : Bin) . Int8.from_bin (Bin.negate a) = (- Int8.from_bin a)%int8
+  : forall (a : SignedBin) . Int8.from_b_signed (SignedBin.negate a) = (- Int8.from_b_signed a)%int8
   := Int8.wrapping.negation.
 
 Definition data_machine_all_delivers_int8_wrapping_summation
-  : forall (x : Int8) (y : Int8) . (x + y)%int8 = Int8.from_bin (Int8.to_bin x + Int8.to_bin y)%b
+  : forall (x : Int8) (y : Int8) . (x + y)%int8 = Int8.from_b_signed (Int8.to_b_signed x + Int8.to_b_signed y)%b_signed
   := Int8.wrapping.summation.
 
 Definition data_machine_all_delivers_int8_wrapping_difference
-  : forall (x : Int8) (y : Int8) . (x - y)%int8 = Int8.from_bin (Int8.to_bin x - Int8.to_bin y)%b
+  : forall (x : Int8) (y : Int8) . (x - y)%int8 = Int8.from_b_signed (Int8.to_b_signed x - Int8.to_b_signed y)%b_signed
   := Int8.wrapping.difference.
 
 Definition data_machine_all_delivers_int8_wrapping_upper
-  : forall (s : Bin) .
-      (1111111 < s /\ s < 110000000)%b -> Int8.to_bin (Int8.from_bin s) = (s - 100000000)%b
+  : forall (s : SignedBin) .
+      (1111111 < s /\ s < 110000000)%b_signed -> Int8.to_b_signed (Int8.from_b_signed s) = (s - 100000000)%b_signed
   := Int8.wrapping.upper.
 
 Definition data_machine_all_delivers_int8_wrapping_lower
-  : forall (s : Bin) .
-      (s < (-10000000) /\ (-110000000) < s)%b -> Int8.to_bin (Int8.from_bin s) = (s + 100000000)%b
+  : forall (s : SignedBin) .
+      (s < (-10000000) /\ (-110000000) < s)%b_signed -> Int8.to_b_signed (Int8.from_b_signed s) = (s + 100000000)%b_signed
   := Int8.wrapping.lower.
 
 Definition data_machine_all_delivers_int8_negation_exactness
-  : forall (x : Int8) . ~ (x = Int8.Min) -> Int8.to_bin (- x)%int8 = Bin.negate (Int8.to_bin x)
+  : forall (x : Int8) . ~ (x = Int8.Min) -> Int8.to_b_signed (- x)%int8 = SignedBin.negate (Int8.to_b_signed x)
   := Int8.negation.exactness.
 
 Definition data_machine_all_delivers_int8_increment_exactness
-  : forall (x : Int8) . ~ (x = Int8.Max) -> Int8.to_bin (x + Int8.One)%int8 = (Int8.to_bin x + 1)%b
+  : forall (x : Int8) . ~ (x = Int8.Max) -> Int8.to_b_signed (x + Int8.One)%int8 = (Int8.to_b_signed x + 1)%b_signed
   := Int8.increment.exactness.
 
 Definition data_machine_all_delivers_int8_decrement_exactness
-  : forall (x : Int8) . ~ (x = Int8.Min) -> Int8.to_bin (x - Int8.One)%int8 = (Int8.to_bin x - 1)%b
+  : forall (x : Int8) . ~ (x = Int8.Min) -> Int8.to_b_signed (x - Int8.One)%int8 = (Int8.to_b_signed x - 1)%b_signed
   := Int8.decrement.exactness.
 
 Definition data_machine_all_delivers_int8_overflow_addition_wrap
   : forall (x : Int8) (y : Int8) .
       (pi_1 (Int8.add_with_overflow x y))%product = 1%bit
-      -> Int8.to_bin (x + y)%int8 = (Int8.to_bin x + Int8.to_bin y - 100000000)%b
-         \/ Int8.to_bin (x + y)%int8 = (Int8.to_bin x + Int8.to_bin y + 100000000)%b
+      -> Int8.to_b_signed (x + y)%int8 = (Int8.to_b_signed x + Int8.to_b_signed y - 100000000)%b_signed
+         \/ Int8.to_b_signed (x + y)%int8 = (Int8.to_b_signed x + Int8.to_b_signed y + 100000000)%b_signed
   := Int8.overflow.addition.wrap.
 
 Definition data_machine_all_delivers_int8_overflow_addition_monotonicity
@@ -448,14 +448,14 @@ Definition data_machine_all_delivers_int8_overflow_addition_monotonicity
 Definition data_machine_all_delivers_int8_overflow_subtraction_specification
   : forall (x : Int8) (y : Int8) .
       (pi_1 (Int8.sub_with_overflow x y))%product = 0%bit
-      <-> ((-10000000) <= (Int8.to_bin x - Int8.to_bin y)
-           /\ (Int8.to_bin x - Int8.to_bin y) <= 1111111)%b
+      <-> ((-10000000) <= (Int8.to_b_signed x - Int8.to_b_signed y)
+           /\ (Int8.to_b_signed x - Int8.to_b_signed y) <= 1111111)%b_signed
   := Int8.overflow.subtraction.specification.
 
 Definition data_machine_all_delivers_int8_overflow_subtraction_exactness
   : forall (x : Int8) (y : Int8) .
       (pi_1 (Int8.sub_with_overflow x y))%product = 0%bit
-      -> Int8.to_bin (x - y)%int8 = (Int8.to_bin x - Int8.to_bin y)%b
+      -> Int8.to_b_signed (x - y)%int8 = (Int8.to_b_signed x - Int8.to_b_signed y)%b_signed
   := Int8.overflow.subtraction.exactness.
 
 Definition data_machine_all_delivers_int8_overflow_subtraction_left_monotonicity
@@ -509,7 +509,7 @@ Definition data_machine_all_delivers_int16_bound_lower
 Definition data_machine_all_delivers_int16_overflow_subtraction_exactness
   : forall (x : Int16) (y : Int16) .
       (pi_1 (Int16.sub_with_overflow x y))%product = 0%bit
-      -> Int16.to_bin (x - y)%int16 = (Int16.to_bin x - Int16.to_bin y)%b
+      -> Int16.to_b_signed (x - y)%int16 = (Int16.to_b_signed x - Int16.to_b_signed y)%b_signed
   := Int16.overflow.subtraction.exactness.
 
 Definition data_machine_all_delivers_int16_increment_specification
@@ -535,13 +535,13 @@ Definition data_machine_all_delivers_int64_overflow_addition_specification
   : forall (x : Int64) (y : Int64) .
       (pi_1 (Int64.add_with_overflow x y))%product = 0%bit
       <-> ((-1000000000000000000000000000000000000000000000000000000000000000)
-             <= (Int64.to_bin x + Int64.to_bin y)
-           /\ (Int64.to_bin x + Int64.to_bin y)
-                <= 111111111111111111111111111111111111111111111111111111111111111)%b
+             <= (Int64.to_b_signed x + Int64.to_b_signed y)
+           /\ (Int64.to_b_signed x + Int64.to_b_signed y)
+                <= 111111111111111111111111111111111111111111111111111111111111111)%b_signed
   := Int64.overflow.addition.specification.
 
 Definition data_machine_all_delivers_int64_negation_exactness
-  : forall (x : Int64) . ~ (x = Int64.Min) -> Int64.to_bin (- x)%int64 = Bin.negate (Int64.to_bin x)
+  : forall (x : Int64) . ~ (x = Int64.Min) -> Int64.to_b_signed (- x)%int64 = SignedBin.negate (Int64.to_b_signed x)
   := Int64.negation.exactness.
 
 Definition data_machine_all_computes_uint8_maximum
@@ -558,7 +558,7 @@ Definition data_machine_all_computes_uint8_subtraction_below_zero
 
 Definition data_machine_all_delivers_uint8_bound_range
   : forall (x : UInt8) .
-      (UInt8.to_bin_with_zero x <= UInt8.to_bin_with_zero UInt8.Max)%bin_with_zero
+      (UInt8.to_b0 x <= UInt8.to_b0 UInt8.Max)%b0
   := UInt8.bound.range.
 
 Definition data_machine_all_delivers_uint8_bound_lower
@@ -572,15 +572,15 @@ Definition data_machine_all_delivers_uint8_bound_upper
 Definition data_machine_all_delivers_uint8_overflow_addition_specification
   : forall (x : UInt8) (y : UInt8) .
       (pi_1 (UInt8.add_with_carry 0 x y))%product = 0%bit
-      <-> (UInt8.to_bin_with_zero x + UInt8.to_bin_with_zero y
-           < BinWithZero.Positive UInt8.modulus)%bin_with_zero
+      <-> (UInt8.to_b0 x + UInt8.to_b0 y
+           < Bin0.Positive UInt8.modulus)%b0
   := UInt8.overflow.addition.specification.
 
 Definition data_machine_all_delivers_uint8_overflow_addition_exactness
   : forall (x : UInt8) (y : UInt8) .
       (pi_1 (UInt8.add_with_carry 0 x y))%product = 0%bit
-      -> (UInt8.to_bin_with_zero (x + y)%uint8
-          = UInt8.to_bin_with_zero x + UInt8.to_bin_with_zero y)%bin_with_zero
+      -> (UInt8.to_b0 (x + y)%uint8
+          = UInt8.to_b0 x + UInt8.to_b0 y)%b0
   := UInt8.overflow.addition.exactness.
 
 Definition data_machine_all_delivers_uint8_overflow_addition_monotonicity
@@ -598,14 +598,14 @@ Definition data_machine_all_delivers_uint8_overflow_subtraction_specification
 Definition data_machine_all_delivers_uint8_overflow_subtraction_exactness
   : forall (x : UInt8) (y : UInt8) .
       (pi_1 (UInt8.sub_with_borrow 0 x y))%product = 0%bit
-      -> (UInt8.to_bin_with_zero y + UInt8.to_bin_with_zero (x - y)%uint8
-          = UInt8.to_bin_with_zero x)%bin_with_zero
+      -> (UInt8.to_b0 y + UInt8.to_b0 (x - y)%uint8
+          = UInt8.to_b0 x)%b0
   := UInt8.overflow.subtraction.exactness.
 
 Definition data_machine_all_delivers_uint8_increment_exactness
   : forall (x : UInt8) .
       ~ (x = UInt8.Max)
-      -> (UInt8.to_bin_with_zero (x + UInt8.One)%uint8 = UInt8.to_bin_with_zero x + 1)%bin_with_zero
+      -> (UInt8.to_b0 (x + UInt8.One)%uint8 = UInt8.to_b0 x + 1)%b0
   := UInt8.increment.exactness.
 
 Definition data_machine_all_delivers_uint8_increment_extensivity
@@ -623,7 +623,7 @@ Definition data_machine_all_delivers_uint8_increment_sufficiency
 Definition data_machine_all_delivers_uint8_decrement_exactness
   : forall (x : UInt8) .
       ~ (x = UInt8.Zero)
-      -> (UInt8.to_bin_with_zero (x - UInt8.One)%uint8 + 1 = UInt8.to_bin_with_zero x)%bin_with_zero
+      -> (UInt8.to_b0 (x - UInt8.One)%uint8 + 1 = UInt8.to_b0 x)%b0
   := UInt8.decrement.exactness.
 
 Definition data_machine_all_delivers_uint8_decrement_extensivity
@@ -633,8 +633,8 @@ Definition data_machine_all_delivers_uint8_decrement_extensivity
 Theorem data_machine_all_delivers_uint8_increment_exactness_rewriting
   : forall (x : UInt8) .
       ~ (x = UInt8.Max)
-      -> (UInt8.to_bin_with_zero (x + UInt8.One)%uint8 + 0
-          = UInt8.to_bin_with_zero x + 1 + 0)%bin_with_zero.
+      -> (UInt8.to_b0 (x + UInt8.One)%uint8 + 0
+          = UInt8.to_b0 x + 1 + 0)%b0.
 Proof.
   intros x h.
   leibniz (UInt8.increment.exactness &x &h) in |- *.
@@ -680,15 +680,15 @@ Definition data_machine_all_computes_uint64_addition_past_maximum
 Definition data_machine_all_delivers_uint64_overflow_addition_specification
   : forall (x : UInt64) (y : UInt64) .
       (pi_1 (UInt64.add_with_carry 0 x y))%product = 0%bit
-      <-> (UInt64.to_bin_with_zero x + UInt64.to_bin_with_zero y
-           < BinWithZero.Positive UInt64.modulus)%bin_with_zero
+      <-> (UInt64.to_b0 x + UInt64.to_b0 y
+           < Bin0.Positive UInt64.modulus)%b0
   := UInt64.overflow.addition.specification.
 
 Definition data_machine_all_delivers_uint64_decrement_exactness
   : forall (x : UInt64) .
       ~ (x = UInt64.Zero)
-      -> (UInt64.to_bin_with_zero (x - UInt64.One)%uint64 + 1
-          = UInt64.to_bin_with_zero x)%bin_with_zero
+      -> (UInt64.to_b0 (x - UInt64.One)%uint64 + 1
+          = UInt64.to_b0 x)%b0
   := UInt64.decrement.exactness.
 
 Definition data_machine_all_computes_uint8_multiplication_past_maximum
@@ -702,15 +702,15 @@ Definition data_machine_all_computes_uint8_multiplication_to_maximum
 Definition data_machine_all_delivers_uint8_overflow_multiplication_specification
   : forall (x : UInt8) (y : UInt8) .
       (pi_1 (UInt8.mul_with_overflow x y))%product = 0%bit
-      <-> (UInt8.to_bin_with_zero x * UInt8.to_bin_with_zero y
-           < BinWithZero.Positive UInt8.modulus)%bin_with_zero
+      <-> (UInt8.to_b0 x * UInt8.to_b0 y
+           < Bin0.Positive UInt8.modulus)%b0
   := UInt8.overflow.multiplication.specification.
 
 Definition data_machine_all_delivers_uint8_overflow_multiplication_exactness
   : forall (x : UInt8) (y : UInt8) .
       (pi_1 (UInt8.mul_with_overflow x y))%product = 0%bit
-      -> (UInt8.to_bin_with_zero (x * y)%uint8
-          = UInt8.to_bin_with_zero x * UInt8.to_bin_with_zero y)%bin_with_zero
+      -> (UInt8.to_b0 (x * y)%uint8
+          = UInt8.to_b0 x * UInt8.to_b0 y)%b0
   := UInt8.overflow.multiplication.exactness.
 
 Definition data_machine_all_delivers_uint8_overflow_multiplication_monotonicity
@@ -723,8 +723,8 @@ Definition data_machine_all_delivers_uint8_overflow_multiplication_monotonicity
 Definition data_machine_all_delivers_uint64_overflow_multiplication_exactness
   : forall (x : UInt64) (y : UInt64) .
       (pi_1 (UInt64.mul_with_overflow x y))%product = 0%bit
-      -> (UInt64.to_bin_with_zero (x * y)%uint64
-          = UInt64.to_bin_with_zero x * UInt64.to_bin_with_zero y)%bin_with_zero
+      -> (UInt64.to_b0 (x * y)%uint64
+          = UInt64.to_b0 x * UInt64.to_b0 y)%b0
   := UInt64.overflow.multiplication.exactness.
 
 Definition data_machine_all_computes_int8_multiplication_past_maximum
@@ -742,35 +742,35 @@ Definition data_machine_all_computes_int8_multiplication_minimum_by_minus_one
 Definition data_machine_all_delivers_int8_overflow_multiplication_specification
   : forall (x : Int8) (y : Int8) .
       (pi_1 (Int8.mul_with_overflow x y))%product = 0%bit
-      <-> ((-10000000) <= Int8.to_bin x * Int8.to_bin y
-           /\ Int8.to_bin x * Int8.to_bin y <= 1111111)%b
+      <-> ((-10000000) <= Int8.to_b_signed x * Int8.to_b_signed y
+           /\ Int8.to_b_signed x * Int8.to_b_signed y <= 1111111)%b_signed
   := Int8.overflow.multiplication.specification.
 
 Definition data_machine_all_delivers_int8_overflow_multiplication_exactness
   : forall (x : Int8) (y : Int8) .
       (pi_1 (Int8.mul_with_overflow x y))%product = 0%bit
-      -> Int8.to_bin (x * y)%int8 = (Int8.to_bin x * Int8.to_bin y)%b
+      -> Int8.to_b_signed (x * y)%int8 = (Int8.to_b_signed x * Int8.to_b_signed y)%b_signed
   := Int8.overflow.multiplication.exactness.
 
 Definition data_machine_all_delivers_int8_overflow_multiplication_monotonicity
   : forall (x : Int8) (y : Int8) (z : Int8) .
       (pi_1 (Int8.mul_with_overflow x y))%product = 0%bit
       -> (pi_1 (Int8.mul_with_overflow x z))%product = 0%bit
-      -> (0 < Int8.to_bin x)%b -> (y < z -> x * y < x * z)%int8
+      -> (0 < Int8.to_b_signed x)%b_signed -> (y < z -> x * y < x * z)%int8
   := Int8.overflow.multiplication.monotonicity.
 
 Definition data_machine_all_delivers_int8_wrapping_multiplicativity
-  : forall (a : Bin) (b : Bin) . Int8.from_bin (a * b)%b = (Int8.from_bin a * Int8.from_bin b)%int8
+  : forall (a : SignedBin) (b : SignedBin) . Int8.from_b_signed (a * b)%b_signed = (Int8.from_b_signed a * Int8.from_b_signed b)%int8
   := Int8.wrapping.multiplicativity.
 
 Definition data_machine_all_delivers_int64_overflow_multiplication_exactness
   : forall (x : Int64) (y : Int64) .
       (pi_1 (Int64.mul_with_overflow x y))%product = 0%bit
-      -> Int64.to_bin (x * y)%int64 = (Int64.to_bin x * Int64.to_bin y)%b
+      -> Int64.to_b_signed (x * y)%int64 = (Int64.to_b_signed x * Int64.to_b_signed y)%b_signed
   := Int64.overflow.multiplication.exactness.
 
 Definition data_machine_all_delivers_int8_bound_range
-  : forall (x : Int8) . ((-10000000) <= Int8.to_bin x /\ Int8.to_bin x <= 1111111)%b
+  : forall (x : Int8) . ((-10000000) <= Int8.to_b_signed x /\ Int8.to_b_signed x <= 1111111)%b_signed
   := Int8.bound.range.
 
 Definition data_machine_all_delivers_int8_bound_lower
@@ -794,26 +794,26 @@ Proof.
 Qed.
 
 Definition data_machine_all_delivers_int8_wrapping_additivity
-  : forall (a : Bin) (b : Bin) . Int8.from_bin (a + b)%b = (Int8.from_bin a + Int8.from_bin b)%int8
+  : forall (a : SignedBin) (b : SignedBin) . Int8.from_b_signed (a + b)%b_signed = (Int8.from_b_signed a + Int8.from_b_signed b)%int8
   := Int8.wrapping.additivity.
 
 Definition data_machine_all_delivers_int8_sign_clear
-  : forall (x : Int8) . Int8.sign_bit x = 0%bit -> (0 <= Int8.to_bin x)%b
+  : forall (x : Int8) . Int8.sign_bit x = 0%bit -> (0 <= Int8.to_b_signed x)%b_signed
   := Int8.sign.clear.
 
 Definition data_machine_all_delivers_int8_sign_set
-  : forall (x : Int8) . Int8.sign_bit x = 1%bit -> (Int8.to_bin x < 0)%b
+  : forall (x : Int8) . Int8.sign_bit x = 1%bit -> (Int8.to_b_signed x < 0)%b_signed
   := Int8.sign.set.
 
 Definition data_machine_all_delivers_int8_wrapping_retraction
-  : forall (z : Bin) . ((-10000000) <= z /\ z <= 1111111)%b -> Int8.to_bin (Int8.from_bin z) = z
+  : forall (z : SignedBin) . ((-10000000) <= z /\ z <= 1111111)%b_signed -> Int8.to_b_signed (Int8.from_b_signed z) = z
   := Int8.wrapping.retraction.
 
 Definition data_machine_all_delivers_int8_overflow_addition_specification
   : forall (x : Int8) (y : Int8) .
       (pi_1 (Int8.add_with_overflow x y))%product = 0%bit
-      <-> ((-10000000) <= (Int8.to_bin x + Int8.to_bin y)
-           /\ (Int8.to_bin x + Int8.to_bin y) <= 1111111)%b
+      <-> ((-10000000) <= (Int8.to_b_signed x + Int8.to_b_signed y)
+           /\ (Int8.to_b_signed x + Int8.to_b_signed y) <= 1111111)%b_signed
   := Int8.overflow.addition.specification.
 
 Definition data_machine_all_computes_int8_multiplication
@@ -857,7 +857,7 @@ Definition data_machine_all_delivers_int8_byte_section
   := Int8.conversion.byte.section.
 
 Theorem data_machine_all_delivers_coercion_int8_to_bin
-  : forall (x : Int8) . Bin.negate x = Bin.negate (Int8.to_bin x).
+  : forall (x : Int8) . SignedBin.negate x = SignedBin.negate (Int8.to_b_signed x).
 Proof.
   intro x.
   quod idem est.
@@ -964,52 +964,52 @@ Definition data_machine_all_delivers_uint16
   := UInt16.One.
 
 Definition data_machine_all_computes_uint16_modulus
-  : UInt16.modulus = 10000000000000000%bin_base
+  : UInt16.modulus = 10000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint16_carry
   : forall (carry : Bit) (x : UInt16) (y : UInt16) .
-      (Bit.to_bin_with_zero carry + x + y
-        = UInt16.modulus * Bit.to_bin_with_zero (pi_1 (UInt16.add_with_carry carry x y))%product
-          + (pi_2 (UInt16.add_with_carry carry x y))%product)%bin_with_zero
+      (Bit.to_b0 carry + x + y
+        = UInt16.modulus * Bit.to_b0 (pi_1 (UInt16.add_with_carry carry x y))%product
+          + (pi_2 (UInt16.add_with_carry carry x y))%product)%b0
   := UInt16.conversion.carry.
 
 Definition data_machine_all_delivers_uint16_addition
   : forall (x : UInt16) (y : UInt16) .
-      (UInt16.to_bin_with_zero (x + y)%uint16 = (x + y) %. UInt16.modulus)%bin_with_zero
+      (UInt16.to_b0 (x + y)%uint16 = (x + y) %. UInt16.modulus)%b0
   := UInt16.conversion.addition.
 
 Definition data_machine_all_delivers_uint16_multiplication
   : forall (x : UInt16) (y : UInt16) .
-      (UInt16.to_bin_with_zero (x * y)%uint16 = (x * y) %. UInt16.modulus)%bin_with_zero
+      (UInt16.to_b0 (x * y)%uint16 = (x * y) %. UInt16.modulus)%b0
   := UInt16.conversion.multiplication.
 
 Definition data_machine_all_delivers_uint16_negation
   : forall (x : UInt16) .
-      (((- x)%uint16 + x) %. UInt16.modulus = 0)%bin_with_zero
+      (((- x)%uint16 + x) %. UInt16.modulus = 0)%b0
   := UInt16.conversion.negation.
 
 Definition data_machine_all_delivers_uint16_left_shift
   : forall (x : UInt16) (k : Nat0) .
-      (UInt16.to_bin_with_zero (UInt16.shift_left x k)
-        = BinWithZero.shift_left x k %. UInt16.modulus)%bin_with_zero
+      (UInt16.to_b0 (UInt16.shift_left x k)
+        = Bin0.shift_left x k %. UInt16.modulus)%b0
   := UInt16.conversion.left.shift.
 
 Definition data_machine_all_delivers_uint16_right_shift
   : forall (x : UInt16) (k : Nat0) .
-      UInt16.to_bin_with_zero (UInt16.shift_right x k) = BinWithZero.shift_right x k
+      UInt16.to_b0 (UInt16.shift_right x k) = Bin0.shift_right x k
   := UInt16.conversion.right.shift.
 
 Definition data_machine_all_delivers_uint16_section
-  : forall (x : UInt16) . UInt16.from_bin_with_zero (UInt16.to_bin_with_zero x) = x
+  : forall (x : UInt16) . UInt16.from_b0 (UInt16.to_b0 x) = x
   := UInt16.conversion.section.
 
 Definition data_machine_all_computes_uint16_value
-  : UInt16.to_bin_with_zero 50000%uint16 = 1100001101010000%bin_with_zero
+  : UInt16.to_b0 50000%uint16 = 1100001101010000%b0
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint16_to_bin
-  : UInt16.to_bin 50000%uint16 = 1100001101010000%b
+  : UInt16.to_b_signed 50000%uint16 = 1100001101010000%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint16_distributivity
@@ -1018,7 +1018,7 @@ Definition data_machine_all_delivers_uint16_distributivity
   := UInt16.multiplication.distributivity.over.addition.
 
 Definition data_machine_all_computes_uint16_reduction
-  : UInt16.from_bin_with_zero 10001000101110000%bin_with_zero = 4464%uint16
+  : UInt16.from_b0 10001000101110000%b0 = 4464%uint16
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint16_multiplication
@@ -1038,20 +1038,20 @@ Definition data_machine_all_computes_uint16_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint16_division
-  : forall (x : UInt16) (y : UInt16) (d : BinBase) .
-      UInt16.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt16.to_bin_with_zero (x /. y)%uint16 = Some (x /. d)%bin_with_zero
+  : forall (x : UInt16) (y : UInt16) (d : Bin) .
+      UInt16.to_b0 y = Bin0.Positive d
+      -> Option.map UInt16.to_b0 (x /. y)%uint16 = Some (x /. d)%b0
   := UInt16.conversion.division.
 
 Definition data_machine_all_delivers_uint16_modulo
-  : forall (x : UInt16) (y : UInt16) (d : BinBase) .
-      UInt16.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt16.to_bin_with_zero (x %. y)%uint16 = Some (x %. d)%bin_with_zero
+  : forall (x : UInt16) (y : UInt16) (d : Bin) .
+      UInt16.to_b0 y = Bin0.Positive d
+      -> Option.map UInt16.to_b0 (x %. y)%uint16 = Some (x %. d)%b0
   := UInt16.conversion.modulo.
 
-Definition data_machine_all_delivers_uint16_bin_section
-  : forall (x : UInt16) . UInt16.from_bin (UInt16.to_bin x) = x
-  := UInt16.conversion.bin.section.
+Definition data_machine_all_delivers_uint16_signed_bin_section
+  : forall (x : UInt16) . UInt16.from_b_signed (UInt16.to_b_signed x) = x
+  := UInt16.conversion.signed_bin.section.
 
 Definition data_machine_all_computes_uint16_division
   : (60000 /. 7)%uint16 = Some 8571%uint16
@@ -1066,7 +1066,7 @@ Definition data_machine_all_computes_uint16_division_by_zero
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint16_from_bin
-  : UInt16.from_bin (-1)%b = 65535%uint16
+  : UInt16.from_b_signed (-1)%b_signed = 65535%uint16
   := Identity.reflexivity _.
 
 Definition data_machine_all_reads_uint16_literal_hexadecimal
@@ -1102,9 +1102,9 @@ Definition data_machine_all_delivers_uint16_hword_section
   : forall (e : Endian) (x : UInt16) . UInt16.from_hword (UInt16.to_hword e x) = x
   := UInt16.conversion.hword.section.
 
-Theorem data_machine_all_delivers_coercion_uint16_to_bin_with_zero
+Theorem data_machine_all_delivers_coercion_uint16_to_bin0
   : forall (x : UInt16) .
-      BinWithZero.add x x = BinWithZero.add (UInt16.to_bin_with_zero x) (UInt16.to_bin_with_zero x).
+      Bin0.add x x = Bin0.add (UInt16.to_b0 x) (UInt16.to_b0 x).
 Proof.
   intro x.
   quod idem est.
@@ -1130,53 +1130,53 @@ Definition data_machine_all_delivers_int16
   := Int16.One.
 
 Definition data_machine_all_computes_int16_modulus
-  : Int16.modulus = 10000000000000000%bin_base
+  : Int16.modulus = 10000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int16_addition
   : forall (x : Int16) (y : Int16) .
       (pi_1 (Int16.add_with_overflow x y))%product = 0%bit ->
-      Int16.to_bin (x + y)%int16 = (x + y)%b
+      Int16.to_b_signed (x + y)%int16 = (x + y)%b_signed
   := Int16.conversion.addition.
 
 Definition data_machine_all_delivers_int16_section
-  : forall (x : Int16) . Int16.from_bin (Int16.to_bin x) = x
+  : forall (x : Int16) . Int16.from_b_signed (Int16.to_b_signed x) = x
   := Int16.conversion.section.
 
 Definition data_machine_all_delivers_int16_reinterpretation_section
-  : forall (x : Int16) . Int16.from_bin_with_zero (Int16.unsigned_value x) = x
+  : forall (x : Int16) . Int16.from_b0 (Int16.unsigned_value x) = x
   := Int16.reinterpretation.section.
 
 Definition data_machine_all_computes_int16_value
-  : Int16.to_bin (-1000)%int16 = (-1111101000)%b
+  : Int16.to_b_signed (-1000)%int16 = (-1111101000)%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_int16_from_bin
-  : Int16.from_bin 1001110001000000%b = (-25536)%int16
+  : Int16.from_b_signed 1001110001000000%b_signed = (-25536)%int16
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int16_division_positive
-  : forall (x : Int16) (y : Int16) (d : BinBase) .
-      Int16.to_bin y = Bin.Positive d -> Option.map Int16.to_bin (x /. y)%int16 = Some (x /. d)%b
+  : forall (x : Int16) (y : Int16) (d : Bin) .
+      Int16.to_b_signed y = SignedBin.Positive d -> Option.map Int16.to_b_signed (x /. y)%int16 = Some (x /. d)%b_signed
   := Int16.conversion.division.positive.
 
 Definition data_machine_all_delivers_int16_division_negative
-  : forall (x : Int16) (y : Int16) (d : BinBase) .
-      Int16.to_bin y = Bin.Negative d
-      -> ~ (Int16.to_bin x = (-1000000000000000)%b /\ d = BinBase.One)
-      -> Option.map Int16.to_bin (x /. y)%int16 = Some (Bin.negate (x /. d)%b)
+  : forall (x : Int16) (y : Int16) (d : Bin) .
+      Int16.to_b_signed y = SignedBin.Negative d
+      -> ~ (Int16.to_b_signed x = (-1000000000000000)%b_signed /\ d = Bin.One)
+      -> Option.map Int16.to_b_signed (x /. y)%int16 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int16.conversion.division.negative.
 
 Definition data_machine_all_delivers_int16_retraction_nonnegative
-  : forall (n : BinWithZero) .
-      (n < 1000000000000000)%bin_with_zero
-      -> Int16.to_bin (Int16.from_bin (Bin.from_bin_with_zero n)) = Bin.from_bin_with_zero n
+  : forall (n : Bin0) .
+      (n < 1000000000000000)%b0
+      -> Int16.to_b_signed (Int16.from_b_signed (SignedBin.from_b0 n)) = SignedBin.from_b0 n
   := Int16.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int16_retraction_negative
-  : forall (p : BinBase) .
-      (p <= 1000000000000000)%bin_with_zero
-      -> Int16.to_bin (Int16.from_bin (Bin.Negative p)) = Bin.Negative p
+  : forall (p : Bin) .
+      (p <= 1000000000000000)%b0
+      -> Int16.to_b_signed (Int16.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int16.conversion.retraction.negative.
 
 Definition data_machine_all_computes_int16_division
@@ -1201,8 +1201,8 @@ Definition data_machine_all_delivers_int16_distributivity
   := Int16.multiplication.distributivity.over.addition.
 
 Definition data_machine_all_reads_int16_literal_bounds
-  : Int16.to_bin (-32768)%int16 = (-1000000000000000)%b
-    /\ Int16.to_bin 32767%int16 = 111111111111111%b
+  : Int16.to_b_signed (-32768)%int16 = (-1000000000000000)%b_signed
+    /\ Int16.to_b_signed 32767%int16 = 111111111111111%b_signed
   := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
 
 Definition data_machine_all_computes_int16_wrap
@@ -1258,7 +1258,7 @@ Definition data_machine_all_delivers_int16_hword_section
   := Int16.conversion.hword.section.
 
 Theorem data_machine_all_delivers_coercion_int16_to_bin
-  : forall (x : Int16) . Bin.negate x = Bin.negate (Int16.to_bin x).
+  : forall (x : Int16) . SignedBin.negate x = SignedBin.negate (Int16.to_b_signed x).
 Proof.
   intro x.
   quod idem est.
@@ -1369,52 +1369,52 @@ Definition data_machine_all_delivers_uint32
   := UInt32.One.
 
 Definition data_machine_all_computes_uint32_modulus
-  : UInt32.modulus = 100000000000000000000000000000000%bin_base
+  : UInt32.modulus = 100000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint32_carry
   : forall (carry : Bit) (x : UInt32) (y : UInt32) .
-      (Bit.to_bin_with_zero carry + x + y
-        = UInt32.modulus * Bit.to_bin_with_zero (pi_1 (UInt32.add_with_carry carry x y))%product
-          + (pi_2 (UInt32.add_with_carry carry x y))%product)%bin_with_zero
+      (Bit.to_b0 carry + x + y
+        = UInt32.modulus * Bit.to_b0 (pi_1 (UInt32.add_with_carry carry x y))%product
+          + (pi_2 (UInt32.add_with_carry carry x y))%product)%b0
   := UInt32.conversion.carry.
 
 Definition data_machine_all_delivers_uint32_addition
   : forall (x : UInt32) (y : UInt32) .
-      (UInt32.to_bin_with_zero (x + y)%uint32 = (x + y) %. UInt32.modulus)%bin_with_zero
+      (UInt32.to_b0 (x + y)%uint32 = (x + y) %. UInt32.modulus)%b0
   := UInt32.conversion.addition.
 
 Definition data_machine_all_delivers_uint32_multiplication
   : forall (x : UInt32) (y : UInt32) .
-      (UInt32.to_bin_with_zero (x * y)%uint32 = (x * y) %. UInt32.modulus)%bin_with_zero
+      (UInt32.to_b0 (x * y)%uint32 = (x * y) %. UInt32.modulus)%b0
   := UInt32.conversion.multiplication.
 
 Definition data_machine_all_delivers_uint32_negation
   : forall (x : UInt32) .
-      (((- x)%uint32 + x) %. UInt32.modulus = 0)%bin_with_zero
+      (((- x)%uint32 + x) %. UInt32.modulus = 0)%b0
   := UInt32.conversion.negation.
 
 Definition data_machine_all_delivers_uint32_left_shift
   : forall (x : UInt32) (k : Nat0) .
-      (UInt32.to_bin_with_zero (UInt32.shift_left x k)
-        = BinWithZero.shift_left x k %. UInt32.modulus)%bin_with_zero
+      (UInt32.to_b0 (UInt32.shift_left x k)
+        = Bin0.shift_left x k %. UInt32.modulus)%b0
   := UInt32.conversion.left.shift.
 
 Definition data_machine_all_delivers_uint32_right_shift
   : forall (x : UInt32) (k : Nat0) .
-      UInt32.to_bin_with_zero (UInt32.shift_right x k) = BinWithZero.shift_right x k
+      UInt32.to_b0 (UInt32.shift_right x k) = Bin0.shift_right x k
   := UInt32.conversion.right.shift.
 
 Definition data_machine_all_delivers_uint32_section
-  : forall (x : UInt32) . UInt32.from_bin_with_zero (UInt32.to_bin_with_zero x) = x
+  : forall (x : UInt32) . UInt32.from_b0 (UInt32.to_b0 x) = x
   := UInt32.conversion.section.
 
 Definition data_machine_all_computes_uint32_value
-  : UInt32.to_bin_with_zero 3000000000%uint32 = 10110010110100000101111000000000%bin_with_zero
+  : UInt32.to_b0 3000000000%uint32 = 10110010110100000101111000000000%b0
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint32_to_bin
-  : UInt32.to_bin 3000000000%uint32 = 10110010110100000101111000000000%b
+  : UInt32.to_b_signed 3000000000%uint32 = 10110010110100000101111000000000%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint32_distributivity
@@ -1423,7 +1423,7 @@ Definition data_machine_all_delivers_uint32_distributivity
   := UInt32.multiplication.distributivity.over.addition.
 
 Definition data_machine_all_computes_uint32_reduction
-  : UInt32.from_bin_with_zero 100000000000000000001000101110000%bin_with_zero = 4464%uint32
+  : UInt32.from_b0 100000000000000000001000101110000%b0 = 4464%uint32
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint32_multiplication
@@ -1443,20 +1443,20 @@ Definition data_machine_all_computes_uint32_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint32_division
-  : forall (x : UInt32) (y : UInt32) (d : BinBase) .
-      UInt32.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt32.to_bin_with_zero (x /. y)%uint32 = Some (x /. d)%bin_with_zero
+  : forall (x : UInt32) (y : UInt32) (d : Bin) .
+      UInt32.to_b0 y = Bin0.Positive d
+      -> Option.map UInt32.to_b0 (x /. y)%uint32 = Some (x /. d)%b0
   := UInt32.conversion.division.
 
 Definition data_machine_all_delivers_uint32_modulo
-  : forall (x : UInt32) (y : UInt32) (d : BinBase) .
-      UInt32.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt32.to_bin_with_zero (x %. y)%uint32 = Some (x %. d)%bin_with_zero
+  : forall (x : UInt32) (y : UInt32) (d : Bin) .
+      UInt32.to_b0 y = Bin0.Positive d
+      -> Option.map UInt32.to_b0 (x %. y)%uint32 = Some (x %. d)%b0
   := UInt32.conversion.modulo.
 
-Definition data_machine_all_delivers_uint32_bin_section
-  : forall (x : UInt32) . UInt32.from_bin (UInt32.to_bin x) = x
-  := UInt32.conversion.bin.section.
+Definition data_machine_all_delivers_uint32_signed_bin_section
+  : forall (x : UInt32) . UInt32.from_b_signed (UInt32.to_b_signed x) = x
+  := UInt32.conversion.signed_bin.section.
 
 Definition data_machine_all_computes_uint32_division
   : (4000000000 /. 7)%uint32 = Some 571428571%uint32
@@ -1471,7 +1471,7 @@ Definition data_machine_all_computes_uint32_division_by_zero
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint32_from_bin
-  : UInt32.from_bin (-1)%b = 4294967295%uint32
+  : UInt32.from_b_signed (-1)%b_signed = 4294967295%uint32
   := Identity.reflexivity _.
 
 Definition data_machine_all_reads_uint32_literal_hexadecimal
@@ -1509,9 +1509,9 @@ Definition data_machine_all_delivers_uint32_word_section
   : forall (e : Endian) (x : UInt32) . UInt32.from_word (UInt32.to_word e x) = x
   := UInt32.conversion.word.section.
 
-Theorem data_machine_all_delivers_coercion_uint32_to_bin_with_zero
+Theorem data_machine_all_delivers_coercion_uint32_to_bin0
   : forall (x : UInt32) .
-      BinWithZero.add x x = BinWithZero.add (UInt32.to_bin_with_zero x) (UInt32.to_bin_with_zero x).
+      Bin0.add x x = Bin0.add (UInt32.to_b0 x) (UInt32.to_b0 x).
 Proof.
   intro x.
   quod idem est.
@@ -1537,53 +1537,53 @@ Definition data_machine_all_delivers_int32
   := Int32.One.
 
 Definition data_machine_all_computes_int32_modulus
-  : Int32.modulus = 100000000000000000000000000000000%bin_base
+  : Int32.modulus = 100000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int32_addition
   : forall (x : Int32) (y : Int32) .
       (pi_1 (Int32.add_with_overflow x y))%product = 0%bit ->
-      Int32.to_bin (x + y)%int32 = (x + y)%b
+      Int32.to_b_signed (x + y)%int32 = (x + y)%b_signed
   := Int32.conversion.addition.
 
 Definition data_machine_all_delivers_int32_section
-  : forall (x : Int32) . Int32.from_bin (Int32.to_bin x) = x
+  : forall (x : Int32) . Int32.from_b_signed (Int32.to_b_signed x) = x
   := Int32.conversion.section.
 
 Definition data_machine_all_delivers_int32_reinterpretation_section
-  : forall (x : Int32) . Int32.from_bin_with_zero (Int32.unsigned_value x) = x
+  : forall (x : Int32) . Int32.from_b0 (Int32.unsigned_value x) = x
   := Int32.reinterpretation.section.
 
 Definition data_machine_all_computes_int32_value
-  : Int32.to_bin (-1000000)%int32 = (-11110100001001000000)%b
+  : Int32.to_b_signed (-1000000)%int32 = (-11110100001001000000)%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_int32_from_bin
-  : Int32.from_bin 10110010110100000101111000000000%b = (-1294967296)%int32
+  : Int32.from_b_signed 10110010110100000101111000000000%b_signed = (-1294967296)%int32
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int32_division_positive
-  : forall (x : Int32) (y : Int32) (d : BinBase) .
-      Int32.to_bin y = Bin.Positive d -> Option.map Int32.to_bin (x /. y)%int32 = Some (x /. d)%b
+  : forall (x : Int32) (y : Int32) (d : Bin) .
+      Int32.to_b_signed y = SignedBin.Positive d -> Option.map Int32.to_b_signed (x /. y)%int32 = Some (x /. d)%b_signed
   := Int32.conversion.division.positive.
 
 Definition data_machine_all_delivers_int32_division_negative
-  : forall (x : Int32) (y : Int32) (d : BinBase) .
-      Int32.to_bin y = Bin.Negative d
-      -> ~ (Int32.to_bin x = (-10000000000000000000000000000000)%b /\ d = BinBase.One)
-      -> Option.map Int32.to_bin (x /. y)%int32 = Some (Bin.negate (x /. d)%b)
+  : forall (x : Int32) (y : Int32) (d : Bin) .
+      Int32.to_b_signed y = SignedBin.Negative d
+      -> ~ (Int32.to_b_signed x = (-10000000000000000000000000000000)%b_signed /\ d = Bin.One)
+      -> Option.map Int32.to_b_signed (x /. y)%int32 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int32.conversion.division.negative.
 
 Definition data_machine_all_delivers_int32_retraction_nonnegative
-  : forall (n : BinWithZero) .
-      (n < 10000000000000000000000000000000)%bin_with_zero
-      -> Int32.to_bin (Int32.from_bin (Bin.from_bin_with_zero n)) = Bin.from_bin_with_zero n
+  : forall (n : Bin0) .
+      (n < 10000000000000000000000000000000)%b0
+      -> Int32.to_b_signed (Int32.from_b_signed (SignedBin.from_b0 n)) = SignedBin.from_b0 n
   := Int32.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int32_retraction_negative
-  : forall (p : BinBase) .
-      (p <= 10000000000000000000000000000000)%bin_with_zero
-      -> Int32.to_bin (Int32.from_bin (Bin.Negative p)) = Bin.Negative p
+  : forall (p : Bin) .
+      (p <= 10000000000000000000000000000000)%b0
+      -> Int32.to_b_signed (Int32.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int32.conversion.retraction.negative.
 
 Definition data_machine_all_computes_int32_division
@@ -1608,8 +1608,8 @@ Definition data_machine_all_delivers_int32_distributivity
   := Int32.multiplication.distributivity.over.addition.
 
 Definition data_machine_all_reads_int32_literal_bounds
-  : Int32.to_bin (-2147483648)%int32 = (-10000000000000000000000000000000)%b
-    /\ Int32.to_bin 2147483647%int32 = 1111111111111111111111111111111%b
+  : Int32.to_b_signed (-2147483648)%int32 = (-10000000000000000000000000000000)%b_signed
+    /\ Int32.to_b_signed 2147483647%int32 = 1111111111111111111111111111111%b_signed
   := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
 
 Definition data_machine_all_computes_int32_wrap
@@ -1665,7 +1665,7 @@ Definition data_machine_all_delivers_int32_word_section
   := Int32.conversion.word.section.
 
 Theorem data_machine_all_delivers_coercion_int32_to_bin
-  : forall (x : Int32) . Bin.negate x = Bin.negate (Int32.to_bin x).
+  : forall (x : Int32) . SignedBin.negate x = SignedBin.negate (Int32.to_b_signed x).
 Proof.
   intro x.
   quod idem est.
@@ -1765,54 +1765,54 @@ Definition data_machine_all_delivers_uint64
   := UInt64.One.
 
 Definition data_machine_all_computes_uint64_modulus
-  : UInt64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%bin_base
+  : UInt64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint64_carry
   : forall (carry : Bit) (x : UInt64) (y : UInt64) .
-      (Bit.to_bin_with_zero carry + x + y
-        = UInt64.modulus * Bit.to_bin_with_zero (pi_1 (UInt64.add_with_carry carry x y))%product
-          + (pi_2 (UInt64.add_with_carry carry x y))%product)%bin_with_zero
+      (Bit.to_b0 carry + x + y
+        = UInt64.modulus * Bit.to_b0 (pi_1 (UInt64.add_with_carry carry x y))%product
+          + (pi_2 (UInt64.add_with_carry carry x y))%product)%b0
   := UInt64.conversion.carry.
 
 Definition data_machine_all_delivers_uint64_addition
   : forall (x : UInt64) (y : UInt64) .
-      (UInt64.to_bin_with_zero (x + y)%uint64 = (x + y) %. UInt64.modulus)%bin_with_zero
+      (UInt64.to_b0 (x + y)%uint64 = (x + y) %. UInt64.modulus)%b0
   := UInt64.conversion.addition.
 
 Definition data_machine_all_delivers_uint64_multiplication
   : forall (x : UInt64) (y : UInt64) .
-      (UInt64.to_bin_with_zero (x * y)%uint64 = (x * y) %. UInt64.modulus)%bin_with_zero
+      (UInt64.to_b0 (x * y)%uint64 = (x * y) %. UInt64.modulus)%b0
   := UInt64.conversion.multiplication.
 
 Definition data_machine_all_delivers_uint64_negation
   : forall (x : UInt64) .
-      (((- x)%uint64 + x) %. UInt64.modulus = 0)%bin_with_zero
+      (((- x)%uint64 + x) %. UInt64.modulus = 0)%b0
   := UInt64.conversion.negation.
 
 Definition data_machine_all_delivers_uint64_left_shift
   : forall (x : UInt64) (k : Nat0) .
-      (UInt64.to_bin_with_zero (UInt64.shift_left x k)
-        = BinWithZero.shift_left x k %. UInt64.modulus)%bin_with_zero
+      (UInt64.to_b0 (UInt64.shift_left x k)
+        = Bin0.shift_left x k %. UInt64.modulus)%b0
   := UInt64.conversion.left.shift.
 
 Definition data_machine_all_delivers_uint64_right_shift
   : forall (x : UInt64) (k : Nat0) .
-      UInt64.to_bin_with_zero (UInt64.shift_right x k) = BinWithZero.shift_right x k
+      UInt64.to_b0 (UInt64.shift_right x k) = Bin0.shift_right x k
   := UInt64.conversion.right.shift.
 
 Definition data_machine_all_delivers_uint64_section
-  : forall (x : UInt64) . UInt64.from_bin_with_zero (UInt64.to_bin_with_zero x) = x
+  : forall (x : UInt64) . UInt64.from_b0 (UInt64.to_b0 x) = x
   := UInt64.conversion.section.
 
 Definition data_machine_all_computes_uint64_value
-  : UInt64.to_bin_with_zero 10000000000000000000%uint64
-    = 1000101011000111001000110000010010001001111010000000000000000000%bin_with_zero
+  : UInt64.to_b0 10000000000000000000%uint64
+    = 1000101011000111001000110000010010001001111010000000000000000000%b0
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint64_to_bin
-  : UInt64.to_bin 10000000000000000000%uint64
-    = 1000101011000111001000110000010010001001111010000000000000000000%b
+  : UInt64.to_b_signed 10000000000000000000%uint64
+    = 1000101011000111001000110000010010001001111010000000000000000000%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint64_distributivity
@@ -1821,8 +1821,8 @@ Definition data_machine_all_delivers_uint64_distributivity
   := UInt64.multiplication.distributivity.over.addition.
 
 Definition data_machine_all_computes_uint64_reduction
-  : UInt64.from_bin_with_zero
-      10000000000000000000000000000000000000000000000000001000101110000%bin_with_zero
+  : UInt64.from_b0
+      10000000000000000000000000000000000000000000000000001000101110000%b0
     = 4464%uint64
   := Identity.reflexivity _.
 
@@ -1843,20 +1843,20 @@ Definition data_machine_all_computes_uint64_comparison
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_uint64_division
-  : forall (x : UInt64) (y : UInt64) (d : BinBase) .
-      UInt64.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt64.to_bin_with_zero (x /. y)%uint64 = Some (x /. d)%bin_with_zero
+  : forall (x : UInt64) (y : UInt64) (d : Bin) .
+      UInt64.to_b0 y = Bin0.Positive d
+      -> Option.map UInt64.to_b0 (x /. y)%uint64 = Some (x /. d)%b0
   := UInt64.conversion.division.
 
 Definition data_machine_all_delivers_uint64_modulo
-  : forall (x : UInt64) (y : UInt64) (d : BinBase) .
-      UInt64.to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map UInt64.to_bin_with_zero (x %. y)%uint64 = Some (x %. d)%bin_with_zero
+  : forall (x : UInt64) (y : UInt64) (d : Bin) .
+      UInt64.to_b0 y = Bin0.Positive d
+      -> Option.map UInt64.to_b0 (x %. y)%uint64 = Some (x %. d)%b0
   := UInt64.conversion.modulo.
 
-Definition data_machine_all_delivers_uint64_bin_section
-  : forall (x : UInt64) . UInt64.from_bin (UInt64.to_bin x) = x
-  := UInt64.conversion.bin.section.
+Definition data_machine_all_delivers_uint64_signed_bin_section
+  : forall (x : UInt64) . UInt64.from_b_signed (UInt64.to_b_signed x) = x
+  := UInt64.conversion.signed_bin.section.
 
 Definition data_machine_all_computes_uint64_division
   : (18446744073709551615 /. 4294967297)%uint64 = Some 4294967295%uint64
@@ -1871,7 +1871,7 @@ Definition data_machine_all_computes_uint64_division_by_zero
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_uint64_from_bin
-  : UInt64.from_bin (-1)%b = 18446744073709551615%uint64
+  : UInt64.from_b_signed (-1)%b_signed = 18446744073709551615%uint64
   := Identity.reflexivity _.
 
 Definition data_machine_all_reads_uint64_literal_hexadecimal
@@ -1910,9 +1910,9 @@ Definition data_machine_all_delivers_uint64_dword_section
   : forall (e : Endian) (x : UInt64) . UInt64.from_dword (UInt64.to_dword e x) = x
   := UInt64.conversion.dword.section.
 
-Theorem data_machine_all_delivers_coercion_uint64_to_bin_with_zero
+Theorem data_machine_all_delivers_coercion_uint64_to_bin0
   : forall (x : UInt64) .
-      BinWithZero.add x x = BinWithZero.add (UInt64.to_bin_with_zero x) (UInt64.to_bin_with_zero x).
+      Bin0.add x x = Bin0.add (UInt64.to_b0 x) (UInt64.to_b0 x).
 Proof.
   intro x.
   quod idem est.
@@ -1938,55 +1938,55 @@ Definition data_machine_all_delivers_int64
   := Int64.One.
 
 Definition data_machine_all_computes_int64_modulus
-  : Int64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%bin_base
+  : Int64.modulus = 10000000000000000000000000000000000000000000000000000000000000000%b
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int64_addition
   : forall (x : Int64) (y : Int64) .
       (pi_1 (Int64.add_with_overflow x y))%product = 0%bit ->
-      Int64.to_bin (x + y)%int64 = (x + y)%b
+      Int64.to_b_signed (x + y)%int64 = (x + y)%b_signed
   := Int64.conversion.addition.
 
 Definition data_machine_all_delivers_int64_section
-  : forall (x : Int64) . Int64.from_bin (Int64.to_bin x) = x
+  : forall (x : Int64) . Int64.from_b_signed (Int64.to_b_signed x) = x
   := Int64.conversion.section.
 
 Definition data_machine_all_delivers_int64_reinterpretation_section
-  : forall (x : Int64) . Int64.from_bin_with_zero (Int64.unsigned_value x) = x
+  : forall (x : Int64) . Int64.from_b0 (Int64.unsigned_value x) = x
   := Int64.reinterpretation.section.
 
 Definition data_machine_all_computes_int64_value
-  : Int64.to_bin (-1000000000000)%int64 = (-1110100011010100101001010001000000000000)%b
+  : Int64.to_b_signed (-1000000000000)%int64 = (-1110100011010100101001010001000000000000)%b_signed
   := Identity.reflexivity _.
 
 Definition data_machine_all_computes_int64_from_bin
-  : Int64.from_bin 1000101011000111001000110000010010001001111010000000000000000000%b
+  : Int64.from_b_signed 1000101011000111001000110000010010001001111010000000000000000000%b_signed
     = (-8446744073709551616)%int64
   := Identity.reflexivity _.
 
 Definition data_machine_all_delivers_int64_division_positive
-  : forall (x : Int64) (y : Int64) (d : BinBase) .
-      Int64.to_bin y = Bin.Positive d -> Option.map Int64.to_bin (x /. y)%int64 = Some (x /. d)%b
+  : forall (x : Int64) (y : Int64) (d : Bin) .
+      Int64.to_b_signed y = SignedBin.Positive d -> Option.map Int64.to_b_signed (x /. y)%int64 = Some (x /. d)%b_signed
   := Int64.conversion.division.positive.
 
 Definition data_machine_all_delivers_int64_division_negative
-  : forall (x : Int64) (y : Int64) (d : BinBase) .
-      Int64.to_bin y = Bin.Negative d
-      -> ~ (Int64.to_bin x = (-1000000000000000000000000000000000000000000000000000000000000000)%b
-            /\ d = BinBase.One)
-      -> Option.map Int64.to_bin (x /. y)%int64 = Some (Bin.negate (x /. d)%b)
+  : forall (x : Int64) (y : Int64) (d : Bin) .
+      Int64.to_b_signed y = SignedBin.Negative d
+      -> ~ (Int64.to_b_signed x = (-1000000000000000000000000000000000000000000000000000000000000000)%b_signed
+            /\ d = Bin.One)
+      -> Option.map Int64.to_b_signed (x /. y)%int64 = Some (SignedBin.negate (x /. d)%b_signed)
   := Int64.conversion.division.negative.
 
 Definition data_machine_all_delivers_int64_retraction_nonnegative
-  : forall (n : BinWithZero) .
-      (n < 1000000000000000000000000000000000000000000000000000000000000000)%bin_with_zero
-      -> Int64.to_bin (Int64.from_bin (Bin.from_bin_with_zero n)) = Bin.from_bin_with_zero n
+  : forall (n : Bin0) .
+      (n < 1000000000000000000000000000000000000000000000000000000000000000)%b0
+      -> Int64.to_b_signed (Int64.from_b_signed (SignedBin.from_b0 n)) = SignedBin.from_b0 n
   := Int64.conversion.retraction.nonnegative.
 
 Definition data_machine_all_delivers_int64_retraction_negative
-  : forall (p : BinBase) .
-      (p <= 1000000000000000000000000000000000000000000000000000000000000000)%bin_with_zero
-      -> Int64.to_bin (Int64.from_bin (Bin.Negative p)) = Bin.Negative p
+  : forall (p : Bin) .
+      (p <= 1000000000000000000000000000000000000000000000000000000000000000)%b0
+      -> Int64.to_b_signed (Int64.from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p
   := Int64.conversion.retraction.negative.
 
 Definition data_machine_all_computes_int64_division
@@ -2011,10 +2011,10 @@ Definition data_machine_all_delivers_int64_distributivity
   := Int64.multiplication.distributivity.over.addition.
 
 Definition data_machine_all_reads_int64_literal_bounds
-  : Int64.to_bin (-9223372036854775808)%int64
-      = (-1000000000000000000000000000000000000000000000000000000000000000)%b
-    /\ Int64.to_bin 9223372036854775807%int64
-      = 111111111111111111111111111111111111111111111111111111111111111%b
+  : Int64.to_b_signed (-9223372036854775808)%int64
+      = (-1000000000000000000000000000000000000000000000000000000000000000)%b_signed
+    /\ Int64.to_b_signed 9223372036854775807%int64
+      = 111111111111111111111111111111111111111111111111111111111111111%b_signed
   := conjoin (Identity.reflexivity _), (Identity.reflexivity _).
 
 Definition data_machine_all_computes_int64_wrap
@@ -2070,7 +2070,7 @@ Definition data_machine_all_delivers_int64_dword_section
   := Int64.conversion.dword.section.
 
 Theorem data_machine_all_delivers_coercion_int64_to_bin
-  : forall (x : Int64) . Bin.negate x = Bin.negate (Int64.to_bin x).
+  : forall (x : Int64) . SignedBin.negate x = SignedBin.negate (Int64.to_b_signed x).
 Proof.
   intro x.
   quod idem est.

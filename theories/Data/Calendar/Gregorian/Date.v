@@ -8,8 +8,8 @@ From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Calendar.Month.
 From JW Require Import Data.Comparable.
-From JW Require Import Data.Number.Binary.BinBase.
-From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Option.
@@ -22,15 +22,15 @@ From JW Require Import Tactics.Witness.
  *)
 Module Date. (* Date *)
 
-(* Numbers are written in decimal: a bare literal is a [BinBase], which
- * stands for a [BinWithZero] wherever one is expected, so only zero carries
+(* Numbers are written in decimal: a bare literal is a [Bin], which
+ * stands for a [Bin0] wherever one is expected, so only zero carries
  * its key.
  *)
-Local Open Scope jw_bin_with_zero_scope.
-Local Open Scope jw_bin_base_decimal_scope.
+Local Open Scope jw_bin0_scope.
+Local Open Scope jw_bin_decimal_scope.
 
-Abbreviation Year := BinBase (only parsing).
-Abbreviation Day := BinBase (only parsing).
+Abbreviation Year := Bin (only parsing).
+Abbreviation Day := Bin (only parsing).
 
 (* The ctor takes only a day that its month has, so the checks it asserts
  * come first.
@@ -39,13 +39,13 @@ Abbreviation Day := BinBase (only parsing).
 (* A year divisible by 4 is a leap year, except one divisible by 100 and not
  * by 400.
  *)
-(* [BinBase -> Bool] *)
+(* [Bin -> Bool] *)
 Definition is_leap := fun (y : Year) .
-  (BinWithZero.eq (y %. 4) 0%bin_with_zero
-    && (! BinWithZero.eq (y %. 100) 0%bin_with_zero
-          || BinWithZero.eq (y %. 400) 0%bin_with_zero))%bool.
+  (Bin0.eq (y %. 4) 0%b0
+    && (! Bin0.eq (y %. 100) 0%b0
+          || Bin0.eq (y %. 400) 0%b0))%bool.
 
-(* [BinBase -> Month -> BinBase] *)
+(* [Bin -> Month -> Bin] *)
 Definition days_in_month := fun (y : Year) (m : Month) .
   match m with
   | Month.January   => 31
@@ -66,10 +66,10 @@ Definition days_in_month := fun (y : Year) (m : Month) .
   | Month.December  => 31
   end.
 
-(* A day is a BinBase which is never 0, so the only check is the length of its month. *)
-(* [BinBase -> Month -> BinBase -> Bool] *)
+(* A day is a Bin which is never 0, so the only check is the length of its month. *)
+(* [Bin -> Month -> Bin -> Bool] *)
 Definition is_valid := fun (y : Year) (m : Month) (d : Day) .
-  Comparable.le BinBase.compare d (days_in_month y m).
+  Comparable.le Bin.compare d (days_in_month y m).
 
 (* The year, the month and the day of the month, with the proof that the
  * month has that day, so no other value can be built.
@@ -80,7 +80,7 @@ Inductive T : Type :=
 
 Abbreviation Date := T.
 
-(* [Date -> BinBase] *)
+(* [Date -> Bin] *)
 Definition year := fun (x : Date) .
   match x with
   | Date.introduction y _ _ _ => y
@@ -92,18 +92,18 @@ Definition month := fun (x : Date) .
   | Date.introduction _ m _ _ => m
   end.
 
-(* [Date -> BinBase] *)
+(* [Date -> Bin] *)
 Definition day := fun (x : Date) .
   match x with
   | Date.introduction _ _ d _ => d
   end.
 
 (* The date, [None] when its month has no such day. *)
-(* [BinBase -> Month -> BinBase -> Option Date] *)
+(* [Bin -> Month -> Bin -> Option Date] *)
 Definition make := fun (y : Year) (m : Month) (d : Day) .
   Assert.guard (is_valid y m d) (Date.introduction y m d).
 
-(* [BinBase -> BinBase] *)
+(* [Bin -> Bin] *)
 Definition days_in_year := fun (y : Year) .
   match is_leap y with
   | true  => 366
@@ -113,36 +113,36 @@ Definition days_in_year := fun (y : Year) .
 (* The lengths of the periods the leap rule repeats over. Each period's leap
  * year is its last year, so a period that is not complete has no leap day.
  *)
-(* [BinWithZero] *)
-Definition days_in_common_year : BinWithZero := 365.
+(* [Bin0] *)
+Definition days_in_common_year : Bin0 := 365.
 
 (* A quadrennium, four years: three common years and a leap year. *)
-(* [BinWithZero] *)
-Definition days_in_quadrennium : BinWithZero :=
+(* [Bin0] *)
+Definition days_in_quadrennium : Bin0 :=
   (3 * days_in_common_year) + (days_in_common_year + 1).
 
 (* A century, 100 years: 25 quadrennia, but the century year is not leap, so
  * the last quadrennium has four common years.
  *)
-(* [BinWithZero] *)
-Definition days_in_century : BinWithZero :=
+(* [Bin0] *)
+Definition days_in_century : Bin0 :=
   (24 * days_in_quadrennium) + (4 * days_in_common_year).
 
 (* A quadricentennium, 400 years: four centuries, and the last year of the
  * fourth is leap after all.
  *)
-(* [BinWithZero] *)
-Definition days_in_quadricentennium : BinWithZero := (4 * days_in_century) + 1.
+(* [Bin0] *)
+Definition days_in_quadricentennium : Bin0 := (4 * days_in_century) + 1.
 
 (* The years before [y], the first year being 1. *)
-(* [BinBase -> BinWithZero] *)
-Definition years_before := fun (y : Year) . BinWithZero.saturating_sub y 1.
+(* [Bin -> Bin0] *)
+Definition years_before := fun (y : Year) . Bin0.saturating_sub y 1.
 
 (* The days before January 1 of [y]: the years before [y] taken apart into
  * whole quadricentennia, then whole centuries, then whole quadrennia, then
  * single years.
  *)
-(* [BinBase -> BinWithZero] *)
+(* [Bin -> Bin0] *)
 Definition days_before_year := fun (y : Year) .
   let n := years_before y in
   let in_quadricentennium := n %. 400 in
@@ -155,9 +155,9 @@ Definition days_before_year := fun (y : Year) .
 (* The days of [y] before day 1 of [m], each month's count the one before it
  * plus the length of the month before it.
  *)
-(* [BinBase -> Month -> BinWithZero] *)
+(* [Bin -> Month -> Bin0] *)
 Definition days_before_month := fun (y : Year) (m : Month) .
-  let january   := 0%bin_with_zero in
+  let january   := 0%b0 in
   let february  := january + days_in_month y Month.January in
   let march     := february + days_in_month y Month.February in
   let april     := march + days_in_month y Month.March in
@@ -185,26 +185,26 @@ Definition days_before_month := fun (y : Year) (m : Month) .
   end.
 
 (* The day's place in its year, January 1 being 1. *)
-(* [Date -> BinWithZero] *)
+(* [Date -> Bin0] *)
 Definition day_of_year := fun (x : Date) .
   days_before_month (year x) (month x) + day x.
 
 (* The days from 0001-01-01 to the date, 0001-01-01 itself being 0. *)
-(* [Date -> BinWithZero] *)
+(* [Date -> Bin0] *)
 Definition day_number := fun (x : Date) .
   days_before_year (year x)
     + days_before_month (year x) (month x)
-    + BinWithZero.saturating_sub (day x) 1.
+    + Bin0.saturating_sub (day x) 1.
 
 (* The order of time: by year, then by month, then by day. *)
 (* [Date -> Date -> Comparison] *)
 Definition compare := fun (x1 : Date) (x2 : Date) .
-  match BinBase.compare (year x1) (year x2) with
+  match Bin.compare (year x1) (year x2) with
   | Comparison.Lt => Comparison.Lt
   | Comparison.Eq =>
       match Month.compare (month x1) (month x2) with
       | Comparison.Lt => Comparison.Lt
-      | Comparison.Eq => BinBase.compare (day x1) (day x2)
+      | Comparison.Eq => Bin.compare (day x1) (day x2)
       | Comparison.Gt => Comparison.Gt
       end
   | Comparison.Gt => Comparison.Gt
@@ -224,13 +224,13 @@ Proof.
   match &x2 with | introduction y2 m2 d2 a2 end.
   simpl compare, year, month, day in |- *.
   leibniz
-    (BinBase.comparison.antisymmetry &y1 &y2),
+    (Bin.comparison.antisymmetry &y1 &y2),
     (Month.comparison.antisymmetry &m1 &m2),
-    (BinBase.comparison.antisymmetry &d1 &d2)
+    (Bin.comparison.antisymmetry &d1 &d2)
     in |- *.
-  match (BinBase.compare &y2 &y1) with | | | end;
+  match (Bin.compare &y2 &y1) with | | | end;
     match (Month.compare &m2 &m1) with | | | end;
-    match (BinBase.compare &d2 &d1) with | | | end;
+    match (Bin.compare &d2 &d1) with | | | end;
     simpl in |- *; quod idem est.
 Qed.
 
@@ -244,13 +244,13 @@ Proof.
   match &x1 with | introduction y1 m1 d1 a1 end.
   match &x2 with | introduction y2 m2 d2 a2 end.
   simpl compare, year, month, day in &h.
-  match (BinBase.compare &y1 &y2) with | | | end |- cy.
+  match (Bin.compare &y1 &y2) with | | | end |- cy.
   - ex &h quodlibet.
   - match (Month.compare &m1 &m2) with | | | end |- cm.
     + ex &h quodlibet.
-    + match (BinBase.comparison.specification &y1 &y2) with | _ year_equality end.
+    + match (Bin.comparison.specification &y1 &y2) with | _ year_equality end.
       match (Month.comparison.specification &m1 &m2) with | _ month_equality end.
-      match (BinBase.comparison.specification &d1 &d2) with | _ day_equality end.
+      match (Bin.comparison.specification &d1 &d2) with | _ day_equality end.
       let proof ey := modus aequans &year_equality, &cy.
       let proof em := modus aequans &month_equality, &cm.
       let proof ed := modus aequans &day_equality, &h.
@@ -265,9 +265,9 @@ Qed.
 
 Module leap. (* leap *)
 
-(* The statement adds years, so [+] is read as [BinBase]'s. *)
-Local Open Scope jw_bin_base_scope.
-Local Open Scope jw_bin_base_decimal_scope.
+(* The statement adds years, so [+] is read as [Bin]'s. *)
+Local Open Scope jw_bin_scope.
+Local Open Scope jw_bin_decimal_scope.
 
 (* leap.periodicity *)
 Theorem periodicity : forall (y : Year) . is_leap (y + 400) = is_leap y.
@@ -275,33 +275,33 @@ Proof.
   intro y.
   lemma four : (y + 400) %. 4 = y %. 4.
   {
-    lemma zero : 400 %. 4 = 0%bin_with_zero.
+    lemma zero : 400 %. 4 = 0%b0.
     {
-      simpl BinWithZero.modulo in |- *.
+      simpl Bin0.modulo in |- *.
       simpl in |- *.
       quod idem est.
     }
-    ipso (BinWithZero.modulo.sum.right.invariance y 400 4 &zero).
+    ipso (Bin0.modulo.sum.right.invariance y 400 4 &zero).
   }
   lemma hundred : (y + 400) %. 100 = y %. 100.
   {
-    lemma zero : 400 %. 100 = 0%bin_with_zero.
+    lemma zero : 400 %. 100 = 0%b0.
     {
-      simpl BinWithZero.modulo in |- *.
+      simpl Bin0.modulo in |- *.
       simpl in |- *.
       quod idem est.
     }
-    ipso (BinWithZero.modulo.sum.right.invariance y 400 100 &zero).
+    ipso (Bin0.modulo.sum.right.invariance y 400 100 &zero).
   }
   lemma four_hundred : (y + 400) %. 400 = y %. 400.
   {
-    lemma zero : 400 %. 400 = 0%bin_with_zero.
+    lemma zero : 400 %. 400 = 0%b0.
     {
-      simpl BinWithZero.modulo in |- *.
+      simpl Bin0.modulo in |- *.
       simpl in |- *.
       quod idem est.
     }
-    ipso (BinWithZero.modulo.sum.right.invariance y 400 400 &zero).
+    ipso (Bin0.modulo.sum.right.invariance y 400 400 &zero).
   }
   simpl is_leap in |- *.
   leibniz &four, &hundred, &four_hundred in |- *.
@@ -314,27 +314,27 @@ Module month. (* month *)
 
 Module length. (* month.length *)
 
-(* The statement compares days of a month, so [<=] is read as [BinBase]'s. *)
-Local Open Scope jw_bin_base_scope.
-Local Open Scope jw_bin_base_decimal_scope.
+(* The statement compares days of a month, so [<=] is read as [Bin]'s. *)
+Local Open Scope jw_bin_scope.
+Local Open Scope jw_bin_decimal_scope.
 
 (* month.length.boundedness *)
 Theorem boundedness
   : forall (y : Year) (m : Month) . 28 <= days_in_month y m /\ days_in_month y m <= 31.
 Proof.
   intros y m.
-  lemma lower : Comparable.le BinBase.compare 28 (days_in_month y m) = true.
+  lemma lower : Comparable.le Bin.compare 28 (days_in_month y m) = true.
   {
-    simpl days_in_month, Comparable.le, BinBase.compare in |- *.
+    simpl days_in_month, Comparable.le, Bin.compare in |- *.
     match (is_leap &y) with | | end;
       match &m with
       | January | February | March | April | May | June
       | July | August | September | October | November | December
       end; simpl in |- *; quod idem est.
   }
-  lemma upper : Comparable.le BinBase.compare (days_in_month y m) 31 = true.
+  lemma upper : Comparable.le Bin.compare (days_in_month y m) 31 = true.
   {
-    simpl days_in_month, Comparable.le, BinBase.compare in |- *.
+    simpl days_in_month, Comparable.le, Bin.compare in |- *.
     match (is_leap &y) with | | end;
       match &m with
       | January | February | March | April | May | June
@@ -394,7 +394,7 @@ Proof.
   intro y.
   simpl days_before_month, days_in_month, days_in_year in |- *.
   match (is_leap &y) with | | end;
-    simpl in |- *; simpl BinBase.add in |- *; simpl in |- *; quod idem est.
+    simpl in |- *; simpl Bin.add in |- *; simpl in |- *; quod idem est.
 Qed.
 
 (* month.boundedness *)
@@ -404,11 +404,11 @@ Theorem boundedness
 Proof.
   intros y m.
   lemma facto
-    : Comparable.le BinWithZero.compare
+    : Comparable.le Bin0.compare
         (days_before_month y m + days_in_month y m) (days_in_year y)
       = true.
   {
-    simpl days_before_month, days_in_month, days_in_year, Comparable.le, BinWithZero.compare
+    simpl days_before_month, days_in_month, days_in_year, Comparable.le, Bin0.compare
       in |- *.
     match (is_leap &y) with | | end;
       match &m with
@@ -436,7 +436,7 @@ Proof.
   lemma facto
     : match Month.compare m1 m2 with
       | Comparison.Lt =>
-          Comparable.le BinWithZero.compare
+          Comparable.le Bin0.compare
             (days_before_month y m1 + days_in_month y m1) (days_before_month y m2)
       | Comparison.Eq => true
       | Comparison.Gt => true
@@ -444,7 +444,7 @@ Proof.
       = true.
   {
     simpl Month.compare in |- *.
-    simpl days_before_month, days_in_month, BinBase.compare, Comparable.le, BinWithZero.compare
+    simpl days_before_month, days_in_month, Bin.compare, Comparable.le, Bin0.compare
       in |- *.
     match (is_leap &y) with | | end;
       match &m1 with
@@ -506,22 +506,22 @@ Module antecedence. (* year.antecedence *)
  *)
 (* year.antecedence.translation *)
 Theorem translation
-  : forall (y : Year) (k : BinBase) . years_before (y + k)%bin_base = years_before y + k.
+  : forall (y : Year) (k : Bin) . years_before (y + k)%b = years_before y + k.
 Proof.
   intros y k.
   lemma facto
-    : BinWithZero.to_nat0 (years_before (y + k)%bin_base)
-      = BinWithZero.to_nat0 (years_before y + k).
+    : Bin0.to_nat0 (years_before (y + k)%b)
+      = Bin0.to_nat0 (years_before y + k).
   {
     simpl years_before in |- *.
     leibniz
-      (BinWithZero.conversion.subtraction.saturating (y + k)%bin_base 1),
-      (BinWithZero.conversion.addition (BinWithZero.saturating_sub y 1) k),
-      (BinWithZero.conversion.subtraction.saturating y 1)
+      (Bin0.conversion.subtraction.saturating (y + k)%b 1),
+      (Bin0.conversion.addition (Bin0.saturating_sub y 1) k),
+      (Bin0.conversion.subtraction.saturating y 1)
       in |- *.
-    simpl BinWithZero.to_nat0 in |- *.
-    leibniz (BinBase.conversion.addition &y &k) in |- *.
-    let a := BinBase.to_nat &y in |- *.
+    simpl Bin0.to_nat0 in |- *.
+    leibniz (Bin.conversion.addition &y &k) in |- *.
+    let a := Bin.to_nat &y in |- *.
     let proof a := &a.
     extro &a.
     intro a.
@@ -531,7 +531,7 @@ Proof.
     - simpl in |- *.
       quod idem est.
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 (* Read in [Nat0] as [translation] is, with the [1] put first so that each
@@ -541,21 +541,21 @@ Qed.
 Theorem restoration : forall (y : Year) . years_before y + 1 = y.
 Proof.
   intro y.
-  lemma facto : BinWithZero.to_nat0 (years_before y + 1) = BinWithZero.to_nat0 y.
+  lemma facto : Bin0.to_nat0 (years_before y + 1) = Bin0.to_nat0 y.
   {
     simpl years_before in |- *.
     leibniz
-      (BinWithZero.conversion.addition (BinWithZero.saturating_sub y 1) 1),
-      (BinWithZero.conversion.subtraction.saturating y 1)
+      (Bin0.conversion.addition (Bin0.saturating_sub y 1) 1),
+      (Bin0.conversion.subtraction.saturating y 1)
       in |- *.
-    simpl BinWithZero.to_nat0 in |- *.
+    simpl Bin0.to_nat0 in |- *.
     leibniz
       (Nat0.addition.commutativity
          (Nat0.saturating_sub
-            (Nat0.Positive (BinBase.to_nat &y)) (Nat0.Positive (BinBase.to_nat 1)))
-         (Nat0.Positive (BinBase.to_nat 1)))
+            (Nat0.Positive (Bin.to_nat &y)) (Nat0.Positive (Bin.to_nat 1)))
+         (Nat0.Positive (Bin.to_nat 1)))
       in |- *.
-    let a := BinBase.to_nat &y in |- *.
+    let a := Bin.to_nat &y in |- *.
     let proof a := &a.
     extro &a.
     intro a.
@@ -565,7 +565,7 @@ Proof.
     - simpl in |- *.
       quod idem est.
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 End antecedence. (* year.antecedence *)
@@ -576,7 +576,7 @@ End antecedence. (* year.antecedence *)
 (* year.periodicity *)
 Theorem periodicity
   : forall (y : Year) .
-      days_before_year (y + 400%bin_base_decimal)%bin_base
+      days_before_year (y + 400%b_decimal)%b
       = days_before_year y + days_in_quadricentennium.
 Proof.
   intro y.
@@ -585,34 +585,34 @@ Proof.
   let n := years_before &y in |- *.
   lemma quotient : (n + 400) /. 400 = (n /. 400) + 1.
   {
-    ipso (BinWithZero.division.translation n 400).
+    ipso (Bin0.division.translation n 400).
   }
   lemma remainder : (n + 400) %. 400 = n %. 400.
   {
-    lemma zero : 400 %. 400 = 0%bin_with_zero.
+    lemma zero : 400 %. 400 = 0%b0.
     {
-      simpl BinWithZero.modulo in |- *.
+      simpl Bin0.modulo in |- *.
       simpl in |- *.
       quod idem est.
     }
-    ipso (BinWithZero.modulo.sum.right.invariance n 400 400 &zero).
+    ipso (Bin0.modulo.sum.right.invariance n 400 400 &zero).
   }
   leibniz &quotient, &remainder in |- *.
-  match (BinWithZero.multiplication.distributivity.over.addition
+  match (Bin0.multiplication.distributivity.over.addition
            days_in_quadricentennium (n /. 400) 1)
     with | left _ end.
   leibniz &left in |- *.
-  match (BinWithZero.multiplication.identity days_in_quadricentennium) with | _ right end.
+  match (Bin0.multiplication.identity days_in_quadricentennium) with | _ right end.
   leibniz &right in |- *.
   lemma swap
-    : forall (u : BinWithZero) (v : BinWithZero) .
+    : forall (u : Bin0) (v : Bin0) .
         (u + days_in_quadricentennium) + v = (u + v) + days_in_quadricentennium.
   {
     intros u v.
     leibniz
-      (BinWithZero.addition.associativity &u days_in_quadricentennium &v),
-      (BinWithZero.addition.commutativity days_in_quadricentennium &v),
-      <- (BinWithZero.addition.associativity &u &v days_in_quadricentennium)
+      (Bin0.addition.associativity &u days_in_quadricentennium &v),
+      (Bin0.addition.commutativity days_in_quadricentennium &v),
+      <- (Bin0.addition.associativity &u &v days_in_quadricentennium)
       in |- *.
     quod idem est.
   }
@@ -633,7 +633,7 @@ Qed.
 (* year.succession *)
 Theorem succession
   : forall (y : Year) .
-      days_before_year (y + 1)%bin_base = days_before_year y + days_in_year y.
+      days_before_year (y + 1)%b = days_before_year y + days_in_year y.
 Proof.
   intro y.
   simpl days_before_year in |- *.
@@ -641,100 +641,100 @@ Proof.
   let n := years_before &y in |- *.
   let proof restored := year.antecedence.restoration &y.
   let &n in &restored.
-  match (BinWithZero.division.specification n 400) with | _ below400 end.
-  match (BinWithZero.division.specification (n %. 400) 100) with | _ below100 end.
-  match (BinWithZero.division.specification ((n %. 400) %. 100) 4) with | _ below4 end.
+  match (Bin0.division.specification n 400) with | _ below400 end.
+  match (Bin0.division.specification (n %. 400) 100) with | _ below100 end.
+  match (Bin0.division.specification ((n %. 400) %. 100) 4) with | _ below4 end.
   lemma hundred : (n %. 400) %. 100 = n %. 100.
   {
-    ipso (BinWithZero.modulo.nesting n 100 4).
+    ipso (Bin0.modulo.nesting n 100 4).
   }
   lemma four : ((n %. 400) %. 100) %. 4 = n %. 4.
   {
     leibniz &hundred in |- *.
-    ipso (BinWithZero.modulo.nesting n 4 25).
+    ipso (Bin0.modulo.nesting n 4 25).
   }
   lemma hundred_y : (y %. 400) %. 100 = y %. 100.
   {
-    ipso (BinWithZero.modulo.nesting y 100 4).
+    ipso (Bin0.modulo.nesting y 100 4).
   }
   lemma four_y : (y %. 100) %. 4 = y %. 4.
   {
-    ipso (BinWithZero.modulo.nesting y 4 25).
+    ipso (Bin0.modulo.nesting y 4 25).
   }
-  lemma zero_by_hundred : 0%bin_with_zero /. 100 = 0%bin_with_zero.
+  lemma zero_by_hundred : 0%b0 /. 100 = 0%b0.
   {
-    simpl BinWithZero.divide in |- *.
+    simpl Bin0.divide in |- *.
     simpl in |- *.
     quod idem est.
   }
-  lemma zero_mod_hundred : 0%bin_with_zero %. 100 = 0%bin_with_zero.
+  lemma zero_mod_hundred : 0%b0 %. 100 = 0%b0.
   {
-    simpl BinWithZero.modulo in |- *.
+    simpl Bin0.modulo in |- *.
     simpl in |- *.
     quod idem est.
   }
-  lemma zero_by_four : 0%bin_with_zero /. 4 = 0%bin_with_zero.
+  lemma zero_by_four : 0%b0 /. 4 = 0%b0.
   {
-    simpl BinWithZero.divide in |- *.
+    simpl Bin0.divide in |- *.
     simpl in |- *.
     quod idem est.
   }
-  lemma zero_mod_four : 0%bin_with_zero %. 4 = 0%bin_with_zero.
+  lemma zero_mod_four : 0%b0 %. 4 = 0%b0.
   {
-    simpl BinWithZero.modulo in |- *.
+    simpl Bin0.modulo in |- *.
     simpl in |- *.
     quod idem est.
   }
   lemma last_by_hundred : 399 /. 100 = 3.
   {
-    simpl BinWithZero.divide in |- *.
+    simpl Bin0.divide in |- *.
     simpl in |- *.
     quod idem est.
   }
   lemma last_mod_hundred : 399 %. 100 = 99.
   {
-    simpl BinWithZero.modulo in |- *.
+    simpl Bin0.modulo in |- *.
     simpl in |- *.
     quod idem est.
   }
   lemma last_by_four : 99 /. 4 = 24.
   {
-    simpl BinWithZero.divide in |- *.
+    simpl Bin0.divide in |- *.
     simpl in |- *.
     quod idem est.
   }
   lemma last_mod_four : 99 %. 4 = 3.
   {
-    simpl BinWithZero.modulo in |- *.
+    simpl Bin0.modulo in |- *.
     simpl in |- *.
     quod idem est.
   }
-  match (BinWithZero.multiplication.annihilation days_in_century) with | _ century_zero end.
-  match (BinWithZero.multiplication.annihilation days_in_quadrennium) with | _ quadrennium_zero end.
-  match (BinWithZero.multiplication.annihilation days_in_common_year) with | _ common_zero end.
-  match (BinWithZero.order.succession (n %. 400) 400 &below400) with | carry400 | interior400 end.
+  match (Bin0.multiplication.annihilation days_in_century) with | _ century_zero end.
+  match (Bin0.multiplication.annihilation days_in_quadrennium) with | _ quadrennium_zero end.
+  match (Bin0.multiplication.annihilation days_in_common_year) with | _ common_zero end.
+  match (Bin0.order.succession (n %. 400) 400 &below400) with | carry400 | interior400 end.
   - (* [y] is divisible by 400. *)
-    match (BinWithZero.division.succession.carry n 400 &carry400) with | q400 r400 end.
+    match (Bin0.division.succession.carry n 400 &carry400) with | q400 r400 end.
     lemma r1 : n %. 400 = 399.
     {
       lemma shifted : (n %. 400) + 1 = 399 + 1.
       {
         ipso &carry400.
       }
-      match (BinWithZero.addition.cancellation (n %. 400) 1 399) with | _ right end.
+      match (Bin0.addition.cancellation (n %. 400) 1 399) with | _ right end.
       ipso (&right &shifted).
     }
-    lemma y400 : y %. 400 = 0%bin_with_zero.
+    lemma y400 : y %. 400 = 0%b0.
     {
       leibniz <- &restored in |- *.
       ipso &r400.
     }
-    lemma y100 : y %. 100 = 0%bin_with_zero.
+    lemma y100 : y %. 100 = 0%b0.
     {
       leibniz <- &hundred_y, &y400 in |- *.
       ipso &zero_mod_hundred.
     }
-    lemma y4 : y %. 4 = 0%bin_with_zero.
+    lemma y4 : y %. 4 = 0%b0.
     {
       leibniz <- &four_y, &y100 in |- *.
       ipso &zero_mod_four.
@@ -743,7 +743,7 @@ Proof.
     {
       simpl days_in_year, is_leap in |- *.
       leibniz &y4, &y100, &y400 in |- *.
-      simpl Comparable.eq, BinWithZero.compare in |- *.
+      simpl Comparable.eq, Bin0.compare in |- *.
       simpl in |- *.
       quod idem est.
     }
@@ -753,23 +753,23 @@ Proof.
       &last_by_hundred, &last_mod_hundred, &last_by_four, &last_mod_four
       in |- *.
     leibniz &century_zero, &quadrennium_zero, &common_zero in |- *.
-    match (BinWithZero.addition.identity (days_in_quadricentennium * ((n /. 400) + 1)))
+    match (Bin0.addition.identity (days_in_quadricentennium * ((n /. 400) + 1)))
       with | _ plus_zero end.
     leibniz &plus_zero, &plus_zero, &plus_zero in |- *.
-    match (BinWithZero.multiplication.distributivity.over.addition
+    match (Bin0.multiplication.distributivity.over.addition
              days_in_quadricentennium (n /. 400) 1)
       with | distributed _ end.
-    match (BinWithZero.multiplication.identity days_in_quadricentennium) with | _ times_one end.
+    match (Bin0.multiplication.identity days_in_quadricentennium) with | _ times_one end.
     leibniz &distributed, &times_one in |- *.
     leibniz
-      (BinWithZero.addition.associativity
+      (Bin0.addition.associativity
          (((days_in_quadricentennium * (n /. 400)) + (days_in_century * 3))
             + (days_in_quadrennium * 24))
          (days_in_common_year * 3) 366),
-      (BinWithZero.addition.associativity
+      (Bin0.addition.associativity
          ((days_in_quadricentennium * (n /. 400)) + (days_in_century * 3))
          (days_in_quadrennium * 24) ((days_in_common_year * 3) + 366)),
-      (BinWithZero.addition.associativity
+      (Bin0.addition.associativity
          (days_in_quadricentennium * (n /. 400)) (days_in_century * 3)
          ((days_in_quadrennium * 24) + ((days_in_common_year * 3) + 366)))
       in |- *.
@@ -780,31 +780,31 @@ Proof.
       simpl days_in_quadricentennium, days_in_century, days_in_quadrennium, days_in_common_year
         in |- *.
       simpl in |- *.
-      simpl BinBase.add in |- *.
+      simpl Bin.add in |- *.
       simpl in |- *.
       quod idem est.
     }
     leibniz &constant in |- *.
     quod idem est.
   - (* [y] is not divisible by 400. *)
-    match (BinWithZero.division.succession.interior n 400 &interior400) with | q400 r400 end.
+    match (Bin0.division.succession.interior n 400 &interior400) with | q400 r400 end.
     lemma y400 : y %. 400 = (n %. 400) + 1.
     {
       leibniz <- &restored in |- *.
       ipso &r400.
     }
     leibniz &q400, &r400 in |- *.
-    match (BinWithZero.order.succession ((n %. 400) %. 100) 100 &below100)
+    match (Bin0.order.succession ((n %. 400) %. 100) 100 &below100)
       with | carry100 | interior100 end.
     + (* [y] is divisible by 100 and not by 400. *)
-      match (BinWithZero.division.succession.carry (n %. 400) 100 &carry100) with | q100 r100 end.
+      match (Bin0.division.succession.carry (n %. 400) 100 &carry100) with | q100 r100 end.
       lemma r2 : (n %. 400) %. 100 = 99.
       {
         lemma shifted : ((n %. 400) %. 100) + 1 = 99 + 1.
         {
           ipso &carry100.
         }
-        match (BinWithZero.addition.cancellation ((n %. 400) %. 100) 1 99) with | _ right end.
+        match (Bin0.addition.cancellation ((n %. 400) %. 100) 1 99) with | _ right end.
         ipso (&right &shifted).
       }
       lemma carry100n : (n %. 100) + 1 = 100.
@@ -812,13 +812,13 @@ Proof.
         leibniz <- &hundred in |- *.
         ipso &carry100.
       }
-      match (BinWithZero.division.succession.carry n 100 &carry100n) with | _ r100n end.
-      lemma y100 : y %. 100 = 0%bin_with_zero.
+      match (Bin0.division.succession.carry n 100 &carry100n) with | _ r100n end.
+      lemma y100 : y %. 100 = 0%b0.
       {
         leibniz <- &restored in |- *.
         ipso &r100n.
       }
-      lemma y4 : y %. 4 = 0%bin_with_zero.
+      lemma y4 : y %. 4 = 0%b0.
       {
         leibniz <- &four_y, &y100 in |- *.
         ipso &zero_mod_four.
@@ -828,30 +828,30 @@ Proof.
         simpl days_in_year, is_leap in |- *.
         leibniz &y4, &y100, &y400 in |- *.
         match (n %. 400) with | | p end;
-          simpl Comparable.eq, BinWithZero.compare in |- *; simpl in |- *; quod idem est.
+          simpl Comparable.eq, Bin0.compare in |- *; simpl in |- *; quod idem est.
       }
       leibniz &q100, &r100, &r2, &length in |- *.
       leibniz &zero_by_four, &zero_mod_four, &last_by_four, &last_mod_four in |- *.
       leibniz &quadrennium_zero, &common_zero in |- *.
-      match (BinWithZero.addition.identity
+      match (Bin0.addition.identity
                ((days_in_quadricentennium * (n /. 400))
                   + (days_in_century * (((n %. 400) /. 100) + 1))))
         with | _ plus_zero end.
       leibniz &plus_zero, &plus_zero in |- *.
-      match (BinWithZero.multiplication.distributivity.over.addition
+      match (Bin0.multiplication.distributivity.over.addition
                days_in_century ((n %. 400) /. 100) 1)
         with | distributed _ end.
-      match (BinWithZero.multiplication.identity days_in_century) with | _ times_one end.
+      match (Bin0.multiplication.identity days_in_century) with | _ times_one end.
       leibniz &distributed, &times_one in |- *.
       leibniz
-        <- (BinWithZero.addition.associativity
+        <- (Bin0.addition.associativity
               (days_in_quadricentennium * (n /. 400))
               (days_in_century * ((n %. 400) /. 100)) days_in_century),
-        (BinWithZero.addition.associativity
+        (Bin0.addition.associativity
            (((days_in_quadricentennium * (n /. 400)) + (days_in_century * ((n %. 400) /. 100)))
               + (days_in_quadrennium * 24))
            (days_in_common_year * 3) 365),
-        (BinWithZero.addition.associativity
+        (Bin0.addition.associativity
            ((days_in_quadricentennium * (n /. 400)) + (days_in_century * ((n %. 400) /. 100)))
            (days_in_quadrennium * 24) ((days_in_common_year * 3) + 365))
         in |- *.
@@ -860,14 +860,14 @@ Proof.
       {
         simpl days_in_century, days_in_quadrennium, days_in_common_year in |- *.
         simpl in |- *.
-        simpl BinBase.add in |- *.
+        simpl Bin.add in |- *.
         simpl in |- *.
         quod idem est.
       }
       leibniz &constant in |- *.
       quod idem est.
     + (* [y] is not divisible by 100. *)
-      match (BinWithZero.division.succession.interior (n %. 400) 100 &interior100)
+      match (Bin0.division.succession.interior (n %. 400) 100 &interior100)
         with | q100 r100 end.
       leibniz &q100, &r100 in |- *.
       lemma interior100n : (n %. 100) + 1 < 100.
@@ -875,16 +875,16 @@ Proof.
         leibniz <- &hundred in |- *.
         ipso &interior100.
       }
-      match (BinWithZero.division.succession.interior n 100 &interior100n) with | _ r100n end.
+      match (Bin0.division.succession.interior n 100 &interior100n) with | _ r100n end.
       lemma y100 : y %. 100 = (n %. 100) + 1.
       {
         leibniz <- &restored in |- *.
         ipso &r100n.
       }
-      match (BinWithZero.order.succession (((n %. 400) %. 100) %. 4) 4 &below4)
+      match (Bin0.order.succession (((n %. 400) %. 100) %. 4) 4 &below4)
         with | carry4 | interior4 end.
       * (* [y] is divisible by 4 and not by 100. *)
-        match (BinWithZero.division.succession.carry ((n %. 400) %. 100) 4 &carry4)
+        match (Bin0.division.succession.carry ((n %. 400) %. 100) 4 &carry4)
           with | q4 r4 end.
         lemma r3 : ((n %. 400) %. 100) %. 4 = 3.
         {
@@ -892,7 +892,7 @@ Proof.
           {
             ipso &carry4.
           }
-          match (BinWithZero.addition.cancellation (((n %. 400) %. 100) %. 4) 1 3)
+          match (Bin0.addition.cancellation (((n %. 400) %. 100) %. 4) 1 3)
             with | _ right end.
           ipso (&right &shifted).
         }
@@ -901,8 +901,8 @@ Proof.
           leibniz <- &four in |- *.
           ipso &carry4.
         }
-        match (BinWithZero.division.succession.carry n 4 &carry4n) with | _ r4n end.
-        lemma y4 : y %. 4 = 0%bin_with_zero.
+        match (Bin0.division.succession.carry n 4 &carry4n) with | _ r4n end.
+        lemma y4 : y %. 4 = 0%b0.
         {
           leibniz <- &restored in |- *.
           ipso &r4n.
@@ -912,27 +912,27 @@ Proof.
           simpl days_in_year, is_leap in |- *.
           leibniz &y4, &y100 in |- *.
           match (n %. 100) with | | p end;
-            simpl Comparable.eq, BinWithZero.compare in |- *; simpl in |- *; quod idem est.
+            simpl Comparable.eq, Bin0.compare in |- *; simpl in |- *; quod idem est.
         }
         leibniz &q4, &r4, &r3, &length in |- *.
         leibniz &common_zero in |- *.
-        match (BinWithZero.addition.identity
+        match (Bin0.addition.identity
                  (((days_in_quadricentennium * (n /. 400))
                      + (days_in_century * ((n %. 400) /. 100)))
                     + (days_in_quadrennium * ((((n %. 400) %. 100) /. 4) + 1))))
           with | _ plus_zero end.
         leibniz &plus_zero in |- *.
-        match (BinWithZero.multiplication.distributivity.over.addition
+        match (Bin0.multiplication.distributivity.over.addition
                  days_in_quadrennium (((n %. 400) %. 100) /. 4) 1)
           with | distributed _ end.
-        match (BinWithZero.multiplication.identity days_in_quadrennium) with | _ times_one end.
+        match (Bin0.multiplication.identity days_in_quadrennium) with | _ times_one end.
         leibniz &distributed, &times_one in |- *.
         leibniz
-          <- (BinWithZero.addition.associativity
+          <- (Bin0.addition.associativity
                 ((days_in_quadricentennium * (n /. 400))
                    + (days_in_century * ((n %. 400) /. 100)))
                 (days_in_quadrennium * (((n %. 400) %. 100) /. 4)) days_in_quadrennium),
-          (BinWithZero.addition.associativity
+          (Bin0.addition.associativity
              (((days_in_quadricentennium * (n /. 400))
                  + (days_in_century * ((n %. 400) /. 100)))
                 + (days_in_quadrennium * (((n %. 400) %. 100) /. 4)))
@@ -942,21 +942,21 @@ Proof.
         {
           simpl days_in_quadrennium, days_in_common_year in |- *.
           simpl in |- *.
-          simpl BinBase.add in |- *.
+          simpl Bin.add in |- *.
           simpl in |- *.
           quod idem est.
         }
         leibniz &constant in |- *.
         quod idem est.
       * (* [y] is not divisible by 4. *)
-        match (BinWithZero.division.succession.interior ((n %. 400) %. 100) 4 &interior4)
+        match (Bin0.division.succession.interior ((n %. 400) %. 100) 4 &interior4)
           with | q4 r4 end.
         lemma interior4n : (n %. 4) + 1 < 4.
         {
           leibniz <- &four in |- *.
           ipso &interior4.
         }
-        match (BinWithZero.division.succession.interior n 4 &interior4n) with | _ r4n end.
+        match (Bin0.division.succession.interior n 4 &interior4n) with | _ r4n end.
         lemma y4 : y %. 4 = (n %. 4) + 1.
         {
           leibniz <- &restored in |- *.
@@ -967,16 +967,16 @@ Proof.
           simpl days_in_year, is_leap in |- *.
           leibniz &y4 in |- *.
           match (n %. 4) with | | p end;
-            simpl Comparable.eq, BinWithZero.compare in |- *; simpl in |- *; quod idem est.
+            simpl Comparable.eq, Bin0.compare in |- *; simpl in |- *; quod idem est.
         }
         leibniz &q4, &r4, &length in |- *.
-        match (BinWithZero.multiplication.distributivity.over.addition
+        match (Bin0.multiplication.distributivity.over.addition
                  days_in_common_year (((n %. 400) %. 100) %. 4) 1)
           with | distributed _ end.
-        match (BinWithZero.multiplication.identity days_in_common_year) with | _ times_one end.
+        match (Bin0.multiplication.identity days_in_common_year) with | _ times_one end.
         leibniz &distributed, &times_one in |- *.
         leibniz
-          <- (BinWithZero.addition.associativity
+          <- (Bin0.addition.associativity
                 (((days_in_quadricentennium * (n /. 400))
                     + (days_in_century * ((n %. 400) /. 100)))
                    + (days_in_quadrennium * (((n %. 400) %. 100) /. 4)))
@@ -992,74 +992,74 @@ Qed.
  *)
 (* year.monotonicity *)
 Theorem monotonicity
-  : forall (y : Year) (k : BinBase) .
-      days_before_year y + days_in_year y <= days_before_year (y + k)%bin_base.
+  : forall (y : Year) (k : Bin) .
+      days_before_year y + days_in_year y <= days_before_year (y + k)%b.
 Proof.
   intros y k.
-  leibniz <- (BinBase.conversion.section &k) in |- *.
-  let n := BinBase.to_nat &k in |- *.
+  leibniz <- (Bin.conversion.section &k) in |- *.
+  let n := Bin.to_nat &k in |- *.
   let proof n := &n.
   extro &n.
   intro n.
   match &n with | One | Successor (n' by IH) end per Nat.induction.
-  - lemma facto : days_before_year y + days_in_year y <= days_before_year (y + 1)%bin_base.
+  - lemma facto : days_before_year y + days_in_year y <= days_before_year (y + 1)%b.
     {
       leibniz (year.succession &y) in |- *.
       ipso (disjoin (refl (days_before_year &y + days_in_year &y)), _).
     }
     ipso &facto.
-  - lemma shift : forall (b : BinBase) . (y + (++ b))%bin_base = ((y + b) + 1)%bin_base.
+  - lemma shift : forall (b : Bin) . (y + (++ b))%b = ((y + b) + 1)%b.
     {
       intro b.
-      lemma facto : BinBase.to_nat (y + (++ b))%bin_base = BinBase.to_nat ((y + b) + 1)%bin_base.
+      lemma facto : Bin.to_nat (y + (++ b))%b = Bin.to_nat ((y + b) + 1)%b.
       {
         leibniz
-          (BinBase.conversion.addition &y (++ &b)%bin_base),
-          (BinBase.conversion.successor &b),
-          (BinBase.conversion.addition (&y + &b)%bin_base 1),
-          (BinBase.conversion.addition &y &b)
+          (Bin.conversion.addition &y (++ &b)%b),
+          (Bin.conversion.successor &b),
+          (Bin.conversion.addition (&y + &b)%b 1),
+          (Bin.conversion.addition &y &b)
           in |- *.
         leibniz
-          (Nat.addition.right.successor (BinBase.to_nat &y) (BinBase.to_nat &b)),
+          (Nat.addition.right.successor (Bin.to_nat &y) (Bin.to_nat &b)),
           (Nat.addition.commutativity
-             (BinBase.to_nat &y + BinBase.to_nat &b)%n (BinBase.to_nat 1))
+             (Bin.to_nat &y + Bin.to_nat &b)%n (Bin.to_nat 1))
           in |- *.
         simpl in |- *.
         quod idem est.
       }
-      ipso (BinBase.conversion.injectivity &facto).
+      ipso (Bin.conversion.injectivity &facto).
     }
     lemma extended
-      : days_before_year (y + BinBase.from_nat n')%bin_base
-        <= days_before_year (y + BinBase.from_nat n')%bin_base
-           + days_in_year (y + BinBase.from_nat n')%bin_base.
+      : days_before_year (y + Bin.from_nat n')%b
+        <= days_before_year (y + Bin.from_nat n')%b
+           + days_in_year (y + Bin.from_nat n')%b.
     {
       leibniz
-        (BinWithZero.addition.commutativity
-           (days_before_year (&y + BinBase.from_nat &n')%bin_base)
-           (days_in_year (&y + BinBase.from_nat &n')%bin_base))
+        (Bin0.addition.commutativity
+           (days_before_year (&y + Bin.from_nat &n')%b)
+           (days_in_year (&y + Bin.from_nat &n')%b))
         in |- *.
-      ipso (BinWithZero.addition.right.order.extensivity
-              (days_in_year (&y + BinBase.from_nat &n')%bin_base)
-              (days_before_year (&y + BinBase.from_nat &n')%bin_base)).
+      ipso (Bin0.addition.right.order.extensivity
+              (days_in_year (&y + Bin.from_nat &n')%b)
+              (days_before_year (&y + Bin.from_nat &n')%b)).
     }
     lemma step
       : days_before_year y + days_in_year y
-        <= days_before_year ((y + BinBase.from_nat n') + 1)%bin_base.
+        <= days_before_year ((y + Bin.from_nat n') + 1)%b.
     {
-      leibniz (year.succession (&y + BinBase.from_nat &n')%bin_base) in |- *.
-      ipso (@Comparable.order.transitivity _ BinWithZero.compare BinWithZero.LessThan _
+      leibniz (year.succession (&y + Bin.from_nat &n')%b) in |- *.
+      ipso (@Comparable.order.transitivity _ Bin0.compare Bin0.LessThan _
               (days_before_year &y + days_in_year &y)
-              (days_before_year (&y + BinBase.from_nat &n')%bin_base)
-              (days_before_year (&y + BinBase.from_nat &n')%bin_base
-                 + days_in_year (&y + BinBase.from_nat &n')%bin_base)
+              (days_before_year (&y + Bin.from_nat &n')%b)
+              (days_before_year (&y + Bin.from_nat &n')%b
+                 + days_in_year (&y + Bin.from_nat &n')%b)
               &IH &extended).
     }
     lemma facto
       : days_before_year y + days_in_year y
-        <= days_before_year (y + (++ BinBase.from_nat n'))%bin_base.
+        <= days_before_year (y + (++ Bin.from_nat n'))%b.
     {
-      leibniz (&shift (BinBase.from_nat &n')) in |- *.
+      leibniz (&shift (Bin.from_nat &n')) in |- *.
       ipso &step.
     }
     ipso &facto.
@@ -1070,15 +1070,15 @@ End year. (* year *)
 Module ordinal. (* ordinal *)
 
 (* ordinal.positivity *)
-Theorem positivity : forall (x : Date) . 0%bin_with_zero < day_of_year x.
+Theorem positivity : forall (x : Date) . 0%b0 < day_of_year x.
 Proof.
   intro x.
-  simpl day_of_year, BinWithZero.LessThan in |- *.
+  simpl day_of_year, Bin0.LessThan in |- *.
   match (days_before_month (year &x) (month &x)) with | | p end.
   - exists (day &x).
     simpl in |- *.
     quod idem est.
-  - exists (&p + day &x)%bin_base.
+  - exists (&p + day &x)%b.
     simpl in |- *.
     quod idem est.
 Qed.
@@ -1092,16 +1092,16 @@ Proof.
   simpl is_valid in &a.
   let proof t := modus aequans (Assert.specification _), &a.
   let proof b := modus aequans (Comparable.order.reflection &d (days_in_month &y &m)), &t.
-  lemma widened : (d : BinWithZero) <= days_in_month y m.
+  lemma widened : (d : Bin0) <= days_in_month y m.
   {
     match &b with | e | s end.
-    - ipso (disjoin (congru BinWithZero.Positive, &e), _).
+    - ipso (disjoin (congru Bin0.Positive, &e), _).
     - match &s with | k e end.
-      lemma facto : (d : BinWithZero) < days_in_month y m.
+      lemma facto : (d : Bin0) < days_in_month y m.
       {
-        simpl BinWithZero.LessThan in |- *.
+        simpl Bin0.LessThan in |- *.
         exists &k.
-        ipso (congru BinWithZero.Positive, &e).
+        ipso (congru Bin0.Positive, &e).
       }
       ipso (disjoin _, &facto).
   }
@@ -1112,11 +1112,11 @@ Proof.
     - leibniz &e in |- *.
       ipso (disjoin (refl (days_before_month &y &m + days_in_month &y &m)), _).
     - ipso (disjoin _,
-              (BinWithZero.addition.order.strict.monotonicity
+              (Bin0.addition.order.strict.monotonicity
                  (days_before_month &y &m) d (days_before_month &y &m) (days_in_month &y &m)
                  (disjoin (refl (days_before_month &y &m)), _) &s)).
   }
-  ipso (@Comparable.order.transitivity _ BinWithZero.compare BinWithZero.LessThan _
+  ipso (@Comparable.order.transitivity _ Bin0.compare Bin0.LessThan _
           (days_before_month &y &m + d)
           (days_before_month &y &m + days_in_month &y &m)
           (days_in_year &y)
@@ -1138,13 +1138,13 @@ Proof.
   let proof t := modus aequans (Assert.specification _), &a.
   let proof b := modus aequans (Comparable.order.reflection &d (days_in_month &y &m)), &t.
   match &b with | e | s end.
-  - ipso (disjoin (congru BinWithZero.Positive, &e), _).
+  - ipso (disjoin (congru Bin0.Positive, &e), _).
   - match &s with | k e end.
-    lemma facto : (d : BinWithZero) < days_in_month y m.
+    lemma facto : (d : Bin0) < days_in_month y m.
     {
-      simpl BinWithZero.LessThan in |- *.
+      simpl Bin0.LessThan in |- *.
       exists &k.
-      ipso (congru BinWithZero.Positive, &e).
+      ipso (congru Bin0.Positive, &e).
     }
     ipso (disjoin _, &facto).
 Qed.
@@ -1163,17 +1163,17 @@ Proof.
   intro x.
   simpl day_number, day_of_year in |- *.
   leibniz
-    (BinWithZero.addition.associativity
+    (Bin0.addition.associativity
        (days_before_year (year &x) + days_before_month (year &x) (month &x))
-       (BinWithZero.saturating_sub (day &x) 1) 1)
+       (Bin0.saturating_sub (day &x) 1) 1)
     in |- *.
-  lemma restored : BinWithZero.saturating_sub (day x) 1 + 1 = day x.
+  lemma restored : Bin0.saturating_sub (day x) 1 + 1 = day x.
   {
     ipso (year.antecedence.restoration (day &x)).
   }
   leibniz &restored in |- *.
   leibniz
-    (BinWithZero.addition.associativity
+    (Bin0.addition.associativity
        (days_before_year (year &x)) (days_before_month (year &x) (month &x)) (day &x))
     in |- *.
   quod idem est.
@@ -1191,28 +1191,28 @@ Proof.
   intros x1 x2 h.
   simpl LessThan in &h.
   lemma cancelled
-    : forall (a : BinWithZero) (b : BinWithZero) . a + 1 < b + 1 -> a < b.
+    : forall (a : Bin0) (b : Bin0) . a + 1 < b + 1 -> a < b.
   {
     intros a b g.
-    simpl BinWithZero.LessThan in &g |- *.
+    simpl Bin0.LessThan in &g |- *.
     match &g with | k e end.
     exists &k.
     leibniz
-      (BinWithZero.addition.associativity &a 1 k),
-      (BinWithZero.addition.commutativity 1 k),
-      <- (BinWithZero.addition.associativity &a k 1)
+      (Bin0.addition.associativity &a 1 k),
+      (Bin0.addition.commutativity 1 k),
+      <- (Bin0.addition.associativity &a k 1)
       in &e.
-    match (BinWithZero.addition.cancellation (&a + k) 1 &b) with | _ right end.
+    match (Bin0.addition.cancellation (&a + k) 1 &b) with | _ right end.
     ipso (&right &e).
   }
   lemma widened
-    : forall (d1 : BinBase) (d2 : BinBase) . (d1 < d2)%bin_base -> (d1 : BinWithZero) < d2.
+    : forall (d1 : Bin) (d2 : Bin) . (d1 < d2)%b -> (d1 : Bin0) < d2.
   {
     intros d1 d2 g.
     match &g with | k e end.
-    simpl BinWithZero.LessThan in |- *.
+    simpl Bin0.LessThan in |- *.
     exists &k.
-    ipso (congru BinWithZero.Positive, &e).
+    ipso (congru Bin0.Positive, &e).
   }
   lemma ordered
     : days_before_year (year x1) + day_of_year x1 < days_before_year (year x2) + day_of_year x2.
@@ -1220,8 +1220,8 @@ Proof.
     match &x1 with | introduction y1 m1 d1 a1 end.
     match &x2 with | introduction y2 m2 d2 a2 end.
     simpl compare, year, month, day in &h.
-    match (BinBase.compare &y1 &y2) with | | | end |- cy.
-    - match (BinBase.comparison.specification &y1 &y2) with | year_order _ end.
+    match (Bin.compare &y1 &y2) with | | | end |- cy.
+    - match (Bin.comparison.specification &y1 &y2) with | year_order _ end.
       let proof earlier := modus aequans &year_order, &cy.
       match &earlier with | k e end.
       let proof through := ordinal.boundedness (introduction &y1 &m1 &d1 &a1).
@@ -1233,7 +1233,7 @@ Proof.
         - leibniz &same in |- *.
           ipso (disjoin (refl (days_before_year &y1 + days_in_year &y1)), _).
         - ipso (disjoin _,
-                  (BinWithZero.addition.order.strict.monotonicity
+                  (Bin0.addition.order.strict.monotonicity
                      (days_before_year &y1) (day_of_year (introduction &y1 &m1 &d1 &a1))
                      (days_before_year &y1) (days_in_year &y1)
                      (disjoin (refl (days_before_year &y1)), _) &smaller)).
@@ -1246,10 +1246,10 @@ Proof.
       lemma third
         : days_before_year y2 < days_before_year y2 + day_of_year (introduction y2 m2 d2 a2).
       {
-        match (BinWithZero.addition.identity (days_before_year &y2)) with | _ plus_zero end.
+        match (Bin0.addition.identity (days_before_year &y2)) with | _ plus_zero end.
         let proof s :=
-          BinWithZero.addition.order.strict.monotonicity
-            (days_before_year &y2) 0%bin_with_zero
+          Bin0.addition.order.strict.monotonicity
+            (days_before_year &y2) 0%b0
             (days_before_year &y2) (day_of_year (introduction &y2 &m2 &d2 &a2))
             (disjoin (refl (days_before_year &y2)), _)
             (ordinal.positivity (introduction &y2 &m2 &d2 &a2)).
@@ -1257,20 +1257,20 @@ Proof.
         ipso &s.
       }
       ipso (Comparable.order.mixed.left.transitivity
-              (@Comparable.order.transitivity _ BinWithZero.compare BinWithZero.LessThan _
+              (@Comparable.order.transitivity _ Bin0.compare Bin0.LessThan _
                  (days_before_year &y1 + day_of_year (introduction &y1 &m1 &d1 &a1))
                  (days_before_year &y1 + days_in_year &y1)
                  (days_before_year &y2)
                  &first &second)
               &third).
-    - match (BinBase.comparison.specification &y1 &y2) with | _ year_equality end.
+    - match (Bin.comparison.specification &y1 &y2) with | _ year_equality end.
       let proof ey := modus aequans &year_equality, &cy.
       match &ey with | end.
       lemma inner
         : days_before_month y1 m1 + d1 < days_before_month y1 m2 + d2.
       {
         match (Month.compare &m1 &m2) with | | | end |- cm.
-        + lemma valid : (d1 : BinWithZero) <= days_in_month y1 m1.
+        + lemma valid : (d1 : Bin0) <= days_in_month y1 m1.
           {
             ipso (validity.boundedness (introduction &y1 &m1 &d1 &a1)).
           }
@@ -1282,32 +1282,32 @@ Proof.
             - leibniz &same in |- *.
               ipso (disjoin (refl (days_before_month &y1 &m1 + days_in_month &y1 &m1)), _).
             - ipso (disjoin _,
-                      (BinWithZero.addition.order.strict.monotonicity
+                      (Bin0.addition.order.strict.monotonicity
                          (days_before_month &y1 &m1) d1
                          (days_before_month &y1 &m1) (days_in_month &y1 &m1)
                          (disjoin (refl (days_before_month &y1 &m1)), _) &smaller)).
           }
           lemma third : days_before_month y1 m2 < days_before_month y1 m2 + d2.
           {
-            match (BinWithZero.addition.identity (days_before_month &y1 &m2))
+            match (Bin0.addition.identity (days_before_month &y1 &m2))
               with | _ plus_zero end.
-            lemma positive : 0%bin_with_zero < d2.
+            lemma positive : 0%b0 < d2.
             {
-              simpl BinWithZero.LessThan in |- *.
+              simpl Bin0.LessThan in |- *.
               exists &d2.
               simpl in |- *.
               quod idem est.
             }
             let proof s :=
-              BinWithZero.addition.order.strict.monotonicity
-                (days_before_month &y1 &m2) 0%bin_with_zero
+              Bin0.addition.order.strict.monotonicity
+                (days_before_month &y1 &m2) 0%b0
                 (days_before_month &y1 &m2) d2
                 (disjoin (refl (days_before_month &y1 &m2)), _) &positive.
             leibniz &plus_zero in &s.
             ipso &s.
           }
           ipso (Comparable.order.mixed.left.transitivity
-                  (@Comparable.order.transitivity _ BinWithZero.compare BinWithZero.LessThan _
+                  (@Comparable.order.transitivity _ Bin0.compare Bin0.LessThan _
                      (days_before_month &y1 &m1 + d1)
                      (days_before_month &y1 &m1 + days_in_month &y1 &m1)
                      (days_before_month &y1 &m2)
@@ -1316,15 +1316,15 @@ Proof.
         + match (Month.comparison.specification &m1 &m2) with | _ month_equality end.
           let proof em := modus aequans &month_equality, &cm.
           match &em with | end.
-          match (BinBase.comparison.specification &d1 &d2) with | day_order _ end.
+          match (Bin.comparison.specification &d1 &d2) with | day_order _ end.
           let proof smaller := modus aequans &day_order, &h.
-          ipso (BinWithZero.addition.order.strict.monotonicity
+          ipso (Bin0.addition.order.strict.monotonicity
                   (days_before_month &y1 &m1) d1 (days_before_month &y1 &m1) d2
                   (disjoin (refl (days_before_month &y1 &m1)), _)
                   (&widened &d1 &d2 &smaller)).
         + ex &h quodlibet.
       }
-      ipso (BinWithZero.addition.order.strict.monotonicity
+      ipso (Bin0.addition.order.strict.monotonicity
               (days_before_year &y1) (days_before_month &y1 &m1 + d1)
               (days_before_year &y1) (days_before_month &y1 &m2 + d2)
               (disjoin (refl (days_before_year &y1)), _) &inner).
@@ -1338,16 +1338,16 @@ Qed.
 (* number.comparison *)
 Theorem comparison
   : forall (x1 : Date) (x2 : Date) .
-      compare x1 x2 = BinWithZero.compare (day_number x1) (day_number x2).
+      compare x1 x2 = Bin0.compare (day_number x1) (day_number x2).
 Proof.
   intros x1 x2.
   match (compare &x1 &x2) with | | | end |- c.
   - let proof smaller := number.monotonicity &x1 &x2 &c.
-    match (BinWithZero.comparison.specification (day_number &x1) (day_number &x2))
+    match (Bin0.comparison.specification (day_number &x1) (day_number &x2))
       with | strict _ end.
     ipso (symm (modus aequans &strict, &smaller)).
   - match (separation &x1 &x2 &c) with | end.
-    ipso (symm (@Comparable.comparison.reflexivity _ BinWithZero.compare BinWithZero.LessThan _
+    ipso (symm (@Comparable.comparison.reflexivity _ Bin0.compare Bin0.LessThan _
                   (day_number &x1))).
   - lemma reversed : compare x2 x1 = Comparison.Lt.
     {
@@ -1356,11 +1356,11 @@ Proof.
       quod idem est.
     }
     let proof smaller := number.monotonicity &x2 &x1 &reversed.
-    match (BinWithZero.comparison.specification (day_number &x2) (day_number &x1))
+    match (Bin0.comparison.specification (day_number &x2) (day_number &x1))
       with | strict _ end.
     let proof below := modus aequans &strict, &smaller.
     leibniz
-      (BinWithZero.comparison.antisymmetry (day_number &x1) (day_number &x2)), &below
+      (Bin0.comparison.antisymmetry (day_number &x1) (day_number &x2)), &below
       in |- *.
     simpl in |- *.
     quod idem est.
@@ -1377,7 +1377,7 @@ Proof.
   - intro smaller.
     simpl LessThan in |- *.
     leibniz (number.comparison &x1 &x2) in |- *.
-    match (BinWithZero.comparison.specification (day_number &x1) (day_number &x2))
+    match (Bin0.comparison.specification (day_number &x1) (day_number &x2))
       with | strict _ end.
     ipso (modus aequans &strict, &smaller).
 Qed.
@@ -1391,7 +1391,7 @@ Proof.
   lemma same : compare x1 x2 = Comparison.Eq.
   {
     leibniz (number.comparison &x1 &x2), &e in |- *.
-    ipso (@Comparable.comparison.reflexivity _ BinWithZero.compare BinWithZero.LessThan _
+    ipso (@Comparable.comparison.reflexivity _ Bin0.compare Bin0.LessThan _
             (day_number &x2)).
   }
   ipso (separation &x1 &x2 &same).
@@ -1411,7 +1411,7 @@ Proof.
   intros x1 x2 x3 h1 h2.
   let proof n1 := modus aequans (number.order &x1 &x2), &h1.
   let proof n2 := modus aequans (number.order &x2 &x3), &h2.
-  ipso (modus aequans (number.order &x1 &x3), (BinWithZero.order.strict.transitivity &n1 &n2)).
+  ipso (modus aequans (number.order &x1 &x3), (Bin0.order.strict.transitivity &n1 &n2)).
 Qed.
 
 End strict. (* order.strict *)
@@ -1438,7 +1438,7 @@ Proof.
     + ipso (separation &x1 &x2).
     + intro e.
       leibniz &e, (number.comparison &x2 &x2) in |- *.
-      ipso (@Comparable.comparison.reflexivity _ BinWithZero.compare BinWithZero.LessThan _
+      ipso (@Comparable.comparison.reflexivity _ Bin0.compare Bin0.LessThan _
               (day_number &x2)).
 Qed.
 

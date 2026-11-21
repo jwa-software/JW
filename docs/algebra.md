@@ -91,7 +91,7 @@ SPDX-License-Identifier: MIT
 
 - **The problem.** Arithmetic has two operations that work together: `2 * (3 + 4)` and `2 * 3 + 2 * 4` are both `14`, and `0 * 5` is `0`. Neither fact is about `+` alone or about `*` alone.
 - **The class.** `Semiring add zero mul one` holds `AbelianMonoid add zero` and `Monoid mul one`. It adds `Semiring.distributivity`, `mul x (add y z) = add (mul x y) (mul x z) /\ mul (add y z) x = add (mul y x) (mul z x)`, and `Semiring.annihilation`, `mul zero x = zero /\ mul x zero = zero`.
-- **Instances.** `Nat0_semiring` and `BinWithZero_semiring`, the two number types that start at `0`.
+- **Instances.** `Nat0_semiring` and `Bin0_semiring`, the two number types that start at `0`.
 - **In a proof.** `Semiring.distributivity x y z` and `Semiring.annihilation x`. `Monoid.identity` serves both operations: the goal decides whether it is `0 + n = n` or `1 * n = n`.
 - **What it does not say.** That a sum can be undone; that is `Ring`. Nor that the factors change places: `Nat0_mul_commutative` is an instance of its own.
 

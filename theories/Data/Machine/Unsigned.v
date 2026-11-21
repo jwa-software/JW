@@ -6,8 +6,8 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
-From JW Require Import Data.Number.Binary.BinBase.
-From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Product.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
@@ -25,7 +25,7 @@ Parameter Inline T : Type.
 Parameter Inline Zero : T.
 Parameter Inline One : T.
 Parameter Inline Max : T.
-Parameter Inline to_bin_with_zero : T -> BinWithZero.
+Parameter Inline to_b0 : T -> Bin0.
 Parameter Inline add : T -> T -> T.
 Parameter Inline sub : T -> T -> T.
 Parameter Inline LessThan : T -> T -> Prop.
@@ -35,7 +35,7 @@ Parameter Inline sub_with_borrow : Bit -> T -> T -> Product Bit T.
 Parameter Inline compare : T -> T -> Comparison.
 Parameter Inline mul : T -> T -> T.
 Parameter Inline mul_with_overflow : T -> T -> Product Bit T.
-Parameter Inline modulus : BinBase.
+Parameter Inline modulus : Bin.
 
 Module order. (* order *)
 
@@ -43,7 +43,7 @@ Module strict. (* order.strict *)
 
 Parameter specification
   : forall (x : T) (y : T) .
-      LessThan x y <-> (to_bin_with_zero x < to_bin_with_zero y)%bin_with_zero.
+      LessThan x y <-> (to_b0 x < to_b0 y)%b0.
 
 End strict. (* order.strict *)
 
@@ -55,20 +55,20 @@ End order. (* order *)
 Module conversion. (* conversion *)
 
 Parameter zero
-  : to_bin_with_zero Zero = 0%bin_with_zero.
+  : to_b0 Zero = 0%b0.
 Parameter one
-  : to_bin_with_zero One = 1%bin_with_zero.
+  : to_b0 One = 1%b0.
 Parameter boundedness
-  : forall (x : T) . (to_bin_with_zero x < BinWithZero.Positive modulus)%bin_with_zero.
+  : forall (x : T) . (to_b0 x < Bin0.Positive modulus)%b0.
 Parameter injectivity
-  : forall {x : T} {y : T} . to_bin_with_zero x = to_bin_with_zero y -> x = y.
+  : forall {x : T} {y : T} . to_b0 x = to_b0 y -> x = y.
 Parameter comparison
   : forall (x : T) (y : T) .
-      compare x y = BinWithZero.compare (to_bin_with_zero x) (to_bin_with_zero y).
+      compare x y = Bin0.compare (to_b0 x) (to_b0 y).
 Parameter multiplication
   : forall (x : T) (y : T) .
-      (to_bin_with_zero (mul x y)
-       = (to_bin_with_zero x * to_bin_with_zero y) %. modulus)%bin_with_zero.
+      (to_b0 (mul x y)
+       = (to_b0 x * to_b0 y) %. modulus)%b0.
 
 End conversion. (* conversion *)
 
@@ -78,10 +78,10 @@ Module addition. (* flag.addition *)
 
 Parameter specification
   : forall (x : T) (y : T) .
-      (to_bin_with_zero x + to_bin_with_zero y
-       = BinWithZero.Positive modulus
-           * Bit.to_bin_with_zero (pi_1 (add_with_carry 0 x y))%product
-         + to_bin_with_zero (add x y))%bin_with_zero.
+      (to_b0 x + to_b0 y
+       = Bin0.Positive modulus
+           * Bit.to_b0 (pi_1 (add_with_carry 0 x y))%product
+         + to_b0 (add x y))%b0.
 
 End addition. (* flag.addition *)
 
@@ -89,10 +89,10 @@ Module subtraction. (* flag.subtraction *)
 
 Parameter specification
   : forall (x : T) (y : T) .
-      (to_bin_with_zero x
-         + BinWithZero.Positive modulus
-             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 x y))%product
-       = to_bin_with_zero y + to_bin_with_zero (sub x y))%bin_with_zero.
+      (to_b0 x
+         + Bin0.Positive modulus
+             * Bit.to_b0 (pi_1 (sub_with_borrow 0 x y))%product
+       = to_b0 y + to_b0 (sub x y))%b0.
 
 End subtraction. (* flag.subtraction *)
 
@@ -101,8 +101,8 @@ Module multiplication. (* flag.multiplication *)
 Parameter specification
   : forall (x : T) (y : T) .
       mul_with_overflow x y
-      = (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
-                 (BinWithZero.Positive modulus) with
+      = (match Bin0.compare (to_b0 x * to_b0 y)%b0
+                 (Bin0.Positive modulus) with
          | Comparison.Lt => 0%bit
          | Comparison.Eq => 1%bit
          | Comparison.Gt => 1%bit
@@ -116,7 +116,7 @@ End flag. (* flag *)
 Module maximum. (* maximum *)
 
 Parameter specification
-  : (to_bin_with_zero Max + 1 = BinWithZero.Positive modulus)%bin_with_zero.
+  : (to_b0 Max + 1 = Bin0.Positive modulus)%b0.
 
 End maximum. (* maximum *)
 
@@ -147,19 +147,19 @@ Local Open Scope jw_unsigned_scope.
 (* The value keeps the order. *)
 Lemma preservation
   : forall (x : W.T) (y : W.T) .
-      x <= y -> (W.to_bin_with_zero x <= W.to_bin_with_zero y)%bin_with_zero.
+      x <= y -> (W.to_b0 x <= W.to_b0 y)%b0.
 Proof.
   intros x y h.
   match (modus aequans (W.order.specification &x &y), &h) with | e | smaller end.
   - leibniz &e in |- *.
-    ipso (disjoin (refl (W.to_bin_with_zero &y)), _).
+    ipso (disjoin (refl (W.to_b0 &y)), _).
   - ipso (disjoin _, (modus aequans (W.order.strict.specification &x &y), &smaller)).
 Qed.
 
 (* The order of the values is the order of the type. *)
 Lemma reflection
   : forall (x : W.T) (y : W.T) .
-      (W.to_bin_with_zero x <= W.to_bin_with_zero y)%bin_with_zero -> x <= y.
+      (W.to_b0 x <= W.to_b0 y)%b0 -> x <= y.
 Proof.
   intros x y h.
   match &h with | e | smaller end.
@@ -174,23 +174,23 @@ Module bound. (* bound *)
 (* A value above [W.Max] would be at least [W.Max + 1], the modulus. *)
 (* bound.range *)
 Theorem range
-  : forall (x : W.T) . (W.to_bin_with_zero x <= W.to_bin_with_zero W.Max)%bin_with_zero.
+  : forall (x : W.T) . (W.to_b0 x <= W.to_b0 W.Max)%b0.
 Proof.
   intro x.
-  lemma above : ~ (W.to_bin_with_zero W.Max < W.to_bin_with_zero x)%bin_with_zero.
+  lemma above : ~ (W.to_b0 W.Max < W.to_b0 x)%b0.
   {
     simpl (~ _) in |- *.
     intro g.
     let proof s :=
-      BinWithZero.order.succession (W.to_bin_with_zero W.Max) (W.to_bin_with_zero &x) &g.
+      Bin0.order.succession (W.to_b0 W.Max) (W.to_b0 &x) &g.
     leibniz W.maximum.specification in &s.
-    ex (BinWithZero.order.strict.irreflexivity (BinWithZero.Positive W.modulus)
+    ex (Bin0.order.strict.irreflexivity (Bin0.Positive W.modulus)
           (Comparable.order.mixed.left.transitivity &s (W.conversion.boundedness &x)))
       quodlibet.
   }
   ipso (modus aequans
           (Comparable.order.strict.negation
-             (W.to_bin_with_zero W.Max) (W.to_bin_with_zero &x)),
+             (W.to_b0 W.Max) (W.to_b0 &x)),
           &above).
 Qed.
 
@@ -198,16 +198,16 @@ Qed.
 Theorem lower : forall (x : W.T) . W.Zero <= x.
 Proof.
   intro x.
-  lemma low : (W.to_bin_with_zero W.Zero <= W.to_bin_with_zero x)%bin_with_zero.
+  lemma low : (W.to_b0 W.Zero <= W.to_b0 x)%b0.
   {
     leibniz W.conversion.zero in |- *.
-    match (W.to_bin_with_zero &x) with | | p end.
-    - ipso (disjoin (refl 0%bin_with_zero), _).
-    - lemma facto : (0 < BinWithZero.Positive p)%bin_with_zero.
+    match (W.to_b0 &x) with | | p end.
+    - ipso (disjoin (refl 0%b0), _).
+    - lemma facto : (0 < Bin0.Positive p)%b0.
       {
-        simpl BinWithZero.LessThan in |- *.
+        simpl Bin0.LessThan in |- *.
         exists &p.
-        ipso (refl (BinWithZero.Positive &p)).
+        ipso (refl (Bin0.Positive &p)).
       }
       ipso (disjoin _, &facto).
   }
@@ -234,14 +234,14 @@ Module addition. (* overflow.addition *)
 Theorem specification
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.add_with_carry 0 x y))%product = 0%bit
-      <-> (W.to_bin_with_zero x + W.to_bin_with_zero y
-           < BinWithZero.Positive W.modulus)%bin_with_zero.
+      <-> (W.to_b0 x + W.to_b0 y
+           < Bin0.Positive W.modulus)%b0.
 Proof.
   intros x y.
   let proof s := W.flag.addition.specification &x &y.
   match ((pi_1 (W.add_with_carry 0 &x &y))%product) with | Zero | One end |- f.
   - let proof t
-      : (W.to_bin_with_zero x + W.to_bin_with_zero y = W.to_bin_with_zero (x + y))%bin_with_zero
+      : (W.to_b0 x + W.to_b0 y = W.to_b0 (x + y))%b0
       := &s.
     divide et impera.
     + intro e.
@@ -250,25 +250,25 @@ Proof.
     + intro h.
       quod idem est.
   - let proof t
-      : (W.to_bin_with_zero x + W.to_bin_with_zero y
-         = BinWithZero.Positive W.modulus * BinWithZero.Positive BinBase.One
-           + W.to_bin_with_zero (x + y))%bin_with_zero
+      : (W.to_b0 x + W.to_b0 y
+         = Bin0.Positive W.modulus * Bin0.Positive Bin.One
+           + W.to_b0 (x + y))%b0
       := &s.
-    match (BinWithZero.multiplication.identity (BinWithZero.Positive W.modulus)) with | _ r end.
+    match (Bin0.multiplication.identity (Bin0.Positive W.modulus)) with | _ r end.
     leibniz &r in &t.
     divide et impera.
     + intro e.
       ex &e quodlibet.
     + intro h.
       let proof at_least :=
-        BinWithZero.addition.right.order.extensivity
-          (W.to_bin_with_zero (&x + &y)) (BinWithZero.Positive W.modulus).
+        Bin0.addition.right.order.extensivity
+          (W.to_b0 (&x + &y)) (Bin0.Positive W.modulus).
       leibniz
-        (BinWithZero.addition.commutativity
-           (W.to_bin_with_zero (&x + &y)) (BinWithZero.Positive W.modulus)),
+        (Bin0.addition.commutativity
+           (W.to_b0 (&x + &y)) (Bin0.Positive W.modulus)),
         <- &t
         in &at_least.
-      ex (BinWithZero.order.strict.irreflexivity (BinWithZero.Positive W.modulus)
+      ex (Bin0.order.strict.irreflexivity (Bin0.Positive W.modulus)
             (Comparable.order.mixed.left.transitivity &at_least &h))
         quodlibet.
 Qed.
@@ -277,18 +277,18 @@ Qed.
 Theorem exactness
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.add_with_carry 0 x y))%product = 0%bit
-      -> (W.to_bin_with_zero (x + y) = W.to_bin_with_zero x + W.to_bin_with_zero y)%bin_with_zero.
+      -> (W.to_b0 (x + y) = W.to_b0 x + W.to_b0 y)%b0.
 Proof.
   intros x y f.
   let proof s := W.flag.addition.specification &x &y.
   leibniz &f in &s.
   let proof t
-    : (W.to_bin_with_zero x + W.to_bin_with_zero y = W.to_bin_with_zero (x + y))%bin_with_zero
+    : (W.to_b0 x + W.to_b0 y = W.to_b0 (x + y))%b0
     := &s.
   ipso (symm &t).
 Qed.
 
-(* Two clear carries make both sums exact, and [BinWithZero]'s addition keeps
+(* Two clear carries make both sums exact, and [Bin0]'s addition keeps
  * the order.
  *)
 (* overflow.addition.monotonicity *)
@@ -300,14 +300,14 @@ Theorem monotonicity
 Proof.
   intros x y z fy fz h.
   let proof g := modus aequans (W.order.strict.specification &y &z), &h.
-  lemma same : (W.to_bin_with_zero x <= W.to_bin_with_zero x)%bin_with_zero.
+  lemma same : (W.to_b0 x <= W.to_b0 x)%b0.
   {
-    ipso (disjoin (refl (W.to_bin_with_zero &x)), _).
+    ipso (disjoin (refl (W.to_b0 &x)), _).
   }
   let proof s :=
-    BinWithZero.addition.order.strict.monotonicity
-      (W.to_bin_with_zero &x) (W.to_bin_with_zero &y) (W.to_bin_with_zero &x)
-      (W.to_bin_with_zero &z) &same &g.
+    Bin0.addition.order.strict.monotonicity
+      (W.to_b0 &x) (W.to_b0 &y) (W.to_b0 &x)
+      (W.to_b0 &z) &same &g.
   leibniz <- (overflow.addition.exactness &x &y &fy), <- (overflow.addition.exactness &x &z &fz)
     in &s.
   ipso (modus aequans (W.order.strict.specification (&x + &y) (&x + &z)), &s).
@@ -330,41 +330,41 @@ Proof.
   let proof s := W.flag.subtraction.specification &x &y.
   match ((pi_1 (W.sub_with_borrow 0 &x &y))%product) with | Zero | One end |- f.
   - let proof t
-      : (W.to_bin_with_zero x + 0 = W.to_bin_with_zero y + W.to_bin_with_zero (x - y))%bin_with_zero
+      : (W.to_b0 x + 0 = W.to_b0 y + W.to_b0 (x - y))%b0
       := &s.
-    match (BinWithZero.addition.identity (W.to_bin_with_zero &x)) with | _ r end.
+    match (Bin0.addition.identity (W.to_b0 &x)) with | _ r end.
     leibniz &r in &t.
     divide et impera.
     + intro e.
       let proof g :=
-        BinWithZero.addition.right.order.extensivity
-          (W.to_bin_with_zero (&x - &y)) (W.to_bin_with_zero &y).
+        Bin0.addition.right.order.extensivity
+          (W.to_b0 (&x - &y)) (W.to_b0 &y).
       leibniz
-        (BinWithZero.addition.commutativity
-           (W.to_bin_with_zero (&x - &y)) (W.to_bin_with_zero &y)),
+        (Bin0.addition.commutativity
+           (W.to_b0 (&x - &y)) (W.to_b0 &y)),
         <- &t
         in &g.
       ipso (reflection &y &x &g).
     + intro h.
       quod idem est.
   - let proof t
-      : (W.to_bin_with_zero x + BinWithZero.Positive W.modulus * BinWithZero.Positive BinBase.One
-         = W.to_bin_with_zero y + W.to_bin_with_zero (x - y))%bin_with_zero
+      : (W.to_b0 x + Bin0.Positive W.modulus * Bin0.Positive Bin.One
+         = W.to_b0 y + W.to_b0 (x - y))%b0
       := &s.
-    match (BinWithZero.multiplication.identity (BinWithZero.Positive W.modulus)) with | _ r end.
+    match (Bin0.multiplication.identity (Bin0.Positive W.modulus)) with | _ r end.
     leibniz &r in &t.
     divide et impera.
     + intro e.
       ex &e quodlibet.
     + intro h.
       let proof g :=
-        BinWithZero.addition.order.strict.monotonicity
-          (W.to_bin_with_zero &y) (W.to_bin_with_zero (&x - &y))
-          (W.to_bin_with_zero &x) (BinWithZero.Positive W.modulus)
+        Bin0.addition.order.strict.monotonicity
+          (W.to_b0 &y) (W.to_b0 (&x - &y))
+          (W.to_b0 &x) (Bin0.Positive W.modulus)
           (preservation &y &x &h) (W.conversion.boundedness (&x - &y)).
       leibniz <- &t in &g.
-      ex (BinWithZero.order.strict.irreflexivity
-            (W.to_bin_with_zero &x + BinWithZero.Positive W.modulus)%bin_with_zero &g)
+      ex (Bin0.order.strict.irreflexivity
+            (W.to_b0 &x + Bin0.Positive W.modulus)%b0 &g)
         quodlibet.
 Qed.
 
@@ -372,15 +372,15 @@ Qed.
 Theorem exactness
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.sub_with_borrow 0 x y))%product = 0%bit
-      -> (W.to_bin_with_zero y + W.to_bin_with_zero (x - y) = W.to_bin_with_zero x)%bin_with_zero.
+      -> (W.to_b0 y + W.to_b0 (x - y) = W.to_b0 x)%b0.
 Proof.
   intros x y f.
   let proof s := W.flag.subtraction.specification &x &y.
   leibniz &f in &s.
   let proof t
-    : (W.to_bin_with_zero x + 0 = W.to_bin_with_zero y + W.to_bin_with_zero (x - y))%bin_with_zero
+    : (W.to_b0 x + 0 = W.to_b0 y + W.to_b0 (x - y))%b0
     := &s.
-  match (BinWithZero.addition.identity (W.to_bin_with_zero &x)) with | _ r end.
+  match (Bin0.addition.identity (W.to_b0 &x)) with | _ r end.
   leibniz &r in &t.
   ipso (symm &t).
 Qed.
@@ -389,25 +389,25 @@ End subtraction. (* overflow.subtraction *)
 
 Module multiplication. (* overflow.multiplication *)
 
-(* The flag is clear exactly when [BinWithZero.compare] puts the product of the
+(* The flag is clear exactly when [Bin0.compare] puts the product of the
  * values below the modulus.
  *)
 (* overflow.multiplication.specification *)
 Theorem specification
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.mul_with_overflow x y))%product = 0%bit
-      <-> (W.to_bin_with_zero x * W.to_bin_with_zero y
-           < BinWithZero.Positive W.modulus)%bin_with_zero.
+      <-> (W.to_b0 x * W.to_b0 y
+           < Bin0.Positive W.modulus)%b0.
 Proof.
   intros x y.
   leibniz (W.flag.multiplication.specification &x &y) in |- *.
   let proof s :=
-    BinWithZero.comparison.specification
-      (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero
-      (BinWithZero.Positive W.modulus).
+    Bin0.comparison.specification
+      (W.to_b0 &x * W.to_b0 &y)%b0
+      (Bin0.Positive W.modulus).
   match &s with | strict _ end.
-  match (BinWithZero.compare (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero
-           (BinWithZero.Positive W.modulus))
+  match (Bin0.compare (W.to_b0 &x * W.to_b0 &y)%b0
+           (Bin0.Positive W.modulus))
     with | Lt | Eq | Gt end |- c.
   - divide et impera.
     + intro e.
@@ -437,21 +437,21 @@ Qed.
 Theorem exactness
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.mul_with_overflow x y))%product = 0%bit
-      -> (W.to_bin_with_zero (x * y)
-          = W.to_bin_with_zero x * W.to_bin_with_zero y)%bin_with_zero.
+      -> (W.to_b0 (x * y)
+          = W.to_b0 x * W.to_b0 y)%b0.
 Proof.
   intros x y f.
   let proof h := modus aequans (overflow.multiplication.specification &x &y), &f.
   leibniz
     (W.conversion.multiplication &x &y),
-    (BinWithZero.modulo.identity
-       (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero W.modulus &h)
+    (Bin0.modulo.identity
+       (W.to_b0 &x * W.to_b0 &y)%b0 W.modulus &h)
     in |- *.
   quod idem est.
 Qed.
 
 (* Two clear flags make both products exact, and a positive factor keeps the
- * order of [BinWithZero].
+ * order of [Bin0].
  *)
 (* overflow.multiplication.monotonicity *)
 Theorem monotonicity
@@ -465,8 +465,8 @@ Proof.
   let proof k := modus aequans (W.order.strict.specification W.Zero &x), &hx.
   leibniz W.conversion.zero in &k.
   let proof s :=
-    BinWithZero.multiplication.left.order.strict.monotonicity
-      (W.to_bin_with_zero &x) (W.to_bin_with_zero &y) (W.to_bin_with_zero &z) &k &g.
+    Bin0.multiplication.left.order.strict.monotonicity
+      (W.to_b0 &x) (W.to_b0 &y) (W.to_b0 &z) &k &g.
   leibniz
     <- (overflow.multiplication.exactness &x &y &fy),
     <- (overflow.multiplication.exactness &x &z &fz)
@@ -486,27 +486,27 @@ Module increment. (* increment *)
 (* increment.exactness *)
 Theorem exactness
   : forall (x : W.T) .
-      ~ (x = W.Max) -> (W.to_bin_with_zero (x + W.One) = W.to_bin_with_zero x + 1)%bin_with_zero.
+      ~ (x = W.Max) -> (W.to_b0 (x + W.One) = W.to_b0 x + 1)%b0.
 Proof.
   intros x h.
   match (bound.range &x) with | same | smaller end.
   - ex (&h (W.conversion.injectivity &same)) quodlibet.
-  - lemma unit : (1 <= 1)%bin_with_zero.
+  - lemma unit : (1 <= 1)%b0.
     {
-      ipso (disjoin (refl 1%bin_with_zero), _).
+      ipso (disjoin (refl 1%b0), _).
     }
     lemma below
-      : (W.to_bin_with_zero x + W.to_bin_with_zero W.One
-         < BinWithZero.Positive W.modulus)%bin_with_zero.
+      : (W.to_b0 x + W.to_b0 W.One
+         < Bin0.Positive W.modulus)%b0.
     {
       leibniz W.conversion.one in |- *.
       let proof s :=
-        BinWithZero.addition.order.strict.monotonicity
-          1%bin_with_zero (W.to_bin_with_zero &x) 1%bin_with_zero (W.to_bin_with_zero W.Max)
+        Bin0.addition.order.strict.monotonicity
+          1%b0 (W.to_b0 &x) 1%b0 (W.to_b0 W.Max)
           &unit &smaller.
       leibniz
-        (BinWithZero.addition.commutativity 1%bin_with_zero (W.to_bin_with_zero &x)),
-        (BinWithZero.addition.commutativity 1%bin_with_zero (W.to_bin_with_zero W.Max)),
+        (Bin0.addition.commutativity 1%b0 (W.to_b0 &x)),
+        (Bin0.addition.commutativity 1%b0 (W.to_b0 W.Max)),
         W.maximum.specification
         in &s.
       ipso &s.
@@ -521,11 +521,11 @@ Qed.
 Theorem extensivity : forall (x : W.T) . ~ (x = W.Max) -> x < x + W.One.
 Proof.
   intros x h.
-  lemma g : (W.to_bin_with_zero x < W.to_bin_with_zero x + 1)%bin_with_zero.
+  lemma g : (W.to_b0 x < W.to_b0 x + 1)%b0.
   {
-    simpl BinWithZero.LessThan in |- *.
-    exists BinBase.One.
-    ipso (refl (W.to_bin_with_zero &x + 1)%bin_with_zero).
+    simpl Bin0.LessThan in |- *.
+    exists Bin.One.
+    ipso (refl (W.to_b0 &x + 1)%b0).
   }
   leibniz <- (increment.exactness &x &h) in &g.
   ipso (modus aequans (W.order.strict.specification &x (&x + W.One)), &g).
@@ -543,12 +543,12 @@ Proof.
     simpl (~ _) in |- *.
     intro e.
     leibniz &e in &g.
-    ex (BinWithZero.order.strict.irreflexivity (W.to_bin_with_zero W.Max)
+    ex (Bin0.order.strict.irreflexivity (W.to_b0 W.Max)
           (Comparable.order.mixed.right.transitivity &g (bound.range &y)))
       quodlibet.
   }
-  let proof s := BinWithZero.order.succession (W.to_bin_with_zero &x) (W.to_bin_with_zero &y) &g.
-  lemma raised : (W.to_bin_with_zero (x + W.One) <= W.to_bin_with_zero y)%bin_with_zero.
+  let proof s := Bin0.order.succession (W.to_b0 &x) (W.to_b0 &y) &g.
+  lemma raised : (W.to_b0 (x + W.One) <= W.to_b0 y)%b0.
   {
     leibniz (increment.exactness &x &below) in |- *.
     ipso &s.
@@ -569,7 +569,7 @@ Proof.
   - let proof g := modus aequans (W.order.strict.specification &x (&x + W.One)), &first.
     let proof l := modus aequans (W.order.strict.specification (&x + W.One) &y), &smaller.
     ipso (modus aequans (W.order.strict.specification &x &y),
-          (BinWithZero.order.strict.transitivity &g &l)).
+          (Bin0.order.strict.transitivity &g &l)).
 Qed.
 
 End increment. (* increment *)
@@ -583,19 +583,19 @@ Module decrement. (* decrement *)
 Theorem exactness
   : forall (x : W.T) .
       ~ (x = W.Zero)
-      -> (W.to_bin_with_zero (x - W.One) + 1 = W.to_bin_with_zero x)%bin_with_zero.
+      -> (W.to_b0 (x - W.One) + 1 = W.to_b0 x)%b0.
 Proof.
   intros x h.
   let proof low := preservation W.Zero &x (bound.lower &x).
-  lemma above : (0 < W.to_bin_with_zero x)%bin_with_zero.
+  lemma above : (0 < W.to_b0 x)%b0.
   {
     match &low with | same | larger end.
     - ex (&h (symm (W.conversion.injectivity &same))) quodlibet.
     - leibniz W.conversion.zero in &larger.
       ipso &larger.
   }
-  let proof s := BinWithZero.order.succession 0%bin_with_zero (W.to_bin_with_zero &x) &above.
-  lemma at_least : (W.to_bin_with_zero W.One <= W.to_bin_with_zero x)%bin_with_zero.
+  let proof s := Bin0.order.succession 0%b0 (W.to_b0 &x) &above.
+  lemma at_least : (W.to_b0 W.One <= W.to_b0 x)%b0.
   {
     leibniz W.conversion.one in |- *.
     ipso &s.
@@ -605,7 +605,7 @@ Proof.
   let proof e := overflow.subtraction.exactness &x W.One &clear.
   leibniz
     W.conversion.one,
-    (BinWithZero.addition.commutativity 1%bin_with_zero (W.to_bin_with_zero (&x - W.One)))
+    (Bin0.addition.commutativity 1%b0 (W.to_b0 (&x - W.One)))
     in &e.
   ipso &e.
 Qed.
@@ -615,11 +615,11 @@ Theorem extensivity : forall (x : W.T) . ~ (x = W.Zero) -> x - W.One < x.
 Proof.
   intros x h.
   lemma g
-    : (W.to_bin_with_zero (x - W.One) < W.to_bin_with_zero (x - W.One) + 1)%bin_with_zero.
+    : (W.to_b0 (x - W.One) < W.to_b0 (x - W.One) + 1)%b0.
   {
-    simpl BinWithZero.LessThan in |- *.
-    exists BinBase.One.
-    ipso (refl (W.to_bin_with_zero (&x - W.One) + 1)%bin_with_zero).
+    simpl Bin0.LessThan in |- *.
+    exists Bin.One.
+    ipso (refl (W.to_b0 (&x - W.One) + 1)%b0).
   }
   leibniz (decrement.exactness &x &h) in &g.
   ipso (modus aequans (W.order.strict.specification (&x - W.One) &x), &g).
@@ -639,7 +639,7 @@ Proof.
   let proof g1 := modus aequans (W.order.strict.specification &x &y), &h1.
   let proof g2 := modus aequans (W.order.strict.specification &y &z), &h2.
   ipso (modus aequans (W.order.strict.specification &x &z),
-        (BinWithZero.order.strict.transitivity &g1 &g2)).
+        (Bin0.order.strict.transitivity &g1 &g2)).
 Qed.
 
 End strict. (* order.strict *)
@@ -656,7 +656,7 @@ Proof.
   intros x y.
   leibniz (W.conversion.comparison &x &y) in |- *.
   let proof s :=
-    BinWithZero.comparison.specification (W.to_bin_with_zero &x) (W.to_bin_with_zero &y).
+    Bin0.comparison.specification (W.to_b0 &x) (W.to_b0 &y).
   match &s with | strict equality end.
   divide et impera.
   - divide et impera.
@@ -668,7 +668,7 @@ Proof.
     + intro c.
       ipso (W.conversion.injectivity (modus aequans &equality, &c)).
     + intro e.
-      ipso (modus aequans &equality, (congru W.to_bin_with_zero, &e)).
+      ipso (modus aequans &equality, (congru W.to_b0, &e)).
 Qed.
 
 (* comparison.antisymmetry *)
@@ -677,7 +677,7 @@ Theorem antisymmetry
 Proof.
   intros x y.
   leibniz (W.conversion.comparison &x &y), (W.conversion.comparison &y &x) in |- *.
-  ipso (BinWithZero.comparison.antisymmetry (W.to_bin_with_zero &x) (W.to_bin_with_zero &y)).
+  ipso (Bin0.comparison.antisymmetry (W.to_b0 &x) (W.to_b0 &y)).
 Qed.
 
 End comparison. (* comparison *)

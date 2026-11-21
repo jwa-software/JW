@@ -3,13 +3,13 @@
  *)
 
 From JW Require Import Core.All.
-From JW Require Import Data.Number.Binary.BinBase.
-From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Witness.
 
 (* A fixed-width integer whose arithmetic wraps modulo [modulus], read through
- * [to_bin_with_zero], a value below it: its operations, and the facts about
+ * [to_b0], a value below it: its operations, and the facts about
  * that value that every width proves. Each [Parameter] is a field, not an
  * axiom. The operations are [Inline]: a width that includes [Laws] gets laws
  * stated with its own operations, such as [UInt8.add], so [leibniz] can
@@ -20,45 +20,45 @@ Module Type Width.
 Parameter Inline T : Type.
 Parameter Inline Zero : T.
 Parameter Inline One : T.
-Parameter Inline to_bin_with_zero : T -> BinWithZero.
+Parameter Inline to_b0 : T -> Bin0.
 Parameter Inline add : T -> T -> T.
 Parameter Inline sub : T -> T -> T.
 Parameter Inline negate : T -> T.
 Parameter Inline mul : T -> T -> T.
-Parameter Inline modulus : BinBase.
+Parameter Inline modulus : Bin.
 
 Module conversion. (* conversion *)
 
 Parameter zero
-  : to_bin_with_zero Zero = 0%bin_with_zero.
+  : to_b0 Zero = 0%b0.
 Parameter one
-  : to_bin_with_zero One = 1%bin_with_zero.
+  : to_b0 One = 1%b0.
 Parameter boundedness
-  : forall (x : T) . (to_bin_with_zero x < BinWithZero.Positive modulus)%bin_with_zero.
+  : forall (x : T) . (to_b0 x < Bin0.Positive modulus)%b0.
 Parameter injectivity
-  : forall {x : T} {y : T} . to_bin_with_zero x = to_bin_with_zero y -> x = y.
+  : forall {x : T} {y : T} . to_b0 x = to_b0 y -> x = y.
 Parameter addition
   : forall (x : T) (y : T) .
-      (to_bin_with_zero (add x y)
-       = (to_bin_with_zero x + to_bin_with_zero y) %. modulus)%bin_with_zero.
+      (to_b0 (add x y)
+       = (to_b0 x + to_b0 y) %. modulus)%b0.
 Parameter subtraction
   : forall (x : T) (y : T) .
-      ((to_bin_with_zero (sub x y) + to_bin_with_zero y) %. modulus
-       = to_bin_with_zero x)%bin_with_zero.
+      ((to_b0 (sub x y) + to_b0 y) %. modulus
+       = to_b0 x)%b0.
 Parameter negation
   : forall (x : T) .
-      ((to_bin_with_zero (negate x) + to_bin_with_zero x) %. modulus = 0)%bin_with_zero.
+      ((to_b0 (negate x) + to_b0 x) %. modulus = 0)%b0.
 Parameter multiplication
   : forall (x : T) (y : T) .
-      (to_bin_with_zero (mul x y)
-       = (to_bin_with_zero x * to_bin_with_zero y) %. modulus)%bin_with_zero.
+      (to_b0 (mul x y)
+       = (to_b0 x * to_b0 y) %. modulus)%b0.
 
 End conversion. (* conversion *)
 
 End Width.
 
 (* The laws of addition, subtraction and multiplication, each read through
- * [to_bin_with_zero] modulo [modulus].
+ * [to_b0] modulo [modulus].
  *)
 Module Laws (W : Width).
 
@@ -85,21 +85,21 @@ Theorem associativity
   : forall (x : W.T) (y : W.T) (z : W.T) . (x + y) + z = x + (y + z).
 Proof.
   intros x y z.
-  lemma facto : W.to_bin_with_zero ((&x + &y) + &z) = W.to_bin_with_zero (&x + (&y + &z)).
+  lemma facto : W.to_b0 ((&x + &y) + &z) = W.to_b0 (&x + (&y + &z)).
   {
     leibniz
       (W.conversion.addition (&x + &y) &z),
       (W.conversion.addition &x &y),
-      (BinWithZero.modulo.sum.left.absorption
-        (W.to_bin_with_zero &x + W.to_bin_with_zero &y)%bin_with_zero (W.to_bin_with_zero &z)
+      (Bin0.modulo.sum.left.absorption
+        (W.to_b0 &x + W.to_b0 &y)%b0 (W.to_b0 &z)
         W.modulus),
       (W.conversion.addition &x (&y + &z)),
       (W.conversion.addition &y &z),
-      (BinWithZero.modulo.sum.right.absorption
-        (W.to_bin_with_zero &x) (W.to_bin_with_zero &y + W.to_bin_with_zero &z)%bin_with_zero
+      (Bin0.modulo.sum.right.absorption
+        (W.to_b0 &x) (W.to_b0 &y + W.to_b0 &z)%b0
         W.modulus),
-      (BinWithZero.addition.associativity
-        (W.to_bin_with_zero &x) (W.to_bin_with_zero &y) (W.to_bin_with_zero &z))
+      (Bin0.addition.associativity
+        (W.to_b0 &x) (W.to_b0 &y) (W.to_b0 &z))
       in |- *.
     quod idem est.
   }
@@ -110,12 +110,12 @@ Qed.
 Theorem commutativity : forall (x : W.T) (y : W.T) . x + y = y + x.
 Proof.
   intros x y.
-  lemma facto : W.to_bin_with_zero (&x + &y) = W.to_bin_with_zero (&y + &x).
+  lemma facto : W.to_b0 (&x + &y) = W.to_b0 (&y + &x).
   {
     leibniz
       (W.conversion.addition &x &y),
       (W.conversion.addition &y &x),
-      (BinWithZero.addition.commutativity (W.to_bin_with_zero &x) (W.to_bin_with_zero &y))
+      (Bin0.addition.commutativity (W.to_b0 &x) (W.to_b0 &y))
       in |- *.
     quod idem est.
   }
@@ -128,15 +128,15 @@ Proof.
   intros x.
   lemma left : W.Zero + &x = &x.
   {
-    lemma facto : W.to_bin_with_zero (W.Zero + &x) = W.to_bin_with_zero &x.
+    lemma facto : W.to_b0 (W.Zero + &x) = W.to_b0 &x.
     {
-      match (BinWithZero.addition.identity (W.to_bin_with_zero &x)) with | left _ end.
+      match (Bin0.addition.identity (W.to_b0 &x)) with | left _ end.
       leibniz
         (W.conversion.addition W.Zero &x),
         W.conversion.zero,
         &left,
-        (BinWithZero.modulo.identity
-          (W.to_bin_with_zero &x) W.modulus (W.conversion.boundedness &x))
+        (Bin0.modulo.identity
+          (W.to_b0 &x) W.modulus (W.conversion.boundedness &x))
         in |- *.
       quod idem est.
     }
@@ -154,7 +154,7 @@ Proof.
   intros x.
   lemma left : - &x + &x = W.Zero.
   {
-    lemma facto : W.to_bin_with_zero (- &x + &x) = W.to_bin_with_zero W.Zero.
+    lemma facto : W.to_b0 (- &x + &x) = W.to_b0 W.Zero.
     {
       leibniz
         (W.conversion.addition (- &x) &x),
@@ -180,7 +180,7 @@ Module inversion. (* addition.inversion *)
 Theorem subtraction : forall (x : W.T) (y : W.T) . (x - y) + y = x.
 Proof.
   intros x y.
-  lemma facto : W.to_bin_with_zero ((&x - &y) + &y) = W.to_bin_with_zero &x.
+  lemma facto : W.to_b0 ((&x - &y) + &y) = W.to_b0 &x.
   {
     leibniz (W.conversion.addition (&x - &y) &y) in |- *.
     ipso (W.conversion.subtraction &x &y).
@@ -257,21 +257,21 @@ Theorem associativity
   : forall (x : W.T) (y : W.T) (z : W.T) . (x * y) * z = x * (y * z).
 Proof.
   intros x y z.
-  lemma facto : W.to_bin_with_zero ((&x * &y) * &z) = W.to_bin_with_zero (&x * (&y * &z)).
+  lemma facto : W.to_b0 ((&x * &y) * &z) = W.to_b0 (&x * (&y * &z)).
   {
     leibniz
       (W.conversion.multiplication (&x * &y) &z),
       (W.conversion.multiplication &x &y),
-      (BinWithZero.modulo.product.left.absorption
-        (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero (W.to_bin_with_zero &z)
+      (Bin0.modulo.product.left.absorption
+        (W.to_b0 &x * W.to_b0 &y)%b0 (W.to_b0 &z)
         W.modulus),
       (W.conversion.multiplication &x (&y * &z)),
       (W.conversion.multiplication &y &z),
-      (BinWithZero.modulo.product.right.absorption
-        (W.to_bin_with_zero &x) (W.to_bin_with_zero &y * W.to_bin_with_zero &z)%bin_with_zero
+      (Bin0.modulo.product.right.absorption
+        (W.to_b0 &x) (W.to_b0 &y * W.to_b0 &z)%b0
         W.modulus),
-      (BinWithZero.multiplication.associativity
-        (W.to_bin_with_zero &x) (W.to_bin_with_zero &y) (W.to_bin_with_zero &z))
+      (Bin0.multiplication.associativity
+        (W.to_b0 &x) (W.to_b0 &y) (W.to_b0 &z))
       in |- *.
     quod idem est.
   }
@@ -282,12 +282,12 @@ Qed.
 Theorem commutativity : forall (x : W.T) (y : W.T) . x * y = y * x.
 Proof.
   intros x y.
-  lemma facto : W.to_bin_with_zero (&x * &y) = W.to_bin_with_zero (&y * &x).
+  lemma facto : W.to_b0 (&x * &y) = W.to_b0 (&y * &x).
   {
     leibniz
       (W.conversion.multiplication &x &y),
       (W.conversion.multiplication &y &x),
-      (BinWithZero.multiplication.commutativity (W.to_bin_with_zero &x) (W.to_bin_with_zero &y))
+      (Bin0.multiplication.commutativity (W.to_b0 &x) (W.to_b0 &y))
       in |- *.
     quod idem est.
   }
@@ -300,15 +300,15 @@ Proof.
   intros x.
   lemma left : W.One * &x = &x.
   {
-    lemma facto : W.to_bin_with_zero (W.One * &x) = W.to_bin_with_zero &x.
+    lemma facto : W.to_b0 (W.One * &x) = W.to_b0 &x.
     {
-      match (BinWithZero.multiplication.identity (W.to_bin_with_zero &x)) with | left _ end.
+      match (Bin0.multiplication.identity (W.to_b0 &x)) with | left _ end.
       leibniz
         (W.conversion.multiplication W.One &x),
         W.conversion.one,
         &left,
-        (BinWithZero.modulo.identity
-          (W.to_bin_with_zero &x) W.modulus (W.conversion.boundedness &x))
+        (Bin0.modulo.identity
+          (W.to_b0 &x) W.modulus (W.conversion.boundedness &x))
         in |- *.
       quod idem est.
     }
@@ -326,20 +326,20 @@ Proof.
   intros x.
   lemma right : &x * W.Zero = W.Zero.
   {
-    lemma facto : W.to_bin_with_zero (&x * W.Zero) = W.to_bin_with_zero W.Zero.
+    lemma facto : W.to_b0 (&x * W.Zero) = W.to_b0 W.Zero.
     {
-      match (BinWithZero.multiplication.annihilation (W.to_bin_with_zero &x)) with | _ r end.
-      lemma positive : (0 < BinWithZero.Positive W.modulus)%bin_with_zero.
+      match (Bin0.multiplication.annihilation (W.to_b0 &x)) with | _ r end.
+      lemma positive : (0 < Bin0.Positive W.modulus)%b0.
       {
-        simpl BinWithZero.LessThan in |- *.
+        simpl Bin0.LessThan in |- *.
         exists W.modulus.
-        ipso (refl (BinWithZero.Positive W.modulus)).
+        ipso (refl (Bin0.Positive W.modulus)).
       }
       leibniz
         (W.conversion.multiplication &x W.Zero),
         W.conversion.zero,
         &r,
-        (BinWithZero.modulo.identity 0%bin_with_zero W.modulus &positive)
+        (Bin0.modulo.identity 0%b0 W.modulus &positive)
         in |- *.
       quod idem est.
     }
@@ -362,28 +362,28 @@ Theorem addition
   : forall (x : W.T) (y : W.T) (z : W.T) . x * (y + z) = (x * y) + (x * z).
 Proof.
   intros x y z.
-  lemma facto : W.to_bin_with_zero (&x * (&y + &z)) = W.to_bin_with_zero ((&x * &y) + (&x * &z)).
+  lemma facto : W.to_b0 (&x * (&y + &z)) = W.to_b0 ((&x * &y) + (&x * &z)).
   {
-    match (BinWithZero.multiplication.distributivity.over.addition
-            (W.to_bin_with_zero &x) (W.to_bin_with_zero &y) (W.to_bin_with_zero &z))
+    match (Bin0.multiplication.distributivity.over.addition
+            (W.to_b0 &x) (W.to_b0 &y) (W.to_b0 &z))
     with | spread _ end.
     leibniz
       (W.conversion.multiplication &x (&y + &z)),
       (W.conversion.addition &y &z),
-      (BinWithZero.modulo.product.right.absorption
-        (W.to_bin_with_zero &x) (W.to_bin_with_zero &y + W.to_bin_with_zero &z)%bin_with_zero
+      (Bin0.modulo.product.right.absorption
+        (W.to_b0 &x) (W.to_b0 &y + W.to_b0 &z)%b0
         W.modulus),
       &spread,
       (W.conversion.addition (&x * &y) (&x * &z)),
       (W.conversion.multiplication &x &y),
       (W.conversion.multiplication &x &z),
-      (BinWithZero.modulo.sum.left.absorption
-        (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero
-        ((W.to_bin_with_zero &x * W.to_bin_with_zero &z) %. W.modulus)%bin_with_zero
+      (Bin0.modulo.sum.left.absorption
+        (W.to_b0 &x * W.to_b0 &y)%b0
+        ((W.to_b0 &x * W.to_b0 &z) %. W.modulus)%b0
         W.modulus),
-      (BinWithZero.modulo.sum.right.absorption
-        (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero
-        (W.to_bin_with_zero &x * W.to_bin_with_zero &z)%bin_with_zero W.modulus)
+      (Bin0.modulo.sum.right.absorption
+        (W.to_b0 &x * W.to_b0 &y)%b0
+        (W.to_b0 &x * W.to_b0 &z)%b0 W.modulus)
       in |- *.
     quod idem est.
   }

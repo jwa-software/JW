@@ -19,7 +19,7 @@ A definition proved correct in Rocq can be run outside it. Rocq's extraction tur
 
 - the base types `Bool`, `Comparison`, `Empty`, `Unit` and `Kleene3`, with `Comparable`, `Coproduct`, `Option` and `Product`;
 - the calendar types `Month` and `Date`, the proof a `Date` carries erased;
-- the numbers `Nat`, `Nat0`, `Integer`, `Rational`, `Numeral`, `BinBase`, `BinWithZero` and `Bin`;
+- the numbers `Nat`, `Nat0`, `Integer`, `Rational`, `Numeral`, `Bin`, `Bin0` and `SignedBin`;
 - the machine units `Bit`, `Byte`, `Endian`, `HWord` to `QWord`, `UInt8` to `UInt64` and `Int8` to `Int64`;
 - the collections `List`, `NonEmptyList`, `BinaryTree`, `BST`, `AVL` and `SortedSet`;
 - the text types `SourceByte`, `Ascii`, `AsciiStr`, `Utf8` and `Utf8Str`.
@@ -35,7 +35,7 @@ A definition proved correct in Rocq can be run outside it. Rocq's extraction tur
 - **An instance argument that is a proof disappears with it.** `SortedSet.insert` takes `cmp`, the element and the set; the `Comparable` instance is gone.
 - **A case a proof ruled out becomes `assert false`.** `Nat0.divide.nat.safe` divides by a number proved nonzero, and its zero branch, which cannot run, extracts to `assert false`.
 - **Four types are OCaml's own, the rest the library's.** `Bool`, `Option`, `Product` and `List` extract to `bool`, `option`, pairs and `list`, so `SortedSet.contains` answers a `bool` and `SortedSet.to_list` a `list`. Every other type keeps its own: `Kleene3` is `JW.Kleene3.coq_T`, with `Coq_true`, `Coq_unknown` and `Coq_false`.
-- **`Nat`, `Nat0`, `Integer` and `Rational` are unary; the `Bin` family is binary.** The unary types are written for proofs: `Nat` is `One` or `Successor n`, so `1000` is a chain of a thousand constructors and arithmetic on large values is slow. `BinBase`, `BinWithZero` and `Bin` are written to compute: `BinBase` is `One`, `b0 n` or `b1 n`, so `1000` takes ten constructors. Code that needs speed computes on the `Bin` family, linked to the unary types by their conversion laws.
+- **`Nat`, `Nat0`, `Integer` and `Rational` are unary; the `SignedBin` family is binary.** The unary types are written for proofs: `Nat` is `One` or `Successor n`, so `1000` is a chain of a thousand constructors and arithmetic on large values is slow. `Bin`, `Bin0` and `SignedBin` are written to compute: `Bin` is `One`, `b0 n` or `b1 n`, so `1000` takes ten constructors. Code that needs speed computes on the `SignedBin` family, linked to the unary types by their conversion laws.
 
 ---
 
@@ -58,7 +58,7 @@ A definition proved correct in Rocq can be run outside it. Rocq's extraction tur
 
 ## The test
 
-`extraction/extraction_test.ml` runs the extracted code on known values and fails on a wrong one: it builds a `SortedSet` from `1`, `3` and `2` and checks its elements, membership of a present and an absent element, removal and size, checks that `UInt8.add` wraps `200 + 100` to `44`, checks two cases of `Kleene3`, checks each of the four mappings through an operation of its type (`Bool.and`, `Option.unwrap_or`, `Product.first` and `Product.second`, `List.concat`), and checks the calendar: four leap years, five day numbers from 0001-01-01 to 9999-12-31, the days before 2001, and three dates that `Date.make` refuses. OCaml integers go in and come out through conversions to and from the unary numbers, and to and from `BinBase` and `BinWithZero` for the calendar.
+`extraction/extraction_test.ml` runs the extracted code on known values and fails on a wrong one: it builds a `SortedSet` from `1`, `3` and `2` and checks its elements, membership of a present and an absent element, removal and size, checks that `UInt8.add` wraps `200 + 100` to `44`, checks two cases of `Kleene3`, checks each of the four mappings through an operation of its type (`Bool.and`, `Option.unwrap_or`, `Product.first` and `Product.second`, `List.concat`), and checks the calendar: four leap years, five day numbers from 0001-01-01 to 9999-12-31, the days before 2001, and three dates that `Date.make` refuses. OCaml integers go in and come out through conversions to and from the unary numbers, and to and from `Bin` and `Bin0` for the calendar.
 
 - **`make build`** extracts the code and compiles it, the library `jw_extraction` and the test with it.
 - **`make test`** runs the test. CI runs it after the build.
@@ -67,5 +67,5 @@ A definition proved correct in Rocq can be run outside it. Rocq's extraction tur
 
 ## What is not there yet
 
-- **No number is mapped to an OCaml integer**, for the reason above: the unary types stay unary, and the `Bin` family computes in its own binary form.
+- **No number is mapped to an OCaml integer**, for the reason above: the unary types stay unary, and the `SignedBin` family computes in its own binary form.
 - **The OCaml library is not installed.** `jw_extraction` has no public name, so an opam installation of `JW` leaves it out; only code inside the repository can use it.

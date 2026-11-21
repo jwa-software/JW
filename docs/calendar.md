@@ -13,7 +13,7 @@ SPDX-License-Identifier: MIT
 | `Date` | A date of the proleptic Gregorian calendar: a year, a month and a day of that month |
 
 - **Proleptic.** The Gregorian leap rule holds for every year, also for the years before 1582, when the calendar came into use.
-- **The years count from 1.** There is no year 0 and no negative year, so every number is a binary number without a sign: `BinBase` for the year and the day, which are never 0, and `BinWithZero` for a count of days.
+- **The years count from 1.** There is no year 0 and no negative year, so every number is a binary number without a sign: `Bin` for the year and the day, which are never 0, and `Bin0` for a count of days.
 - **Day 0 is 0001-01-01.** `Date.day_number` counts the days from it.
 
 `From JW Require Import Data.Calendar.All` brings both types. The laws are written with the type's prefix: `Date.year.succession`.
@@ -38,7 +38,7 @@ SPDX-License-Identifier: MIT
   ```
 
   `Date.make y m d` checks at run time and answers `None` for a date that does not exist. Two dates with the same year, month and day are equal, the proofs being equal by `Assert.uniqueness`.
-- **Write the numbers in decimal.** Under `jw_bin_base_decimal_scope`, `2024` is a `BinBase` and stands for a `BinWithZero` wherever one is expected. The binary scopes read `2024` as binary digits and refuse it.
+- **Write the numbers in decimal.** Under `jw_bin_decimal_scope`, `2024` is a `Bin` and stands for a `Bin0` wherever one is expected. The binary scopes read `2024` as binary digits and refuse it.
 
 ### The leap rule
 
@@ -79,5 +79,5 @@ SPDX-License-Identifier: MIT
 ### The order of dates
 
 - **By year, then by month, then by day.** `Date.compare` compares the dates that way, and `Date.LessThan x1 x2` states that `x1` comes first. `Date.comparable` makes it an instance of `Comparable`.
-- **The order is the order of the day numbers.** `Date.number.comparison` states `Date.compare x1 x2 = BinWithZero.compare (Date.day_number x1) (Date.day_number x2)`, and `Date.number.order` states that `x1` comes first exactly when its day number is the smaller.
+- **The order is the order of the day numbers.** `Date.number.comparison` states `Date.compare x1 x2 = Bin0.compare (Date.day_number x1) (Date.day_number x2)`, and `Date.number.order` states that `x1` comes first exactly when its day number is the smaller.
 - **A day number names one date.** `Date.number.injectivity` states that two dates with the same day number are the same date.
