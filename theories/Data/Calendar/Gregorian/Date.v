@@ -10,6 +10,7 @@ From JW Require Import Data.Calendar.Month.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Option.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
@@ -402,6 +403,493 @@ Proof.
 Qed.
 
 End length. (* year.length *)
+
+Module antecedence. (* year.antecedence *)
+
+(* Both sides are read in [Nat0], where [y] is [1] or a successor and each
+ * case computes.
+ *)
+(* year.antecedence.translation *)
+Theorem translation
+  : forall (y : Year) (k : BinBase) . years_before (y + k)%bin_base = years_before y + k.
+Proof.
+  intros y k.
+  lemma facto
+    : BinWithZero.to_nat0 (years_before (y + k)%bin_base)
+      = BinWithZero.to_nat0 (years_before y + k).
+  {
+    simpl years_before in |- *.
+    leibniz
+      (BinWithZero.conversion.subtraction.saturating (y + k)%bin_base 1),
+      (BinWithZero.conversion.addition (BinWithZero.saturating_sub y 1) k),
+      (BinWithZero.conversion.subtraction.saturating y 1)
+      in |- *.
+    simpl BinWithZero.to_nat0 in |- *.
+    leibniz (BinBase.conversion.addition &y &k) in |- *.
+    let a := BinBase.to_nat &y in |- *.
+    let proof a := &a.
+    extro &a.
+    intro a.
+    match &a with | One | Successor a' end.
+    - simpl in |- *.
+      quod idem est.
+    - simpl in |- *.
+      quod idem est.
+  }
+  ipso (BinWithZero.conversion.injectivity &facto).
+Qed.
+
+(* Read in [Nat0] as [translation] is, with the [1] put first so that each
+ * case computes.
+ *)
+(* year.antecedence.restoration *)
+Theorem restoration : forall (y : Year) . years_before y + 1 = y.
+Proof.
+  intro y.
+  lemma facto : BinWithZero.to_nat0 (years_before y + 1) = BinWithZero.to_nat0 y.
+  {
+    simpl years_before in |- *.
+    leibniz
+      (BinWithZero.conversion.addition (BinWithZero.saturating_sub y 1) 1),
+      (BinWithZero.conversion.subtraction.saturating y 1)
+      in |- *.
+    simpl BinWithZero.to_nat0 in |- *.
+    leibniz
+      (Nat0.addition.commutativity
+         (Nat0.saturating_sub
+            (Nat0.Positive (BinBase.to_nat &y)) (Nat0.Positive (BinBase.to_nat 1)))
+         (Nat0.Positive (BinBase.to_nat 1)))
+      in |- *.
+    let a := BinBase.to_nat &y in |- *.
+    let proof a := &a.
+    extro &a.
+    intro a.
+    match &a with | One | Successor a' end.
+    - simpl in |- *.
+      quod idem est.
+    - simpl in |- *.
+      quod idem est.
+  }
+  ipso (BinWithZero.conversion.injectivity &facto).
+Qed.
+
+End antecedence. (* year.antecedence *)
+
+(* 400 more years before [y] add one whole quadricentennium and leave the rest
+ * of the decomposition as it was.
+ *)
+(* year.periodicity *)
+Theorem periodicity
+  : forall (y : Year) .
+      days_before_year (y + 400%bin_base_decimal)%bin_base
+      = days_before_year y + days_in_quadricentennium.
+Proof.
+  intro y.
+  simpl days_before_year in |- *.
+  leibniz (year.antecedence.translation &y 400) in |- *.
+  let n := years_before &y in |- *.
+  lemma quotient : (n + 400) /. 400 = (n /. 400) + 1.
+  {
+    ipso (BinWithZero.division.translation n 400).
+  }
+  lemma remainder : (n + 400) %. 400 = n %. 400.
+  {
+    lemma zero : 400 %. 400 = 0%bin_with_zero.
+    {
+      simpl BinWithZero.modulo in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    ipso (BinWithZero.modulo.sum.right.invariance n 400 400 &zero).
+  }
+  leibniz &quotient, &remainder in |- *.
+  match (BinWithZero.multiplication.distributivity.over.addition
+           days_in_quadricentennium (n /. 400) 1)
+    with | left _ end.
+  leibniz &left in |- *.
+  match (BinWithZero.multiplication.identity days_in_quadricentennium) with | _ right end.
+  leibniz &right in |- *.
+  lemma swap
+    : forall (u : BinWithZero) (v : BinWithZero) .
+        (u + days_in_quadricentennium) + v = (u + v) + days_in_quadricentennium.
+  {
+    intros u v.
+    leibniz
+      (BinWithZero.addition.associativity &u days_in_quadricentennium &v),
+      (BinWithZero.addition.commutativity days_in_quadricentennium &v),
+      <- (BinWithZero.addition.associativity &u &v days_in_quadricentennium)
+      in |- *.
+    quod idem est.
+  }
+  let a := days_in_quadricentennium * (n /. 400) in |- *.
+  let b := days_in_century * ((n %. 400) /. 100) in |- *.
+  let c := days_in_quadrennium * (((n %. 400) %. 100) /. 4) in |- *.
+  let e := days_in_common_year * (((n %. 400) %. 100) %. 4) in |- *.
+  leibniz (&swap &a &b), (&swap (&a + &b) &c), (&swap ((&a + &b) + &c) &e) in |- *.
+  quod idem est.
+Qed.
+
+(* One more year before [y] carries through the decomposition and stops at
+ * one of four levels: the single years, which adds a common year; the
+ * quadrennia, a leap year; the centuries, a common century year; the
+ * quadricentennia, a leap year divisible by 400. Each level of the carry is
+ * the one the leap rule reads for [y].
+ *)
+(* year.succession *)
+Theorem succession
+  : forall (y : Year) .
+      days_before_year (y + 1)%bin_base = days_before_year y + days_in_year y.
+Proof.
+  intro y.
+  simpl days_before_year in |- *.
+  leibniz (year.antecedence.translation &y 1) in |- *.
+  let n := years_before &y in |- *.
+  let proof restored := year.antecedence.restoration &y.
+  let &n in &restored.
+  match (BinWithZero.division.specification n 400) with | _ below400 end.
+  match (BinWithZero.division.specification (n %. 400) 100) with | _ below100 end.
+  match (BinWithZero.division.specification ((n %. 400) %. 100) 4) with | _ below4 end.
+  lemma hundred : (n %. 400) %. 100 = n %. 100.
+  {
+    ipso (BinWithZero.modulo.nesting n 100 4).
+  }
+  lemma four : ((n %. 400) %. 100) %. 4 = n %. 4.
+  {
+    leibniz &hundred in |- *.
+    ipso (BinWithZero.modulo.nesting n 4 25).
+  }
+  lemma hundred_y : (y %. 400) %. 100 = y %. 100.
+  {
+    ipso (BinWithZero.modulo.nesting y 100 4).
+  }
+  lemma four_y : (y %. 100) %. 4 = y %. 4.
+  {
+    ipso (BinWithZero.modulo.nesting y 4 25).
+  }
+  lemma zero_by_hundred : 0%bin_with_zero /. 100 = 0%bin_with_zero.
+  {
+    simpl BinWithZero.divide in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  lemma zero_mod_hundred : 0%bin_with_zero %. 100 = 0%bin_with_zero.
+  {
+    simpl BinWithZero.modulo in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  lemma zero_by_four : 0%bin_with_zero /. 4 = 0%bin_with_zero.
+  {
+    simpl BinWithZero.divide in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  lemma zero_mod_four : 0%bin_with_zero %. 4 = 0%bin_with_zero.
+  {
+    simpl BinWithZero.modulo in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  lemma last_by_hundred : 399 /. 100 = 3.
+  {
+    simpl BinWithZero.divide in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  lemma last_mod_hundred : 399 %. 100 = 99.
+  {
+    simpl BinWithZero.modulo in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  lemma last_by_four : 99 /. 4 = 24.
+  {
+    simpl BinWithZero.divide in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  lemma last_mod_four : 99 %. 4 = 3.
+  {
+    simpl BinWithZero.modulo in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  match (BinWithZero.multiplication.annihilation days_in_century) with | _ century_zero end.
+  match (BinWithZero.multiplication.annihilation days_in_quadrennium) with | _ quadrennium_zero end.
+  match (BinWithZero.multiplication.annihilation days_in_common_year) with | _ common_zero end.
+  match (BinWithZero.order.succession (n %. 400) 400 &below400) with | carry400 | interior400 end.
+  - (* [y] is divisible by 400. *)
+    match (BinWithZero.division.succession.carry n 400 &carry400) with | q400 r400 end.
+    lemma r1 : n %. 400 = 399.
+    {
+      lemma shifted : (n %. 400) + 1 = 399 + 1.
+      {
+        ipso &carry400.
+      }
+      match (BinWithZero.addition.cancellation (n %. 400) 1 399) with | _ right end.
+      ipso (&right &shifted).
+    }
+    lemma y400 : y %. 400 = 0%bin_with_zero.
+    {
+      leibniz <- &restored in |- *.
+      ipso &r400.
+    }
+    lemma y100 : y %. 100 = 0%bin_with_zero.
+    {
+      leibniz <- &hundred_y, &y400 in |- *.
+      ipso &zero_mod_hundred.
+    }
+    lemma y4 : y %. 4 = 0%bin_with_zero.
+    {
+      leibniz <- &four_y, &y100 in |- *.
+      ipso &zero_mod_four.
+    }
+    lemma length : days_in_year y = 366.
+    {
+      simpl days_in_year, is_leap in |- *.
+      leibniz &y4, &y100, &y400 in |- *.
+      simpl Comparable.eq, BinWithZero.compare in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    leibniz &q400, &r400, &length, &r1 in |- *.
+    leibniz
+      &zero_by_hundred, &zero_mod_hundred, &zero_by_four, &zero_mod_four,
+      &last_by_hundred, &last_mod_hundred, &last_by_four, &last_mod_four
+      in |- *.
+    leibniz &century_zero, &quadrennium_zero, &common_zero in |- *.
+    match (BinWithZero.addition.identity (days_in_quadricentennium * ((n /. 400) + 1)))
+      with | _ plus_zero end.
+    leibniz &plus_zero, &plus_zero, &plus_zero in |- *.
+    match (BinWithZero.multiplication.distributivity.over.addition
+             days_in_quadricentennium (n /. 400) 1)
+      with | distributed _ end.
+    match (BinWithZero.multiplication.identity days_in_quadricentennium) with | _ times_one end.
+    leibniz &distributed, &times_one in |- *.
+    leibniz
+      (BinWithZero.addition.associativity
+         (((days_in_quadricentennium * (n /. 400)) + (days_in_century * 3))
+            + (days_in_quadrennium * 24))
+         (days_in_common_year * 3) 366),
+      (BinWithZero.addition.associativity
+         ((days_in_quadricentennium * (n /. 400)) + (days_in_century * 3))
+         (days_in_quadrennium * 24) ((days_in_common_year * 3) + 366)),
+      (BinWithZero.addition.associativity
+         (days_in_quadricentennium * (n /. 400)) (days_in_century * 3)
+         ((days_in_quadrennium * 24) + ((days_in_common_year * 3) + 366)))
+      in |- *.
+    lemma constant
+      : (days_in_century * 3) + ((days_in_quadrennium * 24) + ((days_in_common_year * 3) + 366))
+        = days_in_quadricentennium.
+    {
+      simpl days_in_quadricentennium, days_in_century, days_in_quadrennium, days_in_common_year
+        in |- *.
+      simpl in |- *.
+      simpl BinBase.add in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    leibniz &constant in |- *.
+    quod idem est.
+  - (* [y] is not divisible by 400. *)
+    match (BinWithZero.division.succession.interior n 400 &interior400) with | q400 r400 end.
+    lemma y400 : y %. 400 = (n %. 400) + 1.
+    {
+      leibniz <- &restored in |- *.
+      ipso &r400.
+    }
+    leibniz &q400, &r400 in |- *.
+    match (BinWithZero.order.succession ((n %. 400) %. 100) 100 &below100)
+      with | carry100 | interior100 end.
+    + (* [y] is divisible by 100 and not by 400. *)
+      match (BinWithZero.division.succession.carry (n %. 400) 100 &carry100) with | q100 r100 end.
+      lemma r2 : (n %. 400) %. 100 = 99.
+      {
+        lemma shifted : ((n %. 400) %. 100) + 1 = 99 + 1.
+        {
+          ipso &carry100.
+        }
+        match (BinWithZero.addition.cancellation ((n %. 400) %. 100) 1 99) with | _ right end.
+        ipso (&right &shifted).
+      }
+      lemma carry100n : (n %. 100) + 1 = 100.
+      {
+        leibniz <- &hundred in |- *.
+        ipso &carry100.
+      }
+      match (BinWithZero.division.succession.carry n 100 &carry100n) with | _ r100n end.
+      lemma y100 : y %. 100 = 0%bin_with_zero.
+      {
+        leibniz <- &restored in |- *.
+        ipso &r100n.
+      }
+      lemma y4 : y %. 4 = 0%bin_with_zero.
+      {
+        leibniz <- &four_y, &y100 in |- *.
+        ipso &zero_mod_four.
+      }
+      lemma length : days_in_year y = 365.
+      {
+        simpl days_in_year, is_leap in |- *.
+        leibniz &y4, &y100, &y400 in |- *.
+        match (n %. 400) with | | p end;
+          simpl Comparable.eq, BinWithZero.compare in |- *; simpl in |- *; quod idem est.
+      }
+      leibniz &q100, &r100, &r2, &length in |- *.
+      leibniz &zero_by_four, &zero_mod_four, &last_by_four, &last_mod_four in |- *.
+      leibniz &quadrennium_zero, &common_zero in |- *.
+      match (BinWithZero.addition.identity
+               ((days_in_quadricentennium * (n /. 400))
+                  + (days_in_century * (((n %. 400) /. 100) + 1))))
+        with | _ plus_zero end.
+      leibniz &plus_zero, &plus_zero in |- *.
+      match (BinWithZero.multiplication.distributivity.over.addition
+               days_in_century ((n %. 400) /. 100) 1)
+        with | distributed _ end.
+      match (BinWithZero.multiplication.identity days_in_century) with | _ times_one end.
+      leibniz &distributed, &times_one in |- *.
+      leibniz
+        <- (BinWithZero.addition.associativity
+              (days_in_quadricentennium * (n /. 400))
+              (days_in_century * ((n %. 400) /. 100)) days_in_century),
+        (BinWithZero.addition.associativity
+           (((days_in_quadricentennium * (n /. 400)) + (days_in_century * ((n %. 400) /. 100)))
+              + (days_in_quadrennium * 24))
+           (days_in_common_year * 3) 365),
+        (BinWithZero.addition.associativity
+           ((days_in_quadricentennium * (n /. 400)) + (days_in_century * ((n %. 400) /. 100)))
+           (days_in_quadrennium * 24) ((days_in_common_year * 3) + 365))
+        in |- *.
+      lemma constant
+        : (days_in_quadrennium * 24) + ((days_in_common_year * 3) + 365) = days_in_century.
+      {
+        simpl days_in_century, days_in_quadrennium, days_in_common_year in |- *.
+        simpl in |- *.
+        simpl BinBase.add in |- *.
+        simpl in |- *.
+        quod idem est.
+      }
+      leibniz &constant in |- *.
+      quod idem est.
+    + (* [y] is not divisible by 100. *)
+      match (BinWithZero.division.succession.interior (n %. 400) 100 &interior100)
+        with | q100 r100 end.
+      leibniz &q100, &r100 in |- *.
+      lemma interior100n : (n %. 100) + 1 < 100.
+      {
+        leibniz <- &hundred in |- *.
+        ipso &interior100.
+      }
+      match (BinWithZero.division.succession.interior n 100 &interior100n) with | _ r100n end.
+      lemma y100 : y %. 100 = (n %. 100) + 1.
+      {
+        leibniz <- &restored in |- *.
+        ipso &r100n.
+      }
+      match (BinWithZero.order.succession (((n %. 400) %. 100) %. 4) 4 &below4)
+        with | carry4 | interior4 end.
+      * (* [y] is divisible by 4 and not by 100. *)
+        match (BinWithZero.division.succession.carry ((n %. 400) %. 100) 4 &carry4)
+          with | q4 r4 end.
+        lemma r3 : ((n %. 400) %. 100) %. 4 = 3.
+        {
+          lemma shifted : (((n %. 400) %. 100) %. 4) + 1 = 3 + 1.
+          {
+            ipso &carry4.
+          }
+          match (BinWithZero.addition.cancellation (((n %. 400) %. 100) %. 4) 1 3)
+            with | _ right end.
+          ipso (&right &shifted).
+        }
+        lemma carry4n : (n %. 4) + 1 = 4.
+        {
+          leibniz <- &four in |- *.
+          ipso &carry4.
+        }
+        match (BinWithZero.division.succession.carry n 4 &carry4n) with | _ r4n end.
+        lemma y4 : y %. 4 = 0%bin_with_zero.
+        {
+          leibniz <- &restored in |- *.
+          ipso &r4n.
+        }
+        lemma length : days_in_year y = 366.
+        {
+          simpl days_in_year, is_leap in |- *.
+          leibniz &y4, &y100 in |- *.
+          match (n %. 100) with | | p end;
+            simpl Comparable.eq, BinWithZero.compare in |- *; simpl in |- *; quod idem est.
+        }
+        leibniz &q4, &r4, &r3, &length in |- *.
+        leibniz &common_zero in |- *.
+        match (BinWithZero.addition.identity
+                 (((days_in_quadricentennium * (n /. 400))
+                     + (days_in_century * ((n %. 400) /. 100)))
+                    + (days_in_quadrennium * ((((n %. 400) %. 100) /. 4) + 1))))
+          with | _ plus_zero end.
+        leibniz &plus_zero in |- *.
+        match (BinWithZero.multiplication.distributivity.over.addition
+                 days_in_quadrennium (((n %. 400) %. 100) /. 4) 1)
+          with | distributed _ end.
+        match (BinWithZero.multiplication.identity days_in_quadrennium) with | _ times_one end.
+        leibniz &distributed, &times_one in |- *.
+        leibniz
+          <- (BinWithZero.addition.associativity
+                ((days_in_quadricentennium * (n /. 400))
+                   + (days_in_century * ((n %. 400) /. 100)))
+                (days_in_quadrennium * (((n %. 400) %. 100) /. 4)) days_in_quadrennium),
+          (BinWithZero.addition.associativity
+             (((days_in_quadricentennium * (n /. 400))
+                 + (days_in_century * ((n %. 400) /. 100)))
+                + (days_in_quadrennium * (((n %. 400) %. 100) /. 4)))
+             (days_in_common_year * 3) 366)
+          in |- *.
+        lemma constant : (days_in_common_year * 3) + 366 = days_in_quadrennium.
+        {
+          simpl days_in_quadrennium, days_in_common_year in |- *.
+          simpl in |- *.
+          simpl BinBase.add in |- *.
+          simpl in |- *.
+          quod idem est.
+        }
+        leibniz &constant in |- *.
+        quod idem est.
+      * (* [y] is not divisible by 4. *)
+        match (BinWithZero.division.succession.interior ((n %. 400) %. 100) 4 &interior4)
+          with | q4 r4 end.
+        lemma interior4n : (n %. 4) + 1 < 4.
+        {
+          leibniz <- &four in |- *.
+          ipso &interior4.
+        }
+        match (BinWithZero.division.succession.interior n 4 &interior4n) with | _ r4n end.
+        lemma y4 : y %. 4 = (n %. 4) + 1.
+        {
+          leibniz <- &restored in |- *.
+          ipso &r4n.
+        }
+        lemma length : days_in_year y = 365.
+        {
+          simpl days_in_year, is_leap in |- *.
+          leibniz &y4 in |- *.
+          match (n %. 4) with | | p end;
+            simpl Comparable.eq, BinWithZero.compare in |- *; simpl in |- *; quod idem est.
+        }
+        leibniz &q4, &r4, &length in |- *.
+        match (BinWithZero.multiplication.distributivity.over.addition
+                 days_in_common_year (((n %. 400) %. 100) %. 4) 1)
+          with | distributed _ end.
+        match (BinWithZero.multiplication.identity days_in_common_year) with | _ times_one end.
+        leibniz &distributed, &times_one in |- *.
+        leibniz
+          <- (BinWithZero.addition.associativity
+                (((days_in_quadricentennium * (n /. 400))
+                    + (days_in_century * ((n %. 400) /. 100)))
+                   + (days_in_quadrennium * (((n %. 400) %. 100) /. 4)))
+                (days_in_common_year * (((n %. 400) %. 100) %. 4)) days_in_common_year)
+          in |- *.
+        simpl days_in_common_year in |- *.
+        quod idem est.
+Qed.
 
 End year. (* year *)
 

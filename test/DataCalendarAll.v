@@ -199,3 +199,24 @@ Definition data_calendar_all_delivers_date_ordinal_positivity
 Definition data_calendar_all_delivers_date_ordinal_boundedness
   : forall (x : Date) . (Date.day_of_year x <= Date.days_in_year (Date.year x))%bin_with_zero
   := Date.ordinal.boundedness.
+
+Definition data_calendar_all_delivers_date_year_antecedence_translation
+  : forall (y : BinBase) (k : BinBase) .
+      Date.years_before (y + k)%bin_base = (Date.years_before y + k)%bin_with_zero
+  := Date.year.antecedence.translation.
+
+Definition data_calendar_all_delivers_date_year_periodicity
+  : forall (y : BinBase) .
+      Date.days_before_year (y + 400%bin_base_decimal)%bin_base
+      = (Date.days_before_year y + Date.days_in_quadricentennium)%bin_with_zero
+  := Date.year.periodicity.
+
+Definition data_calendar_all_delivers_date_year_antecedence_restoration
+  : forall (y : BinBase) . (Date.years_before y + 1%bin_base_decimal)%bin_with_zero = y
+  := Date.year.antecedence.restoration.
+
+Definition data_calendar_all_delivers_date_year_succession
+  : forall (y : BinBase) .
+      Date.days_before_year (y + 1)%bin_base
+      = (Date.days_before_year y + Date.days_in_year y)%bin_with_zero
+  := Date.year.succession.
