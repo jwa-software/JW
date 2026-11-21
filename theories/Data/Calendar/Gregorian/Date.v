@@ -2501,6 +2501,20 @@ Definition add_years := fun (d : Date) (k : Bin0) .
   Date.introduction y (month d) (Bin.min (day d) (days_in_month y (month d)))
     (month.validity.clamping y (month d) (day d)).
 
+(* 1970-01-01, the day the Unix day counts from. *)
+(* [Date] *)
+Definition unix_epoch : Date :=
+  Date.introduction 1970 Month.January 1 (month.validity.minimum 1970 Month.January).
+
+(* The days from 1970-01-01 to [d], negative before it. *)
+(* [Date -> SignedBin] *)
+Definition unix_day := fun (d : Date) . days_between unix_epoch d.
+
+(* The date of Unix day [u], [None] before 0001-01-01. *)
+(* [SignedBin -> Option Date] *)
+Definition from_unix_day := fun (u : SignedBin) .
+  Option.map from_day_number (SignedBin.to_b0 (u + day_number unix_epoch)%b_signed).
+
 Module ordinal. (* ordinal *)
 
 (* ordinal.decomposition *)
@@ -4013,6 +4027,111 @@ Proof.
 Qed.
 
 End difference. (* difference *)
+
+Module unix. (* unix *)
+
+(* unix.addition *)
+Theorem addition
+  : forall (d : Date) (k : Days) . unix_day (add_days d k) = (unix_day d + k)%b_signed.
+Proof.
+  intros d k.
+  simpl unix_day, days_between in |- *.
+  leibniz (addition.specification &d &k) in |- *.
+  leibniz <- (SignedBin.difference.identity &k) in |- *.
+  leibniz
+    (SignedBin.difference.additivity (day_number &d) (day_number unix_epoch) &k 0%b0)
+    in |- *.
+  match (Bin0.addition.identity (day_number unix_epoch)) with | _ vanishing end.
+  leibniz &vanishing in |- *.
+  quod idem est.
+Qed.
+
+(* Adding the epoch's day number back to the Unix day gives the day number,
+ * which [SignedBin.to_b0] keeps.
+ *)
+(* unix.section *)
+Theorem section : forall (d : Date) . from_unix_day (unix_day d) = Some d.
+Proof.
+  intro d.
+  lemma shifted : (unix_day d + day_number unix_epoch)%b_signed = day_number d.
+  {
+    simpl unix_day, days_between in |- *.
+    leibniz <- (SignedBin.difference.identity (day_number unix_epoch)) in |- *.
+    leibniz
+      (SignedBin.difference.additivity
+         (day_number &d) (day_number unix_epoch) (day_number unix_epoch) 0%b0)
+      in |- *.
+    match (Bin0.addition.identity (day_number unix_epoch)) with | _ vanishing end.
+    leibniz &vanishing in |- *.
+    match (Bin0.addition.identity (day_number &d + day_number unix_epoch)) with | _ balanced end.
+    leibniz (SignedBin.difference.invariance &balanced) in |- *.
+    ipso (SignedBin.difference.identity (day_number &d)).
+  }
+  simpl from_unix_day in |- *.
+  leibniz &shifted, (SignedBin.narrowing.bin0.retraction (day_number &d)) in |- *.
+  lemma facto : Some (from_day_number (day_number d)) = Some d.
+  {
+    leibniz (number.section &d) in |- *.
+    quod idem est.
+  }
+  ipso facto.
+Qed.
+
+(* A Unix day with a date gives back the day number of that date, and the
+ * epoch's day number added and taken away again cancels.
+ *)
+(* unix.specification *)
+Theorem specification
+  : forall (u : SignedBin) (d : Date) . from_unix_day u = Some d <-> unix_day d = u.
+Proof.
+  intros u d.
+  divide et impera.
+  -
+    simpl from_unix_day in |- *.
+    match (SignedBin.to_b0 (&u + day_number unix_epoch)%b_signed) with | | n end |- e.
+    +
+      intro h.
+      simpl in &h.
+      ex &h quodlibet.
+    +
+      intro h.
+      let proof same := Option.some.injectivity &h.
+      leibniz <- &same in |- *.
+      lemma facto
+        : unix_day (from_day_number n) = (n + (- day_number unix_epoch))%b_signed.
+      {
+        simpl unix_day, days_between in |- *.
+        leibniz (number.retraction &n) in |- *.
+        leibniz
+          <- (SignedBin.difference.identity &n),
+          <- (SignedBin.difference.negation (day_number unix_epoch))
+          in |- *.
+        leibniz (SignedBin.difference.additivity &n 0%b0 0%b0 (day_number unix_epoch)) in |- *.
+        match (Bin0.addition.identity &n) with | _ right_zero end.
+        match (Bin0.addition.identity (day_number unix_epoch)) with | left_zero _ end.
+        leibniz &right_zero, &left_zero in |- *.
+        quod idem est.
+      }
+      leibniz &facto in |- *.
+      modus aequans
+        (SignedBin.narrowing.bin0.specification (&u + day_number unix_epoch)%b_signed &n), &e
+        |- g.
+      leibniz <- &g in |- *.
+      leibniz
+        (SignedBin.addition.associativity
+           &u (SignedBin.from_b0 (day_number unix_epoch))
+           (SignedBin.negate (SignedBin.from_b0 (day_number unix_epoch)))),
+        (SignedBin.addition.right.inverse (SignedBin.from_b0 (day_number unix_epoch))),
+        (SignedBin.addition.right.identity &u)
+        in |- *.
+      quod idem est.
+  -
+    intro e.
+    leibniz <- &e in |- *.
+    ipso (unix.section &d).
+Qed.
+
+End unix. (* unix *)
 
 Module order. (* order *)
 
