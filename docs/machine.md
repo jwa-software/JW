@@ -82,7 +82,7 @@ The fixed-width integers come in pairs, one per width: `UInt8` and `Int8` hold o
 
 `Int8`'s `+`, `-` and `*` wrap modulo `Int8.modulus` as well: `(127 + 1)%int8` is `-128`, and so is `(- (-128))%int8`, while `(3 - 5)%int8` is `-2`.
 
-- **Every operation is stated against the signed value.** The laws go through `Int8.unsigned_value`, the value of the bit pattern from 0 to 255 (the `Int8.valuation` laws), and from it `Int8.to_bin` takes the signed value.
+- **Every operation is stated against the signed value.** The laws go through `Int8.unsigned_value`, the value of the bit pattern from 0 to 255 (the `Int8.reinterpretation` laws), and from it `Int8.to_bin` takes the signed value.
 - **The overflow is a flag.** `Int8.add_with_overflow` returns the sum with a flag, set when the operands share a sign that the sum does not; `Int8.conversion.addition` makes `to_bin (x + y)` the sum `to_bin x + to_bin y` in `Bin` whenever that flag is clear.
 - **The right shift is arithmetic.** `Int8.shift_right` copies the sign bit, so a shift by one place halves the value rounding down (`Int8.conversion.right.halving`), and `Int8.shift_right (-1) 3` is still `-1`.
 - **The arithmetic is a ring.** `+` and `*` form one, `Int8.from_bin` and `Int8.from_integer` read a number modulo `Int8.modulus`, and `Int8.compare` orders by the signed value, `-1` before `1`.
