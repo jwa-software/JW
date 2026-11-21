@@ -1375,6 +1375,61 @@ Proof.
     + ipso (order.strict.transitivity &smaller (order.increment.extensivity &y)).
 Qed.
 
+Module embedding. (* order.embedding *)
+
+(* Both orders are a positive difference added, and [from_bin_with_zero]
+ * carries a sum with a positive [k] to the same sum, case by case.
+ *)
+(* order.embedding.preservation *)
+Theorem preservation
+  : forall (m : BinWithZero) (n : BinWithZero) .
+      (m < n)%bin_with_zero <-> from_bin_with_zero m < from_bin_with_zero n.
+Proof.
+  intros m n.
+  lemma additivity
+    : forall (a : BinWithZero) (k : BinBase) .
+        from_bin_with_zero (a + BinWithZero.Positive k)%bin_with_zero
+        = from_bin_with_zero a + (+ k).
+  {
+    intros a k.
+    match &a with | | p end; simpl add in |- *; simpl in |- *; quod idem est.
+  }
+  divide et impera.
+  - intro h.
+    simpl BinWithZero.LessThan in &h.
+    match &h with | k e end.
+    simpl LessThan in |- *.
+    exists &k.
+    leibniz <- (&additivity &m &k), &e in |- *.
+    quod idem est.
+  - intro h.
+    simpl LessThan in &h.
+    match &h with | k e end.
+    simpl BinWithZero.LessThan in |- *.
+    exists &k.
+    leibniz <- (&additivity &m &k) in &e.
+    ipso (embedding.injectivity &e).
+Qed.
+
+(* order.embedding.nonnegativity *)
+Theorem nonnegativity : forall (n : BinWithZero) . 0 <= from_bin_with_zero n.
+Proof.
+  intro n.
+  match &n with | | p end.
+  - ipso (disjoin (refl 0), _).
+  - lemma facto : 0 < + p.
+    {
+      simpl LessThan in |- *.
+      exists &p.
+      simpl add in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    ipso (disjoin _, &facto).
+Qed.
+
+End embedding. (* order.embedding *)
+
 End order. (* order *)
 
 Module multiplication. (* multiplication *)
@@ -1517,6 +1572,150 @@ Proof.
   match &x with | p | | p end; match &y with | q | | q end; simpl in |- *; quod idem est.
 Qed.
 
+Module left. (* multiplication.left *)
+
+(* multiplication.left.negation *)
+Theorem negation : forall (x : Bin) (y : Bin) . negate x * y = negate (x * y).
+Proof.
+  intros x y.
+  lemma facto : to_integer (negate x * y) = to_integer (negate (x * y)).
+  {
+    leibniz
+      (conversion.multiplication (negate &x) &y),
+      (conversion.negation &x),
+      (conversion.negation (&x * &y)),
+      (conversion.multiplication &x &y)
+      in |- *.
+    ipso (Integer.multiplication.left.negation (to_integer &x) (to_integer &y)).
+  }
+  ipso (conversion.injectivity &facto).
+Qed.
+
+Module order. (* multiplication.left.order *)
+
+Module strict. (* multiplication.left.order.strict *)
+
+(* A positive [k] is [+ q], and [Integer]'s law takes [+ q] as [+ (to_nat q)]. *)
+(* multiplication.left.order.strict.monotonicity *)
+Theorem monotonicity
+  : forall (k : Bin) (x : Bin) (y : Bin) . 0 < k -> x < y -> k * x < k * y.
+Proof.
+  intros k x y hk h.
+  simpl LessThan in &hk.
+  match &hk with | q e end.
+  lemma positive : k = + q.
+  {
+    ipso (symm &e).
+  }
+  leibniz &positive in |- *.
+  let proof g := modus aequans (conversion.order &x &y), &h.
+  lemma image : (to_integer ((+ q) * x)%b < to_integer ((+ q) * y)%b)%z.
+  {
+    leibniz (conversion.multiplication (+ &q) &x), (conversion.multiplication (+ &q) &y) in |- *.
+    ipso (Integer.multiplication.left.order.strict.monotonicity
+            (BinBase.to_nat &q) (to_integer &x) (to_integer &y) &g).
+  }
+  ipso (modus aequans (conversion.order ((+ &q) * &x) ((+ &q) * &y)), &image).
+Qed.
+
+(* [negate k] is positive, and [negate k * x] is [negate (k * x)]. *)
+(* multiplication.left.order.strict.reversal *)
+Theorem reversal
+  : forall (k : Bin) (x : Bin) (y : Bin) . k < 0 -> x < y -> k * y < k * x.
+Proof.
+  intros k x y hk h.
+  lemma positive : 0 < negate k.
+  {
+    ipso (modus aequans (order.negation.reversal &k 0), &hk).
+  }
+  let proof m := multiplication.left.order.strict.monotonicity (negate &k) &x &y &positive &h.
+  leibniz (multiplication.left.negation &k &x), (multiplication.left.negation &k &y) in &m.
+  ipso (modus aequans (order.negation.reversal (&k * &y) (&k * &x)), &m).
+Qed.
+
+End strict. (* multiplication.left.order.strict *)
+
+(* multiplication.left.order.monotonicity *)
+Theorem monotonicity
+  : forall (k : Bin) (x : Bin) (y : Bin) . 0 <= k -> x <= y -> k * x <= k * y.
+Proof.
+  intros k x y hk h.
+  match &hk with | zero | positive end.
+  - leibniz <- &zero in |- *.
+    match (multiplication.annihilation &x) with | zero_x _ end.
+    match (multiplication.annihilation &y) with | zero_y _ end.
+    leibniz &zero_x, &zero_y in |- *.
+    ipso (disjoin (refl 0), _).
+  - match &h with | e | smaller end.
+    + leibniz &e in |- *.
+      ipso (disjoin (refl (&k * &y)), _).
+    + ipso (disjoin _,
+              (multiplication.left.order.strict.monotonicity &k &x &y &positive &smaller)).
+Qed.
+
+End order. (* multiplication.left.order *)
+
+End left. (* multiplication.left *)
+
+Module sign. (* multiplication.sign *)
+
+(* Each sign law multiplies an inequality by the first factor and rewrites
+ * [x * 0] to [0].
+ *)
+(* multiplication.sign.positivity *)
+Theorem positivity : forall (x : Bin) (y : Bin) . 0 < x -> 0 < y -> 0 < x * y.
+Proof.
+  intros x y hx hy.
+  let proof s := multiplication.left.order.strict.monotonicity &x 0 &y &hx &hy.
+  match (multiplication.annihilation &x) with | _ zero end.
+  leibniz &zero in &s.
+  ipso &s.
+Qed.
+
+Module negation. (* multiplication.sign.negation *)
+
+(* multiplication.sign.negation.positivity *)
+Theorem positivity : forall (x : Bin) (y : Bin) . x < 0 -> y < 0 -> 0 < x * y.
+Proof.
+  intros x y hx hy.
+  let proof s := multiplication.left.order.strict.reversal &x &y 0 &hx &hy.
+  match (multiplication.annihilation &x) with | _ zero end.
+  leibniz &zero in &s.
+  ipso &s.
+Qed.
+
+End negation. (* multiplication.sign.negation *)
+
+Module left. (* multiplication.sign.left *)
+
+(* multiplication.sign.left.negativity *)
+Theorem negativity : forall (x : Bin) (y : Bin) . x < 0 -> 0 < y -> x * y < 0.
+Proof.
+  intros x y hx hy.
+  let proof s := multiplication.left.order.strict.reversal &x 0 &y &hx &hy.
+  match (multiplication.annihilation &x) with | _ zero end.
+  leibniz &zero in &s.
+  ipso &s.
+Qed.
+
+End left. (* multiplication.sign.left *)
+
+Module right. (* multiplication.sign.right *)
+
+(* multiplication.sign.right.negativity *)
+Theorem negativity : forall (x : Bin) (y : Bin) . 0 < x -> y < 0 -> x * y < 0.
+Proof.
+  intros x y hx hy.
+  let proof s := multiplication.left.order.strict.monotonicity &x &y 0 &hx &hy.
+  match (multiplication.annihilation &x) with | _ zero end.
+  leibniz &zero in &s.
+  ipso &s.
+Qed.
+
+End right. (* multiplication.sign.right *)
+
+End sign. (* multiplication.sign *)
+
 End multiplication. (* multiplication *)
 
 Module division. (* division *)
@@ -1606,7 +1805,137 @@ Proof.
       ipso (modus aequans &equality, (congru to_integer, &e)).
 Qed.
 
+(* Adding [z] on the left keeps each of the three answers: [<] by
+ * [addition.order.strict.monotonicity], [=] by rewriting, [>] by the first
+ * read backwards.
+ *)
+(* comparison.translation *)
+Theorem translation
+  : forall (z : Bin) (x : Bin) (y : Bin) . compare (z + x) (z + y) = compare x y.
+Proof.
+  intros z x y.
+  match (compare &x &y) with | | | end |- c.
+  - match (comparison.specification &x &y) with | strict _ end.
+    match (comparison.specification (&z + &x) (&z + &y)) with | shifted _ end.
+    let proof smaller := modus aequans &strict, &c.
+    ipso (modus aequans &shifted, (addition.order.strict.monotonicity &z &x &y &smaller)).
+  - match (comparison.specification &x &y) with | _ equality end.
+    leibniz (modus aequans &equality, &c) in |- *.
+    match (comparison.specification (&z + &y) (&z + &y)) with | _ same end.
+    ipso (modus aequans &same, (refl (&z + &y))).
+  - lemma reversed : compare y x = Comparison.Lt.
+    {
+      leibniz (comparison.antisymmetry &y &x), &c in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match (comparison.specification &y &x) with | strict_reversed _ end.
+    match (comparison.specification (&z + &y) (&z + &x)) with | shifted_reversed _ end.
+    let proof below :=
+      modus aequans &shifted_reversed,
+        (addition.order.strict.monotonicity &z &y &x (modus aequans &strict_reversed, &reversed)).
+    leibniz (comparison.antisymmetry (&z + &x) (&z + &y)), &below in |- *.
+    simpl in |- *.
+    quod idem est.
+Qed.
+
+(* Negation reverses each of the three answers, by [order.negation.reversal]. *)
+(* comparison.negation *)
+Theorem negation : forall (x : Bin) (y : Bin) . compare (negate x) (negate y) = compare y x.
+Proof.
+  intros x y.
+  match (compare &y &x) with | | | end |- c.
+  - match (comparison.specification &y &x) with | strict _ end.
+    match (comparison.specification (negate &x) (negate &y)) with | negated _ end.
+    let proof smaller := modus aequans &strict, &c.
+    ipso (modus aequans &negated, (modus aequans (order.negation.reversal &y &x), &smaller)).
+  - match (comparison.specification &y &x) with | _ equality end.
+    leibniz (modus aequans &equality, &c) in |- *.
+    match (comparison.specification (negate &x) (negate &x)) with | _ same end.
+    ipso (modus aequans &same, (refl (negate &x))).
+  - lemma reversed : compare x y = Comparison.Lt.
+    {
+      leibniz (comparison.antisymmetry &x &y), &c in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match (comparison.specification &x &y) with | strict_reversed _ end.
+    match (comparison.specification (negate &y) (negate &x)) with | negated_reversed _ end.
+    let proof below :=
+      modus aequans &negated_reversed,
+        (modus aequans (order.negation.reversal &x &y),
+           (modus aequans &strict_reversed, &reversed)).
+    leibniz (comparison.antisymmetry (negate &x) (negate &y)), &below in |- *.
+    simpl in |- *.
+    quod idem est.
+Qed.
+
 End comparison. (* comparison *)
+
+Module minimum. (* minimum *)
+
+Module left. (* minimum.left *)
+
+Module distributivity. (* minimum.left.distributivity *)
+
+(* Both sides choose by [compare x y], once [comparison.translation] takes
+ * [z] out of the right side's comparison.
+ *)
+(* minimum.left.distributivity.addition *)
+Theorem addition : forall (z : Bin) (x : Bin) (y : Bin) . z + min x y = min (z + x) (z + y).
+Proof.
+  intros z x y.
+  simpl Comparable.min in |- *.
+  leibniz (comparison.translation &z &x &y) in |- *.
+  match (compare &x &y) with | | | end; quod idem est.
+Qed.
+
+End distributivity. (* minimum.left.distributivity *)
+
+End left. (* minimum.left *)
+
+(* [negate] reverses [compare], so the smaller of two values turns into the
+ * greater of their negations.
+ *)
+(* minimum.duality *)
+Theorem duality : forall (x : Bin) (y : Bin) . negate (min x y) = max (negate x) (negate y).
+Proof.
+  intros x y.
+  simpl Comparable.min, Comparable.max in |- *.
+  leibniz (comparison.negation &x &y), (comparison.antisymmetry &y &x) in |- *.
+  match (compare &x &y) with | | | end |- c.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    match (comparison.specification &x &y) with | _ equality end.
+    leibniz (modus aequans &equality, &c) in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+Qed.
+
+End minimum. (* minimum *)
+
+Module maximum. (* maximum *)
+
+Module left. (* maximum.left *)
+
+Module distributivity. (* maximum.left.distributivity *)
+
+(* maximum.left.distributivity.addition *)
+Theorem addition : forall (z : Bin) (x : Bin) (y : Bin) . z + max x y = max (z + x) (z + y).
+Proof.
+  intros z x y.
+  simpl Comparable.max in |- *.
+  leibniz (comparison.translation &z &x &y) in |- *.
+  match (compare &x &y) with | | | end; quod idem est.
+Qed.
+
+End distributivity. (* maximum.left.distributivity *)
+
+End left. (* maximum.left *)
+
+End maximum. (* maximum *)
 
 End Bin. (* Bin *)
 
