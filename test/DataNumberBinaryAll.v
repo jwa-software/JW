@@ -88,6 +88,26 @@ Definition data_number_binary_all_delivers_bin_with_zero_literal
   : (1011 + 1)%bin_with_zero = 1100%bin_with_zero
   := Identity.reflexivity _.
 
+Definition data_number_binary_all_delivers_bin_base_decimal_literal
+  : 2024%bin_base_decimal = 11111101000%bin_base
+  := Identity.reflexivity _.
+
+Definition data_number_binary_all_delivers_bin_base_decimal_digits
+  : BinBase.to_decimal 11111101000%bin_base
+    = Numeral.Decimal.Digits.Two
+        (Numeral.Decimal.Digits.Zero
+          (Numeral.Decimal.Digits.Two
+            (Numeral.Decimal.Digits.Four Numeral.Decimal.Digits.End)))
+  := Identity.reflexivity _.
+
+Definition data_number_binary_all_delivers_bin_with_zero_decimal_literal
+  : 738944%bin_with_zero_decimal = 10110100011010000000%bin_with_zero
+  := Identity.reflexivity _.
+
+Definition data_number_binary_all_delivers_bin_with_zero_decimal_zero
+  : 0%bin_with_zero_decimal = 0%bin_with_zero
+  := Identity.reflexivity _.
+
 Definition data_number_binary_all_delivers_bin_literal
   : (1011 + 1)%b = 1100%b
   := Identity.reflexivity _.
@@ -158,6 +178,37 @@ Definition data_number_binary_all_delivers_modulo_sum_absorption
   : forall (a : BinWithZero) (b : BinWithZero) (d : BinBase) .
       (((a %. d) + b) %. d = (a + b) %. d)%bin_with_zero
   := BinWithZero.modulo.sum.left.absorption.
+
+Definition data_number_binary_all_delivers_modulo_sum_invariance
+  : forall (a : BinWithZero) (b : BinWithZero) (d : BinBase) .
+      (b %. d = 0 -> (a + b) %. d = a %. d)%bin_with_zero
+  := BinWithZero.modulo.sum.right.invariance.
+
+Definition data_number_binary_all_delivers_division_translation
+  : forall (n : BinWithZero) (d : BinBase) .
+      ((n + BinWithZero.Positive d) /. d = (n /. d) + 1)%bin_with_zero
+  := BinWithZero.division.translation.
+
+Definition data_number_binary_all_delivers_division_succession_interior
+  : forall (n : BinWithZero) (d : BinBase) .
+      ((n %. d) + 1 < BinWithZero.Positive d
+       -> ((n + 1) /. d = n /. d) /\ ((n + 1) %. d = (n %. d) + 1))%bin_with_zero
+  := BinWithZero.division.succession.interior.
+
+Definition data_number_binary_all_delivers_division_succession_carry
+  : forall (n : BinWithZero) (d : BinBase) .
+      ((n %. d) + 1 = BinWithZero.Positive d
+       -> ((n + 1) /. d = (n /. d) + 1) /\ ((n + 1) %. d = 0))%bin_with_zero
+  := BinWithZero.division.succession.carry.
+
+Definition data_number_binary_all_delivers_modulo_nesting
+  : forall (n : BinWithZero) (d : BinBase) (k : BinBase) .
+      ((n %. (d * k)%bin_base) %. d = n %. d)%bin_with_zero
+  := BinWithZero.modulo.nesting.
+
+Definition data_number_binary_all_delivers_order_succession
+  : forall (m : BinWithZero) (n : BinWithZero) . (m < n -> m + 1 <= n)%bin_with_zero
+  := BinWithZero.order.succession.
 
 Definition data_number_binary_all_delivers_modulo_product_absorption
   : forall (a : BinWithZero) (b : BinWithZero) (d : BinBase) .
