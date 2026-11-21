@@ -22,7 +22,7 @@ SPDX-License-Identifier: MIT
 
 ## Month
 
-- **The number of a month.** `Month.to_number` gives the month's place in the year, `Month.January` being 1, and `Month.from_number` goes back, `None` past 12. `Month.conversion.retraction` states `Month.from_number (Month.to_number m) = Some m`, and `Month.conversion.specification` states that `Month.from_number n = Some m` exactly when `Month.to_number m = n`.
+- **The number of a month.** `Month.to_b` gives the month's place in the year, `Month.January` being 1, and `Month.from_b` goes back, `None` past 12. `Month.conversion.bin.retraction` states `Month.from_b (Month.to_b m) = Some m`, and `Month.conversion.bin.specification` states that `Month.from_b n = Some m` exactly when `Month.to_b m = n`.
 - **The next and the previous month.** `Month.next` and `Month.prev` go round the year, `Month.January` after `Month.December`. Each undoes the other: `Month.succession.forward.inverse` and `Month.succession.backward.inverse`.
 - **The order of the year.** `Month.compare` compares the months' numbers, and `Month.comparable` makes it an instance of `Comparable`.
 

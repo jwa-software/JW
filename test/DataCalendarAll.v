@@ -10,13 +10,13 @@ Definition data_calendar_all_delivers_month
   : Month
   := Month.January.
 
-Definition data_calendar_all_delivers_month_conversion_retraction
-  : forall (m : Month) . Month.from_number (Month.to_number m) = Some m
-  := Month.conversion.retraction.
+Definition data_calendar_all_delivers_month_conversion_bin_retraction
+  : forall (m : Month) . Month.from_b (Month.to_b m) = Some m
+  := Month.conversion.bin.retraction.
 
-Definition data_calendar_all_delivers_month_conversion_specification
-  : forall (n : Bin) (m : Month) . Month.from_number n = Some m <-> Month.to_number m = n
-  := Month.conversion.specification.
+Definition data_calendar_all_delivers_month_conversion_bin_specification
+  : forall (n : Bin) (m : Month) . Month.from_b n = Some m <-> Month.to_b m = n
+  := Month.conversion.bin.specification.
 
 Definition data_calendar_all_delivers_month_succession_forward_inverse
   : forall (m : Month) . Month.prev (Month.next m) = m
@@ -30,16 +30,16 @@ Definition data_calendar_all_delivers_month_comparable
   : Comparable Month.compare Month.LessThan
   := _.
 
-Definition data_calendar_all_computes_month_to_number
-  : Month.to_number Month.December = 12
+Definition data_calendar_all_computes_month_to_b
+  : Month.to_b Month.December = 12
   := Identity.reflexivity _.
 
-Definition data_calendar_all_computes_month_from_number
-  : Month.from_number 9 = Some Month.September
+Definition data_calendar_all_computes_month_from_b
+  : Month.from_b 9 = Some Month.September
   := Identity.reflexivity _.
 
-Definition data_calendar_all_computes_month_from_number_refusal
-  : Month.from_number 13 = None
+Definition data_calendar_all_computes_month_from_b_refusal
+  : Month.from_b 13 = None
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_month_next
