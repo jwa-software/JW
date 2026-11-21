@@ -2349,6 +2349,18 @@ Proof.
   quod idem est.
 Qed.
 
+(* modulo.sum.right.invariance *)
+Theorem invariance
+  : forall (a : BinWithZero) (b : BinWithZero) (d : BinBase) .
+      b %. d = 0 -> (a + b) %. d = a %. d.
+Proof.
+  intros a b d h.
+  leibniz <- (modulo.sum.right.absorption &a &b &d), &h in |- *.
+  match (addition.identity &a) with | _ right end.
+  leibniz &right in |- *.
+  quod idem est.
+Qed.
+
 End right. (* modulo.sum.right *)
 
 End sum. (* modulo.sum *)
