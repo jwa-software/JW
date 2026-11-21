@@ -8,7 +8,7 @@ From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Calendar.Month.
 From JW Require Import Data.Comparable.
-From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -22,15 +22,15 @@ From JW Require Import Tactics.Witness.
  *)
 Module Date. (* Date *)
 
-(* Numbers are written in decimal: a bare literal is a [BinBase], which
+(* Numbers are written in decimal: a bare literal is a [Bin], which
  * stands for a [Bin0] wherever one is expected, so only zero carries
  * its key.
  *)
 Local Open Scope jw_bin0_scope.
-Local Open Scope jw_bin_base_decimal_scope.
+Local Open Scope jw_bin_decimal_scope.
 
-Abbreviation Year := BinBase (only parsing).
-Abbreviation Day := BinBase (only parsing).
+Abbreviation Year := Bin (only parsing).
+Abbreviation Day := Bin (only parsing).
 
 (* The ctor takes only a day that its month has, so the checks it asserts
  * come first.
@@ -39,13 +39,13 @@ Abbreviation Day := BinBase (only parsing).
 (* A year divisible by 4 is a leap year, except one divisible by 100 and not
  * by 400.
  *)
-(* [BinBase -> Bool] *)
+(* [Bin -> Bool] *)
 Definition is_leap := fun (y : Year) .
   (Bin0.eq (y %. 4) 0%b0
     && (! Bin0.eq (y %. 100) 0%b0
           || Bin0.eq (y %. 400) 0%b0))%bool.
 
-(* [BinBase -> Month -> BinBase] *)
+(* [Bin -> Month -> Bin] *)
 Definition days_in_month := fun (y : Year) (m : Month) .
   match m with
   | Month.January   => 31
@@ -66,10 +66,10 @@ Definition days_in_month := fun (y : Year) (m : Month) .
   | Month.December  => 31
   end.
 
-(* A day is a BinBase which is never 0, so the only check is the length of its month. *)
-(* [BinBase -> Month -> BinBase -> Bool] *)
+(* A day is a Bin which is never 0, so the only check is the length of its month. *)
+(* [Bin -> Month -> Bin -> Bool] *)
 Definition is_valid := fun (y : Year) (m : Month) (d : Day) .
-  Comparable.le BinBase.compare d (days_in_month y m).
+  Comparable.le Bin.compare d (days_in_month y m).
 
 (* The year, the month and the day of the month, with the proof that the
  * month has that day, so no other value can be built.
@@ -80,7 +80,7 @@ Inductive T : Type :=
 
 Abbreviation Date := T.
 
-(* [Date -> BinBase] *)
+(* [Date -> Bin] *)
 Definition year := fun (x : Date) .
   match x with
   | Date.introduction y _ _ _ => y
@@ -92,18 +92,18 @@ Definition month := fun (x : Date) .
   | Date.introduction _ m _ _ => m
   end.
 
-(* [Date -> BinBase] *)
+(* [Date -> Bin] *)
 Definition day := fun (x : Date) .
   match x with
   | Date.introduction _ _ d _ => d
   end.
 
 (* The date, [None] when its month has no such day. *)
-(* [BinBase -> Month -> BinBase -> Option Date] *)
+(* [Bin -> Month -> Bin -> Option Date] *)
 Definition make := fun (y : Year) (m : Month) (d : Day) .
   Assert.guard (is_valid y m d) (Date.introduction y m d).
 
-(* [BinBase -> BinBase] *)
+(* [Bin -> Bin] *)
 Definition days_in_year := fun (y : Year) .
   match is_leap y with
   | true  => 366
@@ -135,14 +135,14 @@ Definition days_in_century : Bin0 :=
 Definition days_in_quadricentennium : Bin0 := (4 * days_in_century) + 1.
 
 (* The years before [y], the first year being 1. *)
-(* [BinBase -> Bin0] *)
+(* [Bin -> Bin0] *)
 Definition years_before := fun (y : Year) . Bin0.saturating_sub y 1.
 
 (* The days before January 1 of [y]: the years before [y] taken apart into
  * whole quadricentennia, then whole centuries, then whole quadrennia, then
  * single years.
  *)
-(* [BinBase -> Bin0] *)
+(* [Bin -> Bin0] *)
 Definition days_before_year := fun (y : Year) .
   let n := years_before y in
   let in_quadricentennium := n %. 400 in
@@ -155,7 +155,7 @@ Definition days_before_year := fun (y : Year) .
 (* The days of [y] before day 1 of [m], each month's count the one before it
  * plus the length of the month before it.
  *)
-(* [BinBase -> Month -> Bin0] *)
+(* [Bin -> Month -> Bin0] *)
 Definition days_before_month := fun (y : Year) (m : Month) .
   let january   := 0%b0 in
   let february  := january + days_in_month y Month.January in
@@ -199,12 +199,12 @@ Definition day_number := fun (x : Date) .
 (* The order of time: by year, then by month, then by day. *)
 (* [Date -> Date -> Comparison] *)
 Definition compare := fun (x1 : Date) (x2 : Date) .
-  match BinBase.compare (year x1) (year x2) with
+  match Bin.compare (year x1) (year x2) with
   | Comparison.Lt => Comparison.Lt
   | Comparison.Eq =>
       match Month.compare (month x1) (month x2) with
       | Comparison.Lt => Comparison.Lt
-      | Comparison.Eq => BinBase.compare (day x1) (day x2)
+      | Comparison.Eq => Bin.compare (day x1) (day x2)
       | Comparison.Gt => Comparison.Gt
       end
   | Comparison.Gt => Comparison.Gt
@@ -224,13 +224,13 @@ Proof.
   match &x2 with | introduction y2 m2 d2 a2 end.
   simpl compare, year, month, day in |- *.
   leibniz
-    (BinBase.comparison.antisymmetry &y1 &y2),
+    (Bin.comparison.antisymmetry &y1 &y2),
     (Month.comparison.antisymmetry &m1 &m2),
-    (BinBase.comparison.antisymmetry &d1 &d2)
+    (Bin.comparison.antisymmetry &d1 &d2)
     in |- *.
-  match (BinBase.compare &y2 &y1) with | | | end;
+  match (Bin.compare &y2 &y1) with | | | end;
     match (Month.compare &m2 &m1) with | | | end;
-    match (BinBase.compare &d2 &d1) with | | | end;
+    match (Bin.compare &d2 &d1) with | | | end;
     simpl in |- *; quod idem est.
 Qed.
 
@@ -244,13 +244,13 @@ Proof.
   match &x1 with | introduction y1 m1 d1 a1 end.
   match &x2 with | introduction y2 m2 d2 a2 end.
   simpl compare, year, month, day in &h.
-  match (BinBase.compare &y1 &y2) with | | | end |- cy.
+  match (Bin.compare &y1 &y2) with | | | end |- cy.
   - ex &h quodlibet.
   - match (Month.compare &m1 &m2) with | | | end |- cm.
     + ex &h quodlibet.
-    + match (BinBase.comparison.specification &y1 &y2) with | _ year_equality end.
+    + match (Bin.comparison.specification &y1 &y2) with | _ year_equality end.
       match (Month.comparison.specification &m1 &m2) with | _ month_equality end.
-      match (BinBase.comparison.specification &d1 &d2) with | _ day_equality end.
+      match (Bin.comparison.specification &d1 &d2) with | _ day_equality end.
       let proof ey := modus aequans &year_equality, &cy.
       let proof em := modus aequans &month_equality, &cm.
       let proof ed := modus aequans &day_equality, &h.
@@ -265,9 +265,9 @@ Qed.
 
 Module leap. (* leap *)
 
-(* The statement adds years, so [+] is read as [BinBase]'s. *)
-Local Open Scope jw_bin_base_scope.
-Local Open Scope jw_bin_base_decimal_scope.
+(* The statement adds years, so [+] is read as [Bin]'s. *)
+Local Open Scope jw_bin_scope.
+Local Open Scope jw_bin_decimal_scope.
 
 (* leap.periodicity *)
 Theorem periodicity : forall (y : Year) . is_leap (y + 400) = is_leap y.
@@ -314,27 +314,27 @@ Module month. (* month *)
 
 Module length. (* month.length *)
 
-(* The statement compares days of a month, so [<=] is read as [BinBase]'s. *)
-Local Open Scope jw_bin_base_scope.
-Local Open Scope jw_bin_base_decimal_scope.
+(* The statement compares days of a month, so [<=] is read as [Bin]'s. *)
+Local Open Scope jw_bin_scope.
+Local Open Scope jw_bin_decimal_scope.
 
 (* month.length.boundedness *)
 Theorem boundedness
   : forall (y : Year) (m : Month) . 28 <= days_in_month y m /\ days_in_month y m <= 31.
 Proof.
   intros y m.
-  lemma lower : Comparable.le BinBase.compare 28 (days_in_month y m) = true.
+  lemma lower : Comparable.le Bin.compare 28 (days_in_month y m) = true.
   {
-    simpl days_in_month, Comparable.le, BinBase.compare in |- *.
+    simpl days_in_month, Comparable.le, Bin.compare in |- *.
     match (is_leap &y) with | | end;
       match &m with
       | January | February | March | April | May | June
       | July | August | September | October | November | December
       end; simpl in |- *; quod idem est.
   }
-  lemma upper : Comparable.le BinBase.compare (days_in_month y m) 31 = true.
+  lemma upper : Comparable.le Bin.compare (days_in_month y m) 31 = true.
   {
-    simpl days_in_month, Comparable.le, BinBase.compare in |- *.
+    simpl days_in_month, Comparable.le, Bin.compare in |- *.
     match (is_leap &y) with | | end;
       match &m with
       | January | February | March | April | May | June
@@ -394,7 +394,7 @@ Proof.
   intro y.
   simpl days_before_month, days_in_month, days_in_year in |- *.
   match (is_leap &y) with | | end;
-    simpl in |- *; simpl BinBase.add in |- *; simpl in |- *; quod idem est.
+    simpl in |- *; simpl Bin.add in |- *; simpl in |- *; quod idem est.
 Qed.
 
 (* month.boundedness *)
@@ -444,7 +444,7 @@ Proof.
       = true.
   {
     simpl Month.compare in |- *.
-    simpl days_before_month, days_in_month, BinBase.compare, Comparable.le, Bin0.compare
+    simpl days_before_month, days_in_month, Bin.compare, Comparable.le, Bin0.compare
       in |- *.
     match (is_leap &y) with | | end;
       match &m1 with
@@ -506,22 +506,22 @@ Module antecedence. (* year.antecedence *)
  *)
 (* year.antecedence.translation *)
 Theorem translation
-  : forall (y : Year) (k : BinBase) . years_before (y + k)%bin_base = years_before y + k.
+  : forall (y : Year) (k : Bin) . years_before (y + k)%b = years_before y + k.
 Proof.
   intros y k.
   lemma facto
-    : Bin0.to_nat0 (years_before (y + k)%bin_base)
+    : Bin0.to_nat0 (years_before (y + k)%b)
       = Bin0.to_nat0 (years_before y + k).
   {
     simpl years_before in |- *.
     leibniz
-      (Bin0.conversion.subtraction.saturating (y + k)%bin_base 1),
+      (Bin0.conversion.subtraction.saturating (y + k)%b 1),
       (Bin0.conversion.addition (Bin0.saturating_sub y 1) k),
       (Bin0.conversion.subtraction.saturating y 1)
       in |- *.
     simpl Bin0.to_nat0 in |- *.
-    leibniz (BinBase.conversion.addition &y &k) in |- *.
-    let a := BinBase.to_nat &y in |- *.
+    leibniz (Bin.conversion.addition &y &k) in |- *.
+    let a := Bin.to_nat &y in |- *.
     let proof a := &a.
     extro &a.
     intro a.
@@ -552,10 +552,10 @@ Proof.
     leibniz
       (Nat0.addition.commutativity
          (Nat0.saturating_sub
-            (Nat0.Positive (BinBase.to_nat &y)) (Nat0.Positive (BinBase.to_nat 1)))
-         (Nat0.Positive (BinBase.to_nat 1)))
+            (Nat0.Positive (Bin.to_nat &y)) (Nat0.Positive (Bin.to_nat 1)))
+         (Nat0.Positive (Bin.to_nat 1)))
       in |- *.
-    let a := BinBase.to_nat &y in |- *.
+    let a := Bin.to_nat &y in |- *.
     let proof a := &a.
     extro &a.
     intro a.
@@ -576,7 +576,7 @@ End antecedence. (* year.antecedence *)
 (* year.periodicity *)
 Theorem periodicity
   : forall (y : Year) .
-      days_before_year (y + 400%bin_base_decimal)%bin_base
+      days_before_year (y + 400%b_decimal)%b
       = days_before_year y + days_in_quadricentennium.
 Proof.
   intro y.
@@ -633,7 +633,7 @@ Qed.
 (* year.succession *)
 Theorem succession
   : forall (y : Year) .
-      days_before_year (y + 1)%bin_base = days_before_year y + days_in_year y.
+      days_before_year (y + 1)%b = days_before_year y + days_in_year y.
 Proof.
   intro y.
   simpl days_before_year in |- *.
@@ -780,7 +780,7 @@ Proof.
       simpl days_in_quadricentennium, days_in_century, days_in_quadrennium, days_in_common_year
         in |- *.
       simpl in |- *.
-      simpl BinBase.add in |- *.
+      simpl Bin.add in |- *.
       simpl in |- *.
       quod idem est.
     }
@@ -860,7 +860,7 @@ Proof.
       {
         simpl days_in_century, days_in_quadrennium, days_in_common_year in |- *.
         simpl in |- *.
-        simpl BinBase.add in |- *.
+        simpl Bin.add in |- *.
         simpl in |- *.
         quod idem est.
       }
@@ -942,7 +942,7 @@ Proof.
         {
           simpl days_in_quadrennium, days_in_common_year in |- *.
           simpl in |- *.
-          simpl BinBase.add in |- *.
+          simpl Bin.add in |- *.
           simpl in |- *.
           quod idem est.
         }
@@ -992,74 +992,74 @@ Qed.
  *)
 (* year.monotonicity *)
 Theorem monotonicity
-  : forall (y : Year) (k : BinBase) .
-      days_before_year y + days_in_year y <= days_before_year (y + k)%bin_base.
+  : forall (y : Year) (k : Bin) .
+      days_before_year y + days_in_year y <= days_before_year (y + k)%b.
 Proof.
   intros y k.
-  leibniz <- (BinBase.conversion.section &k) in |- *.
-  let n := BinBase.to_nat &k in |- *.
+  leibniz <- (Bin.conversion.section &k) in |- *.
+  let n := Bin.to_nat &k in |- *.
   let proof n := &n.
   extro &n.
   intro n.
   match &n with | One | Successor (n' by IH) end per Nat.induction.
-  - lemma facto : days_before_year y + days_in_year y <= days_before_year (y + 1)%bin_base.
+  - lemma facto : days_before_year y + days_in_year y <= days_before_year (y + 1)%b.
     {
       leibniz (year.succession &y) in |- *.
       ipso (disjoin (refl (days_before_year &y + days_in_year &y)), _).
     }
     ipso &facto.
-  - lemma shift : forall (b : BinBase) . (y + (++ b))%bin_base = ((y + b) + 1)%bin_base.
+  - lemma shift : forall (b : Bin) . (y + (++ b))%b = ((y + b) + 1)%b.
     {
       intro b.
-      lemma facto : BinBase.to_nat (y + (++ b))%bin_base = BinBase.to_nat ((y + b) + 1)%bin_base.
+      lemma facto : Bin.to_nat (y + (++ b))%b = Bin.to_nat ((y + b) + 1)%b.
       {
         leibniz
-          (BinBase.conversion.addition &y (++ &b)%bin_base),
-          (BinBase.conversion.successor &b),
-          (BinBase.conversion.addition (&y + &b)%bin_base 1),
-          (BinBase.conversion.addition &y &b)
+          (Bin.conversion.addition &y (++ &b)%b),
+          (Bin.conversion.successor &b),
+          (Bin.conversion.addition (&y + &b)%b 1),
+          (Bin.conversion.addition &y &b)
           in |- *.
         leibniz
-          (Nat.addition.right.successor (BinBase.to_nat &y) (BinBase.to_nat &b)),
+          (Nat.addition.right.successor (Bin.to_nat &y) (Bin.to_nat &b)),
           (Nat.addition.commutativity
-             (BinBase.to_nat &y + BinBase.to_nat &b)%n (BinBase.to_nat 1))
+             (Bin.to_nat &y + Bin.to_nat &b)%n (Bin.to_nat 1))
           in |- *.
         simpl in |- *.
         quod idem est.
       }
-      ipso (BinBase.conversion.injectivity &facto).
+      ipso (Bin.conversion.injectivity &facto).
     }
     lemma extended
-      : days_before_year (y + BinBase.from_nat n')%bin_base
-        <= days_before_year (y + BinBase.from_nat n')%bin_base
-           + days_in_year (y + BinBase.from_nat n')%bin_base.
+      : days_before_year (y + Bin.from_nat n')%b
+        <= days_before_year (y + Bin.from_nat n')%b
+           + days_in_year (y + Bin.from_nat n')%b.
     {
       leibniz
         (Bin0.addition.commutativity
-           (days_before_year (&y + BinBase.from_nat &n')%bin_base)
-           (days_in_year (&y + BinBase.from_nat &n')%bin_base))
+           (days_before_year (&y + Bin.from_nat &n')%b)
+           (days_in_year (&y + Bin.from_nat &n')%b))
         in |- *.
       ipso (Bin0.addition.right.order.extensivity
-              (days_in_year (&y + BinBase.from_nat &n')%bin_base)
-              (days_before_year (&y + BinBase.from_nat &n')%bin_base)).
+              (days_in_year (&y + Bin.from_nat &n')%b)
+              (days_before_year (&y + Bin.from_nat &n')%b)).
     }
     lemma step
       : days_before_year y + days_in_year y
-        <= days_before_year ((y + BinBase.from_nat n') + 1)%bin_base.
+        <= days_before_year ((y + Bin.from_nat n') + 1)%b.
     {
-      leibniz (year.succession (&y + BinBase.from_nat &n')%bin_base) in |- *.
+      leibniz (year.succession (&y + Bin.from_nat &n')%b) in |- *.
       ipso (@Comparable.order.transitivity _ Bin0.compare Bin0.LessThan _
               (days_before_year &y + days_in_year &y)
-              (days_before_year (&y + BinBase.from_nat &n')%bin_base)
-              (days_before_year (&y + BinBase.from_nat &n')%bin_base
-                 + days_in_year (&y + BinBase.from_nat &n')%bin_base)
+              (days_before_year (&y + Bin.from_nat &n')%b)
+              (days_before_year (&y + Bin.from_nat &n')%b
+                 + days_in_year (&y + Bin.from_nat &n')%b)
               &IH &extended).
     }
     lemma facto
       : days_before_year y + days_in_year y
-        <= days_before_year (y + (++ BinBase.from_nat n'))%bin_base.
+        <= days_before_year (y + (++ Bin.from_nat n'))%b.
     {
-      leibniz (&shift (BinBase.from_nat &n')) in |- *.
+      leibniz (&shift (Bin.from_nat &n')) in |- *.
       ipso &step.
     }
     ipso &facto.
@@ -1078,7 +1078,7 @@ Proof.
   - exists (day &x).
     simpl in |- *.
     quod idem est.
-  - exists (&p + day &x)%bin_base.
+  - exists (&p + day &x)%b.
     simpl in |- *.
     quod idem est.
 Qed.
@@ -1206,7 +1206,7 @@ Proof.
     ipso (&right &e).
   }
   lemma widened
-    : forall (d1 : BinBase) (d2 : BinBase) . (d1 < d2)%bin_base -> (d1 : Bin0) < d2.
+    : forall (d1 : Bin) (d2 : Bin) . (d1 < d2)%b -> (d1 : Bin0) < d2.
   {
     intros d1 d2 g.
     match &g with | k e end.
@@ -1220,8 +1220,8 @@ Proof.
     match &x1 with | introduction y1 m1 d1 a1 end.
     match &x2 with | introduction y2 m2 d2 a2 end.
     simpl compare, year, month, day in &h.
-    match (BinBase.compare &y1 &y2) with | | | end |- cy.
-    - match (BinBase.comparison.specification &y1 &y2) with | year_order _ end.
+    match (Bin.compare &y1 &y2) with | | | end |- cy.
+    - match (Bin.comparison.specification &y1 &y2) with | year_order _ end.
       let proof earlier := modus aequans &year_order, &cy.
       match &earlier with | k e end.
       let proof through := ordinal.boundedness (introduction &y1 &m1 &d1 &a1).
@@ -1263,7 +1263,7 @@ Proof.
                  (days_before_year &y2)
                  &first &second)
               &third).
-    - match (BinBase.comparison.specification &y1 &y2) with | _ year_equality end.
+    - match (Bin.comparison.specification &y1 &y2) with | _ year_equality end.
       let proof ey := modus aequans &year_equality, &cy.
       match &ey with | end.
       lemma inner
@@ -1316,7 +1316,7 @@ Proof.
         + match (Month.comparison.specification &m1 &m2) with | _ month_equality end.
           let proof em := modus aequans &month_equality, &cm.
           match &em with | end.
-          match (BinBase.comparison.specification &d1 &d2) with | day_order _ end.
+          match (Bin.comparison.specification &d1 &d2) with | day_order _ end.
           let proof smaller := modus aequans &day_order, &h.
           ipso (Bin0.addition.order.strict.monotonicity
                   (days_before_month &y1 &m1) d1 (days_before_month &y1 &m1) d2

@@ -6,7 +6,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
-From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Product.
 From JW Require Import Tactics.Equation.
@@ -35,7 +35,7 @@ Parameter Inline sub_with_borrow : Bit -> T -> T -> Product Bit T.
 Parameter Inline compare : T -> T -> Comparison.
 Parameter Inline mul : T -> T -> T.
 Parameter Inline mul_with_overflow : T -> T -> Product Bit T.
-Parameter Inline modulus : BinBase.
+Parameter Inline modulus : Bin.
 
 Module order. (* order *)
 
@@ -251,7 +251,7 @@ Proof.
       quod idem est.
   - let proof t
       : (W.to_b0 x + W.to_b0 y
-         = Bin0.Positive W.modulus * Bin0.Positive BinBase.One
+         = Bin0.Positive W.modulus * Bin0.Positive Bin.One
            + W.to_b0 (x + y))%b0
       := &s.
     match (Bin0.multiplication.identity (Bin0.Positive W.modulus)) with | _ r end.
@@ -348,7 +348,7 @@ Proof.
     + intro h.
       quod idem est.
   - let proof t
-      : (W.to_b0 x + Bin0.Positive W.modulus * Bin0.Positive BinBase.One
+      : (W.to_b0 x + Bin0.Positive W.modulus * Bin0.Positive Bin.One
          = W.to_b0 y + W.to_b0 (x - y))%b0
       := &s.
     match (Bin0.multiplication.identity (Bin0.Positive W.modulus)) with | _ r end.
@@ -524,7 +524,7 @@ Proof.
   lemma g : (W.to_b0 x < W.to_b0 x + 1)%b0.
   {
     simpl Bin0.LessThan in |- *.
-    exists BinBase.One.
+    exists Bin.One.
     ipso (refl (W.to_b0 &x + 1)%b0).
   }
   leibniz <- (increment.exactness &x &h) in &g.
@@ -618,7 +618,7 @@ Proof.
     : (W.to_b0 (x - W.One) < W.to_b0 (x - W.One) + 1)%b0.
   {
     simpl Bin0.LessThan in |- *.
-    exists BinBase.One.
+    exists Bin.One.
     ipso (refl (W.to_b0 (&x - W.One) + 1)%b0).
   }
   leibniz (decrement.exactness &x &h) in &g.

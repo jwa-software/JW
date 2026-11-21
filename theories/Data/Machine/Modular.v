@@ -3,7 +3,7 @@
  *)
 
 From JW Require Import Core.All.
-From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Witness.
@@ -25,7 +25,7 @@ Parameter Inline add : T -> T -> T.
 Parameter Inline sub : T -> T -> T.
 Parameter Inline negate : T -> T.
 Parameter Inline mul : T -> T -> T.
-Parameter Inline modulus : BinBase.
+Parameter Inline modulus : Bin.
 
 Module conversion. (* conversion *)
 

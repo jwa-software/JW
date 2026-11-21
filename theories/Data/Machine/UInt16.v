@@ -18,7 +18,7 @@ From JW Require Import Data.Machine.HWord.
 From JW Require Import Data.Machine.Modular.
 From JW Require Import Data.Machine.Unsigned.
 From JW Require Import Data.Number.Binary.SignedBin.
-From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -41,8 +41,8 @@ Inductive T : Type :=
 Abbreviation UInt16 := T.
 
 (* The number of values, 65536 (2^16), the arithmetic wrapping modulo it. *)
-(* [BinBase] *)
-Definition modulus := 10000000000000000%bin_base.
+(* [Bin] *)
+Definition modulus := 10000000000000000%b.
 
 (* [x] laid out as a [HWord] in the order [e] names. *)
 (* [Endian -> UInt16 -> HWord] *)
@@ -298,23 +298,23 @@ Definition mul_with_overflow := fun (x : UInt16) (y : UInt16) .
    mul x y)%product.
 
 (* [p] modulo 65536, its bits appended from the most significant. *)
-(* [BinBase -> UInt16] *)
-Fixpoint from_bin_base (p : BinBase) : UInt16 :=
+(* [Bin -> UInt16] *)
+Fixpoint from_b (p : Bin) : UInt16 :=
   match p with
-  | BinBase.One   => One
-  | BinBase.b0 p' => append_bit 0 (from_bin_base p')
-  | BinBase.b1 p' => append_bit 1 (from_bin_base p')
+  | Bin.One   => One
+  | Bin.b0 p' => append_bit 0 (from_b p')
+  | Bin.b1 p' => append_bit 1 (from_b p')
   end.
 
 (* [Bin0 -> UInt16] *)
 Definition from_b0 := fun (n : Bin0) .
   match n with
   | Bin0.Zero       => Zero
-  | Bin0.Positive p => from_bin_base p
+  | Bin0.Positive p => from_b p
   end.
 
 (* [Nat -> UInt16] *)
-Definition from_nat := fun (n : Nat) . from_bin_base (BinBase.from_nat n).
+Definition from_nat := fun (n : Nat) . from_b (Bin.from_nat n).
 
 (* [Nat0 -> UInt16] *)
 Definition from_nat0 := fun (n : Nat0) . from_b0 (Bin0.from_nat0 n).
@@ -323,9 +323,9 @@ Definition from_nat0 := fun (n : Nat0) . from_b0 (Bin0.from_nat0 n).
 (* [SignedBin -> UInt16] *)
 Definition from_b_signed := fun (z : SignedBin) .
   match z with
-  | SignedBin.Negative p => negate (from_bin_base p)
+  | SignedBin.Negative p => negate (from_b p)
   | SignedBin.Zero       => Zero
-  | SignedBin.Positive p => from_bin_base p
+  | SignedBin.Positive p => from_b p
   end.
 
 (* The quotient through [Bin0], [None] when [y] is zero. It is at most
@@ -747,19 +747,19 @@ Proof.
     simpl in |- *.
     quod idem est.
   - simpl from_b0 in |- *.
-    match p with | One | b0 (p' by IH) | b1 (p' by IH) end per BinBase.induction.
+    match p with | One | b0 (p' by IH) | b1 (p' by IH) end per Bin.induction.
     + simpl Bin0.modulo, Bin0.div in |- *.
       simpl in |- *.
       quod idem est.
     + lemma unfolding
-        : from_bin_base (BinBase.b0 &p') = append_bit 0 (from_bin_base &p').
+        : from_b (Bin.b0 &p') = append_bit 0 (from_b &p').
       {
         simpl in |- *.
         quod idem est.
       }
       leibniz
         &unfolding,
-        (conversion.appending 0 (from_bin_base &p')),
+        (conversion.appending 0 (from_b &p')),
         &IH,
         <- (Bin0.modulo.sum.left.absorption
           (10 * (Bin0.Positive &p' %. modulus))%b0
@@ -773,14 +773,14 @@ Proof.
       simpl in |- *.
       quod idem est.
     + lemma unfolding
-        : from_bin_base (BinBase.b1 &p') = append_bit 1 (from_bin_base &p').
+        : from_b (Bin.b1 &p') = append_bit 1 (from_b &p').
       {
         simpl in |- *.
         quod idem est.
       }
       leibniz
         &unfolding,
-        (conversion.appending 1 (from_bin_base &p')),
+        (conversion.appending 1 (from_b &p')),
         &IH,
         <- (Bin0.modulo.sum.left.absorption
           (10 * (Bin0.Positive &p' %. modulus))%b0
@@ -792,7 +792,7 @@ Proof.
           (Bit.to_b0 1) modulus)
         in |- *.
       simpl in |- *.
-      simpl BinBase.add in |- *.
+      simpl Bin.add in |- *.
       simpl in |- *.
       quod idem est.
 Qed.
@@ -1093,7 +1093,7 @@ Qed.
 
 (* conversion.division *)
 Theorem division
-  : forall (x : UInt16) (y : UInt16) (d : BinBase) .
+  : forall (x : UInt16) (y : UInt16) (d : Bin) .
       to_b0 y = Bin0.Positive d
       -> Option.map to_b0 (x /. y)%uint16 = Some (x /. d)%b0.
 Proof.
@@ -1117,7 +1117,7 @@ Qed.
 
 (* conversion.modulo *)
 Theorem modulo
-  : forall (x : UInt16) (y : UInt16) (d : BinBase) .
+  : forall (x : UInt16) (y : UInt16) (d : Bin) .
       to_b0 y = Bin0.Positive d
       -> Option.map to_b0 (x %. y)%uint16 = Some (x %. d)%b0.
 Proof.

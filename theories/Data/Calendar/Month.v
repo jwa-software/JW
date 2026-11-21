@@ -5,7 +5,7 @@
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
-From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Option.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
@@ -31,10 +31,10 @@ Inductive T : Type :=
 Abbreviation Month := T.
 
 (* A month's place is written in decimal. *)
-Local Open Scope jw_bin_base_decimal_scope.
+Local Open Scope jw_bin_decimal_scope.
 
 (* The month's place in the year, [January] being 1. *)
-(* [Month -> BinBase] *)
+(* [Month -> Bin] *)
 Definition to_number := fun (m : Month) .
   match m with
   | January   =>  1
@@ -52,8 +52,8 @@ Definition to_number := fun (m : Month) .
   end.
 
 (* The month at a place in the year, [None] past 12. *)
-(* [BinBase -> Option Month] *)
-Definition from_number := fun (n : BinBase) .
+(* [Bin -> Option Month] *)
+Definition from_number := fun (n : Bin) .
   match n with
   |  1 => Some January
   |  2 => Some February
@@ -109,11 +109,11 @@ Definition prev := fun (m : Month) .
 (* The order of the year, read off the months' places. *)
 (* [Month -> Month -> Comparison] *)
 Definition compare := fun (m1 : Month) (m2 : Month) .
-  BinBase.compare (to_number m1) (to_number m2).
+  Bin.compare (to_number m1) (to_number m2).
 
 (* [Month -> Month -> Prop] *)
 Definition LessThan := fun (m1 : Month) (m2 : Month) .
-  (to_number m1 < to_number m2)%bin_base.
+  (to_number m1 < to_number m2)%b.
 
 Module conversion. (* conversion *)
 
@@ -132,7 +132,7 @@ Qed.
  *)
 (* conversion.specification *)
 Theorem specification
-  : forall (n : BinBase) (m : Month) . from_number n = Some m <-> to_number m = n.
+  : forall (n : Bin) (m : Month) . from_number n = Some m <-> to_number m = n.
 Proof.
   intros n m.
   divide et impera.
@@ -283,7 +283,7 @@ Theorem transitivity
 Proof.
   intros m1 m2 m3 h1 h2.
   simpl LessThan in &h1, &h2 |- *.
-  ipso (BinBase.order.strict.transitivity &h1 &h2).
+  ipso (Bin.order.strict.transitivity &h1 &h2).
 Qed.
 
 End strict. (* order.strict *)
@@ -300,7 +300,7 @@ Theorem specification
 Proof.
   intros m1 m2.
   simpl compare, LessThan in |- *.
-  let proof s := BinBase.comparison.specification (to_number &m1) (to_number &m2).
+  let proof s := Bin.comparison.specification (to_number &m1) (to_number &m2).
   match &s with | strict equality end.
   divide et impera.
   - ipso &strict.
@@ -317,7 +317,7 @@ Theorem antisymmetry
 Proof.
   intros m1 m2.
   simpl compare in |- *.
-  ipso (BinBase.comparison.antisymmetry (to_number &m1) (to_number &m2)).
+  ipso (Bin.comparison.antisymmetry (to_number &m1) (to_number &m2)).
 Qed.
 
 End comparison. (* comparison *)

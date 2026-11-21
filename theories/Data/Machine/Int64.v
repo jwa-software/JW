@@ -18,7 +18,7 @@ From JW Require Import Data.Machine.Endian.
 From JW Require Import Data.Machine.Modular.
 From JW Require Import Data.Machine.Signed.
 From JW Require Import Data.Number.Binary.SignedBin.
-From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Integer.
 From JW Require Import Data.Number.Nat.
@@ -49,8 +49,8 @@ Abbreviation Int64 := T.
 (* The number of values, 18446744073709551616 (2^64), the arithmetic wrapping
  * modulo it.
  *)
-(* [BinBase] *)
-Definition modulus := 10000000000000000000000000000000000000000000000000000000000000000%bin_base.
+(* [Bin] *)
+Definition modulus := 10000000000000000000000000000000000000000000000000000000000000000%b.
 
 (* [x] laid out as a [DWord] in the order [e] names. *)
 (* [Endian -> Int64 -> DWord] *)
@@ -592,23 +592,23 @@ Definition mul_with_overflow := fun (x : Int64) (y : Int64) .
 (* The bit pattern of [p] modulo 18446744073709551616, its bits appended from
  * the most significant.
  *)
-(* [BinBase -> Int64] *)
-Fixpoint from_bin_base (p : BinBase) : Int64 :=
+(* [Bin -> Int64] *)
+Fixpoint from_b (p : Bin) : Int64 :=
   match p with
-  | BinBase.One   => One
-  | BinBase.b0 p' => append_bit 0 (from_bin_base p')
-  | BinBase.b1 p' => append_bit 1 (from_bin_base p')
+  | Bin.One   => One
+  | Bin.b0 p' => append_bit 0 (from_b p')
+  | Bin.b1 p' => append_bit 1 (from_b p')
   end.
 
 (* [Bin0 -> Int64] *)
 Definition from_b0 := fun (n : Bin0) .
   match n with
   | Bin0.Zero       => Zero
-  | Bin0.Positive p => from_bin_base p
+  | Bin0.Positive p => from_b p
   end.
 
 (* [Nat -> Int64] *)
-Definition from_nat := fun (n : Nat) . from_bin_base (BinBase.from_nat n).
+Definition from_nat := fun (n : Nat) . from_b (Bin.from_nat n).
 
 (* [Nat0 -> Int64] *)
 Definition from_nat0 := fun (n : Nat0) . from_b0 (Bin0.from_nat0 n).
@@ -1422,19 +1422,19 @@ Proof.
     simpl in |- *.
     quod idem est.
   - simpl from_b0 in |- *.
-    match p with | One | b0 (p' by IH) | b1 (p' by IH) end per BinBase.induction.
+    match p with | One | b0 (p' by IH) | b1 (p' by IH) end per Bin.induction.
     + simpl Bin0.modulo, Bin0.div in |- *.
       simpl in |- *.
       quod idem est.
     + lemma unfolding
-        : from_bin_base (BinBase.b0 &p') = append_bit 0 (from_bin_base &p').
+        : from_b (Bin.b0 &p') = append_bit 0 (from_b &p').
       {
         simpl in |- *.
         quod idem est.
       }
       leibniz
         &unfolding,
-        (reinterpretation.appending 0 (from_bin_base &p')),
+        (reinterpretation.appending 0 (from_b &p')),
         &IH,
         <- (Bin0.modulo.sum.left.absorption
           (10 * (Bin0.Positive &p' %. modulus))%b0
@@ -1448,14 +1448,14 @@ Proof.
       simpl in |- *.
       quod idem est.
     + lemma unfolding
-        : from_bin_base (BinBase.b1 &p') = append_bit 1 (from_bin_base &p').
+        : from_b (Bin.b1 &p') = append_bit 1 (from_b &p').
       {
         simpl in |- *.
         quod idem est.
       }
       leibniz
         &unfolding,
-        (reinterpretation.appending 1 (from_bin_base &p')),
+        (reinterpretation.appending 1 (from_b &p')),
         &IH,
         <- (Bin0.modulo.sum.left.absorption
           (10 * (Bin0.Positive &p' %. modulus))%b0
@@ -1467,7 +1467,7 @@ Proof.
           (Bit.to_b0 1) modulus)
         in |- *.
       simpl in |- *.
-      simpl BinBase.add in |- *.
+      simpl Bin.add in |- *.
       simpl in |- *.
       quod idem est.
 Qed.
@@ -1756,7 +1756,7 @@ Proof.
   lemma base : (Bit.to_b0 0 < 1)%b0.
   {
     simpl Bin0.LessThan in |- *.
-    exists BinBase.One.
+    exists Bin.One.
     simpl in |- *.
     quod idem est.
   }
@@ -2326,7 +2326,7 @@ Proof.
     {
       simpl SignedBin.add in |- *.
       simpl in |- *.
-      simpl BinBase.add in |- *.
+      simpl Bin.add in |- *.
       simpl in |- *.
       quod idem est.
     }
@@ -2342,7 +2342,7 @@ Proof.
     lemma ten : (10 = 1 + 1)%b0.
     {
       simpl in |- *.
-      simpl BinBase.add in |- *.
+      simpl Bin.add in |- *.
       simpl in |- *.
       quod idem est.
     }
@@ -2532,7 +2532,7 @@ Proof.
 Qed.
 
 (* conversion.signed_bin.negative *)
-Lemma negative : forall (p : BinBase) . from_b_signed (SignedBin.Negative p) = - from_bin_base p.
+Lemma negative : forall (p : Bin) . from_b_signed (SignedBin.Negative p) = - from_b p.
 Proof.
   intros p.
   simpl from_b_signed in |- *.
@@ -2542,13 +2542,13 @@ Proof.
     simpl from_b0 in |- *.
     quod idem est.
   }
-  lemma unfolded : from_b0 (Bin0.Positive &p) = from_bin_base &p.
+  lemma unfolded : from_b0 (Bin0.Positive &p) = from_b &p.
   {
     simpl from_b0 in |- *.
     quod idem est.
   }
   leibniz &nothing, &unfolded in |- *.
-  match (addition.identity (- from_bin_base &p)) with | left _ end.
+  match (addition.identity (- from_b &p)) with | left _ end.
   ipso &left.
 Qed.
 
@@ -2558,7 +2558,7 @@ Module boundedness. (* conversion.boundedness *)
 
 (* conversion.boundedness.positive *)
 Theorem positive
-  : forall (x : Int64) (p : BinBase) .
+  : forall (x : Int64) (p : Bin) .
       to_b_signed x = SignedBin.Positive p
       -> (p < 1000000000000000000000000000000000000000000000000000000000000000)%b0.
 Proof.
@@ -2604,7 +2604,7 @@ Qed.
 
 (* conversion.boundedness.negative *)
 Theorem negative
-  : forall (x : Int64) (p : BinBase) .
+  : forall (x : Int64) (p : Bin) .
       to_b_signed x = SignedBin.Negative p
       -> (p <= 1000000000000000000000000000000000000000000000000000000000000000)%b0.
 Proof.
@@ -2653,7 +2653,7 @@ Proof.
               = modulus)%b0.
         {
           simpl modulus, Bin0.add in |- *.
-          simpl BinBase.add in |- *.
+          simpl Bin.add in |- *.
           simpl in |- *.
           quod idem est.
         }
@@ -2682,9 +2682,9 @@ Proof.
         < modulus)%b0.
   {
     simpl Bin0.LessThan in |- *.
-    exists 1000000000000000000000000000000000000000000000000000000000000000%bin_base.
+    exists 1000000000000000000000000000000000000000000000000000000000000000%b.
     simpl modulus, Bin0.add in |- *.
-    simpl BinBase.add in |- *.
+    simpl Bin.add in |- *.
     simpl in |- *.
     quod idem est.
   }
@@ -2719,7 +2719,7 @@ Qed.
 
 (* conversion.retraction.negative *)
 Theorem negative
-  : forall (p : BinBase) .
+  : forall (p : Bin) .
       (p <= 1000000000000000000000000000000000000000000000000000000000000000)%b0
       -> to_b_signed (from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p.
 Proof.
@@ -2730,9 +2730,9 @@ Proof.
         < modulus)%b0.
   {
     simpl Bin0.LessThan in |- *.
-    exists 1000000000000000000000000000000000000000000000000000000000000000%bin_base.
+    exists 1000000000000000000000000000000000000000000000000000000000000000%b.
     simpl modulus, Bin0.add in |- *.
-    simpl BinBase.add in |- *.
+    simpl Bin.add in |- *.
     simpl in |- *.
     quod idem est.
   }
@@ -2752,9 +2752,9 @@ Proof.
     leibniz (Bin0.addition.commutativity k p) in |- *.
     ipso &ek.
   }
-  lemma valuek : unsigned_value (from_bin_base &k) = k.
+  lemma valuek : unsigned_value (from_b &k) = k.
   {
-    lemma through : from_bin_base &k = from_b0 k.
+    lemma through : from_b &k = from_b0 k.
     {
       simpl from_b0 in |- *.
       quod idem est.
@@ -2764,9 +2764,9 @@ Proof.
       in |- *.
     quod idem est.
   }
-  lemma valuep : unsigned_value (from_bin_base &p) = p.
+  lemma valuep : unsigned_value (from_b &p) = p.
   {
-    lemma through : from_bin_base &p = from_b0 p.
+    lemma through : from_b &p = from_b0 p.
     {
       simpl from_b0 in |- *.
       quod idem est.
@@ -2776,12 +2776,12 @@ Proof.
       in |- *.
     quod idem est.
   }
-  lemma sum : from_bin_base &k + from_bin_base &p = Zero.
+  lemma sum : from_b &k + from_b &p = Zero.
   {
-    lemma facto : unsigned_value (from_bin_base &k + from_bin_base &p) = unsigned_value Zero.
+    lemma facto : unsigned_value (from_b &k + from_b &p) = unsigned_value Zero.
     {
       leibniz
-        (reinterpretation.addition (from_bin_base &k) (from_bin_base &p)),
+        (reinterpretation.addition (from_b &k) (from_b &p)),
         &valuek, &valuep, reinterpretation.zero,
         (Bin0.addition.commutativity k p),
         &ek
@@ -2793,15 +2793,15 @@ Proof.
     }
     ipso (reinterpretation.injectivity &facto).
   }
-  lemma complement : - from_bin_base &p = from_bin_base &k.
+  lemma complement : - from_b &p = from_b &k.
   {
-    match (addition.identity (- from_bin_base &p)) with | left _ end.
-    match (addition.inverse (from_bin_base &p)) with | _ right end.
-    match (addition.identity (from_bin_base &k)) with | _ right' end.
+    match (addition.identity (- from_b &p)) with | left _ end.
+    match (addition.inverse (from_b &p)) with | _ right end.
+    match (addition.identity (from_b &k)) with | _ right' end.
     leibniz
       <- &left,
       <- &sum,
-      (addition.associativity (from_bin_base &k) (from_bin_base &p) (- from_bin_base &p)),
+      (addition.associativity (from_b &k) (from_b &p) (- from_b &p)),
       &right,
       &right'
       in |- *.
@@ -2814,13 +2814,13 @@ Proof.
         = modulus)%b0.
   {
     simpl modulus, Bin0.add in |- *.
-    simpl BinBase.add in |- *.
+    simpl Bin.add in |- *.
     simpl in |- *.
     quod idem est.
   }
-  lemma sign : sign_bit (from_bin_base &k) = 1%bit.
+  lemma sign : sign_bit (from_b &k) = 1%bit.
   {
-    match (sign_bit (from_bin_base &k)) with | Zero | One end |- s.
+    match (sign_bit (from_b &k)) with | Zero | One end |- s.
     - let proof small := reinterpretation.sign.clear _ &s.
       leibniz &valuek in &small.
       let proof total := Bin0.addition.order.strict.monotonicity _ _ _ _ &h &small.
@@ -2852,7 +2852,7 @@ Module division. (* conversion.division *)
 
 (* conversion.division.positive *)
 Theorem positive
-  : forall (x : Int64) (y : Int64) (d : BinBase) .
+  : forall (x : Int64) (y : Int64) (d : Bin) .
       to_b_signed y = SignedBin.Positive d -> Option.map to_b_signed (x /. y)%int64 = Some (x /. d)%b_signed.
 Proof.
   intros x y d e.
@@ -2862,7 +2862,7 @@ Proof.
       : (0 < 1000000000000000000000000000000000000000000000000000000000000000)%b0.
     {
       simpl Bin0.LessThan in |- *.
-      exists 1000000000000000000000000000000000000000000000000000000000000000%bin_base.
+      exists 1000000000000000000000000000000000000000000000000000000000000000%b.
       simpl Bin0.add in |- *.
       quod idem est.
     }
@@ -2908,10 +2908,10 @@ Qed.
 
 (* conversion.division.negative *)
 Theorem negative
-  : forall (x : Int64) (y : Int64) (d : BinBase) .
+  : forall (x : Int64) (y : Int64) (d : Bin) .
       to_b_signed y = SignedBin.Negative d
       -> ~ (to_b_signed x = (-1000000000000000000000000000000000000000000000000000000000000000)%b_signed
-            /\ d = BinBase.One)
+            /\ d = Bin.One)
       -> Option.map to_b_signed (x /. y)%int64 = Some (SignedBin.negate (x /. d)%b_signed).
 Proof.
   intros x y d e h.
@@ -2921,7 +2921,7 @@ Proof.
       : (0 < 1000000000000000000000000000000000000000000000000000000000000000)%b0.
     {
       simpl Bin0.LessThan in |- *.
-      exists 1000000000000000000000000000000000000000000000000000000000000000%bin_base.
+      exists 1000000000000000000000000000000000000000000000000000000000000000%b.
       simpl Bin0.add in |- *.
       quod idem est.
     }
@@ -2939,8 +2939,8 @@ Proof.
       {
         match &r with | same | smaller end.
         - match &d with | One | b0 d' | b1 d' end.
-          + let proof g := congru Bin0.to_bin_base, &same.
-            simpl Bin0.to_bin_base in &g.
+          + let proof g := congru Bin0.to_b, &same.
+            simpl Bin0.to_b in &g.
             let proof k := Option.some.injectivity &g.
             leibniz &k in &h.
             ex
@@ -2948,22 +2948,22 @@ Proof.
                 (conjoin
                   (refl
                     (-1000000000000000000000000000000000000000000000000000000000000000)%b_signed),
-                  (refl BinBase.One)))
+                  (refl Bin.One)))
               quodlibet.
-          + lemma differ : ~ (BinBase.b0 &d' = BinBase.One).
+          + lemma differ : ~ (Bin.b0 &d' = Bin.One).
             {
               intro k.
               ex &k quodlibet.
             }
             leibniz <- &same in |- *.
-            ipso (Bin0.division.quotient.strict.boundedness &p (BinBase.b0 &d') &differ).
-          + lemma differ : ~ (BinBase.b1 &d' = BinBase.One).
+            ipso (Bin0.division.quotient.strict.boundedness &p (Bin.b0 &d') &differ).
+          + lemma differ : ~ (Bin.b1 &d' = Bin.One).
             {
               intro k.
               ex &k quodlibet.
             }
             leibniz <- &same in |- *.
-            ipso (Bin0.division.quotient.strict.boundedness &p (BinBase.b1 &d') &differ).
+            ipso (Bin0.division.quotient.strict.boundedness &p (Bin.b1 &d') &differ).
         - ipso
             (Comparable.order.mixed.left.transitivity
               (Bin0.division.quotient.boundedness p &d) &smaller).
@@ -3052,10 +3052,10 @@ Definition compare := compare.
 Definition mul := mul.
 Definition mul_with_overflow := mul_with_overflow.
 Definition half :=
-  1000000000000000000000000000000000000000000000000000000000000000%bin_base.
+  1000000000000000000000000000000000000000000000000000000000000000%b.
 Definition modulus := modulus.
 Definition beyond :=
-  11000000000000000000000000000000000000000000000000000000000000000%bin_base.
+  11000000000000000000000000000000000000000000000000000000000000000%b.
 
 Module order. (* Width.order *)
 
@@ -3274,7 +3274,7 @@ Qed.
 Theorem positivity : (0 < to_b_signed Max)%b_signed.
 Proof.
   simpl SignedBin.LessThan in |- *.
-  exists 111111111111111111111111111111111111111111111111111111111111111%bin_base.
+  exists 111111111111111111111111111111111111111111111111111111111111111%b.
   ipso (refl (to_b_signed Max)).
 Qed.
 

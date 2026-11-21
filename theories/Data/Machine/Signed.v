@@ -7,7 +7,7 @@ From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Number.Binary.SignedBin.
-From JW Require Import Data.Number.Binary.BinBase.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Product.
 From JW Require Import Tactics.Equation.
@@ -42,9 +42,9 @@ Parameter Inline sub_with_overflow : T -> T -> Product Bit T.
 Parameter Inline compare : T -> T -> Comparison.
 Parameter Inline mul : T -> T -> T.
 Parameter Inline mul_with_overflow : T -> T -> Product Bit T.
-Parameter Inline half : BinBase.
-Parameter Inline modulus : BinBase.
-Parameter Inline beyond : BinBase.
+Parameter Inline half : Bin.
+Parameter Inline modulus : Bin.
+Parameter Inline beyond : Bin.
 
 Module order. (* order *)
 
@@ -98,11 +98,11 @@ End backward. (* conversion.backward *)
 Module boundedness. (* conversion.boundedness *)
 
 Parameter positive
-  : forall (x : T) (p : BinBase) .
+  : forall (x : T) (p : Bin) .
       to_b_signed x = SignedBin.Positive p
       -> (Bin0.Positive p < Bin0.Positive half)%b0.
 Parameter negative
-  : forall (x : T) (p : BinBase) .
+  : forall (x : T) (p : Bin) .
       to_b_signed x = SignedBin.Negative p
       -> (Bin0.Positive p <= Bin0.Positive half)%b0.
 
@@ -115,7 +115,7 @@ Parameter nonnegative
       (n < Bin0.Positive half)%b0
       -> to_b_signed (from_b_signed (SignedBin.from_b0 n)) = SignedBin.from_b0 n.
 Parameter negative
-  : forall (p : BinBase) .
+  : forall (p : Bin) .
       (Bin0.Positive p <= Bin0.Positive half)%b0
       -> to_b_signed (from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p.
 
@@ -666,7 +666,7 @@ Proof.
     ipso &right_inverse.
   }
   lemma positive
-    : forall (p : BinBase) .
+    : forall (p : Bin) .
         W.from_b_signed (SignedBin.Positive p) = W.from_b0 (Bin0.Positive p).
   {
     intro p.
@@ -681,7 +681,7 @@ Proof.
     ipso (refl (W.from_b0 (Bin0.Positive &p))).
   }
   lemma negative
-    : forall (p : BinBase) .
+    : forall (p : Bin) .
         W.from_b_signed (SignedBin.Negative p) = - W.from_b0 (Bin0.Positive p).
   {
     intro p.
@@ -712,8 +712,8 @@ Proof.
     ipso &i.
   }
   lemma product
-    : forall (p : BinBase) (q : BinBase) .
-        W.from_b0 (Bin0.Positive (p * q)%bin_base)
+    : forall (p : Bin) (q : Bin) .
+        W.from_b0 (Bin0.Positive (p * q)%b)
         = W.from_b0 (Bin0.Positive p)
           * W.from_b0 (Bin0.Positive q).
   {
@@ -724,8 +724,8 @@ Proof.
   - match &b with | q | | q end.
     + let proof e
         : W.from_b_signed (SignedBin.Negative &p * SignedBin.Negative &q)%b_signed
-          = W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
-        := &positive (&p * &q)%bin_base.
+          = W.from_b0 (Bin0.Positive (&p * &q)%b)
+        := &positive (&p * &q)%b.
       leibniz
         &e,
         (&negative &p),
@@ -749,8 +749,8 @@ Proof.
       quod idem est.
     + let proof e
         : W.from_b_signed (SignedBin.Negative &p * SignedBin.Positive &q)%b_signed
-          = - W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
-        := &negative (&p * &q)%bin_base.
+          = - W.from_b0 (Bin0.Positive (&p * &q)%b)
+        := &negative (&p * &q)%b.
       leibniz
         &e,
         (&negative &p),
@@ -768,8 +768,8 @@ Proof.
   - match &b with | q | | q end.
     + let proof e
         : W.from_b_signed (SignedBin.Positive &p * SignedBin.Negative &q)%b_signed
-          = - W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
-        := &negative (&p * &q)%bin_base.
+          = - W.from_b0 (Bin0.Positive (&p * &q)%b)
+        := &negative (&p * &q)%b.
       leibniz
         &e,
         (&positive &p),
@@ -787,8 +787,8 @@ Proof.
       quod idem est.
     + let proof e
         : W.from_b_signed (SignedBin.Positive &p * SignedBin.Positive &q)%b_signed
-          = W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
-        := &positive (&p * &q)%bin_base.
+          = W.from_b0 (Bin0.Positive (&p * &q)%b)
+        := &positive (&p * &q)%b.
       leibniz &e, (&positive &p), (&positive &q), (&product &p &q) in |- *.
       quod idem est.
 Qed.
