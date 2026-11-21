@@ -17,11 +17,11 @@ Definition data_calendar_all_delivers_month_conversion_specification
   := Month.conversion.specification.
 
 Definition data_calendar_all_delivers_month_succession_forward_inverse
-  : forall (m : Month) . Month.previous (Month.next m) = m
+  : forall (m : Month) . Month.prev (Month.next m) = m
   := Month.succession.forward.inverse.
 
 Definition data_calendar_all_delivers_month_succession_backward_inverse
-  : forall (m : Month) . Month.next (Month.previous m) = m
+  : forall (m : Month) . Month.next (Month.prev m) = m
   := Month.succession.backward.inverse.
 
 Definition data_calendar_all_delivers_month_comparable
@@ -44,8 +44,8 @@ Definition data_calendar_all_computes_month_next
   : Month.next Month.December = Month.January
   := Identity.reflexivity _.
 
-Definition data_calendar_all_computes_month_previous
-  : Month.previous Month.January = Month.December
+Definition data_calendar_all_computes_month_prev
+  : Month.prev Month.January = Month.December
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_month_compare
