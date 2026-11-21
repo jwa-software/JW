@@ -33,6 +33,8 @@ Parameter Inline LessOrEqual : T -> T -> Prop.
 Parameter Inline add_with_carry : Bit -> T -> T -> Product Bit T.
 Parameter Inline sub_with_borrow : Bit -> T -> T -> Product Bit T.
 Parameter Inline compare : T -> T -> Comparison.
+Parameter Inline mul : T -> T -> T.
+Parameter Inline mul_with_overflow : T -> T -> Product Bit T.
 Parameter Inline modulus : BinBase.
 
 Module order. (* order *)
@@ -63,6 +65,10 @@ Parameter injectivity
 Parameter comparison
   : forall (x : T) (y : T) .
       compare x y = BinWithZero.compare (to_bin_with_zero x) (to_bin_with_zero y).
+Parameter multiplication
+  : forall (x : T) (y : T) .
+      (to_bin_with_zero (mul x y)
+       = (to_bin_with_zero x * to_bin_with_zero y) %. modulus)%bin_with_zero.
 
 End conversion. (* conversion *)
 
@@ -90,6 +96,21 @@ Parameter specification
 
 End subtraction. (* flag.subtraction *)
 
+Module multiplication. (* flag.multiplication *)
+
+Parameter specification
+  : forall (x : T) (y : T) .
+      mul_with_overflow x y
+      = (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
+                 (BinWithZero.Positive modulus) with
+         | Comparison.Lt => 0%bit
+         | Comparison.Eq => 1%bit
+         | Comparison.Gt => 1%bit
+         end,
+         mul x y)%product.
+
+End multiplication. (* flag.multiplication *)
+
 End flag. (* flag *)
 
 Module maximum. (* maximum *)
@@ -113,6 +134,8 @@ Module Laws (W : Width).
 Local Notation "x + y" := (W.add x y) (only parsing)
   : jw_unsigned_scope.
 Local Notation "x - y" := (W.sub x y) (only parsing)
+  : jw_unsigned_scope.
+Local Notation "x * y" := (W.mul x y) (only parsing)
   : jw_unsigned_scope.
 Local Notation "x < y" := (W.LessThan x y) (only parsing)
   : jw_unsigned_scope.
@@ -363,6 +386,95 @@ Proof.
 Qed.
 
 End subtraction. (* overflow.subtraction *)
+
+Module multiplication. (* overflow.multiplication *)
+
+(* The flag is clear exactly when [BinWithZero.compare] puts the product of the
+ * values below the modulus.
+ *)
+(* overflow.multiplication.specification *)
+Theorem specification
+  : forall (x : W.T) (y : W.T) .
+      (pi_1 (W.mul_with_overflow x y))%product = 0%bit
+      <-> (W.to_bin_with_zero x * W.to_bin_with_zero y
+           < BinWithZero.Positive W.modulus)%bin_with_zero.
+Proof.
+  intros x y.
+  leibniz (W.flag.multiplication.specification &x &y) in |- *.
+  let proof s :=
+    BinWithZero.comparison.specification
+      (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero
+      (BinWithZero.Positive W.modulus).
+  match &s with | strict _ end.
+  match (BinWithZero.compare (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero
+           (BinWithZero.Positive W.modulus))
+    with | Lt | Eq | Gt end |- c.
+  - divide et impera.
+    + intro e.
+      ipso (modus aequans &strict, (refl Comparison.Lt)).
+    + intro h.
+      ipso (refl 0%bit).
+  - divide et impera.
+    + intro e.
+      simpl in &e.
+      ex &e quodlibet.
+    + intro h.
+      let proof l := modus aequans &strict, &h.
+      ex &l quodlibet.
+  - divide et impera.
+    + intro e.
+      simpl in &e.
+      ex &e quodlibet.
+    + intro h.
+      let proof l := modus aequans &strict, &h.
+      ex &l quodlibet.
+Qed.
+
+(* A clear flag puts the product below the modulus, where the remainder leaves
+ * it as it is.
+ *)
+(* overflow.multiplication.exactness *)
+Theorem exactness
+  : forall (x : W.T) (y : W.T) .
+      (pi_1 (W.mul_with_overflow x y))%product = 0%bit
+      -> (W.to_bin_with_zero (x * y)
+          = W.to_bin_with_zero x * W.to_bin_with_zero y)%bin_with_zero.
+Proof.
+  intros x y f.
+  let proof h := modus aequans (overflow.multiplication.specification &x &y), &f.
+  leibniz
+    (W.conversion.multiplication &x &y),
+    (BinWithZero.modulo.identity
+       (W.to_bin_with_zero &x * W.to_bin_with_zero &y)%bin_with_zero W.modulus &h)
+    in |- *.
+  quod idem est.
+Qed.
+
+(* Two clear flags make both products exact, and a positive factor keeps the
+ * order of [BinWithZero].
+ *)
+(* overflow.multiplication.monotonicity *)
+Theorem monotonicity
+  : forall (x : W.T) (y : W.T) (z : W.T) .
+      (pi_1 (W.mul_with_overflow x y))%product = 0%bit
+      -> (pi_1 (W.mul_with_overflow x z))%product = 0%bit
+      -> W.Zero < x -> y < z -> x * y < x * z.
+Proof.
+  intros x y z fy fz hx h.
+  let proof g := modus aequans (W.order.strict.specification &y &z), &h.
+  let proof k := modus aequans (W.order.strict.specification W.Zero &x), &hx.
+  leibniz W.conversion.zero in &k.
+  let proof s :=
+    BinWithZero.multiplication.left.order.strict.monotonicity
+      (W.to_bin_with_zero &x) (W.to_bin_with_zero &y) (W.to_bin_with_zero &z) &k &g.
+  leibniz
+    <- (overflow.multiplication.exactness &x &y &fy),
+    <- (overflow.multiplication.exactness &x &z &fz)
+    in &s.
+  ipso (modus aequans (W.order.strict.specification (&x * &y) (&x * &z)), &s).
+Qed.
+
+End multiplication. (* overflow.multiplication *)
 
 End overflow. (* overflow *)
 

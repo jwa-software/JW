@@ -40,6 +40,8 @@ Parameter Inline LessOrEqual : T -> T -> Prop.
 Parameter Inline add_with_overflow : T -> T -> Product Bit T.
 Parameter Inline sub_with_overflow : T -> T -> Product Bit T.
 Parameter Inline compare : T -> T -> Comparison.
+Parameter Inline mul : T -> T -> T.
+Parameter Inline mul_with_overflow : T -> T -> Product Bit T.
 Parameter Inline half : BinBase.
 Parameter Inline modulus : BinBase.
 Parameter Inline beyond : BinBase.
@@ -125,6 +127,15 @@ Module reinterpretation. (* reinterpretation *)
 
 Parameter boundedness
   : forall (x : T) . (unsigned_value x < BinWithZero.Positive modulus)%bin_with_zero.
+Parameter injectivity
+  : forall {x : T} {y : T} . unsigned_value x = unsigned_value y -> x = y.
+Parameter multiplication
+  : forall (x : T) (y : T) .
+      (unsigned_value (mul x y)
+       = (unsigned_value x * unsigned_value y) %. modulus)%bin_with_zero.
+Parameter reduction
+  : forall (n : BinWithZero) .
+      (unsigned_value (from_bin_with_zero n) = n %. modulus)%bin_with_zero.
 
 Module reduction. (* reinterpretation.reduction *)
 
@@ -151,6 +162,27 @@ Parameter inverse
   : forall (x : T) . (add (negate x) x = Zero) /\ (add x (negate x) = Zero).
 
 End addition. (* addition *)
+
+Module multiplication. (* multiplication *)
+
+Parameter annihilation
+  : forall (x : T) . (mul Zero x = Zero) /\ (mul x Zero = Zero).
+
+Module left. (* multiplication.left *)
+
+Parameter negation
+  : forall (x : T) (y : T) . mul (negate x) y = negate (mul x y).
+
+End left. (* multiplication.left *)
+
+Module right. (* multiplication.right *)
+
+Parameter negation
+  : forall (x : T) (y : T) . mul x (negate y) = negate (mul x y).
+
+End right. (* multiplication.right *)
+
+End multiplication. (* multiplication *)
 
 Module subtraction. (* subtraction *)
 
@@ -179,6 +211,25 @@ Parameter specification
       = Bit.and (Bit.xor (sign_bit x) (sign_bit y)) (Bit.xor (sign_bit (sub x y)) (sign_bit x)).
 
 End subtraction. (* flag.subtraction *)
+
+Module multiplication. (* flag.multiplication *)
+
+Parameter specification
+  : forall (x : T) (y : T) .
+      mul_with_overflow x y
+      = (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+         | Comparison.Lt => 1%bit
+         | Comparison.Eq => 0%bit
+         | Comparison.Gt =>
+             match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+             | Comparison.Lt => 0%bit
+             | Comparison.Eq => 0%bit
+             | Comparison.Gt => 1%bit
+             end
+         end,
+         mul x y)%product.
+
+End multiplication. (* flag.multiplication *)
 
 End flag. (* flag *)
 
@@ -238,6 +289,8 @@ Local Notation "x + y" := (W.add x y) (only parsing)
   : jw_signed_scope.
 Local Notation "x - y" := (W.sub x y) (only parsing)
   : jw_signed_scope.
+Local Notation "x * y" := (W.mul x y) (only parsing)
+  : jw_signed_scope.
 Local Notation "- x" := (W.negate x)
   (at level 35, right associativity, only parsing)
   : jw_signed_scope.
@@ -262,6 +315,45 @@ Proof.
   ipso (disjoin _,
         (Bin.order.strict.transitivity
            (Bin.order.sign.negativity W.half) W.maximum.positivity)).
+Qed.
+
+(* [- (- x)] is [- (- x) + (- x + x)], and the first two add up to zero. *)
+Lemma involution : forall (x : W.T) . (- (- x)) = x.
+Proof.
+  intro x.
+  match (W.addition.identity (- (- &x))) with | _ i end.
+  leibniz <- &i in |- *.
+  match (W.addition.inverse &x) with | l _ end.
+  leibniz <- &l in |- *.
+  leibniz <- (W.addition.associativity (- (- &x)) (- &x) &x) in |- *.
+  match (W.addition.inverse (- &x)) with | cancel _ end.
+  leibniz &cancel in |- *.
+  match (W.addition.identity &x) with | z _ end.
+  ipso &z.
+Qed.
+
+(* Both sides have the unsigned reading [(m * n) %. W.modulus]. *)
+Lemma multiplicativity
+  : forall (m : BinWithZero) (n : BinWithZero) .
+      W.from_bin_with_zero (m * n)%bin_with_zero
+      = W.from_bin_with_zero m * W.from_bin_with_zero n.
+Proof.
+  intros m n.
+  lemma facto
+    : W.unsigned_value (W.from_bin_with_zero (m * n)%bin_with_zero)
+      = W.unsigned_value (W.from_bin_with_zero m * W.from_bin_with_zero n).
+  {
+    leibniz
+      (W.reinterpretation.reduction (&m * &n)%bin_with_zero),
+      (W.reinterpretation.multiplication (W.from_bin_with_zero &m) (W.from_bin_with_zero &n)),
+      (W.reinterpretation.reduction &m),
+      (W.reinterpretation.reduction &n),
+      (BinWithZero.modulo.product.left.absorption &m (&n %. W.modulus)%bin_with_zero W.modulus),
+      (BinWithZero.modulo.product.right.absorption &m &n W.modulus)
+      in |- *.
+    quod idem est.
+  }
+  ipso (W.reinterpretation.injectivity &facto).
 Qed.
 
 Module bound. (* bound *)
@@ -554,6 +646,151 @@ Proof.
     (W.conversion.section &y)
     in |- *.
   quod idem est.
+Qed.
+
+(* By the signs of [a] and [b]: [W.from_bin] of a positive [p] is
+ * [W.from_bin_with_zero p] and of a negative one its negation, [W.mul] takes
+ * the signs out as [Bin.mul] does, and [W.from_bin_with_zero] is
+ * multiplicative.
+ *)
+(* wrapping.multiplicativity *)
+Theorem multiplicativity
+  : forall (a : Bin) (b : Bin) . W.from_bin (a * b)%b = W.from_bin a * W.from_bin b.
+Proof.
+  intros a b.
+  lemma negated : - W.Zero = W.Zero.
+  {
+    match (W.addition.identity (- W.Zero)) with | left_identity _ end.
+    match (W.addition.inverse W.Zero) with | _ right_inverse end.
+    leibniz <- &left_identity in |- *.
+    ipso &right_inverse.
+  }
+  lemma positive
+    : forall (p : BinBase) .
+        W.from_bin (Bin.Positive p) = W.from_bin_with_zero (BinWithZero.Positive p).
+  {
+    intro p.
+    leibniz (W.conversion.backward.specification (Bin.Positive &p)) in |- *.
+    lemma vanishing : W.from_bin_with_zero (Bin.ramp (Bin.negate (Bin.Positive &p))) = W.Zero.
+    {
+      ipso W.reinterpretation.reduction.zero.
+    }
+    leibniz &vanishing, &negated in |- *.
+    match (W.addition.identity (W.from_bin_with_zero (Bin.ramp (Bin.Positive &p)))) with | _ i end.
+    leibniz &i in |- *.
+    ipso (refl (W.from_bin_with_zero (BinWithZero.Positive &p))).
+  }
+  lemma negative
+    : forall (p : BinBase) .
+        W.from_bin (Bin.Negative p) = - W.from_bin_with_zero (BinWithZero.Positive p).
+  {
+    intro p.
+    leibniz (W.conversion.backward.specification (Bin.Negative &p)) in |- *.
+    lemma vanishing : W.from_bin_with_zero (Bin.ramp (Bin.Negative &p)) = W.Zero.
+    {
+      ipso W.reinterpretation.reduction.zero.
+    }
+    leibniz &vanishing in |- *.
+    match (W.addition.identity (- W.from_bin_with_zero (Bin.ramp (Bin.negate (Bin.Negative &p)))))
+      with | i _ end.
+    leibniz &i in |- *.
+    ipso (refl (- W.from_bin_with_zero (BinWithZero.Positive &p))).
+  }
+  lemma zero : W.from_bin 0%b = W.Zero.
+  {
+    leibniz (W.conversion.backward.specification 0%b) in |- *.
+    lemma vanishing : W.from_bin_with_zero (Bin.ramp 0%b) = W.Zero.
+    {
+      ipso W.reinterpretation.reduction.zero.
+    }
+    lemma vanished : W.from_bin_with_zero (Bin.ramp (Bin.negate 0%b)) = W.Zero.
+    {
+      ipso W.reinterpretation.reduction.zero.
+    }
+    leibniz &vanishing, &vanished, &negated in |- *.
+    match (W.addition.identity W.Zero) with | i _ end.
+    ipso &i.
+  }
+  lemma product
+    : forall (p : BinBase) (q : BinBase) .
+        W.from_bin_with_zero (BinWithZero.Positive (p * q)%bin_base)
+        = W.from_bin_with_zero (BinWithZero.Positive p)
+          * W.from_bin_with_zero (BinWithZero.Positive q).
+  {
+    intros p q.
+    ipso (multiplicativity (BinWithZero.Positive &p) (BinWithZero.Positive &q)).
+  }
+  match &a with | p | | p end.
+  - match &b with | q | | q end.
+    + let proof e
+        : W.from_bin (Bin.Negative &p * Bin.Negative &q)%b
+          = W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+        := &positive (&p * &q)%bin_base.
+      leibniz
+        &e,
+        (&negative &p),
+        (&negative &q),
+        (W.multiplication.left.negation
+           (W.from_bin_with_zero (BinWithZero.Positive &p))
+           (- W.from_bin_with_zero (BinWithZero.Positive &q))),
+        (W.multiplication.right.negation
+           (W.from_bin_with_zero (BinWithZero.Positive &p))
+           (W.from_bin_with_zero (BinWithZero.Positive &q))),
+        (involution
+           (W.from_bin_with_zero (BinWithZero.Positive &p)
+            * W.from_bin_with_zero (BinWithZero.Positive &q))),
+        (&product &p &q)
+        in |- *.
+      quod idem est.
+    + let proof e : W.from_bin (Bin.Negative &p * 0)%b = W.Zero := &zero.
+      match (W.multiplication.annihilation (- W.from_bin_with_zero (BinWithZero.Positive &p)))
+        with | _ r end.
+      leibniz &e, (&negative &p), &zero, &r in |- *.
+      quod idem est.
+    + let proof e
+        : W.from_bin (Bin.Negative &p * Bin.Positive &q)%b
+          = - W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+        := &negative (&p * &q)%bin_base.
+      leibniz
+        &e,
+        (&negative &p),
+        (&positive &q),
+        (W.multiplication.left.negation
+           (W.from_bin_with_zero (BinWithZero.Positive &p))
+           (W.from_bin_with_zero (BinWithZero.Positive &q))),
+        (&product &p &q)
+        in |- *.
+      quod idem est.
+  - let proof e : W.from_bin (0 * &b)%b = W.Zero := &zero.
+    match (W.multiplication.annihilation (W.from_bin &b)) with | l _ end.
+    leibniz &e, &zero, &l in |- *.
+    quod idem est.
+  - match &b with | q | | q end.
+    + let proof e
+        : W.from_bin (Bin.Positive &p * Bin.Negative &q)%b
+          = - W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+        := &negative (&p * &q)%bin_base.
+      leibniz
+        &e,
+        (&positive &p),
+        (&negative &q),
+        (W.multiplication.right.negation
+           (W.from_bin_with_zero (BinWithZero.Positive &p))
+           (W.from_bin_with_zero (BinWithZero.Positive &q))),
+        (&product &p &q)
+        in |- *.
+      quod idem est.
+    + let proof e : W.from_bin (Bin.Positive &p * 0)%b = W.Zero := &zero.
+      match (W.multiplication.annihilation (W.from_bin_with_zero (BinWithZero.Positive &p)))
+        with | _ r end.
+      leibniz &e, (&positive &p), &zero, &r in |- *.
+      quod idem est.
+    + let proof e
+        : W.from_bin (Bin.Positive &p * Bin.Positive &q)%b
+          = W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+        := &positive (&p * &q)%bin_base.
+      leibniz &e, (&positive &p), (&positive &q), (&product &p &q) in |- *.
+      quod idem est.
 Qed.
 
 (* [W.conversion.retraction.nonnegative] and [W.conversion.retraction.negative]
@@ -1337,6 +1574,121 @@ Qed.
 End right. (* overflow.subtraction.right *)
 
 End subtraction. (* overflow.subtraction *)
+
+Module multiplication. (* overflow.multiplication *)
+
+(* The flag reads [Bin.compare] of the product against both ends of the range:
+ * below the least or above the greatest sets it, anything between clears it.
+ *)
+(* overflow.multiplication.specification *)
+Theorem specification
+  : forall (x : W.T) (y : W.T) .
+      (pi_1 (W.mul_with_overflow x y))%product = 0%bit
+      <-> (Bin.Negative W.half <= W.to_bin x * W.to_bin y
+           /\ W.to_bin x * W.to_bin y <= W.to_bin W.Max)%b.
+Proof.
+  intros x y.
+  leibniz (W.flag.multiplication.specification &x &y), W.minimum.specification in |- *.
+  let proof low :=
+    Bin.comparison.specification (W.to_bin &x * W.to_bin &y)%b (Bin.Negative W.half).
+  match &low with | below equal end.
+  let proof above :=
+    Comparable.comparison.strict.transposition.specification
+      (W.to_bin &x * W.to_bin &y)%b (Bin.Negative W.half).
+  let proof high := Bin.comparison.specification (W.to_bin &x * W.to_bin &y)%b (W.to_bin W.Max).
+  match &high with | under top end.
+  let proof past :=
+    Comparable.comparison.strict.transposition.specification
+      (W.to_bin &x * W.to_bin &y)%b (W.to_bin W.Max).
+  match (Bin.compare (W.to_bin &x * W.to_bin &y)%b (Bin.Negative W.half))
+    with | Lt | Eq | Gt end |- c.
+  - divide et impera.
+    + intro e.
+      simpl in &e.
+      ex &e quodlibet.
+    + intro r.
+      match &r with | l _ end.
+      let proof s := modus aequans &below, (refl Comparison.Lt).
+      ex (Bin.order.strict.irreflexivity (Bin.Negative W.half)
+            (Comparable.order.mixed.left.transitivity &l &s))
+        quodlibet.
+  - divide et impera.
+    + intro e.
+      let proof q := modus aequans &equal, (refl Comparison.Eq).
+      leibniz &q in |- *.
+      ipso (conjoin (disjoin (refl (Bin.Negative W.half)), _), ordered).
+    + intro r.
+      ipso (refl 0%bit).
+  - let proof g := modus aequans &above, (refl Comparison.Gt).
+    match (Bin.compare (W.to_bin &x * W.to_bin &y)%b (W.to_bin W.Max))
+      with | Lt | Eq | Gt end |- d.
+    + divide et impera.
+      * intro e.
+        ipso (conjoin (disjoin _, &g), (disjoin _, (modus aequans &under, (refl Comparison.Lt)))).
+      * intro r.
+        ipso (refl 0%bit).
+    + divide et impera.
+      * intro e.
+        ipso (conjoin (disjoin _, &g), (disjoin (modus aequans &top, (refl Comparison.Eq)), _)).
+      * intro r.
+        ipso (refl 0%bit).
+    + divide et impera.
+      * intro e.
+        simpl in &e.
+        ex &e quodlibet.
+      * intro r.
+        match &r with | _ h end.
+        let proof m := modus aequans &past, (refl Comparison.Gt).
+        ex (Bin.order.strict.irreflexivity (W.to_bin W.Max)
+              (Comparable.order.mixed.right.transitivity &m &h))
+          quodlibet.
+Qed.
+
+(* A clear flag puts the product in range, where [W.from_bin] keeps it. *)
+(* overflow.multiplication.exactness *)
+Theorem exactness
+  : forall (x : W.T) (y : W.T) .
+      (pi_1 (W.mul_with_overflow x y))%product = 0%bit
+      -> W.to_bin (x * y) = (W.to_bin x * W.to_bin y)%b.
+Proof.
+  intros x y f.
+  let proof r := modus aequans (overflow.multiplication.specification &x &y), &f.
+  lemma lifted : &x * &y = W.from_bin (W.to_bin &x * W.to_bin &y)%b.
+  {
+    leibniz
+      (wrapping.multiplicativity (W.to_bin &x) (W.to_bin &y)),
+      (W.conversion.section &x),
+      (W.conversion.section &y)
+      in |- *.
+    quod idem est.
+  }
+  leibniz &lifted in |- *.
+  ipso (wrapping.retraction (W.to_bin &x * W.to_bin &y)%b &r).
+Qed.
+
+(* Two clear flags make both products exact, and a positive factor keeps
+ * [Bin]'s order.
+ *)
+(* overflow.multiplication.monotonicity *)
+Theorem monotonicity
+  : forall (x : W.T) (y : W.T) (z : W.T) .
+      (pi_1 (W.mul_with_overflow x y))%product = 0%bit
+      -> (pi_1 (W.mul_with_overflow x z))%product = 0%bit
+      -> (0 < W.to_bin x)%b -> y < z -> x * y < x * z.
+Proof.
+  intros x y z fy fz hx h.
+  let proof g := modus aequans (W.order.strict.specification &y &z), &h.
+  let proof s :=
+    Bin.multiplication.left.order.strict.monotonicity
+      (W.to_bin &x) (W.to_bin &y) (W.to_bin &z) &hx &g.
+  leibniz
+    <- (overflow.multiplication.exactness &x &y &fy),
+    <- (overflow.multiplication.exactness &x &z &fz)
+    in &s.
+  ipso (modus aequans (W.order.strict.specification (&x * &y) (&x * &z)), &s).
+Qed.
+
+End multiplication. (* overflow.multiplication *)
 
 End overflow. (* overflow *)
 
