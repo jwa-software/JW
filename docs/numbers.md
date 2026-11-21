@@ -70,3 +70,12 @@ Arithmetic is written with each type's notation and scope key, `(a + b)%n`, `(p 
 - the bitwise `&&`, `||` and `^^`, with `shift_left`, `shift_right` and `test_bit`; `shift_right` is division by a power of two (`BinWithZero.shift.right.quotient`).
 
 **Their laws are proved through the unary types.** `BinBase.to_nat`, `BinWithZero.to_nat0` and `Bin.to_integer` convert each to its counterpart, and the laws go through them (`BinWithZero.conversion.addition`, `Bin.conversion.difference`). The algebraic laws and instances are those of `Nat`, `Nat0` and `Integer`: `Bin` is a ring, and its addition an abelian group.
+
+**`Bin`'s order meets its arithmetic.** The laws of `<` and `<=` against the operations:
+
+- **addition:** `Bin.addition.order.strict.monotonicity` (`y < z -> x + y < x + z`), its `cancellation`, `Bin.addition.order.monotonicity` for `<=`, `Bin.addition.order.mixed.monotonicity` (`a <= c -> b < d -> a + b < c + d`) and `Bin.addition.order.accumulation` (both `<=`);
+- **negation and subtraction:** `Bin.order.negation.strict.reversal` (`x < y <-> - y < - x`), `Bin.order.negation.reversal` for `<=`, and `Bin.order.subtraction.{left.monotonicity, right.antitonicity, positivity}`;
+- **the successor:** `Bin.order.increment.{extensivity, specification, adjacency}`, `Bin.order.decrement.extensivity` and `Bin.order.discreteness` (`x < y + 1 <-> x <= y`);
+- **signs:** `Bin.order.sign.negativity` (`Negative p < 0`) and `Bin.order.sign.positivity` (`0 < Positive p`), and `Bin.order.embedding.{preservation, nonnegativity}` for a `BinWithZero` read as a `Bin`;
+- **multiplication:** `Bin.multiplication.left.order.strict.{monotonicity, reversal}` (by a positive factor, by a negative one), `Bin.multiplication.left.order.monotonicity`, `Bin.multiplication.left.negation` and the signs of a product, `Bin.multiplication.sign.*`; `BinWithZero.multiplication.left.order.strict.monotonicity` is the same law for `BinWithZero`;
+- **comparison, minimum and maximum:** `Bin.comparison.{translation, negation}`, `Bin.minimum.left.distributivity.addition`, `Bin.maximum.left.distributivity.addition` and `Bin.minimum.duality`.
