@@ -38,30 +38,30 @@ let int_of_bin_with_zero = function
   | BinWithZero.Positive p -> int_of_bin_base p
 ;;
 
-let bin k =
+let signed_bin k =
   if k = 0
-  then Bin.Zero
+  then SignedBin.Zero
   else if k > 0
-  then Bin.Positive (bin_base k)
-  else Bin.Negative (bin_base (-k))
+  then SignedBin.Positive (bin_base k)
+  else SignedBin.Negative (bin_base (-k))
 ;;
 
-let int_of_bin = function
-  | Bin.Zero -> 0
-  | Bin.Positive p -> int_of_bin_base p
-  | Bin.Negative p -> -int_of_bin_base p
+let int_of_signed_bin = function
+  | SignedBin.Zero -> 0
+  | SignedBin.Positive p -> int_of_bin_base p
+  | SignedBin.Negative p -> -int_of_bin_base p
 ;;
 
 (* A flag and an [Int8] result, as OCaml integers. *)
-let int8_flagged (flag, x) = flag = Bit.One, int_of_bin (Int8.to_bin x)
-let int8 k = Int8.from_bin (bin k)
+let int8_flagged (flag, x) = flag = Bit.One, int_of_signed_bin (Int8.to_b_signed x)
+let int8 k = Int8.from_b_signed (signed_bin k)
 
 (* A carry or borrow and a [UInt8] result, as OCaml integers. *)
 let uint8_flagged (flag, x) =
   flag = Bit.One, int_of_bin_with_zero (UInt8.to_bin_with_zero x)
 ;;
 
-let uint8 k = UInt8.from_bin (bin k)
+let uint8 k = UInt8.from_b_signed (signed_bin k)
 
 (* [2^n - 1] and [2^n] as [BinBase] values, for numbers past OCaml's [int]. *)
 let rec ones n = if n = 1 then BinBase.One else BinBase.Coq_b1 (ones (n - 1))
@@ -146,7 +146,9 @@ let () =
   check
     "Int8.sub_with_overflow 0 (-128)"
     (int8_flagged (Int8.sub_with_overflow (int8 0) (int8 (-128))) = (true, -128));
-  check "Int8.negate (-128)" (int_of_bin (Int8.to_bin (Int8.negate (int8 (-128)))) = -128);
+  check
+    "Int8.negate (-128)"
+    (int_of_signed_bin (Int8.to_b_signed (Int8.negate (int8 (-128)))) = -128);
   check
     "UInt8.add_with_carry 0 200 100"
     (uint8_flagged (UInt8.add_with_carry Bit.Zero (uint8 200) (uint8 100)) = (true, 44));
@@ -170,18 +172,18 @@ let () =
     (int8_flagged (Int8.mul_with_overflow (int8 (-16)) (int8 8)) = (false, -128));
   (let flag, sum =
      Int64.add_with_overflow
-       (Int64.from_bin (Bin.Positive (ones 63)))
-       (Int64.from_bin (Bin.Positive BinBase.One))
+       (Int64.from_b_signed (SignedBin.Positive (ones 63)))
+       (Int64.from_b_signed (SignedBin.Positive BinBase.One))
    in
    check
      "Int64.add_with_overflow 9223372036854775807 1"
-     (flag = Bit.One && Int64.to_bin sum = Bin.Negative (power2 63)));
+     (flag = Bit.One && Int64.to_b_signed sum = SignedBin.Negative (power2 63)));
   let flag, sum =
     Int64.add_with_overflow
-      (Int64.from_bin (Bin.Positive (BinBase.Coq_b0 (ones 62))))
-      (Int64.from_bin (Bin.Positive BinBase.One))
+      (Int64.from_b_signed (SignedBin.Positive (BinBase.Coq_b0 (ones 62))))
+      (Int64.from_b_signed (SignedBin.Positive BinBase.One))
   in
   check
     "Int64.add_with_overflow 9223372036854775806 1"
-    (flag = Bit.Zero && Int64.to_bin sum = Bin.Positive (ones 63))
+    (flag = Bit.Zero && Int64.to_b_signed sum = SignedBin.Positive (ones 63))
 ;;

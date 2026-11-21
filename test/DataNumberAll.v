@@ -942,76 +942,76 @@ Proof.
 Qed.
 
 Definition data_number_all_delivers_bin
-  : Bin -> Verum
-  := fun (_ : Bin) . I.
+  : SignedBin -> Verum
+  := fun (_ : SignedBin) . I.
 
-Definition data_number_all_delivers_bin_addition
-  : forall (x : Bin) (y : Bin) .
-      Bin.to_integer (x + y)%b
-      = (Bin.to_integer x + Bin.to_integer y)%z
-  := Bin.conversion.addition.
+Definition data_number_all_delivers_signed_bin_addition
+  : forall (x : SignedBin) (y : SignedBin) .
+      SignedBin.to_integer (x + y)%b_signed
+      = (SignedBin.to_integer x + SignedBin.to_integer y)%z
+  := SignedBin.conversion.addition.
 
-Definition data_number_all_delivers_bin_difference
+Definition data_number_all_delivers_signed_bin_difference
   : forall (p : BinBase) (q : BinBase) .
-      Bin.to_integer (Bin.bin_base_difference p q)
+      SignedBin.to_integer (SignedBin.bin_base_difference p q)
       = Integer.nat_difference (BinBase.to_nat p) (BinBase.to_nat q)
-  := Bin.conversion.difference.
+  := SignedBin.conversion.difference.
 
-Definition data_number_all_delivers_bin_order
-  : forall (x : Bin) (y : Bin) .
-      (x < y)%b <-> (Bin.to_integer x < Bin.to_integer y)%z
-  := Bin.conversion.order.
+Definition data_number_all_delivers_signed_bin_order
+  : forall (x : SignedBin) (y : SignedBin) .
+      (x < y)%b_signed <-> (SignedBin.to_integer x < SignedBin.to_integer y)%z
+  := SignedBin.conversion.order.
 
-Definition data_number_all_delivers_bin_associativity
-  : forall (x : Bin) (y : Bin) (z : Bin) .
-      ((x + y) + z = x + (y + z))%b
-  := Bin.addition.associativity.
+Definition data_number_all_delivers_signed_bin_associativity
+  : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) .
+      ((x + y) + z = x + (y + z))%b_signed
+  := SignedBin.addition.associativity.
 
-Definition data_number_all_delivers_bin_inverse
-  : forall (x : Bin) .
-      ((Bin.negate x + x = Bin.Zero)
-       /\ (x + Bin.negate x = Bin.Zero))%b
-  := Bin.addition.inverse.
+Definition data_number_all_delivers_signed_bin_inverse
+  : forall (x : SignedBin) .
+      ((SignedBin.negate x + x = SignedBin.Zero)
+       /\ (x + SignedBin.negate x = SignedBin.Zero))%b_signed
+  := SignedBin.addition.inverse.
 
-Definition data_number_all_delivers_bin_involution
-  : forall (x : Bin) .
-      Bin.negate (Bin.negate x) = x
-  := Bin.negation.involution.
+Definition data_number_all_delivers_signed_bin_involution
+  : forall (x : SignedBin) .
+      SignedBin.negate (SignedBin.negate x) = x
+  := SignedBin.negation.involution.
 
-Definition data_number_all_delivers_bin_comparison
-  : forall (x : Bin) (y : Bin) .
-      (Bin.compare x y = Comparison.Lt <-> (x < y)%b)
-      /\ (Bin.compare x y = Comparison.Eq <-> x = y)
-  := Bin.comparison.specification.
+Definition data_number_all_delivers_signed_bin_comparison
+  : forall (x : SignedBin) (y : SignedBin) .
+      (SignedBin.compare x y = Comparison.Lt <-> (x < y)%b_signed)
+      /\ (SignedBin.compare x y = Comparison.Eq <-> x = y)
+  := SignedBin.comparison.specification.
 
-Definition data_number_all_delivers_bin_literal
-  : (1011 + 1)%b = 1100%b
+Definition data_number_all_delivers_signed_bin_literal
+  : (1011 + 1)%b_signed = 1100%b_signed
   := Identity.reflexivity _.
 
-Definition data_number_all_delivers_bin_literal_negative
-  : ((-1011) + 1011)%b = 0%b
+Definition data_number_all_delivers_signed_bin_literal_negative
+  : ((-1011) + 1011)%b_signed = 0%b_signed
   := Identity.reflexivity _.
 
-Definition data_number_all_delivers_bin_literal_zero
-  : (-0)%b = Bin.Zero
+Definition data_number_all_delivers_signed_bin_literal_zero
+  : (-0)%b_signed = SignedBin.Zero
   := Identity.reflexivity _.
 
-Fail Definition data_number_all_refuses_bin_literal_digit
-  : Bin
-  := 1021%b.
+Fail Definition data_number_all_refuses_signed_bin_literal_digit
+  : SignedBin
+  := 1021%b_signed.
 
-Definition data_number_all_delivers_bin_well_founded_magnitude
-  : forall (x : Bin) .
-      Accessible (Induced BinWithZero.LessThan Bin.abs) x
-  := fun (x : Bin) . WellFounded.accessibility x.
+Definition data_number_all_delivers_signed_bin_well_founded_magnitude
+  : forall (x : SignedBin) .
+      Accessible (Induced BinWithZero.LessThan SignedBin.abs) x
+  := fun (x : SignedBin) . WellFounded.accessibility x.
 
-Definition data_number_all_delivers_bin_maximum_computes
-  : Bin.max 1011%b (-1011)%b = 1011%b
+Definition data_number_all_delivers_signed_bin_maximum_computes
+  : SignedBin.max 1011%b_signed (-1011)%b_signed = 1011%b_signed
   := Identity.reflexivity _.
 
 Theorem data_number_all_delivers_coercion_bin_base_to_bin
   : forall (b : BinBase) .
-      Bin.negate b = Bin.negate (Bin.Positive b).
+      SignedBin.negate b = SignedBin.negate (SignedBin.Positive b).
 Proof.
   intro b.
   quod idem est.
