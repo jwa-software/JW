@@ -3328,7 +3328,7 @@ Export (notations) BinWithZero.
 (* A number of the type is written in binary digits under its scope,
  * [1011%bin_with_zero] for eleven, and a closed one prints that way; a
  * literal with any other digit is refused. The short key [b] belongs to
- * [Bin], whose literals carry a sign as well. It is also written in decimal
+ * [SignedBin], whose literals carry a sign as well. It is also written in decimal
  * digits under the decimal scope, [11%bin_with_zero_decimal] for the same
  * eleven. The binary notation is declared again last, so a closed number
  * prints in binary unless the decimal scope is open.

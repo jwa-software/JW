@@ -28,7 +28,7 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
-Module Bin. (* Bin *)
+Module SignedBin. (* SignedBin *)
 
 (* Both sign cases wrap a [BinBase], so a nonzero value carries its magnitude in
  * binary and the arithmetic reduces to [BinBase]'s, as [Integer]'s reduces to
@@ -44,22 +44,22 @@ Inductive T : Type :=
   | Zero     : T
   | Positive : BinBase -> T.
 
-Abbreviation Bin := T.
+Abbreviation SignedBin := T.
 
 (* The eliminator behind the [destruct] tactic, written out: no recursion,
- * since no ctor carries a [Bin].
+ * since no ctor carries a [SignedBin].
  *)
 Definition induction
-  : forall (P : Bin -> Prop) .
+  : forall (P : SignedBin -> Prop) .
       (forall (p : BinBase) . P (Negative p)) ->
       P Zero ->
       (forall (p : BinBase) . P (Positive p)) ->
-      (forall (x : Bin) . P x)
-  := fun (P : Bin -> Prop)
+      (forall (x : SignedBin) . P x)
+  := fun (P : SignedBin -> Prop)
        (negative : forall (p : BinBase) . P (Negative p))
        (zero : P Zero)
        (positive : forall (p : BinBase) . P (Positive p))
-       (x : Bin) .
+       (x : SignedBin) .
        match x with
        | Negative p => negative p
        | Zero       => zero
@@ -74,16 +74,16 @@ Local Notation "0"   := Zero (only parsing).
 Local Notation "+ p" := (Positive p) (at level 35, right associativity, only parsing).
 Local Notation "- p" := (Negative p) (at level 35, right associativity, only parsing).
 
-(* [Bin -> Bin] *)
-Definition negate := fun (x : Bin) .
+(* [SignedBin -> SignedBin] *)
+Definition negate := fun (x : SignedBin) .
   match x with
   | - p => + p
   | 0   => 0
   | + p => - p
   end.
 
-(* [Bin -> BinWithZero] *)
-Definition abs := fun (x : Bin) .
+(* [SignedBin -> BinWithZero] *)
+Definition abs := fun (x : SignedBin) .
   match x with
   | - p => BinWithZero.Positive p
   | 0   => BinWithZero.Zero
@@ -91,20 +91,20 @@ Definition abs := fun (x : Bin) .
   end.
 
 (* The positive part, zero below it; [add] is written from it. *)
-(* [Bin -> BinWithZero] *)
-Definition ramp := fun (x : Bin) .
+(* [SignedBin -> BinWithZero] *)
+Definition ramp := fun (x : SignedBin) .
   match x with
   | - _ => BinWithZero.Zero
   | 0   => BinWithZero.Zero
   | + p => BinWithZero.Positive p
   end.
 
-(* [BinBase -> Bin] *)
+(* [BinBase -> SignedBin] *)
 Definition from_bin_base := fun (p : BinBase) . (+ p).
 
-(* [BinWithZero -> Bin] *)
+(* [BinWithZero -> SignedBin] *)
 Definition from_bin_with_zero := fun (n : BinWithZero) .
-  match n return Bin with
+  match n return SignedBin with
   | BinWithZero.Zero       => 0
   | BinWithZero.Positive p => + p
   end.
@@ -112,16 +112,16 @@ Definition from_bin_with_zero := fun (n : BinWithZero) .
 (* The conversions down: [None] below zero for [BinWithZero], and at or below
  * it for [BinBase], which has no zero to answer with.
  *)
-(* [Bin -> Option BinWithZero] *)
-Definition to_bin_with_zero := fun (x : Bin) .
+(* [SignedBin -> Option BinWithZero] *)
+Definition to_bin_with_zero := fun (x : SignedBin) .
   match x with
   | - _ => None
   | 0   => Some BinWithZero.Zero
   | + p => Some (BinWithZero.Positive p)
   end.
 
-(* [Bin -> Option BinBase] *)
-Definition to_bin_base := fun (x : Bin) .
+(* [SignedBin -> Option BinBase] *)
+Definition to_bin_base := fun (x : SignedBin) .
   match x with
   | - _ => None
   | 0   => None
@@ -131,8 +131,8 @@ Definition to_bin_base := fun (x : Bin) .
 (* The bridge to the unary signed type, used to state the laws: [BinBase.to_nat]
  * is unary, so this is for proofs, not for computing.
  *)
-(* [Bin -> Integer] *)
-Definition to_integer := fun (x : Bin) .
+(* [SignedBin -> Integer] *)
+Definition to_integer := fun (x : SignedBin) .
   match x with
   | - p => Integer.Negative (BinBase.to_nat p)
   | 0   => Integer.Zero
@@ -146,7 +146,7 @@ Definition to_integer := fun (x : Bin) .
  * through to zero. Total, with no unreachable branch, at the price of walking
  * the bits twice.
  *)
-(* [BinBase -> BinBase -> Bin] *)
+(* [BinBase -> BinBase -> SignedBin] *)
 Definition bin_base_difference := fun (p : BinBase) (q : BinBase) .
   match BinBase.diff p q, BinBase.diff q p with
   | BinBase.Gt d, _ => + d
@@ -154,7 +154,7 @@ Definition bin_base_difference := fun (p : BinBase) (q : BinBase) .
   | _, _            => 0
   end.
 
-(* [BinWithZero -> BinWithZero -> Bin] *)
+(* [BinWithZero -> BinWithZero -> SignedBin] *)
 Definition bin_with_zero_difference := fun (a : BinWithZero) (b : BinWithZero) .
   match a, b with
   | BinWithZero.Zero, BinWithZero.Zero             => 0
@@ -167,31 +167,31 @@ Definition bin_with_zero_difference := fun (a : BinWithZero) (b : BinWithZero) .
  * zero, so a sum is a single difference of two nonnegative numbers instead of
  * nine sign cases. [Integer.add] is written the same way over [Nat0].
  *)
-(* [Bin -> Bin -> Bin] *)
-Definition add := fun (x : Bin) (y : Bin) .
+(* [SignedBin -> SignedBin -> SignedBin] *)
+Definition add := fun (x : SignedBin) (y : SignedBin) .
   bin_with_zero_difference (ramp x + ramp y)%bin_with_zero
                            (ramp (negate x) + ramp (negate y))%bin_with_zero.
 
 (* The prefix [+ p] above is a separate notation and coexists with this one. *)
 Notation "x + y" := (add x y) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
-Local Open Scope jw_bin_scope.
+Local Open Scope jw_signed_bin_scope.
 
-(* [Bin -> Bin -> Bin] *)
-Definition sub := fun (x : Bin) (y : Bin) . x + negate y.
+(* [SignedBin -> SignedBin -> SignedBin] *)
+Definition sub := fun (x : SignedBin) (y : SignedBin) . x + negate y.
 
 (* The infix coexists with the prefix [- p] above and with the scope's [- x]
  * of negative literals, as [x + y] does with [+ p].
  *)
 Notation "x - y" := (sub x y) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
 (* The magnitudes multiply in [BinBase], and the sign is positive exactly when the
  * two signs agree.
  *)
-(* [Bin -> Bin -> Bin] *)
-Definition mul := fun (x : Bin) (y : Bin) .
+(* [SignedBin -> SignedBin -> SignedBin] *)
+Definition mul := fun (x : SignedBin) (y : SignedBin) .
   match x with
   | - p =>
       match y with
@@ -209,13 +209,13 @@ Definition mul := fun (x : Bin) (y : Bin) .
   end.
 
 Notation "x * y" := (mul x y) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
 (* The divisor is a [BinBase], so it is never zero: the magnitude is divided and
  * the sign carried over, so the quotient rounds toward zero.
  *)
-(* [Bin -> BinBase -> Bin] *)
-Definition divide := fun (x : Bin) (d : BinBase) .
+(* [SignedBin -> BinBase -> SignedBin] *)
+Definition divide := fun (x : SignedBin) (d : BinBase) .
   match x with
   | - p => negate (from_bin_with_zero (p /. d)%bin_with_zero)
   | 0   => 0
@@ -223,42 +223,42 @@ Definition divide := fun (x : Bin) (d : BinBase) .
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
 (* The witness is a [BinBase], so it is never zero and [<] is strict.
  *)
-(* [Bin -> Bin -> Prop] *)
-Definition LessThan := fun (x : Bin) (y : Bin) .
+(* [SignedBin -> SignedBin -> Prop] *)
+Definition LessThan := fun (x : SignedBin) (y : SignedBin) .
   forsome (k : BinBase) . x + (+ k) = y.
 
 Notation "x < y" := (LessThan x y) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
-(* [Bin -> Bin -> Prop] *)
-Definition LessOrEqual := fun (x : Bin) (y : Bin) . x = y \/ x < y.
+(* [SignedBin -> SignedBin -> Prop] *)
+Definition LessOrEqual := fun (x : SignedBin) (y : SignedBin) . x = y \/ x < y.
 
 Notation "x <= y" := (LessOrEqual x y) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
 (* The reversed spellings name no new relation: [x > y] is [y < x] with the
  * arguments the other way round, so no law is stated for them.
  *)
 Notation "x > y" := (LessThan y x) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 Notation "x >= y" := (LessOrEqual y x) (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
 Notation "'(<)'" := LessThan (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 Notation "'(<=)'" := LessOrEqual (only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
 (* Between two negatives the order reverses, the larger magnitude being the
  * smaller number, so those two arguments reach [BinBase.compare] the other way
  * round.
  *)
-(* [Bin -> Bin -> Comparison] *)
-Definition compare := fun (x : Bin) (y : Bin) .
+(* [SignedBin -> SignedBin -> Comparison] *)
+Definition compare := fun (x : SignedBin) (y : SignedBin) .
   match x with
   | - p =>
       match y with
@@ -280,20 +280,20 @@ Definition compare := fun (x : Bin) (y : Bin) .
       end
   end.
 
-(* [Bin -> Bin -> Bool] *)
+(* [SignedBin -> SignedBin -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
-(* [Bin -> Bin -> Bin] *)
+(* [SignedBin -> SignedBin -> SignedBin] *)
 Abbreviation min := (Comparable.min compare).
 
-(* [Bin -> Bin -> Bin] *)
+(* [SignedBin -> SignedBin -> SignedBin] *)
 Abbreviation max := (Comparable.max compare).
 
 (* [BinWithZero] reads the magnitude, the sign is applied after. [- 0] reads as
  * zero, this type having one zero and [negate] sending it to itself.
  * Hexadecimal is refused there too, so a literal carries only [0] and [1].
  *)
-(* [Numeral.Signed -> Option Bin] *)
+(* [Numeral.Signed -> Option SignedBin] *)
 Definition from_numeral := fun (s : Numeral.Signed) .
   match s with
   | Numeral.Signed.Decimal (Numeral.Decimal.Signed.Positive d) =>
@@ -307,8 +307,8 @@ Definition from_numeral := fun (s : Numeral.Signed) .
 (* Zero prints as [0], not [-0]: [Numeral.Decimal.Signed] has only the two
  * signs, so one of them carries zero.
  *)
-(* [Bin -> Numeral.Signed] *)
-Definition to_numeral := fun (x : Bin) .
+(* [SignedBin -> Numeral.Signed] *)
+Definition to_numeral := fun (x : SignedBin) .
   match x with
   | - p =>
       Numeral.Signed.Decimal
@@ -331,7 +331,7 @@ Module conversion. (* conversion *)
 
 (* conversion.injectivity *)
 Theorem injectivity
-  : forall {x : Bin} {y : Bin} .
+  : forall {x : SignedBin} {y : SignedBin} .
       to_integer x = to_integer y -> x = y.
 Proof.
   intros x y e.
@@ -376,7 +376,7 @@ Qed.
 
 (* conversion.comparison *)
 Theorem comparison
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       compare x y = Integer.compare (to_integer x) (to_integer y).
 Proof.
   intros x y.
@@ -468,7 +468,7 @@ Qed.
 
 (* conversion.negation *)
 Theorem negation
-  : forall (x : Bin) .
+  : forall (x : SignedBin) .
       to_integer (negate x) = Integer.negate (to_integer x).
 Proof.
   intro x.
@@ -508,7 +508,7 @@ End difference. (* conversion.difference *)
 
 (* conversion.addition *)
 Theorem addition
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       to_integer (x + y) = Integer.add (to_integer x) (to_integer y).
 Proof.
   intros x y.
@@ -551,7 +551,7 @@ Qed.
 
 (* conversion.order *)
 Theorem order
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       x < y <-> (to_integer x < to_integer y)%z.
 Proof.
   intros x y.
@@ -584,7 +584,7 @@ Qed.
 
 (* conversion.multiplication *)
 Theorem multiplication
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       to_integer (x * y) = Integer.mul (to_integer x) (to_integer y).
 Proof.
   intros x y.
@@ -615,7 +615,7 @@ Qed.
 
 (* conversion.division *)
 Theorem division
-  : forall (x : Bin) (d : BinBase) .
+  : forall (x : SignedBin) (d : BinBase) .
       to_integer (x /. d) = (to_integer x /. BinBase.to_nat d)%z.
 Proof.
   intros x d.
@@ -662,7 +662,7 @@ Qed.
 
 (* conversion.ramp *)
 Theorem ramp
-  : forall (x : Bin) . BinWithZero.to_nat0 (ramp x) = Integer.ramp (to_integer x).
+  : forall (x : SignedBin) . BinWithZero.to_nat0 (ramp x) = Integer.ramp (to_integer x).
 Proof.
   intros x.
   match &x with | Negative p | Zero | Positive p end; simpl in |- *; quod idem est.
@@ -766,7 +766,7 @@ Lemma injectivity
   : forall {p : BinBase} {q : BinBase} . (- p) = - q -> p = q.
 Proof.
   intros p q e.
-  congru (fun (x : Bin) . match x with | - r => r | 0 => p | + _ => p end), e |- e'.
+  congru (fun (x : SignedBin) . match x with | - r => r | 0 => p | + _ => p end), e |- e'.
   simpl in e'.
   ipso e'.
 Qed.
@@ -780,7 +780,7 @@ Lemma injectivity
   : forall {p : BinBase} {q : BinBase} . (+ p) = + q -> p = q.
 Proof.
   intros p q e.
-  congru (fun (x : Bin) . match x with | - _ => p | 0 => p | + r => r end), e |- e'.
+  congru (fun (x : SignedBin) . match x with | - _ => p | 0 => p | + r => r end), e |- e'.
   simpl in e'.
   ipso e'.
 Qed.
@@ -825,7 +825,7 @@ End embedding. (* embedding *)
 Module negation. (* negation *)
 
 (* negation.involution *)
-Theorem involution : forall (x : Bin) . negate (negate x) = x.
+Theorem involution : forall (x : SignedBin) . negate (negate x) = x.
 Proof.
   intro x.
   match &x with | p | | p end.
@@ -839,7 +839,7 @@ Qed.
 
 (* negation.additivity *)
 Theorem additivity
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       negate (x + y) = negate x + negate y.
 Proof.
   intros x y.
@@ -859,7 +859,7 @@ Module addition. (* addition *)
 
 (* addition.associativity *)
 Theorem associativity
-  : forall (x : Bin) (y : Bin) (z : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) .
       (x + y) + z = x + (y + z).
 Proof.
   intros x y z.
@@ -875,7 +875,7 @@ Qed.
 
 (* addition.commutativity *)
 Theorem commutativity
-  : forall (x : Bin) (y : Bin) . x + y = y + x.
+  : forall (x : SignedBin) (y : SignedBin) . x + y = y + x.
 Proof.
   intros x y.
   lemma f : to_integer (&x + &y) = to_integer (&y + &x).
@@ -889,7 +889,7 @@ Qed.
 Module left. (* addition.left *)
 
 (* addition.left.identity *)
-Theorem identity : forall (x : Bin) . 0 + x = x.
+Theorem identity : forall (x : SignedBin) . 0 + x = x.
 Proof.
   intro x.
   lemma f : to_integer (0 + &x) = to_integer &x.
@@ -901,7 +901,7 @@ Proof.
 Qed.
 
 (* addition.left.inverse *)
-Theorem inverse : forall (x : Bin) . negate x + x = 0.
+Theorem inverse : forall (x : SignedBin) . negate x + x = 0.
 Proof.
   intro x.
   lemma f : to_integer (negate &x + &x) = to_integer 0.
@@ -914,7 +914,7 @@ Qed.
 
 (* addition.left.cancellation *)
 Theorem cancellation
-  : forall {x : Bin} {y : Bin} {z : Bin} .
+  : forall {x : SignedBin} {y : SignedBin} {z : SignedBin} .
       x + y = x + z -> y = z.
 Proof.
   intros x y z e.
@@ -930,7 +930,7 @@ End left. (* addition.left *)
 Module right. (* addition.right *)
 
 (* addition.right.identity *)
-Theorem identity : forall (x : Bin) . x + 0 = x.
+Theorem identity : forall (x : SignedBin) . x + 0 = x.
 Proof.
   intro x.
   lemma f : to_integer (&x + 0) = to_integer &x.
@@ -942,7 +942,7 @@ Proof.
 Qed.
 
 (* addition.right.inverse *)
-Theorem inverse : forall (x : Bin) . x + negate x = 0.
+Theorem inverse : forall (x : SignedBin) . x + negate x = 0.
 Proof.
   intro x.
   lemma f : to_integer (&x + negate &x) = to_integer 0.
@@ -955,7 +955,7 @@ Qed.
 
 (* addition.right.cancellation *)
 Theorem cancellation
-  : forall {x : Bin} {y : Bin} {z : Bin} .
+  : forall {x : SignedBin} {y : SignedBin} {z : SignedBin} .
       x + y = z + y -> x = z.
 Proof.
   intros x y z e.
@@ -970,7 +970,7 @@ End right. (* addition.right *)
 
 (* addition.identity *)
 Theorem identity
-  : forall (x : Bin) . (0 + x = x) /\ (x + 0 = x).
+  : forall (x : SignedBin) . (0 + x = x) /\ (x + 0 = x).
 Proof.
   intro x.
   divide et impera.
@@ -980,7 +980,7 @@ Qed.
 
 (* addition.inverse *)
 Theorem inverse
-  : forall (x : Bin) . (negate x + x = 0) /\ (x + negate x = 0).
+  : forall (x : SignedBin) . (negate x + x = 0) /\ (x + negate x = 0).
 Proof.
   intro x.
   divide et impera.
@@ -990,7 +990,7 @@ Qed.
 
 (* addition.cancellation *)
 Theorem cancellation
-  : forall (x : Bin) (y : Bin) (z : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) .
       (x + y = x + z -> y = z) /\ (x + y = z + y -> x = z).
 Proof.
   intros x y z.
@@ -1003,7 +1003,7 @@ Module inversion. (* addition.inversion *)
 
 (* addition.inversion.subtraction *)
 Theorem subtraction
-  : forall (x : Bin) (y : Bin) . (x - y) + y = x.
+  : forall (x : SignedBin) (y : SignedBin) . (x - y) + y = x.
 Proof.
   intros x y.
   let proof s : &x - &y = &x + negate &y := refl _.
@@ -1020,7 +1020,7 @@ Module order. (* addition.order *)
 Module strict. (* addition.order.strict *)
 
 (* addition.order.strict.monotonicity *)
-Theorem monotonicity : forall (x : Bin) (y : Bin) (z : Bin) . y < z -> x + y < x + z.
+Theorem monotonicity : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) . y < z -> x + y < x + z.
 Proof.
   intros x y z h.
   let proof g := modus aequans (conversion.order &y &z), &h.
@@ -1032,7 +1032,7 @@ Qed.
 
 (* Adding [negate x] to both sides takes [x] away again. *)
 (* addition.order.strict.cancellation *)
-Theorem cancellation : forall (x : Bin) (y : Bin) (z : Bin) . x + y < x + z -> y < z.
+Theorem cancellation : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) . x + y < x + z -> y < z.
 Proof.
   intros x y z h.
   let proof s := addition.order.strict.monotonicity (negate &x) (&x + &y) (&x + &z) &h.
@@ -1049,7 +1049,7 @@ Qed.
 End strict. (* addition.order.strict *)
 
 (* addition.order.monotonicity *)
-Theorem monotonicity : forall (x : Bin) (y : Bin) (z : Bin) . y <= z -> x + y <= x + z.
+Theorem monotonicity : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) . y <= z -> x + y <= x + z.
 Proof.
   intros x y z h.
   match &h with | e | smaller end.
@@ -1063,7 +1063,7 @@ Module mixed. (* addition.order.mixed *)
 (* [a + b < a + d], and [a + d] is [c + d] or below it. *)
 (* addition.order.mixed.monotonicity *)
 Theorem monotonicity
-  : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . a <= c -> b < d -> a + b < c + d.
+  : forall (a : SignedBin) (b : SignedBin) (c : SignedBin) (d : SignedBin) . a <= c -> b < d -> a + b < c + d.
 Proof.
   intros a b c d h k.
   let proof first := addition.order.strict.monotonicity &a &b &d &k.
@@ -1085,7 +1085,7 @@ End mixed. (* addition.order.mixed *)
  *)
 (* addition.order.accumulation *)
 Theorem accumulation
-  : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . a <= c -> b <= d -> a + b <= c + d.
+  : forall (a : SignedBin) (b : SignedBin) (c : SignedBin) (d : SignedBin) . a <= c -> b <= d -> a + b <= c + d.
 Proof.
   intros a b c d h k.
   match &k with | e | smaller end.
@@ -1104,7 +1104,7 @@ Module subtraction. (* subtraction *)
 
 (* subtraction.specification *)
 Theorem specification
-  : forall (x : Bin) (y : Bin) . x - y = x + negate y.
+  : forall (x : SignedBin) (y : SignedBin) . x - y = x + negate y.
 Proof.
   intros x y.
   ipso (refl _).
@@ -1114,7 +1114,7 @@ Module inversion. (* subtraction.inversion *)
 
 (* subtraction.inversion.addition *)
 Theorem addition
-  : forall (x : Bin) (y : Bin) . (x + y) - y = x.
+  : forall (x : SignedBin) (y : SignedBin) . (x + y) - y = x.
 Proof.
   intros x y.
   leibniz (subtraction.specification (&x + &y) &y) in |- *.
@@ -1131,7 +1131,7 @@ Module right. (* subtraction.right *)
  * instead needs no fact about [negate 0].
  *)
 (* subtraction.right.identity *)
-Theorem identity : forall (x : Bin) . x - 0 = x.
+Theorem identity : forall (x : SignedBin) . x - 0 = x.
 Proof.
   intros x.
   leibniz <- (addition.right.identity (&x - 0)) in |- *.
@@ -1141,7 +1141,7 @@ Qed.
 End right. (* subtraction.right *)
 
 (* subtraction.annihilation *)
-Theorem annihilation : forall (x : Bin) . x - x = 0.
+Theorem annihilation : forall (x : SignedBin) . x - x = 0.
 Proof.
   intros x.
   leibniz (subtraction.specification &x &x) in |- *.
@@ -1155,7 +1155,7 @@ Module order. (* order *)
 Module strict. (* order.strict *)
 
 (* order.strict.irreflexivity *)
-Theorem irreflexivity : forall (x : Bin) . ~ (x < x).
+Theorem irreflexivity : forall (x : SignedBin) . ~ (x < x).
 Proof.
   simpl (~ _) in |- *.
   intro x.
@@ -1166,7 +1166,7 @@ Qed.
 
 (* order.strict.transitivity *)
 Theorem transitivity
-  : forall {x : Bin} {y : Bin} {z : Bin} .
+  : forall {x : SignedBin} {y : SignedBin} {z : SignedBin} .
       x < y -> y < z -> x < z.
 Proof.
   intros x y z h1 h2.
@@ -1182,16 +1182,16 @@ Module sign. (* order.sign *)
 
 (* [Negative p] plus [+ p] is 0. *)
 (* order.sign.negativity *)
-Theorem negativity : forall (p : BinBase) . Bin.Negative p < 0.
+Theorem negativity : forall (p : BinBase) . SignedBin.Negative p < 0.
 Proof.
   intro p.
   simpl LessThan in |- *.
   exists &p.
-  ipso (addition.left.inverse (Bin.Positive &p)).
+  ipso (addition.left.inverse (SignedBin.Positive &p)).
 Qed.
 
 (* order.sign.positivity *)
-Theorem positivity : forall (p : BinBase) . 0 < Bin.Positive p.
+Theorem positivity : forall (p : BinBase) . 0 < SignedBin.Positive p.
 Proof.
   intro p.
   simpl LessThan in |- *.
@@ -1211,10 +1211,10 @@ Module strict. (* order.negation.strict *)
  * [negate y < negate x].
  *)
 (* order.negation.strict.reversal *)
-Theorem reversal : forall (x : Bin) (y : Bin) . x < y <-> negate y < negate x.
+Theorem reversal : forall (x : SignedBin) (y : SignedBin) . x < y <-> negate y < negate x.
 Proof.
   intros x y.
-  lemma forward : forall (a : Bin) (b : Bin) . a < b -> negate b < negate a.
+  lemma forward : forall (a : SignedBin) (b : SignedBin) . a < b -> negate b < negate a.
   {
     intros a b h.
     let proof s := addition.order.strict.monotonicity (negate &a + negate &b) &a &b &h.
@@ -1244,7 +1244,7 @@ End strict. (* order.negation.strict *)
  * [order.negation.strict.reversal].
  *)
 (* order.negation.reversal *)
-Theorem reversal : forall (x : Bin) (y : Bin) . x <= y -> negate y <= negate x.
+Theorem reversal : forall (x : SignedBin) (y : SignedBin) . x <= y -> negate y <= negate x.
 Proof.
   intros x y h.
   match &h with | e | smaller end.
@@ -1260,7 +1260,7 @@ Module subtraction. (* order.subtraction *)
 Module left. (* order.subtraction.left *)
 
 (* order.subtraction.left.monotonicity *)
-Theorem monotonicity : forall (x : Bin) (y : Bin) (z : Bin) . y < z -> y - x < z - x.
+Theorem monotonicity : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) . y < z -> y - x < z - x.
 Proof.
   intros x y z h.
   leibniz (subtraction.specification &y &x), (subtraction.specification &z &x) in |- *.
@@ -1273,7 +1273,7 @@ End left. (* order.subtraction.left *)
 Module right. (* order.subtraction.right *)
 
 (* order.subtraction.right.antitonicity *)
-Theorem antitonicity : forall (x : Bin) (y : Bin) (z : Bin) . y < z -> x - z < x - y.
+Theorem antitonicity : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) . y < z -> x - z < x - y.
 Proof.
   intros x y z h.
   leibniz (subtraction.specification &x &z), (subtraction.specification &x &y) in |- *.
@@ -1284,7 +1284,7 @@ Qed.
 End right. (* order.subtraction.right *)
 
 (* order.subtraction.positivity *)
-Theorem positivity : forall (x : Bin) (y : Bin) . x < y <-> 0 < y - x.
+Theorem positivity : forall (x : SignedBin) (y : SignedBin) . x < y <-> 0 < y - x.
 Proof.
   intros x y.
   leibniz (subtraction.specification &y &x) in |- *.
@@ -1310,7 +1310,7 @@ End subtraction. (* order.subtraction *)
 Module increment. (* order.increment *)
 
 (* order.increment.extensivity *)
-Theorem extensivity : forall (x : Bin) . x < x + (+ BinBase.One).
+Theorem extensivity : forall (x : SignedBin) . x < x + (+ BinBase.One).
 Proof.
   intro x.
   simpl LessThan in |- *.
@@ -1322,7 +1322,7 @@ Qed.
  * [1] gives [x + 1 = y], [1 + j] gives [(x + 1) + j = y].
  *)
 (* order.increment.specification *)
-Theorem specification : forall (x : Bin) (y : Bin) . x < y <-> x + (+ BinBase.One) <= y.
+Theorem specification : forall (x : SignedBin) (y : SignedBin) . x < y <-> x + (+ BinBase.One) <= y.
 Proof.
   intros x y.
   divide et impera.
@@ -1378,7 +1378,7 @@ Proof.
 Qed.
 
 (* order.increment.adjacency *)
-Theorem adjacency : forall (x : Bin) (y : Bin) . ~ (x < y /\ y < x + (+ BinBase.One)).
+Theorem adjacency : forall (x : SignedBin) (y : SignedBin) . ~ (x < y /\ y < x + (+ BinBase.One)).
 Proof.
   intros x y.
   simpl (~ _) in |- *.
@@ -1395,7 +1395,7 @@ End increment. (* order.increment *)
 Module decrement. (* order.decrement *)
 
 (* order.decrement.extensivity *)
-Theorem extensivity : forall (x : Bin) . x - (+ BinBase.One) < x.
+Theorem extensivity : forall (x : SignedBin) . x - (+ BinBase.One) < x.
 Proof.
   intro x.
   simpl LessThan in |- *.
@@ -1413,7 +1413,7 @@ End decrement. (* order.decrement *)
 
 (* [x < y + 1] is [x + 1 <= y + 1], and [1] cancels from both sides. *)
 (* order.discreteness *)
-Theorem discreteness : forall (x : Bin) (y : Bin) . x < y + (+ BinBase.One) <-> x <= y.
+Theorem discreteness : forall (x : SignedBin) (y : SignedBin) . x < y + (+ BinBase.One) <-> x <= y.
 Proof.
   intros x y.
   divide et impera.
@@ -1494,7 +1494,7 @@ Module multiplication. (* multiplication *)
 
 (* multiplication.commutativity *)
 Theorem commutativity
-  : forall (x : Bin) (y : Bin) . x * y = y * x.
+  : forall (x : SignedBin) (y : SignedBin) . x * y = y * x.
 Proof.
   intros x y.
   lemma f : to_integer (&x * &y) = to_integer (&y * &x).
@@ -1507,7 +1507,7 @@ Qed.
 
 (* multiplication.associativity *)
 Theorem associativity
-  : forall (x : Bin) (y : Bin) (z : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) .
       (x * y) * z = x * (y * z).
 Proof.
   intros x y z.
@@ -1524,7 +1524,7 @@ Qed.
 
 (* multiplication.identity *)
 Theorem identity
-  : forall (x : Bin) . ((+ BinBase.One) * x = x) /\ (x * (+ BinBase.One) = x).
+  : forall (x : SignedBin) . ((+ BinBase.One) * x = x) /\ (x * (+ BinBase.One) = x).
 Proof.
   intro x.
   lemma one : to_integer (+ BinBase.One) = Nat.One.
@@ -1553,7 +1553,7 @@ Qed.
 
 (* multiplication.annihilation *)
 Theorem annihilation
-  : forall (x : Bin) . (0 * x = 0) /\ (x * 0 = 0).
+  : forall (x : SignedBin) . (0 * x = 0) /\ (x * 0 = 0).
 Proof.
   intro x.
   divide et impera.
@@ -1570,7 +1570,7 @@ Module over. (* multiplication.distributivity.over *)
 
 (* multiplication.distributivity.over.addition *)
 Theorem addition
-  : forall (x : Bin) (y : Bin) (z : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) (z : SignedBin) .
       (x * (y + z) = (x * y) + (x * z)) /\ ((y + z) * x = (y * x) + (z * x)).
 Proof.
   intros x y z.
@@ -1604,7 +1604,7 @@ End distributivity. (* multiplication.distributivity *)
 
 (* multiplication.cancellation *)
 Theorem cancellation
-  : forall (k : Bin) (x : Bin) (y : Bin) .
+  : forall (k : SignedBin) (x : SignedBin) (y : SignedBin) .
       ~ (k = 0) -> k * x = k * y -> x = y.
 Proof.
   intros k x y n e.
@@ -1623,7 +1623,7 @@ Qed.
 
 (* multiplication.magnitude *)
 Theorem magnitude
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       abs (x * y) = (abs x * abs y)%bin_with_zero.
 Proof.
   intros x y.
@@ -1633,7 +1633,7 @@ Qed.
 Module left. (* multiplication.left *)
 
 (* multiplication.left.negation *)
-Theorem negation : forall (x : Bin) (y : Bin) . negate x * y = negate (x * y).
+Theorem negation : forall (x : SignedBin) (y : SignedBin) . negate x * y = negate (x * y).
 Proof.
   intros x y.
   lemma facto : to_integer (negate x * y) = to_integer (negate (x * y)).
@@ -1656,7 +1656,7 @@ Module strict. (* multiplication.left.order.strict *)
 (* A positive [k] is [+ q], and [Integer]'s law takes [+ q] as [+ (to_nat q)]. *)
 (* multiplication.left.order.strict.monotonicity *)
 Theorem monotonicity
-  : forall (k : Bin) (x : Bin) (y : Bin) . 0 < k -> x < y -> k * x < k * y.
+  : forall (k : SignedBin) (x : SignedBin) (y : SignedBin) . 0 < k -> x < y -> k * x < k * y.
 Proof.
   intros k x y hk h.
   simpl LessThan in &hk.
@@ -1667,7 +1667,7 @@ Proof.
   }
   leibniz &positive in |- *.
   let proof g := modus aequans (conversion.order &x &y), &h.
-  lemma image : (to_integer ((+ q) * x)%b < to_integer ((+ q) * y)%b)%z.
+  lemma image : (to_integer ((+ q) * x)%b_signed < to_integer ((+ q) * y)%b_signed)%z.
   {
     leibniz (conversion.multiplication (+ &q) &x), (conversion.multiplication (+ &q) &y) in |- *.
     ipso (Integer.multiplication.left.order.strict.monotonicity
@@ -1679,7 +1679,7 @@ Qed.
 (* [negate k] is positive, and [negate k * x] is [negate (k * x)]. *)
 (* multiplication.left.order.strict.reversal *)
 Theorem reversal
-  : forall (k : Bin) (x : Bin) (y : Bin) . k < 0 -> x < y -> k * y < k * x.
+  : forall (k : SignedBin) (x : SignedBin) (y : SignedBin) . k < 0 -> x < y -> k * y < k * x.
 Proof.
   intros k x y hk h.
   lemma positive : 0 < negate k.
@@ -1695,7 +1695,7 @@ End strict. (* multiplication.left.order.strict *)
 
 (* multiplication.left.order.monotonicity *)
 Theorem monotonicity
-  : forall (k : Bin) (x : Bin) (y : Bin) . 0 <= k -> x <= y -> k * x <= k * y.
+  : forall (k : SignedBin) (x : SignedBin) (y : SignedBin) . 0 <= k -> x <= y -> k * x <= k * y.
 Proof.
   intros k x y hk h.
   match &hk with | zero | positive end.
@@ -1721,7 +1721,7 @@ Module sign. (* multiplication.sign *)
  * [x * 0] to [0].
  *)
 (* multiplication.sign.positivity *)
-Theorem positivity : forall (x : Bin) (y : Bin) . 0 < x -> 0 < y -> 0 < x * y.
+Theorem positivity : forall (x : SignedBin) (y : SignedBin) . 0 < x -> 0 < y -> 0 < x * y.
 Proof.
   intros x y hx hy.
   let proof s := multiplication.left.order.strict.monotonicity &x 0 &y &hx &hy.
@@ -1733,7 +1733,7 @@ Qed.
 Module negation. (* multiplication.sign.negation *)
 
 (* multiplication.sign.negation.positivity *)
-Theorem positivity : forall (x : Bin) (y : Bin) . x < 0 -> y < 0 -> 0 < x * y.
+Theorem positivity : forall (x : SignedBin) (y : SignedBin) . x < 0 -> y < 0 -> 0 < x * y.
 Proof.
   intros x y hx hy.
   let proof s := multiplication.left.order.strict.reversal &x &y 0 &hx &hy.
@@ -1747,7 +1747,7 @@ End negation. (* multiplication.sign.negation *)
 Module left. (* multiplication.sign.left *)
 
 (* multiplication.sign.left.negativity *)
-Theorem negativity : forall (x : Bin) (y : Bin) . x < 0 -> 0 < y -> x * y < 0.
+Theorem negativity : forall (x : SignedBin) (y : SignedBin) . x < 0 -> 0 < y -> x * y < 0.
 Proof.
   intros x y hx hy.
   let proof s := multiplication.left.order.strict.reversal &x 0 &y &hx &hy.
@@ -1761,7 +1761,7 @@ End left. (* multiplication.sign.left *)
 Module right. (* multiplication.sign.right *)
 
 (* multiplication.sign.right.negativity *)
-Theorem negativity : forall (x : Bin) (y : Bin) . 0 < x -> y < 0 -> x * y < 0.
+Theorem negativity : forall (x : SignedBin) (y : SignedBin) . 0 < x -> y < 0 -> x * y < 0.
 Proof.
   intros x y hx hy.
   let proof s := multiplication.left.order.strict.monotonicity &x &y 0 &hx &hy.
@@ -1780,7 +1780,7 @@ Module division. (* division *)
 
 (* division.magnitude *)
 Theorem magnitude
-  : forall (x : Bin) (d : BinBase) .
+  : forall (x : SignedBin) (d : BinBase) .
       abs (x /. d) = (abs x /. d)%bin_with_zero.
 Proof.
   intros x d.
@@ -1802,7 +1802,7 @@ Qed.
 
 (* division.invariance *)
 Theorem invariance
-  : forall (x : Bin) (d : BinBase) (k : BinBase) .
+  : forall (x : SignedBin) (d : BinBase) (k : BinBase) .
       ((+ k) * x) /. (k * d)%bin_base = x /. d.
 Proof.
   intros x d k.
@@ -1827,7 +1827,7 @@ Module comparison. (* comparison *)
 
 (* comparison.antisymmetry *)
 Theorem antisymmetry
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       compare x y = Comparison.transpose (compare y x).
 Proof.
   intros x y.
@@ -1837,7 +1837,7 @@ Qed.
 
 (* comparison.specification *)
 Theorem specification
-  : forall (x : Bin) (y : Bin) .
+  : forall (x : SignedBin) (y : SignedBin) .
       (compare x y = Comparison.Lt <-> x < y) /\ (compare x y = Comparison.Eq <-> x = y).
 Proof.
   intros x y.
@@ -1869,7 +1869,7 @@ Qed.
  *)
 (* comparison.translation *)
 Theorem translation
-  : forall (z : Bin) (x : Bin) (y : Bin) . compare (z + x) (z + y) = compare x y.
+  : forall (z : SignedBin) (x : SignedBin) (y : SignedBin) . compare (z + x) (z + y) = compare x y.
 Proof.
   intros z x y.
   match (compare &x &y) with | | | end |- c.
@@ -1901,7 +1901,7 @@ Qed.
  * [order.negation.strict.reversal].
  *)
 (* comparison.negation *)
-Theorem negation : forall (x : Bin) (y : Bin) . compare (negate x) (negate y) = compare y x.
+Theorem negation : forall (x : SignedBin) (y : SignedBin) . compare (negate x) (negate y) = compare y x.
 Proof.
   intros x y.
   match (compare &y &x) with | | | end |- c.
@@ -1943,7 +1943,7 @@ Module distributivity. (* minimum.left.distributivity *)
  * [z] out of the right side's comparison.
  *)
 (* minimum.left.distributivity.addition *)
-Theorem addition : forall (z : Bin) (x : Bin) (y : Bin) . z + min x y = min (z + x) (z + y).
+Theorem addition : forall (z : SignedBin) (x : SignedBin) (y : SignedBin) . z + min x y = min (z + x) (z + y).
 Proof.
   intros z x y.
   simpl Comparable.min in |- *.
@@ -1959,7 +1959,7 @@ End left. (* minimum.left *)
  * greater of their negations.
  *)
 (* minimum.duality *)
-Theorem duality : forall (x : Bin) (y : Bin) . negate (min x y) = max (negate x) (negate y).
+Theorem duality : forall (x : SignedBin) (y : SignedBin) . negate (min x y) = max (negate x) (negate y).
 Proof.
   intros x y.
   simpl Comparable.min, Comparable.max in |- *.
@@ -1984,7 +1984,7 @@ Module left. (* maximum.left *)
 Module distributivity. (* maximum.left.distributivity *)
 
 (* maximum.left.distributivity.addition *)
-Theorem addition : forall (z : Bin) (x : Bin) (y : Bin) . z + max x y = max (z + x) (z + y).
+Theorem addition : forall (z : SignedBin) (x : SignedBin) (y : SignedBin) . z + max x y = max (z + x) (z + y).
 Proof.
   intros z x y.
   simpl Comparable.max in |- *.
@@ -1998,40 +1998,40 @@ End left. (* maximum.left *)
 
 End maximum. (* maximum *)
 
-End Bin. (* Bin *)
+End SignedBin. (* SignedBin *)
 
-Abbreviation Bin := Bin.T.
+Abbreviation SignedBin := SignedBin.T.
 
-Export (notations) Bin.
+Export (notations) SignedBin.
 
 (* What makes the minus of a negative literal parse. [Numeral.Signed] lets
  * [from_numeral] *receive* a sign, but it does not put one in the grammar:
  * with the prelude off nothing makes [-1011] a term, and without this line
- * [(-1011)%b] is a syntax error at the [-]. Declared outside the module, where
+ * [(-1011)%b_signed] is a syntax error at the [-]. Declared outside the module, where
  * it does not collide with the [Local] [- p] for [Negative], and scoped, so
  * [-] keeps whatever else it means elsewhere. Under [only parsing] a negative
- * value still prints as [(-1011)%b], that coming from [to_numeral] below.
+ * value still prints as [(-1011)%b_signed], that coming from [to_numeral] below.
  *)
-Notation "- x" := (Bin.negate x)
+Notation "- x" := (SignedBin.negate x)
   (at level 35, right associativity, only parsing)
-  : jw_bin_scope.
+  : jw_signed_bin_scope.
 
-(* A number of the type is written in binary digits under its scope, [1011%b]
- * for eleven and [(-1011)%b] for minus eleven, and a closed one prints that
+(* A number of the type is written in binary digits under its scope, [1011%b_signed]
+ * for eleven and [(-1011)%b_signed] for minus eleven, and a closed one prints that
  * way; a literal with any other digit is refused.
  *)
-Number Notation Bin.T Bin.from_numeral Bin.to_numeral
-  : jw_bin_scope.
+Number Notation SignedBin.T SignedBin.from_numeral SignedBin.to_numeral
+  : jw_signed_bin_scope.
 
-(* A [BinBase] stands wherever a [Bin] is expected, read as its [Positive],
+(* A [BinBase] stands wherever a [SignedBin] is expected, read as its [Positive],
  * and a [BinWithZero] through [from_bin_with_zero]; both are printed where
- * they happened. The direct [BinBase >-> Bin] and the indirect one through
+ * they happened. The direct [BinBase >-> SignedBin] and the indirect one through
  * [BinWithZero] give the same term, as [Nat]'s two paths into [Integer] do.
  *)
-Coercion Bin.Positive : BinBase >-> Bin.
-Coercion Bin.from_bin_with_zero : BinWithZero >-> Bin.
-Add Printing Coercion Bin.Positive.
-Add Printing Coercion Bin.from_bin_with_zero.
+Coercion SignedBin.Positive : BinBase >-> SignedBin.
+Coercion SignedBin.from_bin_with_zero : BinWithZero >-> SignedBin.
+Add Printing Coercion SignedBin.Positive.
+Add Printing Coercion SignedBin.from_bin_with_zero.
 
 (* [<] is not well founded on a signed type, there being no least value, so
  * the descent is on the magnitude: [abs] lands in [BinWithZero], where [<]
@@ -2039,53 +2039,53 @@ Add Printing Coercion Bin.from_bin_with_zero.
  * way over [Nat0].
  *)
 Instance Bin_magnitude_well_founded
-  : WellFounded (Induced (<)%bin_with_zero Bin.abs) :=
-  WellFounded.induced (<)%bin_with_zero Bin.abs
+  : WellFounded (Induced (<)%bin_with_zero SignedBin.abs) :=
+  WellFounded.induced (<)%bin_with_zero SignedBin.abs
     BinWithZero_less_than_well_founded.
 
 Instance Bin_comparable
-  : Comparable Bin.compare (<)%b :=
-  {| Comparable.transitivity  := @Bin.order.strict.transitivity
-   ; Comparable.specification := Bin.comparison.specification
-   ; Comparable.antisymmetry  := Bin.comparison.antisymmetry |}.
+  : Comparable SignedBin.compare (<)%b_signed :=
+  {| Comparable.transitivity  := @SignedBin.order.strict.transitivity
+   ; Comparable.specification := SignedBin.comparison.specification
+   ; Comparable.antisymmetry  := SignedBin.comparison.antisymmetry |}.
 
 Instance Bin_add_monoid
-  : Monoid Bin.add Bin.Zero :=
+  : Monoid SignedBin.add SignedBin.Zero :=
   {| Monoid.semigroup :=
-      {| Semigroup.associativity := Bin.addition.associativity |}
-   ; Monoid.identity := Bin.addition.identity |}.
+      {| Semigroup.associativity := SignedBin.addition.associativity |}
+   ; Monoid.identity := SignedBin.addition.identity |}.
 
-Instance Bin_add_cancellative : Cancellative Bin.add :=
-  {| Cancellative.cancellation := Bin.addition.cancellation |}.
+Instance Bin_add_cancellative : Cancellative SignedBin.add :=
+  {| Cancellative.cancellation := SignedBin.addition.cancellation |}.
 
-Instance Bin_add_commutative : Commutative Bin.add :=
-  {| Commutative.commutativity := Bin.addition.commutativity |}.
+Instance Bin_add_commutative : Commutative SignedBin.add :=
+  {| Commutative.commutativity := SignedBin.addition.commutativity |}.
 
 (* What the signed type buys over [BinWithZero]: every value has an inverse,
  * so the additive monoid becomes a group.
  *)
 Instance Bin_add_group
-  : Group Bin.add Bin.Zero Bin.negate :=
+  : Group SignedBin.add SignedBin.Zero SignedBin.negate :=
   {| Group.monoid  := Bin_add_monoid
-   ; Group.inverse := Bin.addition.inverse |}.
+   ; Group.inverse := SignedBin.addition.inverse |}.
 
 Instance Bin_add_abelian_group
-  : AbelianGroup Bin.add Bin.Zero Bin.negate :=
+  : AbelianGroup SignedBin.add SignedBin.Zero SignedBin.negate :=
   {| AbelianGroup.group       := Bin_add_group
    ; AbelianGroup.commutative := Bin_add_commutative |}.
 
 Instance Bin_mul_monoid
-  : Monoid Bin.mul BinBase.One :=
+  : Monoid SignedBin.mul BinBase.One :=
   {| Monoid.semigroup :=
-      {| Semigroup.associativity := Bin.multiplication.associativity |}
-   ; Monoid.identity := Bin.multiplication.identity |}.
+      {| Semigroup.associativity := SignedBin.multiplication.associativity |}
+   ; Monoid.identity := SignedBin.multiplication.identity |}.
 
-Instance Bin_mul_commutative : Commutative Bin.mul :=
-  {| Commutative.commutativity := Bin.multiplication.commutativity |}.
+Instance Bin_mul_commutative : Commutative SignedBin.mul :=
+  {| Commutative.commutativity := SignedBin.multiplication.commutativity |}.
 
 Instance Bin_ring
-  : Ring Bin.add Bin.Zero Bin.negate Bin.mul
+  : Ring SignedBin.add SignedBin.Zero SignedBin.negate SignedBin.mul
       BinBase.One :=
   {| Ring.abelian_group  := Bin_add_abelian_group
    ; Ring.monoid         := Bin_mul_monoid
-   ; Ring.distributivity := Bin.multiplication.distributivity.over.addition |}.
+   ; Ring.distributivity := SignedBin.multiplication.distributivity.over.addition |}.
