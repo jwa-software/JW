@@ -17,7 +17,7 @@ From JW Require Import Data.Machine.Endian.
 From JW Require Import Data.Machine.HWord.
 From JW Require Import Data.Machine.Modular.
 From JW Require Import Data.Machine.Signed.
-From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
 From JW Require Import Data.Number.Integer.
@@ -60,7 +60,7 @@ Definition from_hword := fun (w : HWord) . Int16.introduction (HWord.high w) (HW
 
 (* The bits read as a number in base two, the most significant first, from 0 to
  * 65535: the value of the bit pattern, through which the arithmetic is proved
- * and from which [to_bin] takes the signed value; [10] is two in binary digits.
+ * and from which [to_b_signed] takes the signed value; [10] is two in binary digits.
  *)
 (* [Int16 -> BinWithZero] *)
 Definition unsigned_value := fun (x : Int16) .
@@ -86,22 +86,22 @@ Definition sign_bit := fun (x : Int16) .
 (* The value in two's complement: the unsigned value, less 65536 when the sign
  * bit is set.
  *)
-(* [Int16 -> Bin] *)
-Definition to_bin := fun (x : Int16) .
-  Bin.bin_with_zero_difference
+(* [Int16 -> SignedBin] *)
+Definition to_b_signed := fun (x : Int16) .
+  SignedBin.bin_with_zero_difference
     (unsigned_value x) (modulus * Bit.to_bin_with_zero (sign_bit x))%bin_with_zero.
 
-(* From here to the end of the module an [Int16] stands where a [Bin] is expected,
+(* From here to the end of the module an [Int16] stands where a [SignedBin] is expected,
  * read as its value; the conversion is printed.
  *)
-Local Coercion to_bin : T >-> Bin.
-Add Printing Coercion to_bin.
+Local Coercion to_b_signed : T >-> SignedBin.
+Add Printing Coercion to_b_signed.
 
-(* The value in [Integer], through [to_bin]; [Integer] is unary, so it is for
- * stating and proving, and computing goes through [to_bin].
+(* The value in [Integer], through [to_b_signed]; [Integer] is unary, so it is for
+ * stating and proving, and computing goes through [to_b_signed].
  *)
 (* [Int16 -> Integer] *)
-Definition to_integer := fun (x : Int16) . Bin.to_integer (to_bin x).
+Definition to_integer := fun (x : Int16) . SignedBin.to_integer (to_b_signed x).
 
 (* [Int16] *)
 Definition Zero := Int16.introduction Byte.Zero Byte.Zero.
@@ -314,11 +314,11 @@ Notation "x * y" := (mul x y) (only parsing)
  *)
 (* [Int16 -> Int16 -> Product Bit Int16] *)
 Definition mul_with_overflow := fun (x : Int16) (y : Int16) .
-  (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+  (match SignedBin.compare (to_b_signed x * to_b_signed y)%b_signed (to_b_signed Min) with
    | Comparison.Lt => 1%bit
    | Comparison.Eq => 0%bit
    | Comparison.Gt =>
-       match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+       match SignedBin.compare (to_b_signed x * to_b_signed y)%b_signed (to_b_signed Max) with
        | Comparison.Lt => 0%bit
        | Comparison.Eq => 0%bit
        | Comparison.Gt => 1%bit
@@ -353,20 +353,20 @@ Definition from_nat0 := fun (n : Nat0) . from_bin_with_zero (BinWithZero.from_na
 (* [z] modulo 65536 into the range -32768 to 32767: its positive part less its
  * negative part, wrapping.
  *)
-(* [Bin -> Int16] *)
-Definition from_bin := fun (z : Bin) .
-  add (from_bin_with_zero (Bin.ramp z)) (negate (from_bin_with_zero (Bin.ramp (Bin.negate z)))).
+(* [SignedBin -> Int16] *)
+Definition from_b_signed := fun (z : SignedBin) .
+  add (from_bin_with_zero (SignedBin.ramp z)) (negate (from_bin_with_zero (SignedBin.ramp (SignedBin.negate z)))).
 
-(* The quotient through [Bin], toward zero, [None] when [y] is zero. [Bin.divide]
+(* The quotient through [SignedBin], toward zero, [None] when [y] is zero. [SignedBin.divide]
  * takes a positive divisor, so the divisor's sign is matched here; -32768
  * (-2^15) over -1 wraps to itself.
  *)
 (* [Int16 -> Int16 -> Option Int16] *)
 Definition divide := fun (x : Int16) (y : Int16) .
-  match to_bin y with
-  | Bin.Negative d => Some (from_bin (Bin.negate (x /. d)%b))
-  | Bin.Zero       => None
-  | Bin.Positive d => Some (from_bin (x /. d)%b)
+  match to_b_signed y with
+  | SignedBin.Negative d => Some (from_b_signed (SignedBin.negate (x /. d)%b_signed))
+  | SignedBin.Zero       => None
+  | SignedBin.Positive d => Some (from_b_signed (x /. d)%b_signed)
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
@@ -406,7 +406,7 @@ Definition sub_with_overflow := fun (x : Int16) (y : Int16) .
   (flag, sub x y)%product.
 
 (* [Int16 -> Int16 -> Prop] *)
-Definition LessThan := fun (x : Int16) (y : Int16) . (to_bin x < to_bin y)%b.
+Definition LessThan := fun (x : Int16) (y : Int16) . (to_b_signed x < to_b_signed y)%b_signed.
 
 Notation "x < y" := (LessThan x y) (only parsing)
   : jw_int16_scope.
@@ -428,7 +428,7 @@ Notation "'(<=)'" := LessOrEqual (only parsing)
   : jw_int16_scope.
 
 (* [Int16 -> Int16 -> Comparison] *)
-Definition compare := fun (x : Int16) (y : Int16) . Bin.compare (to_bin x) (to_bin y).
+Definition compare := fun (x : Int16) (y : Int16) . SignedBin.compare (to_b_signed x) (to_b_signed y).
 
 (* [Int16 -> Int16 -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
@@ -473,15 +473,15 @@ Definition from_numeral := fun (s : Numeral.Signed) .
 (* [x] as a literal, in decimal; zero prints as [0], not [-0]. *)
 (* [Int16 -> Numeral.Signed] *)
 Definition to_numeral := fun (x : Int16) .
-  match to_bin x with
-  | Bin.Negative p =>
+  match to_b_signed x with
+  | SignedBin.Negative p =>
       Numeral.Signed.Decimal
         (Numeral.Decimal.Signed.Negative (BinWithZero.to_decimal (BinWithZero.Positive p)))
-  | Bin.Zero =>
+  | SignedBin.Zero =>
       Numeral.Signed.Decimal
         (Numeral.Decimal.Signed.Positive
           (Numeral.Decimal.Digits.Zero Numeral.Decimal.Digits.End))
-  | Bin.Positive p =>
+  | SignedBin.Positive p =>
       Numeral.Signed.Decimal
         (Numeral.Decimal.Signed.Positive (BinWithZero.to_decimal (BinWithZero.Positive p)))
   end.
@@ -1191,20 +1191,20 @@ Module conversion. (* conversion *)
 (* conversion.difference *)
 Lemma difference
   : forall (a : BinWithZero) (b : BinWithZero) .
-      from_bin (Bin.bin_with_zero_difference a b)
+      from_b_signed (SignedBin.bin_with_zero_difference a b)
       = from_bin_with_zero a + - from_bin_with_zero b.
 Proof.
   intros a b.
-  let proof e := congru from_bin_with_zero, (Bin.difference.specification &a &b).
+  let proof e := congru from_bin_with_zero, (SignedBin.difference.specification &a &b).
   leibniz
-    (reinterpretation.reduction.additivity (Bin.ramp (Bin.bin_with_zero_difference &a &b)) &b),
+    (reinterpretation.reduction.additivity (SignedBin.ramp (SignedBin.bin_with_zero_difference &a &b)) &b),
     (reinterpretation.reduction.additivity
-      (Bin.ramp (Bin.negate (Bin.bin_with_zero_difference &a &b))) &a)
+      (SignedBin.ramp (SignedBin.negate (SignedBin.bin_with_zero_difference &a &b))) &a)
     in &e.
-  simpl from_bin in |- *.
-  let p := from_bin_with_zero (Bin.ramp (Bin.bin_with_zero_difference &a &b)) in &e |- *.
+  simpl from_b_signed in |- *.
+  let p := from_bin_with_zero (SignedBin.ramp (SignedBin.bin_with_zero_difference &a &b)) in &e |- *.
   let q :=
-    from_bin_with_zero (Bin.ramp (Bin.negate (Bin.bin_with_zero_difference &a &b)))
+    from_bin_with_zero (SignedBin.ramp (SignedBin.negate (SignedBin.bin_with_zero_difference &a &b)))
     in &e |- *.
   lemma rewritten : &p = (&q + from_bin_with_zero &a) + - from_bin_with_zero &b.
   {
@@ -1234,7 +1234,7 @@ Proof.
 Qed.
 
 (* conversion.section *)
-Theorem section : forall (x : Int16) . from_bin (to_bin x) = x.
+Theorem section : forall (x : Int16) . from_b_signed (to_b_signed x) = x.
 Proof.
   intros x.
   lemma vanishing
@@ -1268,7 +1268,7 @@ Proof.
     ipso (trans (symm &left), &right).
   }
   match (addition.identity &x) with | _ right end.
-  simpl to_bin in |- *.
+  simpl to_b_signed in |- *.
   leibniz
     (conversion.difference
       (unsigned_value &x) (modulus * Bit.to_bin_with_zero (sign_bit &x))%bin_with_zero),
@@ -1281,7 +1281,7 @@ Proof.
 Qed.
 
 (* conversion.injectivity *)
-Theorem injectivity : forall {x : Int16} {y : Int16} . to_bin x = to_bin y -> x = y.
+Theorem injectivity : forall {x : Int16} {y : Int16} . to_b_signed x = to_b_signed y -> x = y.
 Proof.
   intros x y e.
   leibniz <- (conversion.section &x), <- (conversion.section &y), &e in |- *.
@@ -1314,7 +1314,7 @@ Qed.
 Theorem addition
   : forall (x : Int16) (y : Int16) .
       (pi_1 (add_with_overflow x y))%product = 0%bit ->
-      to_bin (x + y) = (x + y)%b.
+      to_b_signed (x + y) = (x + y)%b_signed.
 Proof.
   intros x y o.
   let proof t := conversion.sign &x &y &o.
@@ -1356,13 +1356,13 @@ Proof.
       in |- *.
     quod idem est.
   }
-  simpl to_bin in |- *.
+  simpl to_b_signed in |- *.
   leibniz
-    (Bin.difference.additivity
+    (SignedBin.difference.additivity
       (unsigned_value &x) (modulus * Bit.to_bin_with_zero (sign_bit &x))%bin_with_zero
       (unsigned_value &y) (modulus * Bit.to_bin_with_zero (sign_bit &y))%bin_with_zero)
     in |- *.
-  ipso (Bin.difference.invariance &balance).
+  ipso (SignedBin.difference.invariance &balance).
 Qed.
 
 Module right. (* conversion.right *)
@@ -1376,13 +1376,13 @@ Theorem halving
       (x11 : Bit) (x10 : Bit) (x9 : Bit) (x8 : Bit)
       (x7 : Bit) (x6 : Bit) (x5 : Bit) (x4 : Bit)
       (x3 : Bit) (x2 : Bit) (x1 : Bit) (x0 : Bit) .
-      to_bin (Int16.introduction (Byte.introduction x15 x14 x13 x12 x11 x10 x9 x8)
+      to_b_signed (Int16.introduction (Byte.introduction x15 x14 x13 x12 x11 x10 x9 x8)
                 (Byte.introduction x7 x6 x5 x4 x3 x2 x1 x0))
       = (10
           * shift_right
             (Int16.introduction (Byte.introduction x15 x14 x13 x12 x11 x10 x9 x8)
               (Byte.introduction x7 x6 x5 x4 x3 x2 x1 x0)) 1%n0
-          + Bit.to_bin_with_zero x0)%b.
+          + Bit.to_bin_with_zero x0)%b_signed.
 Proof.
   intros x15 x14 x13 x12 x11 x10 x9 x8 x7 x6 x5 x4 x3 x2 x1 x0.
   lemma shifted
@@ -1436,19 +1436,19 @@ Proof.
       (Bit.conversion.binary.appending.propagation _ _ _ _ &x15
       &top)))))))))))))))).
   }
-  lemma twice : forall (z : Bin) . (10 * z = z + z)%b.
+  lemma twice : forall (z : SignedBin) . (10 * z = z + z)%b_signed.
   {
     intros z.
-    lemma ten : (10 = 1 + 1)%b.
+    lemma ten : (10 = 1 + 1)%b_signed.
     {
-      simpl Bin.add in |- *.
+      simpl SignedBin.add in |- *.
       simpl in |- *.
       simpl BinBase.add in |- *.
       simpl in |- *.
       quod idem est.
     }
-    match (Bin.multiplication.distributivity.over.addition &z 1%b 1%b) with | _ spread end.
-    match (Bin.multiplication.identity &z) with | unit _ end.
+    match (SignedBin.multiplication.distributivity.over.addition &z 1%b_signed 1%b_signed) with | _ spread end.
+    match (SignedBin.multiplication.identity &z) with | unit _ end.
     leibniz &ten, &spread, &unit in |- *.
     quod idem est.
   }
@@ -1472,7 +1472,7 @@ Proof.
   }
   lemma embedding
     : forall (n : BinWithZero) .
-        Bin.from_bin_with_zero n = Bin.bin_with_zero_difference n 0%bin_with_zero.
+        SignedBin.from_bin_with_zero n = SignedBin.bin_with_zero_difference n 0%bin_with_zero.
   {
     intros n.
     match &n with | Zero | Positive p end; simpl in |- *; quod idem est.
@@ -1519,15 +1519,15 @@ Proof.
     quod idem est.
   }
   leibniz &shifted in |- *.
-  simpl to_bin, sign_bit in |- *.
+  simpl to_b_signed, sign_bit in |- *.
   leibniz
     (&twice
-      (Bin.bin_with_zero_difference
+      (SignedBin.bin_with_zero_difference
         (unsigned_value
           (Int16.introduction (Byte.introduction &x15 &x15 &x14 &x13 &x12 &x11 &x10 &x9)
             (Byte.introduction &x8 &x7 &x6 &x5 &x4 &x3 &x2 &x1)))
         (modulus * Bit.to_bin_with_zero &x15)%bin_with_zero)),
-    (Bin.difference.additivity
+    (SignedBin.difference.additivity
       (unsigned_value
         (Int16.introduction (Byte.introduction &x15 &x15 &x14 &x13 &x12 &x11 &x10 &x9)
           (Byte.introduction &x8 &x7 &x6 &x5 &x4 &x3 &x2 &x1)))
@@ -1537,7 +1537,7 @@ Proof.
           (Byte.introduction &x8 &x7 &x6 &x5 &x4 &x3 &x2 &x1)))
       (modulus * Bit.to_bin_with_zero &x15)%bin_with_zero),
     (&embedding (Bit.to_bin_with_zero &x0)),
-    (Bin.difference.additivity
+    (SignedBin.difference.additivity
       (unsigned_value
         (Int16.introduction (Byte.introduction &x15 &x15 &x14 &x13 &x12 &x11 &x10 &x9)
           (Byte.introduction &x8 &x7 &x6 &x5 &x4 &x3 &x2 &x1))
@@ -1549,16 +1549,16 @@ Proof.
         + modulus * Bit.to_bin_with_zero &x15)%bin_with_zero
       (Bit.to_bin_with_zero &x0) 0%bin_with_zero)
     in |- *.
-  ipso (Bin.difference.invariance &balance).
+  ipso (SignedBin.difference.invariance &balance).
 Qed.
 
 End right. (* conversion.right *)
 
-Module bin. (* conversion.bin *)
+Module signed_bin. (* conversion.signed_bin *)
 
-(* conversion.bin.nonnegative *)
+(* conversion.signed_bin.nonnegative *)
 Lemma nonnegative
-  : forall (n : BinWithZero) . from_bin (Bin.from_bin_with_zero n) = from_bin_with_zero n.
+  : forall (n : BinWithZero) . from_b_signed (SignedBin.from_bin_with_zero n) = from_bin_with_zero n.
 Proof.
   intros n.
   lemma nothing : - from_bin_with_zero BinWithZero.Zero = Zero.
@@ -1569,25 +1569,25 @@ Proof.
     ipso (trans (symm &left), &right).
   }
   match &n with | Zero | Positive p end.
-  - simpl Bin.from_bin_with_zero, from_bin in |- *.
-    simpl Bin.ramp, Bin.negate in |- *.
+  - simpl SignedBin.from_bin_with_zero, from_b_signed in |- *.
+    simpl SignedBin.ramp, SignedBin.negate in |- *.
     leibniz &nothing in |- *.
     match (addition.identity (from_bin_with_zero BinWithZero.Zero)) with | _ right end.
     ipso &right.
-  - simpl Bin.from_bin_with_zero, from_bin in |- *.
-    simpl Bin.ramp, Bin.negate in |- *.
+  - simpl SignedBin.from_bin_with_zero, from_b_signed in |- *.
+    simpl SignedBin.ramp, SignedBin.negate in |- *.
     leibniz &nothing in |- *.
     match (addition.identity (from_bin_with_zero (BinWithZero.Positive &p))) with
     | _ right end.
     ipso &right.
 Qed.
 
-(* conversion.bin.negative *)
-Lemma negative : forall (p : BinBase) . from_bin (Bin.Negative p) = - from_bin_base p.
+(* conversion.signed_bin.negative *)
+Lemma negative : forall (p : BinBase) . from_b_signed (SignedBin.Negative p) = - from_bin_base p.
 Proof.
   intros p.
-  simpl from_bin in |- *.
-  simpl Bin.ramp, Bin.negate in |- *.
+  simpl from_b_signed in |- *.
+  simpl SignedBin.ramp, SignedBin.negate in |- *.
   lemma nothing : from_bin_with_zero BinWithZero.Zero = Zero.
   {
     simpl from_bin_with_zero in |- *.
@@ -1603,17 +1603,17 @@ Proof.
   ipso &left.
 Qed.
 
-End bin. (* conversion.bin *)
+End signed_bin. (* conversion.signed_bin *)
 
 Module boundedness. (* conversion.boundedness *)
 
 (* conversion.boundedness.positive *)
 Theorem positive
   : forall (x : Int16) (p : BinBase) .
-      to_bin x = Bin.Positive p -> (p < 1000000000000000)%bin_with_zero.
+      to_b_signed x = SignedBin.Positive p -> (p < 1000000000000000)%bin_with_zero.
 Proof.
   intros x p e.
-  simpl to_bin in &e.
+  simpl to_b_signed in &e.
   match (sign_bit &x) with | Zero | One end |- s.
   - lemma scaled : (modulus * Bit.to_bin_with_zero 0 = 0)%bin_with_zero.
     {
@@ -1624,11 +1624,11 @@ Proof.
     leibniz &scaled in &e.
     let proof small := reinterpretation.sign.clear &x &s.
     match (unsigned_value &x) with | Zero | Positive q end |- f.
-    + simpl Bin.bin_with_zero_difference in &e.
+    + simpl SignedBin.bin_with_zero_difference in &e.
       ex &e quodlibet.
-    + simpl Bin.bin_with_zero_difference in &e.
-      let proof g := congru Bin.ramp, &e.
-      simpl Bin.ramp in &g.
+    + simpl SignedBin.bin_with_zero_difference in &e.
+      let proof g := congru SignedBin.ramp, &e.
+      simpl SignedBin.ramp in &g.
       leibniz &g in &small.
       ipso &small.
   - lemma whole : (modulus * Bit.to_bin_with_zero 1 = modulus)%bin_with_zero.
@@ -1638,9 +1638,9 @@ Proof.
       quod idem est.
     }
     leibniz &whole in &e.
-    let proof sp := Bin.difference.specification (unsigned_value &x) modulus.
+    let proof sp := SignedBin.difference.specification (unsigned_value &x) modulus.
     leibniz &e in &sp.
-    simpl Bin.ramp, Bin.negate in &sp.
+    simpl SignedBin.ramp, SignedBin.negate in &sp.
     match (BinWithZero.addition.identity (unsigned_value &x)) with | left _ end.
     leibniz &left in &sp.
     let proof bound := reinterpretation.boundedness &x.
@@ -1655,10 +1655,10 @@ Qed.
 (* conversion.boundedness.negative *)
 Theorem negative
   : forall (x : Int16) (p : BinBase) .
-      to_bin x = Bin.Negative p -> (p <= 1000000000000000)%bin_with_zero.
+      to_b_signed x = SignedBin.Negative p -> (p <= 1000000000000000)%bin_with_zero.
 Proof.
   intros x p e.
-  simpl to_bin in &e.
+  simpl to_b_signed in &e.
   match (sign_bit &x) with | Zero | One end |- s.
   - lemma scaled : (modulus * Bit.to_bin_with_zero 0 = 0)%bin_with_zero.
     {
@@ -1668,9 +1668,9 @@ Proof.
     }
     leibniz &scaled in &e.
     match (unsigned_value &x) with | Zero | Positive q end |- f.
-    + simpl Bin.bin_with_zero_difference in &e.
+    + simpl SignedBin.bin_with_zero_difference in &e.
       ex &e quodlibet.
-    + simpl Bin.bin_with_zero_difference in &e.
+    + simpl SignedBin.bin_with_zero_difference in &e.
       ex &e quodlibet.
   - lemma whole : (modulus * Bit.to_bin_with_zero 1 = modulus)%bin_with_zero.
     {
@@ -1680,9 +1680,9 @@ Proof.
     }
     leibniz &whole in &e.
     let proof big := reinterpretation.sign.set &x &s.
-    let proof sp := Bin.difference.specification (unsigned_value &x) modulus.
+    let proof sp := SignedBin.difference.specification (unsigned_value &x) modulus.
     leibniz &e in &sp.
-    simpl Bin.ramp, Bin.negate in &sp.
+    simpl SignedBin.ramp, SignedBin.negate in &sp.
     match (BinWithZero.addition.identity modulus) with | left _ end.
     leibniz &left in &sp.
     match
@@ -1719,7 +1719,7 @@ Module retraction. (* conversion.retraction *)
 Theorem nonnegative
   : forall (n : BinWithZero) .
       (n < 1000000000000000)%bin_with_zero
-      -> to_bin (from_bin (Bin.from_bin_with_zero n)) = Bin.from_bin_with_zero n.
+      -> to_b_signed (from_b_signed (SignedBin.from_bin_with_zero n)) = SignedBin.from_bin_with_zero n.
 Proof.
   intros n h.
   lemma half : (1000000000000000 < modulus)%bin_with_zero.
@@ -1750,8 +1750,8 @@ Proof.
           (Comparable.order.mixed.left.transitivity &big &h))
         quodlibet.
   }
-  leibniz (conversion.bin.nonnegative &n) in |- *.
-  simpl to_bin in |- *.
+  leibniz (conversion.signed_bin.nonnegative &n) in |- *.
+  simpl to_b_signed in |- *.
   leibniz &value, &sign in |- *.
   match &n with | Zero | Positive p end.
   - simpl in |- *.
@@ -1764,10 +1764,10 @@ Qed.
 Theorem negative
   : forall (p : BinBase) .
       (p <= 1000000000000000)%bin_with_zero
-      -> to_bin (from_bin (Bin.Negative p)) = Bin.Negative p.
+      -> to_b_signed (from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p.
 Proof.
   intros p h.
-  leibniz (conversion.bin.negative &p) in |- *.
+  leibniz (conversion.signed_bin.negative &p) in |- *.
   lemma half : (1000000000000000 < modulus)%bin_with_zero.
   {
     simpl BinWithZero.LessThan in |- *.
@@ -1878,9 +1878,9 @@ Proof.
     leibniz (BinWithZero.addition.commutativity k p), &ek, &left in |- *.
     quod idem est.
   }
-  simpl to_bin in |- *.
-  leibniz &valuek, &sign, &whole, (Bin.difference.invariance &swap) in |- *.
-  simpl Bin.bin_with_zero_difference in |- *.
+  simpl to_b_signed in |- *.
+  leibniz &valuek, &sign, &whole, (SignedBin.difference.invariance &swap) in |- *.
+  simpl SignedBin.bin_with_zero_difference in |- *.
   quod idem est.
 Qed.
 
@@ -1891,10 +1891,10 @@ Module division. (* conversion.division *)
 (* conversion.division.positive *)
 Theorem positive
   : forall (x : Int16) (y : Int16) (d : BinBase) .
-      to_bin y = Bin.Positive d -> Option.map to_bin (x /. y)%int16 = Some (x /. d)%b.
+      to_b_signed y = SignedBin.Positive d -> Option.map to_b_signed (x /. y)%int16 = Some (x /. d)%b_signed.
 Proof.
   intros x y d e.
-  lemma origin : to_bin (from_bin 0%b) = 0%b.
+  lemma origin : to_b_signed (from_b_signed 0%b_signed) = 0%b_signed.
   {
     lemma nothing : (0 < 1000000000000000)%bin_with_zero.
     {
@@ -1904,19 +1904,19 @@ Proof.
       quod idem est.
     }
     let proof r := conversion.retraction.nonnegative 0%bin_with_zero &nothing.
-    simpl Bin.from_bin_with_zero in &r.
+    simpl SignedBin.from_bin_with_zero in &r.
     ipso &r.
   }
-  lemma fits : to_bin (from_bin (x /. &d)%b) = (x /. &d)%b.
+  lemma fits : to_b_signed (from_b_signed (x /. &d)%b_signed) = (x /. &d)%b_signed.
   {
-    match (to_bin &x) with | Negative p | Zero | Positive p end |- t.
+    match (to_b_signed &x) with | Negative p | Zero | Positive p end |- t.
     - let proof r := conversion.boundedness.negative &x &p &t.
       let proof b := BinWithZero.division.quotient.boundedness p &d.
-      simpl Bin.divide in |- *.
+      simpl SignedBin.divide in |- *.
       match ((p /. &d)%bin_with_zero) with | Zero | Positive q end |- f.
-      + simpl Bin.from_bin_with_zero, Bin.negate in |- *.
+      + simpl SignedBin.from_bin_with_zero, SignedBin.negate in |- *.
         ipso &origin.
-      + simpl Bin.from_bin_with_zero, Bin.negate in |- *.
+      + simpl SignedBin.from_bin_with_zero, SignedBin.negate in |- *.
         lemma bounded : (q <= 1000000000000000)%bin_with_zero.
         {
           match &r with | same | smaller end.
@@ -1926,11 +1926,11 @@ Proof.
             ipso (disjoin _, (Comparable.order.mixed.left.transitivity &b &smaller)).
         }
         ipso (conversion.retraction.negative &q &bounded).
-    - simpl Bin.divide in |- *.
+    - simpl SignedBin.divide in |- *.
       ipso &origin.
     - let proof r := conversion.boundedness.positive &x &p &t.
       let proof b := BinWithZero.division.quotient.boundedness p &d.
-      simpl Bin.divide in |- *.
+      simpl SignedBin.divide in |- *.
       ipso
         (conversion.retraction.nonnegative (p /. &d)%bin_with_zero
           (Comparable.order.mixed.left.transitivity &b &r)).
@@ -1945,12 +1945,12 @@ Qed.
 (* conversion.division.negative *)
 Theorem negative
   : forall (x : Int16) (y : Int16) (d : BinBase) .
-      to_bin y = Bin.Negative d
-      -> ~ (to_bin x = (-1000000000000000)%b /\ d = BinBase.One)
-      -> Option.map to_bin (x /. y)%int16 = Some (Bin.negate (x /. d)%b).
+      to_b_signed y = SignedBin.Negative d
+      -> ~ (to_b_signed x = (-1000000000000000)%b_signed /\ d = BinBase.One)
+      -> Option.map to_b_signed (x /. y)%int16 = Some (SignedBin.negate (x /. d)%b_signed).
 Proof.
   intros x y d e h.
-  lemma origin : to_bin (from_bin 0%b) = 0%b.
+  lemma origin : to_b_signed (from_b_signed 0%b_signed) = 0%b_signed.
   {
     lemma nothing : (0 < 1000000000000000)%bin_with_zero.
     {
@@ -1960,12 +1960,12 @@ Proof.
       quod idem est.
     }
     let proof r := conversion.retraction.nonnegative 0%bin_with_zero &nothing.
-    simpl Bin.from_bin_with_zero in &r.
+    simpl SignedBin.from_bin_with_zero in &r.
     ipso &r.
   }
-  lemma fits : to_bin (from_bin (Bin.negate (x /. &d)%b)) = Bin.negate (x /. &d)%b.
+  lemma fits : to_b_signed (from_b_signed (SignedBin.negate (x /. &d)%b_signed)) = SignedBin.negate (x /. &d)%b_signed.
   {
-    match (to_bin &x) with | Negative p | Zero | Positive p end |- t.
+    match (to_b_signed &x) with | Negative p | Zero | Positive p end |- t.
     - let proof r := conversion.boundedness.negative &x &p &t.
       lemma below : ((p /. &d) < 1000000000000000)%bin_with_zero.
       {
@@ -1978,7 +1978,7 @@ Proof.
             ex
               (&h
                 (conjoin
-                  (refl (-1000000000000000)%b),
+                  (refl (-1000000000000000)%b_signed),
                   (refl BinBase.One)))
               quodlibet.
           + lemma differ : ~ (BinBase.b0 &d' = BinBase.One).
@@ -1999,18 +1999,18 @@ Proof.
             (Comparable.order.mixed.left.transitivity
               (BinWithZero.division.quotient.boundedness p &d) &smaller).
       }
-      simpl Bin.divide in |- *.
-      leibniz (Bin.negation.involution (Bin.from_bin_with_zero (p /. &d)%bin_with_zero)) in |- *.
+      simpl SignedBin.divide in |- *.
+      leibniz (SignedBin.negation.involution (SignedBin.from_bin_with_zero (p /. &d)%bin_with_zero)) in |- *.
       ipso (conversion.retraction.nonnegative (p /. &d)%bin_with_zero &below).
-    - simpl Bin.divide, Bin.negate in |- *.
+    - simpl SignedBin.divide, SignedBin.negate in |- *.
       ipso &origin.
     - let proof r := conversion.boundedness.positive &x &p &t.
       let proof b := BinWithZero.division.quotient.boundedness p &d.
-      simpl Bin.divide in |- *.
+      simpl SignedBin.divide in |- *.
       match ((p /. &d)%bin_with_zero) with | Zero | Positive q end |- f.
-      + simpl Bin.from_bin_with_zero, Bin.negate in |- *.
+      + simpl SignedBin.from_bin_with_zero, SignedBin.negate in |- *.
         ipso &origin.
-      + simpl Bin.from_bin_with_zero, Bin.negate in |- *.
+      + simpl SignedBin.from_bin_with_zero, SignedBin.negate in |- *.
         lemma bounded : (q <= 1000000000000000)%bin_with_zero.
         {
           simpl BinWithZero.LessOrEqual in |- *.
@@ -2066,8 +2066,8 @@ Definition Zero := Zero.
 Definition One := One.
 Definition Min := Min.
 Definition Max := Max.
-Definition to_bin := to_bin.
-Definition from_bin := from_bin.
+Definition to_b_signed := to_b_signed.
+Definition from_b_signed := from_b_signed.
 Definition from_bin_with_zero := from_bin_with_zero.
 Definition unsigned_value := unsigned_value.
 Definition sign_bit := sign_bit.
@@ -2089,7 +2089,7 @@ Module order. (* Width.order *)
 
 Module strict. (* Width.order.strict *)
 
-Theorem specification : forall (x : T) (y : T) . LessThan x y <-> (to_bin x < to_bin y)%b.
+Theorem specification : forall (x : T) (y : T) . LessThan x y <-> (to_b_signed x < to_b_signed y)%b_signed.
 Proof.
   intros x y.
   divide et impera.
@@ -2118,7 +2118,7 @@ Module conversion. (* Width.conversion *)
 Definition section := Int16.conversion.section.
 
 Theorem comparison
-  : forall (x : T) (y : T) . compare x y = Bin.compare (to_bin x) (to_bin y).
+  : forall (x : T) (y : T) . compare x y = SignedBin.compare (to_b_signed x) (to_b_signed y).
 Proof.
   intros x y.
   ipso (refl (compare &x &y)).
@@ -2131,12 +2131,12 @@ Module forward. (* Width.conversion.forward *)
 
 Theorem specification
   : forall (x : T) .
-      to_bin x
-      = Bin.bin_with_zero_difference (unsigned_value x)
+      to_b_signed x
+      = SignedBin.bin_with_zero_difference (unsigned_value x)
           (BinWithZero.Positive modulus * Bit.to_bin_with_zero (sign_bit x))%bin_with_zero.
 Proof.
   intro x.
-  ipso (refl (to_bin &x)).
+  ipso (refl (to_b_signed &x)).
 Qed.
 
 End forward. (* Width.conversion.forward *)
@@ -2144,13 +2144,13 @@ End forward. (* Width.conversion.forward *)
 Module backward. (* Width.conversion.backward *)
 
 Theorem specification
-  : forall (z : Bin) .
-      from_bin z
-      = add (from_bin_with_zero (Bin.ramp z))
-          (negate (from_bin_with_zero (Bin.ramp (Bin.negate z)))).
+  : forall (z : SignedBin) .
+      from_b_signed z
+      = add (from_bin_with_zero (SignedBin.ramp z))
+          (negate (from_bin_with_zero (SignedBin.ramp (SignedBin.negate z)))).
 Proof.
   intro z.
-  ipso (refl (from_bin &z)).
+  ipso (refl (from_b_signed &z)).
 Qed.
 
 End backward. (* Width.conversion.backward *)
@@ -2258,11 +2258,11 @@ Module multiplication. (* Width.flag.multiplication *)
 Theorem specification
   : forall (x : T) (y : T) .
       mul_with_overflow x y
-      = (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+      = (match SignedBin.compare (to_b_signed x * to_b_signed y)%b_signed (to_b_signed Min) with
          | Comparison.Lt => 1%bit
          | Comparison.Eq => 0%bit
          | Comparison.Gt =>
-             match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+             match SignedBin.compare (to_b_signed x * to_b_signed y)%b_signed (to_b_signed Max) with
              | Comparison.Lt => 0%bit
              | Comparison.Eq => 0%bit
              | Comparison.Gt => 1%bit
@@ -2280,9 +2280,9 @@ End flag. (* Width.flag *)
 
 Module minimum. (* Width.minimum *)
 
-Theorem specification : to_bin Min = Bin.Negative half.
+Theorem specification : to_b_signed Min = SignedBin.Negative half.
 Proof.
-  ipso (refl (Bin.Negative half)).
+  ipso (refl (SignedBin.Negative half)).
 Qed.
 
 Theorem negation : negate Min = Min.
@@ -2294,37 +2294,37 @@ End minimum. (* Width.minimum *)
 
 Module maximum. (* Width.maximum *)
 
-Theorem specification : (to_bin Max + 1 = Bin.Positive half)%b.
+Theorem specification : (to_b_signed Max + 1 = SignedBin.Positive half)%b_signed.
 Proof.
-  ipso (refl (Bin.Positive half)).
+  ipso (refl (SignedBin.Positive half)).
 Qed.
 
-Theorem positivity : (0 < to_bin Max)%b.
+Theorem positivity : (0 < to_b_signed Max)%b_signed.
 Proof.
-  simpl Bin.LessThan in |- *.
+  simpl SignedBin.LessThan in |- *.
   exists 111111111111111%bin_base.
-  ipso (refl (to_bin Max)).
+  ipso (refl (to_b_signed Max)).
 Qed.
 
 End maximum. (* Width.maximum *)
 
 Module one. (* Width.one *)
 
-Theorem specification : to_bin One = 1%b.
+Theorem specification : to_b_signed One = 1%b_signed.
 Proof.
-  ipso (refl 1%b).
+  ipso (refl 1%b_signed).
 Qed.
 
 End one. (* Width.one *)
 
 Module modulus. (* Width.modulus *)
 
-Theorem specification : (Bin.Positive modulus = Bin.Positive half + Bin.Positive half)%b.
+Theorem specification : (SignedBin.Positive modulus = SignedBin.Positive half + SignedBin.Positive half)%b_signed.
 Proof.
-  ipso (refl (Bin.Positive modulus)).
+  ipso (refl (SignedBin.Positive modulus)).
 Qed.
 
-Theorem wrapping : from_bin (Bin.Positive modulus) = Zero.
+Theorem wrapping : from_b_signed (SignedBin.Positive modulus) = Zero.
 Proof.
   ipso (refl Zero).
 Qed.
@@ -2333,9 +2333,9 @@ End modulus. (* Width.modulus *)
 
 Module beyond. (* Width.beyond *)
 
-Theorem specification : (Bin.Positive beyond = Bin.Positive modulus + Bin.Positive half)%b.
+Theorem specification : (SignedBin.Positive beyond = SignedBin.Positive modulus + SignedBin.Positive half)%b_signed.
 Proof.
-  ipso (refl (Bin.Positive beyond)).
+  ipso (refl (SignedBin.Positive beyond)).
 Qed.
 
 End beyond. (* Width.beyond *)
@@ -2368,12 +2368,12 @@ Number Notation Int16.T Int16.from_numeral Int16.to_numeral
  *)
 Bind Scope jw_int16_scope with Int16.T.
 
-(* An [Int16] stands wherever a [Bin] is expected, read as its value in two's
+(* An [Int16] stands wherever a [SignedBin] is expected, read as its value in two's
  * complement, and wherever an [Integer] is, through that value; each
  * conversion is printed where it happened.
  *)
-Coercion Int16.to_bin : Int16 >-> Bin.
-Add Printing Coercion Int16.to_bin.
+Coercion Int16.to_b_signed : Int16 >-> SignedBin.
+Add Printing Coercion Int16.to_b_signed.
 Coercion Int16.to_integer : Int16 >-> Integer.
 Add Printing Coercion Int16.to_integer.
 

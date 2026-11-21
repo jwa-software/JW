@@ -6,7 +6,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
-From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
 From JW Require Import Data.Product.
@@ -27,8 +27,8 @@ Parameter Inline Zero : T.
 Parameter Inline One : T.
 Parameter Inline Min : T.
 Parameter Inline Max : T.
-Parameter Inline to_bin : T -> Bin.
-Parameter Inline from_bin : Bin -> T.
+Parameter Inline to_b_signed : T -> SignedBin.
+Parameter Inline from_b_signed : SignedBin -> T.
 Parameter Inline from_bin_with_zero : BinWithZero -> T.
 Parameter Inline unsigned_value : T -> BinWithZero.
 Parameter Inline sign_bit : T -> Bit.
@@ -51,7 +51,7 @@ Module order. (* order *)
 Module strict. (* order.strict *)
 
 Parameter specification
-  : forall (x : T) (y : T) . LessThan x y <-> (to_bin x < to_bin y)%b.
+  : forall (x : T) (y : T) . LessThan x y <-> (to_b_signed x < to_b_signed y)%b_signed.
 
 End strict. (* order.strict *)
 
@@ -63,24 +63,24 @@ End order. (* order *)
 Module conversion. (* conversion *)
 
 Parameter section
-  : forall (x : T) . from_bin (to_bin x) = x.
+  : forall (x : T) . from_b_signed (to_b_signed x) = x.
 Parameter comparison
-  : forall (x : T) (y : T) . compare x y = Bin.compare (to_bin x) (to_bin y).
+  : forall (x : T) (y : T) . compare x y = SignedBin.compare (to_b_signed x) (to_b_signed y).
 Parameter addition
   : forall (x : T) (y : T) .
       (pi_1 (add_with_overflow x y))%product = 0%bit
-      -> to_bin (add x y) = (to_bin x + to_bin y)%b.
+      -> to_b_signed (add x y) = (to_b_signed x + to_b_signed y)%b_signed.
 Parameter difference
   : forall (a : BinWithZero) (b : BinWithZero) .
-      from_bin (Bin.bin_with_zero_difference a b)
+      from_b_signed (SignedBin.bin_with_zero_difference a b)
       = add (from_bin_with_zero a) (negate (from_bin_with_zero b)).
 
 Module forward. (* conversion.forward *)
 
 Parameter specification
   : forall (x : T) .
-      to_bin x
-      = Bin.bin_with_zero_difference (unsigned_value x)
+      to_b_signed x
+      = SignedBin.bin_with_zero_difference (unsigned_value x)
           (BinWithZero.Positive modulus * Bit.to_bin_with_zero (sign_bit x))%bin_with_zero.
 
 End forward. (* conversion.forward *)
@@ -88,10 +88,10 @@ End forward. (* conversion.forward *)
 Module backward. (* conversion.backward *)
 
 Parameter specification
-  : forall (z : Bin) .
-      from_bin z
-      = add (from_bin_with_zero (Bin.ramp z))
-          (negate (from_bin_with_zero (Bin.ramp (Bin.negate z)))).
+  : forall (z : SignedBin) .
+      from_b_signed z
+      = add (from_bin_with_zero (SignedBin.ramp z))
+          (negate (from_bin_with_zero (SignedBin.ramp (SignedBin.negate z)))).
 
 End backward. (* conversion.backward *)
 
@@ -99,11 +99,11 @@ Module boundedness. (* conversion.boundedness *)
 
 Parameter positive
   : forall (x : T) (p : BinBase) .
-      to_bin x = Bin.Positive p
+      to_b_signed x = SignedBin.Positive p
       -> (BinWithZero.Positive p < BinWithZero.Positive half)%bin_with_zero.
 Parameter negative
   : forall (x : T) (p : BinBase) .
-      to_bin x = Bin.Negative p
+      to_b_signed x = SignedBin.Negative p
       -> (BinWithZero.Positive p <= BinWithZero.Positive half)%bin_with_zero.
 
 End boundedness. (* conversion.boundedness *)
@@ -113,11 +113,11 @@ Module retraction. (* conversion.retraction *)
 Parameter nonnegative
   : forall (n : BinWithZero) .
       (n < BinWithZero.Positive half)%bin_with_zero
-      -> to_bin (from_bin (Bin.from_bin_with_zero n)) = Bin.from_bin_with_zero n.
+      -> to_b_signed (from_b_signed (SignedBin.from_bin_with_zero n)) = SignedBin.from_bin_with_zero n.
 Parameter negative
   : forall (p : BinBase) .
       (BinWithZero.Positive p <= BinWithZero.Positive half)%bin_with_zero
-      -> to_bin (from_bin (Bin.Negative p)) = Bin.Negative p.
+      -> to_b_signed (from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p.
 
 End retraction. (* conversion.retraction *)
 
@@ -217,11 +217,11 @@ Module multiplication. (* flag.multiplication *)
 Parameter specification
   : forall (x : T) (y : T) .
       mul_with_overflow x y
-      = (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+      = (match SignedBin.compare (to_b_signed x * to_b_signed y)%b_signed (to_b_signed Min) with
          | Comparison.Lt => 1%bit
          | Comparison.Eq => 0%bit
          | Comparison.Gt =>
-             match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+             match SignedBin.compare (to_b_signed x * to_b_signed y)%b_signed (to_b_signed Max) with
              | Comparison.Lt => 0%bit
              | Comparison.Eq => 0%bit
              | Comparison.Gt => 1%bit
@@ -236,7 +236,7 @@ End flag. (* flag *)
 Module minimum. (* minimum *)
 
 Parameter specification
-  : to_bin Min = Bin.Negative half.
+  : to_b_signed Min = SignedBin.Negative half.
 Parameter negation
   : negate Min = Min.
 
@@ -245,32 +245,32 @@ End minimum. (* minimum *)
 Module maximum. (* maximum *)
 
 Parameter specification
-  : (to_bin Max + 1 = Bin.Positive half)%b.
+  : (to_b_signed Max + 1 = SignedBin.Positive half)%b_signed.
 Parameter positivity
-  : (0 < to_bin Max)%b.
+  : (0 < to_b_signed Max)%b_signed.
 
 End maximum. (* maximum *)
 
 Module one. (* one *)
 
 Parameter specification
-  : to_bin One = 1%b.
+  : to_b_signed One = 1%b_signed.
 
 End one. (* one *)
 
 Module modulus. (* modulus *)
 
 Parameter specification
-  : (Bin.Positive modulus = Bin.Positive half + Bin.Positive half)%b.
+  : (SignedBin.Positive modulus = SignedBin.Positive half + SignedBin.Positive half)%b_signed.
 Parameter wrapping
-  : from_bin (Bin.Positive modulus) = Zero.
+  : from_b_signed (SignedBin.Positive modulus) = Zero.
 
 End modulus. (* modulus *)
 
 Module beyond. (* beyond *)
 
 Parameter specification
-  : (Bin.Positive beyond = Bin.Positive modulus + Bin.Positive half)%b.
+  : (SignedBin.Positive beyond = SignedBin.Positive modulus + SignedBin.Positive half)%b_signed.
 
 End beyond. (* beyond *)
 
@@ -301,8 +301,8 @@ Local Notation "x <= y" := (W.LessOrEqual x y) (only parsing)
 #[local] Bind Scope jw_signed_scope with W.T.
 Local Open Scope jw_signed_scope.
 
-(* A value is fixed by its [Bin] reading. *)
-Lemma injectivity : forall {x : W.T} {y : W.T} . W.to_bin x = W.to_bin y -> x = y.
+(* A value is fixed by its [SignedBin] reading. *)
+Lemma injectivity : forall {x : W.T} {y : W.T} . W.to_b_signed x = W.to_b_signed y -> x = y.
 Proof.
   intros x y e.
   leibniz <- (W.conversion.section &x), <- (W.conversion.section &y), &e in |- *.
@@ -310,11 +310,11 @@ Proof.
 Qed.
 
 (* The least value is at most the greatest. *)
-Lemma ordered : (Bin.Negative W.half <= W.to_bin W.Max)%b.
+Lemma ordered : (SignedBin.Negative W.half <= W.to_b_signed W.Max)%b_signed.
 Proof.
   ipso (disjoin _,
-        (Bin.order.strict.transitivity
-           (Bin.order.sign.negativity W.half) W.maximum.positivity)).
+        (SignedBin.order.strict.transitivity
+           (SignedBin.order.sign.negativity W.half) W.maximum.positivity)).
 Qed.
 
 (* [- (- x)] is [- (- x) + (- x + x)], and the first two add up to zero. *)
@@ -359,14 +359,14 @@ Qed.
 Module bound. (* bound *)
 
 (* The bounds of [W.conversion.boundedness.positive] and
- * [W.conversion.boundedness.negative], read in [Bin]'s order.
+ * [W.conversion.boundedness.negative], read in [SignedBin]'s order.
  *)
 (* bound.range *)
 Theorem range
-  : forall (x : W.T) . (Bin.Negative W.half <= W.to_bin x /\ W.to_bin x <= W.to_bin W.Max)%b.
+  : forall (x : W.T) . (SignedBin.Negative W.half <= W.to_b_signed x /\ W.to_b_signed x <= W.to_b_signed W.Max)%b_signed.
 Proof.
   intro x.
-  match (W.to_bin &x) with | p | | p end |- e.
+  match (W.to_b_signed &x) with | p | | p end |- e.
   - let proof b := W.conversion.boundedness.negative &x &p &e.
     divide et impera.
     + match &b with | same | smaller end.
@@ -379,41 +379,41 @@ Proof.
                                 end), &same)).
         }
         leibniz &facto in |- *.
-        ipso (disjoin (refl (Bin.Negative &p)), _).
+        ipso (disjoin (refl (SignedBin.Negative &p)), _).
       * let proof lifted :=
           modus aequans
-            (Bin.order.embedding.preservation
+            (SignedBin.order.embedding.preservation
                (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
             &smaller.
-        lemma facto : (Bin.Negative W.half < Bin.Negative p)%b.
+        lemma facto : (SignedBin.Negative W.half < SignedBin.Negative p)%b_signed.
         {
           ipso (modus aequans
-                  (Bin.order.negation.strict.reversal (Bin.Positive &p) (Bin.Positive W.half)),
+                  (SignedBin.order.negation.strict.reversal (SignedBin.Positive &p) (SignedBin.Positive W.half)),
                   &lifted).
         }
         ipso (disjoin _, &facto).
     + ipso (disjoin _,
-            (Bin.order.strict.transitivity
-               (Bin.order.sign.negativity &p) W.maximum.positivity)).
+            (SignedBin.order.strict.transitivity
+               (SignedBin.order.sign.negativity &p) W.maximum.positivity)).
   - divide et impera.
-    + ipso (disjoin _, (Bin.order.sign.negativity W.half)).
+    + ipso (disjoin _, (SignedBin.order.sign.negativity W.half)).
     + ipso (disjoin _, W.maximum.positivity).
   - let proof b := W.conversion.boundedness.positive &x &p &e.
     divide et impera.
     + ipso (disjoin _,
-            (Bin.order.strict.transitivity
-               (Bin.order.sign.negativity W.half) (Bin.order.sign.positivity &p))).
+            (SignedBin.order.strict.transitivity
+               (SignedBin.order.sign.negativity W.half) (SignedBin.order.sign.positivity &p))).
     + let proof lifted :=
         modus aequans
-          (Bin.order.embedding.preservation
+          (SignedBin.order.embedding.preservation
              (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
           &b.
-      lemma facto : (Bin.Positive p < W.to_bin W.Max + 1)%b.
+      lemma facto : (SignedBin.Positive p < W.to_b_signed W.Max + 1)%b_signed.
       {
         leibniz W.maximum.specification in |- *.
         ipso &lifted.
       }
-      ipso (modus aequans (Bin.order.discreteness (Bin.Positive &p) (W.to_bin W.Max)), &facto).
+      ipso (modus aequans (SignedBin.order.discreteness (SignedBin.Positive &p) (W.to_b_signed W.Max)), &facto).
 Qed.
 
 (* bound.lower *)
@@ -422,7 +422,7 @@ Proof.
   intro x.
   match (bound.range &x) with | low _ end.
   match &low with | same | smaller end.
-  - lemma facto : W.to_bin W.Min = W.to_bin x.
+  - lemma facto : W.to_b_signed W.Min = W.to_b_signed x.
     {
       leibniz W.minimum.specification in |- *.
       ipso &same.
@@ -453,7 +453,7 @@ Module sign. (* sign *)
 
 (* A clear sign bit leaves the reading the unsigned value itself. *)
 (* sign.clear *)
-Theorem clear : forall (x : W.T) . W.sign_bit x = 0%bit -> (0 <= W.to_bin x)%b.
+Theorem clear : forall (x : W.T) . W.sign_bit x = 0%bit -> (0 <= W.to_b_signed x)%b_signed.
 Proof.
   intros x s.
   leibniz (W.conversion.forward.specification &x), &s in |- *.
@@ -465,18 +465,18 @@ Proof.
   }
   leibniz &scaled in |- *.
   lemma facto
-    : Bin.bin_with_zero_difference (W.unsigned_value x) 0%bin_with_zero
-      = Bin.from_bin_with_zero (W.unsigned_value x).
+    : SignedBin.bin_with_zero_difference (W.unsigned_value x) 0%bin_with_zero
+      = SignedBin.from_bin_with_zero (W.unsigned_value x).
   {
     match (W.unsigned_value &x) with | | p end; simpl in |- *; quod idem est.
   }
   leibniz &facto in |- *.
-  ipso (Bin.order.embedding.nonnegativity (W.unsigned_value &x)).
+  ipso (SignedBin.order.embedding.nonnegativity (W.unsigned_value &x)).
 Qed.
 
 (* A set sign bit takes the modulus from an unsigned value below it. *)
 (* sign.set *)
-Theorem set : forall (x : W.T) . W.sign_bit x = 1%bit -> (W.to_bin x < 0)%b.
+Theorem set : forall (x : W.T) . W.sign_bit x = 1%bit -> (W.to_b_signed x < 0)%b_signed.
 Proof.
   intros x s.
   leibniz (W.conversion.forward.specification &x), &s in |- *.
@@ -490,26 +490,26 @@ Proof.
   leibniz &whole in |- *.
   lemma split
     : forall (a : BinWithZero) (b : BinWithZero) .
-        Bin.bin_with_zero_difference a b
-        = (Bin.from_bin_with_zero a + Bin.negate (Bin.from_bin_with_zero b))%b.
+        SignedBin.bin_with_zero_difference a b
+        = (SignedBin.from_bin_with_zero a + SignedBin.negate (SignedBin.from_bin_with_zero b))%b_signed.
   {
     intros a b.
     match &a with | | p end; match &b with | | q end;
-      simpl Bin.add in |- *; simpl in |- *; quod idem est.
+      simpl SignedBin.add in |- *; simpl in |- *; quod idem est.
   }
   leibniz (&split (W.unsigned_value &x) (BinWithZero.Positive W.modulus)) in |- *.
   let proof lifted :=
     modus aequans
-      (Bin.order.embedding.preservation (W.unsigned_value &x) (BinWithZero.Positive W.modulus)),
+      (SignedBin.order.embedding.preservation (W.unsigned_value &x) (BinWithZero.Positive W.modulus)),
       (W.reinterpretation.boundedness &x).
   let proof shifted :=
-    Bin.addition.order.strict.monotonicity
-      (Bin.negate (Bin.from_bin_with_zero (BinWithZero.Positive W.modulus))) _ _ &lifted.
+    SignedBin.addition.order.strict.monotonicity
+      (SignedBin.negate (SignedBin.from_bin_with_zero (BinWithZero.Positive W.modulus))) _ _ &lifted.
   leibniz
-    (Bin.addition.commutativity
-       (Bin.negate (Bin.from_bin_with_zero (BinWithZero.Positive W.modulus)))
-       (Bin.from_bin_with_zero (W.unsigned_value &x))),
-    (Bin.addition.left.inverse (Bin.from_bin_with_zero (BinWithZero.Positive W.modulus)))
+    (SignedBin.addition.commutativity
+       (SignedBin.negate (SignedBin.from_bin_with_zero (BinWithZero.Positive W.modulus)))
+       (SignedBin.from_bin_with_zero (W.unsigned_value &x))),
+    (SignedBin.addition.left.inverse (SignedBin.from_bin_with_zero (BinWithZero.Positive W.modulus)))
     in &shifted.
   ipso &shifted.
 Qed.
@@ -518,13 +518,13 @@ End sign. (* sign *)
 
 Module wrapping. (* wrapping *)
 
-(* [Bin.add] is the difference of the summed positive parts and the summed
- * negative parts, and [from_bin] carries a difference and a sum over; what is
+(* [SignedBin.add] is the difference of the summed positive parts and the summed
+ * negative parts, and [from_b_signed] carries a difference and a sum over; what is
  * left is regrouping the four parts.
  *)
 (* wrapping.additivity *)
 Theorem additivity
-  : forall (a : Bin) (b : Bin) . W.from_bin (a + b)%b = W.from_bin a + W.from_bin b.
+  : forall (a : SignedBin) (b : SignedBin) . W.from_b_signed (a + b)%b_signed = W.from_b_signed a + W.from_b_signed b.
 Proof.
   intros a b.
   lemma inverted : forall (c : W.T) (d : W.T) . (- (c + d)) = - c + - d.
@@ -551,27 +551,27 @@ Proof.
     leibniz &left_inverse, &left_identity in |- *.
     quod idem est.
   }
-  simpl Bin.add in |- *.
+  simpl SignedBin.add in |- *.
   leibniz
     (W.conversion.difference
-       (Bin.ramp &a + Bin.ramp &b)%bin_with_zero
-       (Bin.ramp (Bin.negate &a) + Bin.ramp (Bin.negate &b))%bin_with_zero),
-    (W.reinterpretation.reduction.additivity (Bin.ramp &a) (Bin.ramp &b)),
-    (W.reinterpretation.reduction.additivity (Bin.ramp (Bin.negate &a)) (Bin.ramp (Bin.negate &b)))
+       (SignedBin.ramp &a + SignedBin.ramp &b)%bin_with_zero
+       (SignedBin.ramp (SignedBin.negate &a) + SignedBin.ramp (SignedBin.negate &b))%bin_with_zero),
+    (W.reinterpretation.reduction.additivity (SignedBin.ramp &a) (SignedBin.ramp &b)),
+    (W.reinterpretation.reduction.additivity (SignedBin.ramp (SignedBin.negate &a)) (SignedBin.ramp (SignedBin.negate &b)))
     in |- *.
   leibniz
     (&inverted
-       (W.from_bin_with_zero (Bin.ramp (Bin.negate &a)))
-       (W.from_bin_with_zero (Bin.ramp (Bin.negate &b))))
+       (W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &a)))
+       (W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &b))))
     in |- *.
   leibniz
     (W.conversion.backward.specification &a),
     (W.conversion.backward.specification &b)
     in |- *.
-  let pa := W.from_bin_with_zero (Bin.ramp &a) in |- *.
-  let pb := W.from_bin_with_zero (Bin.ramp &b) in |- *.
-  let na := (- W.from_bin_with_zero (Bin.ramp (Bin.negate &a))) in |- *.
-  let nb := (- W.from_bin_with_zero (Bin.ramp (Bin.negate &b))) in |- *.
+  let pa := W.from_bin_with_zero (SignedBin.ramp &a) in |- *.
+  let pb := W.from_bin_with_zero (SignedBin.ramp &b) in |- *.
+  let na := (- W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &a))) in |- *.
+  let nb := (- W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &b))) in |- *.
   leibniz
     (W.addition.associativity &pa &pb (&na + &nb)),
     <- (W.addition.associativity &pb &na &nb),
@@ -582,25 +582,25 @@ Proof.
   quod idem est.
 Qed.
 
-(* [from_bin a] plus [from_bin (- a)] is [from_bin 0], so the second is the
+(* [from_b_signed a] plus [from_b_signed (- a)] is [from_b_signed 0], so the second is the
  * inverse of the first.
  *)
 (* wrapping.negation *)
-Theorem negation : forall (a : Bin) . W.from_bin (Bin.negate a) = - W.from_bin a.
+Theorem negation : forall (a : SignedBin) . W.from_b_signed (SignedBin.negate a) = - W.from_b_signed a.
 Proof.
   intro a.
-  lemma zero : W.from_bin a + W.from_bin (Bin.negate a) = W.Zero.
+  lemma zero : W.from_b_signed a + W.from_b_signed (SignedBin.negate a) = W.Zero.
   {
     leibniz
-      <- (wrapping.additivity &a (Bin.negate &a)),
-      (Bin.addition.right.inverse &a),
-      (W.conversion.backward.specification 0%b)
+      <- (wrapping.additivity &a (SignedBin.negate &a)),
+      (SignedBin.addition.right.inverse &a),
+      (W.conversion.backward.specification 0%b_signed)
       in |- *.
-    lemma origin : W.from_bin_with_zero (Bin.ramp 0%b) = W.Zero.
+    lemma origin : W.from_bin_with_zero (SignedBin.ramp 0%b_signed) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
-    lemma negated_origin : W.from_bin_with_zero (Bin.ramp (Bin.negate 0%b)) = W.Zero.
+    lemma negated_origin : W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate 0%b_signed)) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
@@ -608,24 +608,24 @@ Proof.
     match (W.addition.inverse W.Zero) with | _ right_inverse end.
     ipso &right_inverse.
   }
-  match (W.addition.identity (W.from_bin (Bin.negate &a))) with | left_identity _ end.
-  match (W.addition.inverse (W.from_bin &a)) with | left_inverse _ end.
+  match (W.addition.identity (W.from_b_signed (SignedBin.negate &a))) with | left_identity _ end.
+  match (W.addition.inverse (W.from_b_signed &a)) with | left_inverse _ end.
   leibniz <- &left_identity, <- &left_inverse in |- *.
   leibniz
-    (W.addition.associativity (- W.from_bin &a) (W.from_bin &a) (W.from_bin (Bin.negate &a))),
+    (W.addition.associativity (- W.from_b_signed &a) (W.from_b_signed &a) (W.from_b_signed (SignedBin.negate &a))),
     &zero
     in |- *.
-  match (W.addition.identity (- W.from_bin &a)) with | _ right_identity end.
+  match (W.addition.identity (- W.from_b_signed &a)) with | _ right_identity end.
   ipso &right_identity.
 Qed.
 
 (* wrapping.summation *)
 Theorem summation
-  : forall (x : W.T) (y : W.T) . x + y = W.from_bin (W.to_bin x + W.to_bin y)%b.
+  : forall (x : W.T) (y : W.T) . x + y = W.from_b_signed (W.to_b_signed x + W.to_b_signed y)%b_signed.
 Proof.
   intros x y.
   leibniz
-    (wrapping.additivity (W.to_bin &x) (W.to_bin &y)),
+    (wrapping.additivity (W.to_b_signed &x) (W.to_b_signed &y)),
     (W.conversion.section &x),
     (W.conversion.section &y)
     in |- *.
@@ -634,28 +634,28 @@ Qed.
 
 (* wrapping.difference *)
 Theorem difference
-  : forall (x : W.T) (y : W.T) . x - y = W.from_bin (W.to_bin x - W.to_bin y)%b.
+  : forall (x : W.T) (y : W.T) . x - y = W.from_b_signed (W.to_b_signed x - W.to_b_signed y)%b_signed.
 Proof.
   intros x y.
   leibniz (W.subtraction.specification &x &y) in |- *.
-  simpl Bin.sub in |- *.
+  simpl SignedBin.sub in |- *.
   leibniz
-    (wrapping.additivity (W.to_bin &x) (Bin.negate (W.to_bin &y))),
-    (wrapping.negation (W.to_bin &y)),
+    (wrapping.additivity (W.to_b_signed &x) (SignedBin.negate (W.to_b_signed &y))),
+    (wrapping.negation (W.to_b_signed &y)),
     (W.conversion.section &x),
     (W.conversion.section &y)
     in |- *.
   quod idem est.
 Qed.
 
-(* By the signs of [a] and [b]: [W.from_bin] of a positive [p] is
+(* By the signs of [a] and [b]: [W.from_b_signed] of a positive [p] is
  * [W.from_bin_with_zero p] and of a negative one its negation, [W.mul] takes
- * the signs out as [Bin.mul] does, and [W.from_bin_with_zero] is
+ * the signs out as [SignedBin.mul] does, and [W.from_bin_with_zero] is
  * multiplicative.
  *)
 (* wrapping.multiplicativity *)
 Theorem multiplicativity
-  : forall (a : Bin) (b : Bin) . W.from_bin (a * b)%b = W.from_bin a * W.from_bin b.
+  : forall (a : SignedBin) (b : SignedBin) . W.from_b_signed (a * b)%b_signed = W.from_b_signed a * W.from_b_signed b.
 Proof.
   intros a b.
   lemma negated : - W.Zero = W.Zero.
@@ -667,43 +667,43 @@ Proof.
   }
   lemma positive
     : forall (p : BinBase) .
-        W.from_bin (Bin.Positive p) = W.from_bin_with_zero (BinWithZero.Positive p).
+        W.from_b_signed (SignedBin.Positive p) = W.from_bin_with_zero (BinWithZero.Positive p).
   {
     intro p.
-    leibniz (W.conversion.backward.specification (Bin.Positive &p)) in |- *.
-    lemma vanishing : W.from_bin_with_zero (Bin.ramp (Bin.negate (Bin.Positive &p))) = W.Zero.
+    leibniz (W.conversion.backward.specification (SignedBin.Positive &p)) in |- *.
+    lemma vanishing : W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate (SignedBin.Positive &p))) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
     leibniz &vanishing, &negated in |- *.
-    match (W.addition.identity (W.from_bin_with_zero (Bin.ramp (Bin.Positive &p)))) with | _ i end.
+    match (W.addition.identity (W.from_bin_with_zero (SignedBin.ramp (SignedBin.Positive &p)))) with | _ i end.
     leibniz &i in |- *.
     ipso (refl (W.from_bin_with_zero (BinWithZero.Positive &p))).
   }
   lemma negative
     : forall (p : BinBase) .
-        W.from_bin (Bin.Negative p) = - W.from_bin_with_zero (BinWithZero.Positive p).
+        W.from_b_signed (SignedBin.Negative p) = - W.from_bin_with_zero (BinWithZero.Positive p).
   {
     intro p.
-    leibniz (W.conversion.backward.specification (Bin.Negative &p)) in |- *.
-    lemma vanishing : W.from_bin_with_zero (Bin.ramp (Bin.Negative &p)) = W.Zero.
+    leibniz (W.conversion.backward.specification (SignedBin.Negative &p)) in |- *.
+    lemma vanishing : W.from_bin_with_zero (SignedBin.ramp (SignedBin.Negative &p)) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
     leibniz &vanishing in |- *.
-    match (W.addition.identity (- W.from_bin_with_zero (Bin.ramp (Bin.negate (Bin.Negative &p)))))
+    match (W.addition.identity (- W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate (SignedBin.Negative &p)))))
       with | i _ end.
     leibniz &i in |- *.
     ipso (refl (- W.from_bin_with_zero (BinWithZero.Positive &p))).
   }
-  lemma zero : W.from_bin 0%b = W.Zero.
+  lemma zero : W.from_b_signed 0%b_signed = W.Zero.
   {
-    leibniz (W.conversion.backward.specification 0%b) in |- *.
-    lemma vanishing : W.from_bin_with_zero (Bin.ramp 0%b) = W.Zero.
+    leibniz (W.conversion.backward.specification 0%b_signed) in |- *.
+    lemma vanishing : W.from_bin_with_zero (SignedBin.ramp 0%b_signed) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
-    lemma vanished : W.from_bin_with_zero (Bin.ramp (Bin.negate 0%b)) = W.Zero.
+    lemma vanished : W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate 0%b_signed)) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
@@ -723,7 +723,7 @@ Proof.
   match &a with | p | | p end.
   - match &b with | q | | q end.
     + let proof e
-        : W.from_bin (Bin.Negative &p * Bin.Negative &q)%b
+        : W.from_b_signed (SignedBin.Negative &p * SignedBin.Negative &q)%b_signed
           = W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
         := &positive (&p * &q)%bin_base.
       leibniz
@@ -742,13 +742,13 @@ Proof.
         (&product &p &q)
         in |- *.
       quod idem est.
-    + let proof e : W.from_bin (Bin.Negative &p * 0)%b = W.Zero := &zero.
+    + let proof e : W.from_b_signed (SignedBin.Negative &p * 0)%b_signed = W.Zero := &zero.
       match (W.multiplication.annihilation (- W.from_bin_with_zero (BinWithZero.Positive &p)))
         with | _ r end.
       leibniz &e, (&negative &p), &zero, &r in |- *.
       quod idem est.
     + let proof e
-        : W.from_bin (Bin.Negative &p * Bin.Positive &q)%b
+        : W.from_b_signed (SignedBin.Negative &p * SignedBin.Positive &q)%b_signed
           = - W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
         := &negative (&p * &q)%bin_base.
       leibniz
@@ -761,13 +761,13 @@ Proof.
         (&product &p &q)
         in |- *.
       quod idem est.
-  - let proof e : W.from_bin (0 * &b)%b = W.Zero := &zero.
-    match (W.multiplication.annihilation (W.from_bin &b)) with | l _ end.
+  - let proof e : W.from_b_signed (0 * &b)%b_signed = W.Zero := &zero.
+    match (W.multiplication.annihilation (W.from_b_signed &b)) with | l _ end.
     leibniz &e, &zero, &l in |- *.
     quod idem est.
   - match &b with | q | | q end.
     + let proof e
-        : W.from_bin (Bin.Positive &p * Bin.Negative &q)%b
+        : W.from_b_signed (SignedBin.Positive &p * SignedBin.Negative &q)%b_signed
           = - W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
         := &negative (&p * &q)%bin_base.
       leibniz
@@ -780,13 +780,13 @@ Proof.
         (&product &p &q)
         in |- *.
       quod idem est.
-    + let proof e : W.from_bin (Bin.Positive &p * 0)%b = W.Zero := &zero.
+    + let proof e : W.from_b_signed (SignedBin.Positive &p * 0)%b_signed = W.Zero := &zero.
       match (W.multiplication.annihilation (W.from_bin_with_zero (BinWithZero.Positive &p)))
         with | _ r end.
       leibniz &e, (&positive &p), &zero, &r in |- *.
       quod idem est.
     + let proof e
-        : W.from_bin (Bin.Positive &p * Bin.Positive &q)%b
+        : W.from_b_signed (SignedBin.Positive &p * SignedBin.Positive &q)%b_signed
           = W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
         := &positive (&p * &q)%bin_base.
       leibniz &e, (&positive &p), (&positive &q), (&product &p &q) in |- *.
@@ -794,12 +794,12 @@ Proof.
 Qed.
 
 (* [W.conversion.retraction.nonnegative] and [W.conversion.retraction.negative]
- * together, their bounds read in [Bin]'s order.
+ * together, their bounds read in [SignedBin]'s order.
  *)
 (* wrapping.retraction *)
 Theorem retraction
-  : forall (z : Bin) .
-      (Bin.Negative W.half <= z /\ z <= W.to_bin W.Max)%b -> W.to_bin (W.from_bin z) = z.
+  : forall (z : SignedBin) .
+      (SignedBin.Negative W.half <= z /\ z <= W.to_b_signed W.Max)%b_signed -> W.to_b_signed (W.from_b_signed z) = z.
 Proof.
   intros z h.
   match &h with | low high end.
@@ -809,22 +809,22 @@ Proof.
       match &low with | same | smaller end.
       + lemma facto : W.half = p.
         {
-          ipso (congru (fun (v : Bin) .
+          ipso (congru (fun (v : SignedBin) .
                           match v with
-                          | Bin.Negative q => q
-                          | Bin.Zero       => &p
-                          | Bin.Positive q => q
+                          | SignedBin.Negative q => q
+                          | SignedBin.Zero       => &p
+                          | SignedBin.Positive q => q
                           end), &same).
         }
         leibniz &facto in |- *.
         ipso (disjoin (refl (BinWithZero.Positive &p)), _).
       + let proof reversed :=
           modus aequans
-            (Bin.order.negation.strict.reversal (Bin.Positive &p) (Bin.Positive W.half)),
+            (SignedBin.order.negation.strict.reversal (SignedBin.Positive &p) (SignedBin.Positive W.half)),
             &smaller.
         ipso (disjoin _,
                 (modus aequans
-                   (Bin.order.embedding.preservation
+                   (SignedBin.order.embedding.preservation
                       (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
                    &reversed)).
     }
@@ -839,37 +839,37 @@ Proof.
     ipso (W.conversion.retraction.nonnegative 0%bin_with_zero &small).
   - lemma small : (BinWithZero.Positive p < BinWithZero.Positive W.half)%bin_with_zero.
     {
-      lemma lifted : (Bin.Positive p < Bin.Positive W.half)%b.
+      lemma lifted : (SignedBin.Positive p < SignedBin.Positive W.half)%b_signed.
       {
         leibniz <- W.maximum.specification in |- *.
-        ipso (modus aequans (Bin.order.discreteness (Bin.Positive &p) (W.to_bin W.Max)), &high).
+        ipso (modus aequans (SignedBin.order.discreteness (SignedBin.Positive &p) (W.to_b_signed W.Max)), &high).
       }
       ipso (modus aequans
-              (Bin.order.embedding.preservation
+              (SignedBin.order.embedding.preservation
                  (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
               &lifted).
     }
     ipso (W.conversion.retraction.nonnegative (BinWithZero.Positive &p) &small).
 Qed.
 
-(* [from_bin] of the modulus is [Zero], so shifting by the modulus changes
- * nothing that [from_bin] gives, and moves a value just past either end back
+(* [from_b_signed] of the modulus is [Zero], so shifting by the modulus changes
+ * nothing that [from_b_signed] gives, and moves a value just past either end back
  * into range.
  *)
 (* wrapping.upper *)
 Theorem upper
-  : forall (s : Bin) .
-      (W.to_bin W.Max < s /\ s < Bin.Positive W.beyond)%b
-      -> W.to_bin (W.from_bin s) = (s - Bin.Positive W.modulus)%b.
+  : forall (s : SignedBin) .
+      (W.to_b_signed W.Max < s /\ s < SignedBin.Positive W.beyond)%b_signed
+      -> W.to_b_signed (W.from_b_signed s) = (s - SignedBin.Positive W.modulus)%b_signed.
 Proof.
   intros s h.
   match &h with | above below end.
-  lemma shifted : W.from_bin s = W.from_bin (s - Bin.Positive W.modulus)%b.
+  lemma shifted : W.from_b_signed s = W.from_b_signed (s - SignedBin.Positive W.modulus)%b_signed.
   {
-    simpl Bin.sub in |- *.
+    simpl SignedBin.sub in |- *.
     leibniz
-      (wrapping.additivity &s (Bin.negate (Bin.Positive W.modulus))),
-      (wrapping.negation (Bin.Positive W.modulus)),
+      (wrapping.additivity &s (SignedBin.negate (SignedBin.Positive W.modulus))),
+      (wrapping.negation (SignedBin.Positive W.modulus)),
       W.modulus.wrapping
       in |- *.
     lemma negated : - W.Zero = W.Zero.
@@ -880,135 +880,135 @@ Proof.
       ipso &right_inverse.
     }
     leibniz &negated in |- *.
-    match (W.addition.identity (W.from_bin &s)) with | _ right_identity end.
+    match (W.addition.identity (W.from_b_signed &s)) with | _ right_identity end.
     ipso (symm &right_identity).
   }
   (* [half - (half + half)] regrouped. *)
-  lemma folded : (Bin.Positive W.half - Bin.Positive W.modulus = Bin.Negative W.half)%b.
+  lemma folded : (SignedBin.Positive W.half - SignedBin.Positive W.modulus = SignedBin.Negative W.half)%b_signed.
   {
     leibniz
       W.modulus.specification,
-      (Bin.subtraction.specification (Bin.Positive W.half)
-         (Bin.Positive W.half + Bin.Positive W.half)%b),
-      (Bin.negation.additivity (Bin.Positive W.half) (Bin.Positive W.half)),
-      <- (Bin.addition.associativity (Bin.Positive W.half) (Bin.negate (Bin.Positive W.half))
-            (Bin.negate (Bin.Positive W.half))),
-      (Bin.addition.right.inverse (Bin.Positive W.half)),
-      (Bin.addition.left.identity (Bin.negate (Bin.Positive W.half)))
+      (SignedBin.subtraction.specification (SignedBin.Positive W.half)
+         (SignedBin.Positive W.half + SignedBin.Positive W.half)%b_signed),
+      (SignedBin.negation.additivity (SignedBin.Positive W.half) (SignedBin.Positive W.half)),
+      <- (SignedBin.addition.associativity (SignedBin.Positive W.half) (SignedBin.negate (SignedBin.Positive W.half))
+            (SignedBin.negate (SignedBin.Positive W.half))),
+      (SignedBin.addition.right.inverse (SignedBin.Positive W.half)),
+      (SignedBin.addition.left.identity (SignedBin.negate (SignedBin.Positive W.half)))
       in |- *.
-    ipso (refl (Bin.Negative W.half)).
+    ipso (refl (SignedBin.Negative W.half)).
   }
-  lemma low : (Bin.Negative W.half <= s - Bin.Positive W.modulus)%b.
+  lemma low : (SignedBin.Negative W.half <= s - SignedBin.Positive W.modulus)%b_signed.
   {
     let proof least :=
-      modus aequans (Bin.order.increment.specification (W.to_bin W.Max) &s), &above.
+      modus aequans (SignedBin.order.increment.specification (W.to_b_signed W.Max) &s), &above.
     leibniz W.maximum.specification in &least.
     match &least with | same | smaller end.
     + leibniz <- &same, &folded in |- *.
-      ipso (disjoin (refl (Bin.Negative W.half)), _).
+      ipso (disjoin (refl (SignedBin.Negative W.half)), _).
     + let proof lowered :=
-        Bin.order.subtraction.left.monotonicity (Bin.Positive W.modulus) (Bin.Positive W.half) &s
+        SignedBin.order.subtraction.left.monotonicity (SignedBin.Positive W.modulus) (SignedBin.Positive W.half) &s
           &smaller.
       leibniz &folded in &lowered.
       ipso (disjoin _, &lowered).
   }
   (* [(modulus + half) - modulus] is [half]. *)
-  lemma restored : (Bin.Positive W.beyond - Bin.Positive W.modulus = Bin.Positive W.half)%b.
+  lemma restored : (SignedBin.Positive W.beyond - SignedBin.Positive W.modulus = SignedBin.Positive W.half)%b_signed.
   {
     leibniz
       W.beyond.specification,
-      (Bin.addition.commutativity (Bin.Positive W.modulus) (Bin.Positive W.half))
+      (SignedBin.addition.commutativity (SignedBin.Positive W.modulus) (SignedBin.Positive W.half))
       in |- *.
-    ipso (Bin.subtraction.inversion.addition (Bin.Positive W.half) (Bin.Positive W.modulus)).
+    ipso (SignedBin.subtraction.inversion.addition (SignedBin.Positive W.half) (SignedBin.Positive W.modulus)).
   }
-  lemma high : (s - Bin.Positive W.modulus <= W.to_bin W.Max)%b.
+  lemma high : (s - SignedBin.Positive W.modulus <= W.to_b_signed W.Max)%b_signed.
   {
     let proof lowered :=
-      Bin.order.subtraction.left.monotonicity (Bin.Positive W.modulus) &s (Bin.Positive W.beyond)
+      SignedBin.order.subtraction.left.monotonicity (SignedBin.Positive W.modulus) &s (SignedBin.Positive W.beyond)
         &below.
     leibniz &restored, <- W.maximum.specification in &lowered.
     ipso (modus aequans
-            (Bin.order.discreteness (&s - Bin.Positive W.modulus)%b (W.to_bin W.Max)), &lowered).
+            (SignedBin.order.discreteness (&s - SignedBin.Positive W.modulus)%b_signed (W.to_b_signed W.Max)), &lowered).
   }
   leibniz &shifted in |- *.
-  ipso (wrapping.retraction (&s - Bin.Positive W.modulus)%b (conjoin &low, &high)).
+  ipso (wrapping.retraction (&s - SignedBin.Positive W.modulus)%b_signed (conjoin &low, &high)).
 Qed.
 
 (* wrapping.lower *)
 Theorem lower
-  : forall (s : Bin) .
-      (s < Bin.Negative W.half /\ Bin.Negative W.beyond < s)%b
-      -> W.to_bin (W.from_bin s) = (s + Bin.Positive W.modulus)%b.
+  : forall (s : SignedBin) .
+      (s < SignedBin.Negative W.half /\ SignedBin.Negative W.beyond < s)%b_signed
+      -> W.to_b_signed (W.from_b_signed s) = (s + SignedBin.Positive W.modulus)%b_signed.
 Proof.
   intros s h.
   match &h with | below above end.
-  lemma shifted : W.from_bin s = W.from_bin (s + Bin.Positive W.modulus)%b.
+  lemma shifted : W.from_b_signed s = W.from_b_signed (s + SignedBin.Positive W.modulus)%b_signed.
   {
-    leibniz (wrapping.additivity &s (Bin.Positive W.modulus)), W.modulus.wrapping in |- *.
-    match (W.addition.identity (W.from_bin &s)) with | _ right_identity end.
+    leibniz (wrapping.additivity &s (SignedBin.Positive W.modulus)), W.modulus.wrapping in |- *.
+    match (W.addition.identity (W.from_b_signed &s)) with | _ right_identity end.
     ipso (symm &right_identity).
   }
   (* [- (modulus + half) + modulus] regrouped. *)
   lemma folded
-    : (Bin.negate (Bin.Positive W.beyond) + Bin.Positive W.modulus = Bin.Negative W.half)%b.
+    : (SignedBin.negate (SignedBin.Positive W.beyond) + SignedBin.Positive W.modulus = SignedBin.Negative W.half)%b_signed.
   {
     leibniz
       W.beyond.specification,
-      (Bin.negation.additivity (Bin.Positive W.modulus) (Bin.Positive W.half)),
-      (Bin.addition.commutativity (Bin.negate (Bin.Positive W.modulus))
-         (Bin.negate (Bin.Positive W.half))),
-      (Bin.addition.associativity (Bin.negate (Bin.Positive W.half))
-         (Bin.negate (Bin.Positive W.modulus)) (Bin.Positive W.modulus)),
-      (Bin.addition.left.inverse (Bin.Positive W.modulus)),
-      (Bin.addition.right.identity (Bin.negate (Bin.Positive W.half)))
+      (SignedBin.negation.additivity (SignedBin.Positive W.modulus) (SignedBin.Positive W.half)),
+      (SignedBin.addition.commutativity (SignedBin.negate (SignedBin.Positive W.modulus))
+         (SignedBin.negate (SignedBin.Positive W.half))),
+      (SignedBin.addition.associativity (SignedBin.negate (SignedBin.Positive W.half))
+         (SignedBin.negate (SignedBin.Positive W.modulus)) (SignedBin.Positive W.modulus)),
+      (SignedBin.addition.left.inverse (SignedBin.Positive W.modulus)),
+      (SignedBin.addition.right.identity (SignedBin.negate (SignedBin.Positive W.half)))
       in |- *.
-    ipso (refl (Bin.Negative W.half)).
+    ipso (refl (SignedBin.Negative W.half)).
   }
-  lemma low : (Bin.Negative W.half <= s + Bin.Positive W.modulus)%b.
+  lemma low : (SignedBin.Negative W.half <= s + SignedBin.Positive W.modulus)%b_signed.
   {
     let proof raised
-      : (Bin.Positive W.modulus + Bin.negate (Bin.Positive W.beyond)
-         < Bin.Positive W.modulus + s)%b
-      := Bin.addition.order.strict.monotonicity (Bin.Positive W.modulus) (Bin.Negative W.beyond)
+      : (SignedBin.Positive W.modulus + SignedBin.negate (SignedBin.Positive W.beyond)
+         < SignedBin.Positive W.modulus + s)%b_signed
+      := SignedBin.addition.order.strict.monotonicity (SignedBin.Positive W.modulus) (SignedBin.Negative W.beyond)
            &s &above.
     leibniz
-      (Bin.addition.commutativity (Bin.Positive W.modulus) (Bin.negate (Bin.Positive W.beyond))),
-      (Bin.addition.commutativity (Bin.Positive W.modulus) &s),
+      (SignedBin.addition.commutativity (SignedBin.Positive W.modulus) (SignedBin.negate (SignedBin.Positive W.beyond))),
+      (SignedBin.addition.commutativity (SignedBin.Positive W.modulus) &s),
       &folded
       in &raised.
     ipso (disjoin _, &raised).
   }
   (* [- half + (half + half)] regrouped. *)
   lemma unfolded
-    : (Bin.negate (Bin.Positive W.half) + Bin.Positive W.modulus = Bin.Positive W.half)%b.
+    : (SignedBin.negate (SignedBin.Positive W.half) + SignedBin.Positive W.modulus = SignedBin.Positive W.half)%b_signed.
   {
     leibniz
       W.modulus.specification,
-      <- (Bin.addition.associativity (Bin.negate (Bin.Positive W.half)) (Bin.Positive W.half)
-            (Bin.Positive W.half)),
-      (Bin.addition.left.inverse (Bin.Positive W.half)),
-      (Bin.addition.left.identity (Bin.Positive W.half))
+      <- (SignedBin.addition.associativity (SignedBin.negate (SignedBin.Positive W.half)) (SignedBin.Positive W.half)
+            (SignedBin.Positive W.half)),
+      (SignedBin.addition.left.inverse (SignedBin.Positive W.half)),
+      (SignedBin.addition.left.identity (SignedBin.Positive W.half))
       in |- *.
     quod idem est.
   }
-  lemma high : (s + Bin.Positive W.modulus <= W.to_bin W.Max)%b.
+  lemma high : (s + SignedBin.Positive W.modulus <= W.to_b_signed W.Max)%b_signed.
   {
     let proof raised
-      : (Bin.Positive W.modulus + s
-         < Bin.Positive W.modulus + Bin.negate (Bin.Positive W.half))%b
-      := Bin.addition.order.strict.monotonicity (Bin.Positive W.modulus) &s (Bin.Negative W.half)
+      : (SignedBin.Positive W.modulus + s
+         < SignedBin.Positive W.modulus + SignedBin.negate (SignedBin.Positive W.half))%b_signed
+      := SignedBin.addition.order.strict.monotonicity (SignedBin.Positive W.modulus) &s (SignedBin.Negative W.half)
            &below.
     leibniz
-      (Bin.addition.commutativity (Bin.Positive W.modulus) &s),
-      (Bin.addition.commutativity (Bin.Positive W.modulus) (Bin.negate (Bin.Positive W.half))),
+      (SignedBin.addition.commutativity (SignedBin.Positive W.modulus) &s),
+      (SignedBin.addition.commutativity (SignedBin.Positive W.modulus) (SignedBin.negate (SignedBin.Positive W.half))),
       &unfolded,
       <- W.maximum.specification
       in &raised.
     ipso (modus aequans
-            (Bin.order.discreteness (&s + Bin.Positive W.modulus)%b (W.to_bin W.Max)), &raised).
+            (SignedBin.order.discreteness (&s + SignedBin.Positive W.modulus)%b_signed (W.to_b_signed W.Max)), &raised).
   }
   leibniz &shifted in |- *.
-  ipso (wrapping.retraction (&s + Bin.Positive W.modulus)%b (conjoin &low, &high)).
+  ipso (wrapping.retraction (&s + SignedBin.Positive W.modulus)%b_signed (conjoin &low, &high)).
 Qed.
 
 End wrapping. (* wrapping *)
@@ -1017,8 +1017,8 @@ Module overflow. (* overflow *)
 
 Module addition. (* overflow.addition *)
 
-(* Clear flag: the sum is [W.to_bin (W.add x y)], which is in range. Sum in
- * range: [W.add x y] is [W.from_bin] of the [Bin] sum, so its reading is that
+(* Clear flag: the sum is [W.to_b_signed (W.add x y)], which is in range. Sum in
+ * range: [W.add x y] is [W.from_b_signed] of the [SignedBin] sum, so its reading is that
  * sum; a set flag would mean two operands of one sign and a result of the
  * other, which that equation rules out.
  *)
@@ -1026,8 +1026,8 @@ Module addition. (* overflow.addition *)
 Theorem specification
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.add_with_overflow x y))%product = 0%bit
-      <-> (Bin.Negative W.half <= W.to_bin x + W.to_bin y
-           /\ W.to_bin x + W.to_bin y <= W.to_bin W.Max)%b.
+      <-> (SignedBin.Negative W.half <= W.to_b_signed x + W.to_b_signed y
+           /\ W.to_b_signed x + W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
 Proof.
   intros x y.
   divide et impera.
@@ -1035,10 +1035,10 @@ Proof.
     leibniz <- (W.conversion.addition &x &y &f) in |- *.
     ipso (bound.range (&x + &y)).
   - intro r.
-    lemma same : W.to_bin (x + y) = (W.to_bin x + W.to_bin y)%b.
+    lemma same : W.to_b_signed (x + y) = (W.to_b_signed x + W.to_b_signed y)%b_signed.
     {
       leibniz (wrapping.summation &x &y) in |- *.
-      ipso (wrapping.retraction (W.to_bin &x + W.to_bin &y)%b &r).
+      ipso (wrapping.retraction (W.to_b_signed &x + W.to_b_signed &y)%b_signed &r).
     }
     match ((pi_1 (W.add_with_overflow &x &y))%product) with | Zero | One end |- f.
     + quod idem est.
@@ -1053,12 +1053,12 @@ Proof.
         let proof cy := sign.clear &y &sy.
         let proof negative := sign.set (&x + &y) &sxy.
         leibniz &same in &negative.
-        let proof widened := Bin.addition.order.monotonicity (W.to_bin &x) 0%b (W.to_bin &y) &cy.
-        leibniz (Bin.addition.right.identity (W.to_bin &x)) in &widened.
+        let proof widened := SignedBin.addition.order.monotonicity (W.to_b_signed &x) 0%b_signed (W.to_b_signed &y) &cy.
+        leibniz (SignedBin.addition.right.identity (W.to_b_signed &x)) in &widened.
         let proof nonnegative :=
-          @Comparable.order.transitivity _ Bin.compare Bin.LessThan _ 0%b (W.to_bin &x)
-            (W.to_bin &x + W.to_bin &y)%b &cx &widened.
-        ex (Bin.order.strict.irreflexivity 0%b
+          @Comparable.order.transitivity _ SignedBin.compare SignedBin.LessThan _ 0%b_signed (W.to_b_signed &x)
+            (W.to_b_signed &x + W.to_b_signed &y)%b_signed &cx &widened.
+        ex (SignedBin.order.strict.irreflexivity 0%b_signed
               (Comparable.order.mixed.left.transitivity &nonnegative &negative))
           quodlibet.
       * simpl in &f.
@@ -1075,16 +1075,16 @@ Proof.
         let proof nonnegative := sign.clear (&x + &y) &sxy.
         leibniz &same in &nonnegative.
         let proof negative :=
-          Bin.addition.order.mixed.monotonicity (W.to_bin &x) (W.to_bin &y) 0%b 0%b
-            (Comparable.order.strict.weakening (W.to_bin &x) 0%b &nx) &ny.
-        ex (Bin.order.strict.irreflexivity 0%b
+          SignedBin.addition.order.mixed.monotonicity (W.to_b_signed &x) (W.to_b_signed &y) 0%b_signed 0%b_signed
+            (Comparable.order.strict.weakening (W.to_b_signed &x) 0%b_signed &nx) &ny.
+        ex (SignedBin.order.strict.irreflexivity 0%b_signed
               (Comparable.order.mixed.left.transitivity &nonnegative &negative))
           quodlibet.
       * simpl in &f.
         ex &f quodlibet.
 Qed.
 
-(* A set flag puts the [Bin] sum out of range, and the sum of two readings lies
+(* A set flag puts the [SignedBin] sum out of range, and the sum of two readings lies
  * between twice the least and twice the greatest, so it is past one end by
  * less than the modulus and [wrapping.upper] or [wrapping.lower] brings it
  * back.
@@ -1093,13 +1093,13 @@ Qed.
 Theorem wrap
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.add_with_overflow x y))%product = 1%bit
-      -> W.to_bin (x + y) = (W.to_bin x + W.to_bin y - Bin.Positive W.modulus)%b
-         \/ W.to_bin (x + y) = (W.to_bin x + W.to_bin y + Bin.Positive W.modulus)%b.
+      -> W.to_b_signed (x + y) = (W.to_b_signed x + W.to_b_signed y - SignedBin.Positive W.modulus)%b_signed
+         \/ W.to_b_signed (x + y) = (W.to_b_signed x + W.to_b_signed y + SignedBin.Positive W.modulus)%b_signed.
 Proof.
   intros x y f.
   lemma outside
-    : ~ ((Bin.Negative W.half <= W.to_bin x + W.to_bin y
-          /\ W.to_bin x + W.to_bin y <= W.to_bin W.Max)%b).
+    : ~ ((SignedBin.Negative W.half <= W.to_b_signed x + W.to_b_signed y
+          /\ W.to_b_signed x + W.to_b_signed y <= W.to_b_signed W.Max)%b_signed).
   {
     simpl (~ _) in |- *.
     intro r.
@@ -1110,75 +1110,75 @@ Proof.
   match (bound.range &x) with | low_x high_x end.
   match (bound.range &y) with | low_y high_y end.
   let proof top :=
-    Bin.addition.order.accumulation (W.to_bin &x) (W.to_bin &y) (W.to_bin W.Max) (W.to_bin W.Max)
+    SignedBin.addition.order.accumulation (W.to_b_signed &x) (W.to_b_signed &y) (W.to_b_signed W.Max) (W.to_b_signed W.Max)
       &high_x &high_y.
   let proof bottom :=
-    Bin.addition.order.accumulation (Bin.Negative W.half) (Bin.Negative W.half) (W.to_bin &x)
-      (W.to_bin &y)
+    SignedBin.addition.order.accumulation (SignedBin.Negative W.half) (SignedBin.Negative W.half) (W.to_b_signed &x)
+      (W.to_b_signed &y)
       &low_x &low_y.
   leibniz (wrapping.summation &x &y) in |- *.
-  (* [to_bin Max] is below [half], so twice it is below [modulus], which is below
+  (* [to_b_signed Max] is below [half], so twice it is below [modulus], which is below
    * [beyond].
    *)
-  let proof max_below : (W.to_bin W.Max < W.to_bin W.Max + 1)%b
-    := Bin.order.increment.extensivity (W.to_bin W.Max).
+  let proof max_below : (W.to_b_signed W.Max < W.to_b_signed W.Max + 1)%b_signed
+    := SignedBin.order.increment.extensivity (W.to_b_signed W.Max).
   leibniz W.maximum.specification in &max_below.
-  lemma max_at_most : (W.to_bin W.Max <= Bin.Positive W.half)%b.
+  lemma max_at_most : (W.to_b_signed W.Max <= SignedBin.Positive W.half)%b_signed.
   {
     ipso (disjoin _, &max_below).
   }
-  lemma modulus_below : (Bin.Positive W.modulus < Bin.Positive W.beyond)%b.
+  lemma modulus_below : (SignedBin.Positive W.modulus < SignedBin.Positive W.beyond)%b_signed.
   {
-    simpl Bin.LessThan in |- *.
+    simpl SignedBin.LessThan in |- *.
     exists W.half.
     ipso (symm W.beyond.specification).
   }
-  lemma sum_below : (W.to_bin W.Max + W.to_bin W.Max < Bin.Positive W.beyond)%b.
+  lemma sum_below : (W.to_b_signed W.Max + W.to_b_signed W.Max < SignedBin.Positive W.beyond)%b_signed.
   {
     let proof doubled :=
-      Bin.addition.order.mixed.monotonicity (W.to_bin W.Max) (W.to_bin W.Max)
-        (Bin.Positive W.half) (Bin.Positive W.half) &max_at_most &max_below.
+      SignedBin.addition.order.mixed.monotonicity (W.to_b_signed W.Max) (W.to_b_signed W.Max)
+        (SignedBin.Positive W.half) (SignedBin.Positive W.half) &max_at_most &max_below.
     leibniz <- W.modulus.specification in &doubled.
-    ipso (Bin.order.strict.transitivity &doubled &modulus_below).
+    ipso (SignedBin.order.strict.transitivity &doubled &modulus_below).
   }
-  lemma sum_above : (Bin.Negative W.beyond < Bin.Negative W.half + Bin.Negative W.half)%b.
+  lemma sum_above : (SignedBin.Negative W.beyond < SignedBin.Negative W.half + SignedBin.Negative W.half)%b_signed.
   {
     let proof reversed :=
       modus aequans
-        (Bin.order.negation.strict.reversal (Bin.Positive W.modulus) (Bin.Positive W.beyond)),
+        (SignedBin.order.negation.strict.reversal (SignedBin.Positive W.modulus) (SignedBin.Positive W.beyond)),
         &modulus_below.
     leibniz
       W.modulus.specification,
-      (Bin.negation.additivity (Bin.Positive W.half) (Bin.Positive W.half))
+      (SignedBin.negation.additivity (SignedBin.Positive W.half) (SignedBin.Positive W.half))
       in &reversed.
     ipso &reversed.
   }
-  match (Comparable.order.strict.trichotomy (W.to_bin W.Max) (W.to_bin &x + W.to_bin &y)%b)
+  match (Comparable.order.strict.trichotomy (W.to_b_signed W.Max) (W.to_b_signed &x + W.to_b_signed &y)%b_signed)
     with | above | rest end.
   - let proof below := Comparable.order.mixed.left.transitivity &top &sum_below.
-    ipso (disjoin (wrapping.upper (W.to_bin &x + W.to_bin &y)%b (conjoin &above, &below)), _).
+    ipso (disjoin (wrapping.upper (W.to_b_signed &x + W.to_b_signed &y)%b_signed (conjoin &above, &below)), _).
   - match &rest with | same | under end.
     + lemma inside
-        : (Bin.Negative W.half <= W.to_bin x + W.to_bin y
-           /\ W.to_bin x + W.to_bin y <= W.to_bin W.Max)%b.
+        : (SignedBin.Negative W.half <= W.to_b_signed x + W.to_b_signed y
+           /\ W.to_b_signed x + W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
       {
         leibniz <- &same in |- *.
-        ipso (conjoin ordered, (disjoin (refl (W.to_bin W.Max)), _)).
+        ipso (conjoin ordered, (disjoin (refl (W.to_b_signed W.Max)), _)).
       }
       ex (&outside &inside) quodlibet.
-    + match (Comparable.order.strict.trichotomy (W.to_bin &x + W.to_bin &y)%b (Bin.Negative W.half))
+    + match (Comparable.order.strict.trichotomy (W.to_b_signed &x + W.to_b_signed &y)%b_signed (SignedBin.Negative W.half))
         with | beneath | remainder end.
       * let proof above := Comparable.order.mixed.right.transitivity &sum_above &bottom.
-        ipso (disjoin _, (wrapping.lower (W.to_bin &x + W.to_bin &y)%b (conjoin &beneath, &above))).
+        ipso (disjoin _, (wrapping.lower (W.to_b_signed &x + W.to_b_signed &y)%b_signed (conjoin &beneath, &above))).
       * lemma inside
-          : (Bin.Negative W.half <= W.to_bin x + W.to_bin y
-             /\ W.to_bin x + W.to_bin y <= W.to_bin W.Max)%b.
+          : (SignedBin.Negative W.half <= W.to_b_signed x + W.to_b_signed y
+             /\ W.to_b_signed x + W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
         {
-          lemma low : (Bin.Negative W.half <= W.to_bin x + W.to_bin y)%b.
+          lemma low : (SignedBin.Negative W.half <= W.to_b_signed x + W.to_b_signed y)%b_signed.
           {
             match &remainder with | same | over end.
             - leibniz &same in |- *.
-              ipso (disjoin (refl (Bin.Negative W.half)), _).
+              ipso (disjoin (refl (SignedBin.Negative W.half)), _).
             - ipso (disjoin _, &over).
           }
           ipso (conjoin &low, (disjoin _, &under)).
@@ -1186,7 +1186,7 @@ Proof.
         ex (&outside &inside) quodlibet.
 Qed.
 
-(* Two clear flags make both sums exact, and [Bin]'s addition keeps the order. *)
+(* Two clear flags make both sums exact, and [SignedBin]'s addition keeps the order. *)
 (* overflow.addition.monotonicity *)
 Theorem monotonicity
   : forall (x : W.T) (y : W.T) (z : W.T) .
@@ -1197,7 +1197,7 @@ Proof.
   intros x y z fy fz h.
   let proof g := modus aequans (W.order.strict.specification &y &z), &h.
   let proof s :=
-    Bin.addition.order.strict.monotonicity (W.to_bin &x) (W.to_bin &y) (W.to_bin &z) &g.
+    SignedBin.addition.order.strict.monotonicity (W.to_b_signed &x) (W.to_b_signed &y) (W.to_b_signed &z) &g.
   leibniz <- (W.conversion.addition &x &y &fy), <- (W.conversion.addition &x &z &fz) in &s.
   ipso (modus aequans (W.order.strict.specification (&x + &y) (&x + &z)), &s).
 Qed.
@@ -1206,7 +1206,7 @@ End addition. (* overflow.addition *)
 
 Module subtraction. (* overflow.subtraction *)
 
-(* Difference in range: [W.sub x y] is [W.from_bin] of the [Bin] difference,
+(* Difference in range: [W.sub x y] is [W.from_b_signed] of the [SignedBin] difference,
  * so it is exact, and a set flag, which needs operands of different signs and
  * a result with the sign of [y], is ruled out by the signs. Difference out of
  * range: it is past one end by less than the modulus, the result wraps to the
@@ -1216,255 +1216,255 @@ Module subtraction. (* overflow.subtraction *)
 Theorem specification
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.sub_with_overflow x y))%product = 0%bit
-      <-> (Bin.Negative W.half <= W.to_bin x - W.to_bin y
-           /\ W.to_bin x - W.to_bin y <= W.to_bin W.Max)%b.
+      <-> (SignedBin.Negative W.half <= W.to_b_signed x - W.to_b_signed y
+           /\ W.to_b_signed x - W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
 Proof.
   intros x y.
   match (bound.range &x) with | low_x high_x end.
   match (bound.range &y) with | low_y high_y end.
-  lemma below_y : (Bin.negate (W.to_bin y) <= Bin.Positive W.half)%b.
+  lemma below_y : (SignedBin.negate (W.to_b_signed y) <= SignedBin.Positive W.half)%b_signed.
   {
-    ipso (Bin.order.negation.reversal (Bin.Negative W.half) (W.to_bin &y) &low_y).
+    ipso (SignedBin.order.negation.reversal (SignedBin.Negative W.half) (W.to_b_signed &y) &low_y).
   }
-  let proof above_y := Bin.order.negation.reversal (W.to_bin &y) (W.to_bin W.Max) &high_y.
+  let proof above_y := SignedBin.order.negation.reversal (W.to_b_signed &y) (W.to_b_signed W.Max) &high_y.
   (* The ends of the range against [half], [modulus] and [beyond], from
-   * [to_bin Max < half], [modulus = half + half] and [beyond = modulus + half].
+   * [to_b_signed Max < half], [modulus = half + half] and [beyond = modulus + half].
    *)
-  let proof max_below : (W.to_bin W.Max < W.to_bin W.Max + 1)%b
-    := Bin.order.increment.extensivity (W.to_bin W.Max).
+  let proof max_below : (W.to_b_signed W.Max < W.to_b_signed W.Max + 1)%b_signed
+    := SignedBin.order.increment.extensivity (W.to_b_signed W.Max).
   leibniz W.maximum.specification in &max_below.
-  lemma modulus_below : (Bin.Positive W.modulus < Bin.Positive W.beyond)%b.
+  lemma modulus_below : (SignedBin.Positive W.modulus < SignedBin.Positive W.beyond)%b_signed.
   {
-    simpl Bin.LessThan in |- *.
+    simpl SignedBin.LessThan in |- *.
     exists W.half.
     ipso (symm W.beyond.specification).
   }
-  lemma negated_below : (Bin.Negative W.half < Bin.negate (W.to_bin W.Max))%b.
+  lemma negated_below : (SignedBin.Negative W.half < SignedBin.negate (W.to_b_signed W.Max))%b_signed.
   {
     ipso (modus aequans
-            (Bin.order.negation.strict.reversal (W.to_bin W.Max) (Bin.Positive W.half)),
+            (SignedBin.order.negation.strict.reversal (W.to_b_signed W.Max) (SignedBin.Positive W.half)),
             &max_below).
   }
-  lemma sum_below : (W.to_bin W.Max + Bin.Positive W.half < Bin.Positive W.beyond)%b.
+  lemma sum_below : (W.to_b_signed W.Max + SignedBin.Positive W.half < SignedBin.Positive W.beyond)%b_signed.
   {
     let proof raised :=
-      Bin.addition.order.strict.monotonicity (Bin.Positive W.half) (W.to_bin W.Max)
-        (Bin.Positive W.half) &max_below.
+      SignedBin.addition.order.strict.monotonicity (SignedBin.Positive W.half) (W.to_b_signed W.Max)
+        (SignedBin.Positive W.half) &max_below.
     leibniz
-      (Bin.addition.commutativity (Bin.Positive W.half) (W.to_bin W.Max)),
+      (SignedBin.addition.commutativity (SignedBin.Positive W.half) (W.to_b_signed W.Max)),
       <- W.modulus.specification
       in &raised.
-    ipso (Bin.order.strict.transitivity &raised &modulus_below).
+    ipso (SignedBin.order.strict.transitivity &raised &modulus_below).
   }
   lemma sum_successor
-    : ((W.to_bin W.Max + Bin.Positive W.half) + 1 = Bin.Positive W.modulus)%b.
+    : ((W.to_b_signed W.Max + SignedBin.Positive W.half) + 1 = SignedBin.Positive W.modulus)%b_signed.
   {
     leibniz
-      (Bin.addition.associativity (W.to_bin W.Max) (Bin.Positive W.half) 1%b),
-      (Bin.addition.commutativity (Bin.Positive W.half) 1%b),
-      <- (Bin.addition.associativity (W.to_bin W.Max) 1%b (Bin.Positive W.half)),
+      (SignedBin.addition.associativity (W.to_b_signed W.Max) (SignedBin.Positive W.half) 1%b_signed),
+      (SignedBin.addition.commutativity (SignedBin.Positive W.half) 1%b_signed),
+      <- (SignedBin.addition.associativity (W.to_b_signed W.Max) 1%b_signed (SignedBin.Positive W.half)),
       W.maximum.specification,
       <- W.modulus.specification
       in |- *.
     quod idem est.
   }
   lemma halves_above
-    : (Bin.negate (Bin.Positive W.modulus) < Bin.Negative W.half + Bin.negate (W.to_bin W.Max))%b.
+    : (SignedBin.negate (SignedBin.Positive W.modulus) < SignedBin.Negative W.half + SignedBin.negate (W.to_b_signed W.Max))%b_signed.
   {
     leibniz
       W.modulus.specification,
-      (Bin.negation.additivity (Bin.Positive W.half) (Bin.Positive W.half))
+      (SignedBin.negation.additivity (SignedBin.Positive W.half) (SignedBin.Positive W.half))
       in |- *.
-    ipso (Bin.addition.order.strict.monotonicity (Bin.Negative W.half) (Bin.Negative W.half)
-            (Bin.negate (W.to_bin W.Max)) &negated_below).
+    ipso (SignedBin.addition.order.strict.monotonicity (SignedBin.Negative W.half) (SignedBin.Negative W.half)
+            (SignedBin.negate (W.to_b_signed W.Max)) &negated_below).
   }
   lemma beyond_above
-    : (Bin.Negative W.beyond < Bin.Negative W.half + Bin.negate (W.to_bin W.Max))%b.
+    : (SignedBin.Negative W.beyond < SignedBin.Negative W.half + SignedBin.negate (W.to_b_signed W.Max))%b_signed.
   {
     let proof reversed :=
       modus aequans
-        (Bin.order.negation.strict.reversal (Bin.Positive W.modulus) (Bin.Positive W.beyond)),
+        (SignedBin.order.negation.strict.reversal (SignedBin.Positive W.modulus) (SignedBin.Positive W.beyond)),
         &modulus_below.
-    ipso (Bin.order.strict.transitivity &reversed &halves_above).
+    ipso (SignedBin.order.strict.transitivity &reversed &halves_above).
   }
   divide et impera.
   - intro f.
-    lemma top : (W.to_bin x - W.to_bin y <= W.to_bin W.Max + Bin.Positive W.half)%b.
+    lemma top : (W.to_b_signed x - W.to_b_signed y <= W.to_b_signed W.Max + SignedBin.Positive W.half)%b_signed.
     {
-      ipso (Bin.addition.order.accumulation
-              (W.to_bin &x) (Bin.negate (W.to_bin &y)) (W.to_bin W.Max) (Bin.Positive W.half)
+      ipso (SignedBin.addition.order.accumulation
+              (W.to_b_signed &x) (SignedBin.negate (W.to_b_signed &y)) (W.to_b_signed W.Max) (SignedBin.Positive W.half)
               &high_x &below_y).
     }
     lemma bottom
-      : (Bin.Negative W.half + Bin.negate (W.to_bin W.Max) <= W.to_bin x - W.to_bin y)%b.
+      : (SignedBin.Negative W.half + SignedBin.negate (W.to_b_signed W.Max) <= W.to_b_signed x - W.to_b_signed y)%b_signed.
     {
-      ipso (Bin.addition.order.accumulation
-              (Bin.Negative W.half) (Bin.negate (W.to_bin W.Max)) (W.to_bin &x)
-              (Bin.negate (W.to_bin &y)) &low_x &above_y).
+      ipso (SignedBin.addition.order.accumulation
+              (SignedBin.Negative W.half) (SignedBin.negate (W.to_b_signed W.Max)) (W.to_b_signed &x)
+              (SignedBin.negate (W.to_b_signed &y)) &low_x &above_y).
     }
-    match (Comparable.order.strict.trichotomy (W.to_bin W.Max) (W.to_bin &x - W.to_bin &y)%b)
+    match (Comparable.order.strict.trichotomy (W.to_b_signed W.Max) (W.to_b_signed &x - W.to_b_signed &y)%b_signed)
       with | above | rest end.
     + (* Past the greatest: the result wraps below 0, [x] is nonnegative, [y]
        * negative.
        *)
       let proof below := Comparable.order.mixed.left.transitivity &top &sum_below.
       lemma wrapped
-        : W.to_bin (x - y) = (W.to_bin x - W.to_bin y - Bin.Positive W.modulus)%b.
+        : W.to_b_signed (x - y) = (W.to_b_signed x - W.to_b_signed y - SignedBin.Positive W.modulus)%b_signed.
       {
         leibniz (wrapping.difference &x &y) in |- *.
-        ipso (wrapping.upper (W.to_bin &x - W.to_bin &y)%b (conjoin &above, &below)).
+        ipso (wrapping.upper (W.to_b_signed &x - W.to_b_signed &y)%b_signed (conjoin &above, &below)).
       }
-      lemma negative : (W.to_bin (x - y) < 0)%b.
+      lemma negative : (W.to_b_signed (x - y) < 0)%b_signed.
       {
         let proof under :=
           modus aequans
-            (Bin.order.discreteness (W.to_bin &x - W.to_bin &y)%b
-               (W.to_bin W.Max + Bin.Positive W.half)%b),
+            (SignedBin.order.discreteness (W.to_b_signed &x - W.to_b_signed &y)%b_signed
+               (W.to_b_signed W.Max + SignedBin.Positive W.half)%b_signed),
             &top.
         leibniz &sum_successor in &under.
         leibniz &wrapped in |- *.
         let proof lowered :=
-          Bin.order.subtraction.left.monotonicity (Bin.Positive W.modulus)
-            (W.to_bin &x - W.to_bin &y)%b (Bin.Positive W.modulus) &under.
+          SignedBin.order.subtraction.left.monotonicity (SignedBin.Positive W.modulus)
+            (W.to_b_signed &x - W.to_b_signed &y)%b_signed (SignedBin.Positive W.modulus) &under.
         leibniz
-          (Bin.subtraction.specification (Bin.Positive W.modulus) (Bin.Positive W.modulus)),
-          (Bin.addition.right.inverse (Bin.Positive W.modulus))
+          (SignedBin.subtraction.specification (SignedBin.Positive W.modulus) (SignedBin.Positive W.modulus)),
+          (SignedBin.addition.right.inverse (SignedBin.Positive W.modulus))
           in &lowered.
         ipso &lowered.
       }
       match (W.sign_bit (&x - &y)) with | Zero | One end |- sr.
-      * ex (Bin.order.strict.irreflexivity 0%b
+      * ex (SignedBin.order.strict.irreflexivity 0%b_signed
               (Comparable.order.mixed.left.transitivity
                  (sign.clear (&x - &y) &sr) &negative))
           quodlibet.
       * match (W.sign_bit &x) with | Zero | One end |- sx.
         -- match (W.sign_bit &y) with | Zero | One end |- sy.
            ++ let proof shrunk :=
-                Bin.addition.order.monotonicity (W.to_bin &x) (Bin.negate (W.to_bin &y)) 0%b
-                  (Bin.order.negation.reversal 0%b (W.to_bin &y) (sign.clear &y &sy)).
-              leibniz (Bin.addition.right.identity (W.to_bin &x)) in &shrunk.
-              lemma small : (W.to_bin x - W.to_bin y <= W.to_bin W.Max)%b.
+                SignedBin.addition.order.monotonicity (W.to_b_signed &x) (SignedBin.negate (W.to_b_signed &y)) 0%b_signed
+                  (SignedBin.order.negation.reversal 0%b_signed (W.to_b_signed &y) (sign.clear &y &sy)).
+              leibniz (SignedBin.addition.right.identity (W.to_b_signed &x)) in &shrunk.
+              lemma small : (W.to_b_signed x - W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
               {
-                ipso (@Comparable.order.transitivity _ Bin.compare Bin.LessThan _
-                        (W.to_bin &x - W.to_bin &y)%b (W.to_bin &x) (W.to_bin W.Max)
+                ipso (@Comparable.order.transitivity _ SignedBin.compare SignedBin.LessThan _
+                        (W.to_b_signed &x - W.to_b_signed &y)%b_signed (W.to_b_signed &x) (W.to_b_signed W.Max)
                         &shrunk &high_x).
               }
-              ex (Bin.order.strict.irreflexivity (W.to_bin W.Max)
+              ex (SignedBin.order.strict.irreflexivity (W.to_b_signed W.Max)
                     (Comparable.order.mixed.right.transitivity &above &small))
                 quodlibet.
            ++ leibniz (W.flag.subtraction.specification &x &y), &sx, &sy, &sr in &f.
               simpl in &f.
               ex &f quodlibet.
         -- let proof shrunk :=
-             Bin.addition.order.mixed.monotonicity
-               (Bin.negate (W.to_bin &y)) (W.to_bin &x) (Bin.Positive W.half) 0%b
+             SignedBin.addition.order.mixed.monotonicity
+               (SignedBin.negate (W.to_b_signed &y)) (W.to_b_signed &x) (SignedBin.Positive W.half) 0%b_signed
                &below_y (sign.set &x &sx).
            leibniz
-             (Bin.addition.commutativity (Bin.negate (W.to_bin &y)) (W.to_bin &x)),
-             (Bin.addition.right.identity (Bin.Positive W.half)),
+             (SignedBin.addition.commutativity (SignedBin.negate (W.to_b_signed &y)) (W.to_b_signed &x)),
+             (SignedBin.addition.right.identity (SignedBin.Positive W.half)),
              <- W.maximum.specification
              in &shrunk.
-           lemma small : (W.to_bin x - W.to_bin y <= W.to_bin W.Max)%b.
+           lemma small : (W.to_b_signed x - W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
            {
              ipso (modus aequans
-                     (Bin.order.discreteness (W.to_bin &x - W.to_bin &y)%b (W.to_bin W.Max)),
+                     (SignedBin.order.discreteness (W.to_b_signed &x - W.to_b_signed &y)%b_signed (W.to_b_signed W.Max)),
                      &shrunk).
            }
-           ex (Bin.order.strict.irreflexivity (W.to_bin W.Max)
+           ex (SignedBin.order.strict.irreflexivity (W.to_b_signed W.Max)
                  (Comparable.order.mixed.right.transitivity &above &small))
              quodlibet.
     + match &rest with | same | under end.
       * lemma inside
-          : (Bin.Negative W.half <= W.to_bin x - W.to_bin y
-             /\ W.to_bin x - W.to_bin y <= W.to_bin W.Max)%b.
+          : (SignedBin.Negative W.half <= W.to_b_signed x - W.to_b_signed y
+             /\ W.to_b_signed x - W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
         {
           leibniz <- &same in |- *.
-          ipso (conjoin ordered, (disjoin (refl (W.to_bin W.Max)), _)).
+          ipso (conjoin ordered, (disjoin (refl (W.to_b_signed W.Max)), _)).
         }
         ipso &inside.
-      * match (Comparable.order.strict.trichotomy (W.to_bin &x - W.to_bin &y)%b
-                 (Bin.Negative W.half))
+      * match (Comparable.order.strict.trichotomy (W.to_b_signed &x - W.to_b_signed &y)%b_signed
+                 (SignedBin.Negative W.half))
           with | beneath | remainder end.
         -- (* Below the least: the result wraps above 0, [x] is negative, [y]
             * nonnegative.
             *)
            let proof above := Comparable.order.mixed.right.transitivity &beyond_above &bottom.
            lemma wrapped
-             : W.to_bin (x - y) = (W.to_bin x - W.to_bin y + Bin.Positive W.modulus)%b.
+             : W.to_b_signed (x - y) = (W.to_b_signed x - W.to_b_signed y + SignedBin.Positive W.modulus)%b_signed.
            {
              leibniz (wrapping.difference &x &y) in |- *.
-             ipso (wrapping.lower (W.to_bin &x - W.to_bin &y)%b (conjoin &beneath, &above)).
+             ipso (wrapping.lower (W.to_b_signed &x - W.to_b_signed &y)%b_signed (conjoin &beneath, &above)).
            }
-           lemma nonnegative : (0 <= W.to_bin (x - y))%b.
+           lemma nonnegative : (0 <= W.to_b_signed (x - y))%b_signed.
            {
              let proof over := Comparable.order.mixed.right.transitivity &halves_above &bottom.
              leibniz &wrapped in |- *.
              let proof raised :=
-               Bin.addition.order.strict.monotonicity (Bin.Positive W.modulus)
-                 (Bin.negate (Bin.Positive W.modulus)) (W.to_bin &x - W.to_bin &y)%b &over.
+               SignedBin.addition.order.strict.monotonicity (SignedBin.Positive W.modulus)
+                 (SignedBin.negate (SignedBin.Positive W.modulus)) (W.to_b_signed &x - W.to_b_signed &y)%b_signed &over.
              leibniz
-               (Bin.addition.right.inverse (Bin.Positive W.modulus)),
-               (Bin.addition.commutativity (Bin.Positive W.modulus) (W.to_bin &x - W.to_bin &y)%b)
+               (SignedBin.addition.right.inverse (SignedBin.Positive W.modulus)),
+               (SignedBin.addition.commutativity (SignedBin.Positive W.modulus) (W.to_b_signed &x - W.to_b_signed &y)%b_signed)
                in &raised.
              ipso (disjoin _, &raised).
            }
            match (W.sign_bit (&x - &y)) with | Zero | One end |- sr.
            ++ match (W.sign_bit &x) with | Zero | One end |- sx.
               ** let proof grown :=
-                   Bin.addition.order.accumulation 0%b (Bin.negate (W.to_bin W.Max)) (W.to_bin &x)
-                     (Bin.negate (W.to_bin &y)) (sign.clear &x &sx) &above_y.
-                 leibniz (Bin.addition.left.identity (Bin.negate (W.to_bin W.Max))) in &grown.
-                 lemma large : (Bin.negate (W.to_bin W.Max) <= W.to_bin x - W.to_bin y)%b.
+                   SignedBin.addition.order.accumulation 0%b_signed (SignedBin.negate (W.to_b_signed W.Max)) (W.to_b_signed &x)
+                     (SignedBin.negate (W.to_b_signed &y)) (sign.clear &x &sx) &above_y.
+                 leibniz (SignedBin.addition.left.identity (SignedBin.negate (W.to_b_signed W.Max))) in &grown.
+                 lemma large : (SignedBin.negate (W.to_b_signed W.Max) <= W.to_b_signed x - W.to_b_signed y)%b_signed.
                  {
                    ipso &grown.
                  }
-                 ex (Bin.order.strict.irreflexivity (Bin.Negative W.half)
-                       (Bin.order.strict.transitivity &negated_below
+                 ex (SignedBin.order.strict.irreflexivity (SignedBin.Negative W.half)
+                       (SignedBin.order.strict.transitivity &negated_below
                           (Comparable.order.mixed.left.transitivity &large &beneath)))
                    quodlibet.
               ** match (W.sign_bit &y) with | Zero | One end |- sy.
                  --- leibniz (W.flag.subtraction.specification &x &y), &sx, &sy, &sr in &f.
                      simpl in &f.
                      ex &f quodlibet.
-                 --- lemma positive : (0 < Bin.negate (W.to_bin y))%b.
+                 --- lemma positive : (0 < SignedBin.negate (W.to_b_signed y))%b_signed.
                      {
-                       ipso (modus aequans (Bin.order.negation.strict.reversal (W.to_bin &y) 0%b),
+                       ipso (modus aequans (SignedBin.order.negation.strict.reversal (W.to_b_signed &y) 0%b_signed),
                              (sign.set &y &sy)).
                      }
                      let proof grown :=
-                       Bin.addition.order.strict.monotonicity (W.to_bin &x) 0%b
-                         (Bin.negate (W.to_bin &y)) &positive.
-                     leibniz (Bin.addition.right.identity (W.to_bin &x)) in &grown.
-                     lemma large : (Bin.Negative W.half < W.to_bin x - W.to_bin y)%b.
+                       SignedBin.addition.order.strict.monotonicity (W.to_b_signed &x) 0%b_signed
+                         (SignedBin.negate (W.to_b_signed &y)) &positive.
+                     leibniz (SignedBin.addition.right.identity (W.to_b_signed &x)) in &grown.
+                     lemma large : (SignedBin.Negative W.half < W.to_b_signed x - W.to_b_signed y)%b_signed.
                      {
                        ipso (Comparable.order.mixed.left.transitivity &low_x &grown).
                      }
-                     ex (Bin.order.strict.irreflexivity (Bin.Negative W.half)
-                           (Bin.order.strict.transitivity &large &beneath))
+                     ex (SignedBin.order.strict.irreflexivity (SignedBin.Negative W.half)
+                           (SignedBin.order.strict.transitivity &large &beneath))
                        quodlibet.
-           ++ ex (Bin.order.strict.irreflexivity 0%b
+           ++ ex (SignedBin.order.strict.irreflexivity 0%b_signed
                    (Comparable.order.mixed.left.transitivity &nonnegative
                       (sign.set (&x - &y) &sr)))
                 quodlibet.
         -- lemma inside
-             : (Bin.Negative W.half <= W.to_bin x - W.to_bin y
-                /\ W.to_bin x - W.to_bin y <= W.to_bin W.Max)%b.
+             : (SignedBin.Negative W.half <= W.to_b_signed x - W.to_b_signed y
+                /\ W.to_b_signed x - W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
            {
-             lemma low : (Bin.Negative W.half <= W.to_bin x - W.to_bin y)%b.
+             lemma low : (SignedBin.Negative W.half <= W.to_b_signed x - W.to_b_signed y)%b_signed.
              {
                match &remainder with | same | over end.
                ++ leibniz &same in |- *.
-                  ipso (disjoin (refl (Bin.Negative W.half)), _).
+                  ipso (disjoin (refl (SignedBin.Negative W.half)), _).
                ++ ipso (disjoin _, &over).
              }
              ipso (conjoin &low, (disjoin _, &under)).
            }
            ipso &inside.
   - intro r.
-    lemma same : W.to_bin (x - y) = (W.to_bin x - W.to_bin y)%b.
+    lemma same : W.to_b_signed (x - y) = (W.to_b_signed x - W.to_b_signed y)%b_signed.
     {
       leibniz (wrapping.difference &x &y) in |- *.
-      ipso (wrapping.retraction (W.to_bin &x - W.to_bin &y)%b &r).
+      ipso (wrapping.retraction (W.to_b_signed &x - W.to_b_signed &y)%b_signed &r).
     }
     match ((pi_1 (W.sub_with_overflow &x &y))%product) with | Zero | One end |- f.
     + quod idem est.
@@ -1481,31 +1481,31 @@ Proof.
       * (* [x] nonnegative, [y] negative, a negative difference. *)
         let proof negative := sign.set (&x - &y) &sr.
         leibniz &same in &negative.
-        lemma positive : (0 < Bin.negate (W.to_bin y))%b.
+        lemma positive : (0 < SignedBin.negate (W.to_b_signed y))%b_signed.
         {
-          ipso (modus aequans (Bin.order.negation.strict.reversal (W.to_bin &y) 0%b),
+          ipso (modus aequans (SignedBin.order.negation.strict.reversal (W.to_b_signed &y) 0%b_signed),
                 (sign.set &y &sy)).
         }
-        lemma grown : (0 < W.to_bin x - W.to_bin y)%b.
+        lemma grown : (0 < W.to_b_signed x - W.to_b_signed y)%b_signed.
         {
-          ipso (Bin.addition.order.mixed.monotonicity
-                  0%b 0%b (W.to_bin &x) (Bin.negate (W.to_bin &y))
+          ipso (SignedBin.addition.order.mixed.monotonicity
+                  0%b_signed 0%b_signed (W.to_b_signed &x) (SignedBin.negate (W.to_b_signed &y))
                   (sign.clear &x &sx) &positive).
         }
-        ex (Bin.order.strict.irreflexivity 0%b (Bin.order.strict.transitivity &grown &negative))
+        ex (SignedBin.order.strict.irreflexivity 0%b_signed (SignedBin.order.strict.transitivity &grown &negative))
           quodlibet.
       * (* [x] negative, [y] nonnegative, a nonnegative difference. *)
         let proof nonnegative := sign.clear (&x - &y) &sr.
         leibniz &same in &nonnegative.
         let proof shrunk :=
-          Bin.addition.order.mixed.monotonicity (Bin.negate (W.to_bin &y)) (W.to_bin &x) 0%b 0%b
-            (Bin.order.negation.reversal 0%b (W.to_bin &y) (sign.clear &y &sy)) (sign.set &x &sx).
-        leibniz (Bin.addition.commutativity (Bin.negate (W.to_bin &y)) (W.to_bin &x)) in &shrunk.
-        lemma negative : (W.to_bin x - W.to_bin y < 0)%b.
+          SignedBin.addition.order.mixed.monotonicity (SignedBin.negate (W.to_b_signed &y)) (W.to_b_signed &x) 0%b_signed 0%b_signed
+            (SignedBin.order.negation.reversal 0%b_signed (W.to_b_signed &y) (sign.clear &y &sy)) (sign.set &x &sx).
+        leibniz (SignedBin.addition.commutativity (SignedBin.negate (W.to_b_signed &y)) (W.to_b_signed &x)) in &shrunk.
+        lemma negative : (W.to_b_signed x - W.to_b_signed y < 0)%b_signed.
         {
           ipso &shrunk.
         }
-        ex (Bin.order.strict.irreflexivity 0%b
+        ex (SignedBin.order.strict.irreflexivity 0%b_signed
               (Comparable.order.mixed.left.transitivity &nonnegative &negative))
           quodlibet.
       * simpl in &f.
@@ -1521,11 +1521,11 @@ Qed.
 Theorem exactness
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.sub_with_overflow x y))%product = 0%bit
-      -> W.to_bin (x - y) = (W.to_bin x - W.to_bin y)%b.
+      -> W.to_b_signed (x - y) = (W.to_b_signed x - W.to_b_signed y)%b_signed.
 Proof.
   intros x y f.
   leibniz (wrapping.difference &x &y) in |- *.
-  ipso (wrapping.retraction (W.to_bin &x - W.to_bin &y)%b
+  ipso (wrapping.retraction (W.to_b_signed &x - W.to_b_signed &y)%b_signed
           (modus aequans (overflow.subtraction.specification &x &y), &f)).
 Qed.
 
@@ -1541,7 +1541,7 @@ Proof.
   intros x y z fy fz h.
   let proof g := modus aequans (W.order.strict.specification &y &z), &h.
   let proof s :=
-    Bin.order.subtraction.left.monotonicity (W.to_bin &x) (W.to_bin &y) (W.to_bin &z) &g.
+    SignedBin.order.subtraction.left.monotonicity (W.to_b_signed &x) (W.to_b_signed &y) (W.to_b_signed &z) &g.
   leibniz
     <- (overflow.subtraction.exactness &y &x &fy),
     <- (overflow.subtraction.exactness &z &x &fz)
@@ -1563,7 +1563,7 @@ Proof.
   intros x y z fz fy h.
   let proof g := modus aequans (W.order.strict.specification &y &z), &h.
   let proof s :=
-    Bin.order.subtraction.right.antitonicity (W.to_bin &x) (W.to_bin &y) (W.to_bin &z) &g.
+    SignedBin.order.subtraction.right.antitonicity (W.to_b_signed &x) (W.to_b_signed &y) (W.to_b_signed &z) &g.
   leibniz
     <- (overflow.subtraction.exactness &x &z &fz),
     <- (overflow.subtraction.exactness &x &y &fy)
@@ -1577,30 +1577,30 @@ End subtraction. (* overflow.subtraction *)
 
 Module multiplication. (* overflow.multiplication *)
 
-(* The flag reads [Bin.compare] of the product against both ends of the range:
+(* The flag reads [SignedBin.compare] of the product against both ends of the range:
  * below the least or above the greatest sets it, anything between clears it.
  *)
 (* overflow.multiplication.specification *)
 Theorem specification
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.mul_with_overflow x y))%product = 0%bit
-      <-> (Bin.Negative W.half <= W.to_bin x * W.to_bin y
-           /\ W.to_bin x * W.to_bin y <= W.to_bin W.Max)%b.
+      <-> (SignedBin.Negative W.half <= W.to_b_signed x * W.to_b_signed y
+           /\ W.to_b_signed x * W.to_b_signed y <= W.to_b_signed W.Max)%b_signed.
 Proof.
   intros x y.
   leibniz (W.flag.multiplication.specification &x &y), W.minimum.specification in |- *.
   let proof low :=
-    Bin.comparison.specification (W.to_bin &x * W.to_bin &y)%b (Bin.Negative W.half).
+    SignedBin.comparison.specification (W.to_b_signed &x * W.to_b_signed &y)%b_signed (SignedBin.Negative W.half).
   match &low with | below equal end.
   let proof above :=
     Comparable.comparison.strict.transposition.specification
-      (W.to_bin &x * W.to_bin &y)%b (Bin.Negative W.half).
-  let proof high := Bin.comparison.specification (W.to_bin &x * W.to_bin &y)%b (W.to_bin W.Max).
+      (W.to_b_signed &x * W.to_b_signed &y)%b_signed (SignedBin.Negative W.half).
+  let proof high := SignedBin.comparison.specification (W.to_b_signed &x * W.to_b_signed &y)%b_signed (W.to_b_signed W.Max).
   match &high with | under top end.
   let proof past :=
     Comparable.comparison.strict.transposition.specification
-      (W.to_bin &x * W.to_bin &y)%b (W.to_bin W.Max).
-  match (Bin.compare (W.to_bin &x * W.to_bin &y)%b (Bin.Negative W.half))
+      (W.to_b_signed &x * W.to_b_signed &y)%b_signed (W.to_b_signed W.Max).
+  match (SignedBin.compare (W.to_b_signed &x * W.to_b_signed &y)%b_signed (SignedBin.Negative W.half))
     with | Lt | Eq | Gt end |- c.
   - divide et impera.
     + intro e.
@@ -1609,18 +1609,18 @@ Proof.
     + intro r.
       match &r with | l _ end.
       let proof s := modus aequans &below, (refl Comparison.Lt).
-      ex (Bin.order.strict.irreflexivity (Bin.Negative W.half)
+      ex (SignedBin.order.strict.irreflexivity (SignedBin.Negative W.half)
             (Comparable.order.mixed.left.transitivity &l &s))
         quodlibet.
   - divide et impera.
     + intro e.
       let proof q := modus aequans &equal, (refl Comparison.Eq).
       leibniz &q in |- *.
-      ipso (conjoin (disjoin (refl (Bin.Negative W.half)), _), ordered).
+      ipso (conjoin (disjoin (refl (SignedBin.Negative W.half)), _), ordered).
     + intro r.
       ipso (refl 0%bit).
   - let proof g := modus aequans &above, (refl Comparison.Gt).
-    match (Bin.compare (W.to_bin &x * W.to_bin &y)%b (W.to_bin W.Max))
+    match (SignedBin.compare (W.to_b_signed &x * W.to_b_signed &y)%b_signed (W.to_b_signed W.Max))
       with | Lt | Eq | Gt end |- d.
     + divide et impera.
       * intro e.
@@ -1639,48 +1639,48 @@ Proof.
       * intro r.
         match &r with | _ h end.
         let proof m := modus aequans &past, (refl Comparison.Gt).
-        ex (Bin.order.strict.irreflexivity (W.to_bin W.Max)
+        ex (SignedBin.order.strict.irreflexivity (W.to_b_signed W.Max)
               (Comparable.order.mixed.right.transitivity &m &h))
           quodlibet.
 Qed.
 
-(* A clear flag puts the product in range, where [W.from_bin] keeps it. *)
+(* A clear flag puts the product in range, where [W.from_b_signed] keeps it. *)
 (* overflow.multiplication.exactness *)
 Theorem exactness
   : forall (x : W.T) (y : W.T) .
       (pi_1 (W.mul_with_overflow x y))%product = 0%bit
-      -> W.to_bin (x * y) = (W.to_bin x * W.to_bin y)%b.
+      -> W.to_b_signed (x * y) = (W.to_b_signed x * W.to_b_signed y)%b_signed.
 Proof.
   intros x y f.
   let proof r := modus aequans (overflow.multiplication.specification &x &y), &f.
-  lemma lifted : &x * &y = W.from_bin (W.to_bin &x * W.to_bin &y)%b.
+  lemma lifted : &x * &y = W.from_b_signed (W.to_b_signed &x * W.to_b_signed &y)%b_signed.
   {
     leibniz
-      (wrapping.multiplicativity (W.to_bin &x) (W.to_bin &y)),
+      (wrapping.multiplicativity (W.to_b_signed &x) (W.to_b_signed &y)),
       (W.conversion.section &x),
       (W.conversion.section &y)
       in |- *.
     quod idem est.
   }
   leibniz &lifted in |- *.
-  ipso (wrapping.retraction (W.to_bin &x * W.to_bin &y)%b &r).
+  ipso (wrapping.retraction (W.to_b_signed &x * W.to_b_signed &y)%b_signed &r).
 Qed.
 
 (* Two clear flags make both products exact, and a positive factor keeps
- * [Bin]'s order.
+ * [SignedBin]'s order.
  *)
 (* overflow.multiplication.monotonicity *)
 Theorem monotonicity
   : forall (x : W.T) (y : W.T) (z : W.T) .
       (pi_1 (W.mul_with_overflow x y))%product = 0%bit
       -> (pi_1 (W.mul_with_overflow x z))%product = 0%bit
-      -> (0 < W.to_bin x)%b -> y < z -> x * y < x * z.
+      -> (0 < W.to_b_signed x)%b_signed -> y < z -> x * y < x * z.
 Proof.
   intros x y z fy fz hx h.
   let proof g := modus aequans (W.order.strict.specification &y &z), &h.
   let proof s :=
-    Bin.multiplication.left.order.strict.monotonicity
-      (W.to_bin &x) (W.to_bin &y) (W.to_bin &z) &hx &g.
+    SignedBin.multiplication.left.order.strict.monotonicity
+      (W.to_b_signed &x) (W.to_b_signed &y) (W.to_b_signed &z) &hx &g.
   leibniz
     <- (overflow.multiplication.exactness &x &y &fy),
     <- (overflow.multiplication.exactness &x &z &fz)
@@ -1736,14 +1736,14 @@ Qed.
  *)
 (* negation.exactness *)
 Theorem exactness
-  : forall (x : W.T) . ~ (x = W.Min) -> W.to_bin (- x) = Bin.negate (W.to_bin x).
+  : forall (x : W.T) . ~ (x = W.Min) -> W.to_b_signed (- x) = SignedBin.negate (W.to_b_signed x).
 Proof.
   intros x h.
   match (bound.range &x) with | low high end.
-  lemma above : (Bin.Negative W.half < W.to_bin x)%b.
+  lemma above : (SignedBin.Negative W.half < W.to_b_signed x)%b_signed.
   {
     match &low with | same | larger end.
-    - lemma e : W.to_bin W.Min = W.to_bin x.
+    - lemma e : W.to_b_signed W.Min = W.to_b_signed x.
       {
         leibniz W.minimum.specification in |- *.
         ipso &same.
@@ -1751,38 +1751,38 @@ Proof.
       ex (&h (symm (injectivity &e))) quodlibet.
     - ipso &larger.
   }
-  lemma lifted : - x = W.from_bin (Bin.negate (W.to_bin x)).
+  lemma lifted : - x = W.from_b_signed (SignedBin.negate (W.to_b_signed x)).
   {
-    leibniz (wrapping.negation (W.to_bin &x)), (W.conversion.section &x) in |- *.
+    leibniz (wrapping.negation (W.to_b_signed &x)), (W.conversion.section &x) in |- *.
     quod idem est.
   }
   leibniz &lifted in |- *.
-  lemma negated_low : (Bin.Negative W.half <= Bin.negate (W.to_bin x))%b.
+  lemma negated_low : (SignedBin.Negative W.half <= SignedBin.negate (W.to_b_signed x))%b_signed.
   {
-    let proof max_below : (W.to_bin W.Max < W.to_bin W.Max + 1)%b
-      := Bin.order.increment.extensivity (W.to_bin W.Max).
+    let proof max_below : (W.to_b_signed W.Max < W.to_b_signed W.Max + 1)%b_signed
+      := SignedBin.order.increment.extensivity (W.to_b_signed W.Max).
     leibniz W.maximum.specification in &max_below.
-    lemma negated_below : (Bin.Negative W.half < Bin.negate (W.to_bin W.Max))%b.
+    lemma negated_below : (SignedBin.Negative W.half < SignedBin.negate (W.to_b_signed W.Max))%b_signed.
     {
       ipso (modus aequans
-              (Bin.order.negation.strict.reversal (W.to_bin W.Max) (Bin.Positive W.half)),
+              (SignedBin.order.negation.strict.reversal (W.to_b_signed W.Max) (SignedBin.Positive W.half)),
               &max_below).
     }
-    let proof reversed := Bin.order.negation.reversal (W.to_bin &x) (W.to_bin W.Max) &high.
+    let proof reversed := SignedBin.order.negation.reversal (W.to_b_signed &x) (W.to_b_signed W.Max) &high.
     ipso (disjoin _, (Comparable.order.mixed.right.transitivity &negated_below &reversed)).
   }
-  lemma negated_high : (Bin.negate (W.to_bin x) <= W.to_bin W.Max)%b.
+  lemma negated_high : (SignedBin.negate (W.to_b_signed x) <= W.to_b_signed W.Max)%b_signed.
   {
-    lemma reversed : (Bin.negate (W.to_bin x) < Bin.Positive W.half)%b.
+    lemma reversed : (SignedBin.negate (W.to_b_signed x) < SignedBin.Positive W.half)%b_signed.
     {
       ipso (modus aequans
-              (Bin.order.negation.strict.reversal (Bin.Negative W.half) (W.to_bin &x)), &above).
+              (SignedBin.order.negation.strict.reversal (SignedBin.Negative W.half) (W.to_b_signed &x)), &above).
     }
     leibniz <- W.maximum.specification in &reversed.
-    ipso (modus aequans (Bin.order.discreteness (Bin.negate (W.to_bin &x)) (W.to_bin W.Max)),
+    ipso (modus aequans (SignedBin.order.discreteness (SignedBin.negate (W.to_b_signed &x)) (W.to_b_signed W.Max)),
           &reversed).
   }
-  ipso (wrapping.retraction (Bin.negate (W.to_bin &x)) (conjoin &negated_low, &negated_high)).
+  ipso (wrapping.retraction (SignedBin.negate (W.to_b_signed &x)) (conjoin &negated_low, &negated_high)).
 Qed.
 
 (* negation.reversal *)
@@ -1796,14 +1796,14 @@ Proof.
   - intro h.
     let proof g := modus aequans (W.order.strict.specification &x &y), &h.
     let proof r :=
-      modus aequans (Bin.order.negation.strict.reversal (W.to_bin &x) (W.to_bin &y)), &g.
+      modus aequans (SignedBin.order.negation.strict.reversal (W.to_b_signed &x) (W.to_b_signed &y)), &g.
     leibniz <- (negation.exactness &x &hx), <- (negation.exactness &y &hy) in &r.
     ipso (modus aequans (W.order.strict.specification (- &y) (- &x)), &r).
   - intro h.
     let proof g := modus aequans (W.order.strict.specification (- &y) (- &x)), &h.
     leibniz (negation.exactness &x &hx), (negation.exactness &y &hy) in &g.
     ipso (modus aequans (W.order.strict.specification &x &y),
-          (modus aequans (Bin.order.negation.strict.reversal (W.to_bin &x) (W.to_bin &y)), &g)).
+          (modus aequans (SignedBin.order.negation.strict.reversal (W.to_b_signed &x) (W.to_b_signed &y)), &g)).
 Qed.
 
 End negation. (* negation *)
@@ -1815,39 +1815,39 @@ Module increment. (* increment *)
  *)
 (* increment.exactness *)
 Theorem exactness
-  : forall (x : W.T) . ~ (x = W.Max) -> W.to_bin (x + W.One) = (W.to_bin x + 1)%b.
+  : forall (x : W.T) . ~ (x = W.Max) -> W.to_b_signed (x + W.One) = (W.to_b_signed x + 1)%b_signed.
 Proof.
   intros x h.
   match (bound.range &x) with | low high end.
-  lemma below : (W.to_bin x < W.to_bin W.Max)%b.
+  lemma below : (W.to_b_signed x < W.to_b_signed W.Max)%b_signed.
   {
     match &high with | same | smaller end.
     - ex (&h (injectivity &same)) quodlibet.
     - ipso &smaller.
   }
-  lemma summed : x + W.One = W.from_bin (W.to_bin x + 1)%b.
+  lemma summed : x + W.One = W.from_b_signed (W.to_b_signed x + 1)%b_signed.
   {
     leibniz (wrapping.summation &x W.One), W.one.specification in |- *.
     quod idem est.
   }
   leibniz &summed in |- *.
-  lemma raised_low : (Bin.Negative W.half <= W.to_bin x + 1)%b.
+  lemma raised_low : (SignedBin.Negative W.half <= W.to_b_signed x + 1)%b_signed.
   {
     ipso (disjoin _, (Comparable.order.mixed.left.transitivity &low
-                        (Bin.order.increment.extensivity (W.to_bin &x)))).
+                        (SignedBin.order.increment.extensivity (W.to_b_signed &x)))).
   }
-  lemma raised_high : (W.to_bin x + 1 <= W.to_bin W.Max)%b.
+  lemma raised_high : (W.to_b_signed x + 1 <= W.to_b_signed W.Max)%b_signed.
   {
-    ipso (modus aequans (Bin.order.increment.specification (W.to_bin &x) (W.to_bin W.Max)), &below).
+    ipso (modus aequans (SignedBin.order.increment.specification (W.to_b_signed &x) (W.to_b_signed W.Max)), &below).
   }
-  ipso (wrapping.retraction (W.to_bin &x + 1)%b (conjoin &raised_low, &raised_high)).
+  ipso (wrapping.retraction (W.to_b_signed &x + 1)%b_signed (conjoin &raised_low, &raised_high)).
 Qed.
 
 (* increment.extensivity *)
 Theorem extensivity : forall (x : W.T) . ~ (x = W.Max) -> x < x + W.One.
 Proof.
   intros x h.
-  let proof g := Bin.order.increment.extensivity (W.to_bin &x).
+  let proof g := SignedBin.order.increment.extensivity (W.to_b_signed &x).
   leibniz <- (increment.exactness &x &h) in &g.
   ipso (modus aequans (W.order.strict.specification &x (&x + W.One)), &g).
 Qed.
@@ -1865,13 +1865,13 @@ Proof.
     intro e.
     leibniz &e in &g.
     match (bound.range &y) with | _ high end.
-    ex (Bin.order.strict.irreflexivity (W.to_bin W.Max)
+    ex (SignedBin.order.strict.irreflexivity (W.to_b_signed W.Max)
           (Comparable.order.mixed.right.transitivity &g &high))
       quodlibet.
   }
-  match (modus aequans (Bin.order.increment.specification (W.to_bin &x) (W.to_bin &y)), &g)
+  match (modus aequans (SignedBin.order.increment.specification (W.to_b_signed &x) (W.to_b_signed &y)), &g)
     with | same | smaller end.
-  - lemma e : W.to_bin (x + W.One) = W.to_bin y.
+  - lemma e : W.to_b_signed (x + W.One) = W.to_b_signed y.
     {
       leibniz (increment.exactness &x &below) in |- *.
       ipso &same.
@@ -1895,7 +1895,7 @@ Proof.
   - let proof g := modus aequans (W.order.strict.specification &x (&x + W.One)), &first.
     let proof l := modus aequans (W.order.strict.specification (&x + W.One) &y), &smaller.
     ipso (modus aequans (W.order.strict.specification &x &y),
-          (Bin.order.strict.transitivity &g &l)).
+          (SignedBin.order.strict.transitivity &g &l)).
 Qed.
 
 End increment. (* increment *)
@@ -1905,14 +1905,14 @@ Module decrement. (* decrement *)
 (* Away from [W.Min], the reading is above the least, so one less is in range. *)
 (* decrement.exactness *)
 Theorem exactness
-  : forall (x : W.T) . ~ (x = W.Min) -> W.to_bin (x - W.One) = (W.to_bin x - 1)%b.
+  : forall (x : W.T) . ~ (x = W.Min) -> W.to_b_signed (x - W.One) = (W.to_b_signed x - 1)%b_signed.
 Proof.
   intros x h.
   match (bound.range &x) with | low high end.
-  lemma above : (Bin.Negative W.half < W.to_bin x)%b.
+  lemma above : (SignedBin.Negative W.half < W.to_b_signed x)%b_signed.
   {
     match &low with | same | larger end.
-    - lemma e : W.to_bin W.Min = W.to_bin x.
+    - lemma e : W.to_b_signed W.Min = W.to_b_signed x.
       {
         leibniz W.minimum.specification in |- *.
         ipso &same.
@@ -1920,48 +1920,48 @@ Proof.
       ex (&h (symm (injectivity &e))) quodlibet.
     - ipso &larger.
   }
-  lemma differenced : x - W.One = W.from_bin (W.to_bin x - 1)%b.
+  lemma differenced : x - W.One = W.from_b_signed (W.to_b_signed x - 1)%b_signed.
   {
     leibniz (wrapping.difference &x W.One), W.one.specification in |- *.
     quod idem est.
   }
   leibniz &differenced in |- *.
-  lemma lowered_low : (Bin.Negative W.half <= W.to_bin x - 1)%b.
+  lemma lowered_low : (SignedBin.Negative W.half <= W.to_b_signed x - 1)%b_signed.
   {
     let proof least :=
-      modus aequans (Bin.order.increment.specification (Bin.Negative W.half) (W.to_bin &x)), &above.
-    lemma restored : (Bin.Negative W.half + 1 - 1 = Bin.Negative W.half)%b.
+      modus aequans (SignedBin.order.increment.specification (SignedBin.Negative W.half) (W.to_b_signed &x)), &above.
+    lemma restored : (SignedBin.Negative W.half + 1 - 1 = SignedBin.Negative W.half)%b_signed.
     {
       leibniz
-        (Bin.subtraction.specification (Bin.Negative W.half + 1)%b 1%b),
-        (Bin.addition.associativity (Bin.Negative W.half) 1%b (Bin.negate 1%b)),
-        (Bin.addition.right.inverse 1%b),
-        (Bin.addition.right.identity (Bin.Negative W.half))
+        (SignedBin.subtraction.specification (SignedBin.Negative W.half + 1)%b_signed 1%b_signed),
+        (SignedBin.addition.associativity (SignedBin.Negative W.half) 1%b_signed (SignedBin.negate 1%b_signed)),
+        (SignedBin.addition.right.inverse 1%b_signed),
+        (SignedBin.addition.right.identity (SignedBin.Negative W.half))
         in |- *.
       quod idem est.
     }
     match &least with | same | smaller end.
     - leibniz <- &same, &restored in |- *.
-      ipso (disjoin (refl (Bin.Negative W.half)), _).
+      ipso (disjoin (refl (SignedBin.Negative W.half)), _).
     - let proof lowered :=
-        Bin.order.subtraction.left.monotonicity 1%b (Bin.Negative W.half + 1)%b (W.to_bin &x)
+        SignedBin.order.subtraction.left.monotonicity 1%b_signed (SignedBin.Negative W.half + 1)%b_signed (W.to_b_signed &x)
           &smaller.
       leibniz &restored in &lowered.
       ipso (disjoin _, &lowered).
   }
-  lemma lowered_high : (W.to_bin x - 1 <= W.to_bin W.Max)%b.
+  lemma lowered_high : (W.to_b_signed x - 1 <= W.to_b_signed W.Max)%b_signed.
   {
     ipso (disjoin _, (Comparable.order.mixed.right.transitivity
-                        (Bin.order.decrement.extensivity (W.to_bin &x)) &high)).
+                        (SignedBin.order.decrement.extensivity (W.to_b_signed &x)) &high)).
   }
-  ipso (wrapping.retraction (W.to_bin &x - 1)%b (conjoin &lowered_low, &lowered_high)).
+  ipso (wrapping.retraction (W.to_b_signed &x - 1)%b_signed (conjoin &lowered_low, &lowered_high)).
 Qed.
 
 (* decrement.extensivity *)
 Theorem extensivity : forall (x : W.T) . ~ (x = W.Min) -> x - W.One < x.
 Proof.
   intros x h.
-  let proof g := Bin.order.decrement.extensivity (W.to_bin &x).
+  let proof g := SignedBin.order.decrement.extensivity (W.to_b_signed &x).
   leibniz <- (decrement.exactness &x &h) in &g.
   ipso (modus aequans (W.order.strict.specification (&x - W.One) &x), &g).
 Qed.
@@ -1980,7 +1980,7 @@ Proof.
   let proof g1 := modus aequans (W.order.strict.specification &x &y), &h1.
   let proof g2 := modus aequans (W.order.strict.specification &y &z), &h2.
   ipso (modus aequans (W.order.strict.specification &x &z),
-        (Bin.order.strict.transitivity &g1 &g2)).
+        (SignedBin.order.strict.transitivity &g1 &g2)).
 Qed.
 
 End strict. (* order.strict *)
@@ -1996,7 +1996,7 @@ Theorem specification
 Proof.
   intros x y.
   leibniz (W.conversion.comparison &x &y) in |- *.
-  let proof s := Bin.comparison.specification (W.to_bin &x) (W.to_bin &y).
+  let proof s := SignedBin.comparison.specification (W.to_b_signed &x) (W.to_b_signed &y).
   match &s with | strict equality end.
   divide et impera.
   - divide et impera.
@@ -2008,7 +2008,7 @@ Proof.
     + intro c.
       ipso (injectivity (modus aequans &equality, &c)).
     + intro e.
-      ipso (modus aequans &equality, (congru W.to_bin, &e)).
+      ipso (modus aequans &equality, (congru W.to_b_signed, &e)).
 Qed.
 
 (* comparison.antisymmetry *)
@@ -2017,7 +2017,7 @@ Theorem antisymmetry
 Proof.
   intros x y.
   leibniz (W.conversion.comparison &x &y), (W.conversion.comparison &y &x) in |- *.
-  ipso (Bin.comparison.antisymmetry (W.to_bin &x) (W.to_bin &y)).
+  ipso (SignedBin.comparison.antisymmetry (W.to_b_signed &x) (W.to_b_signed &y)).
 Qed.
 
 End comparison. (* comparison *)

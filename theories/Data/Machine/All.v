@@ -24,7 +24,7 @@ From JW Require Export Core.All.
 
 (* An umbrella exports every type the interfaces under it name: [Bool] for
  * [Bit.from_bool] and [Bit.to_bool], [Nat] and [Nat0] for the counts of the
- * shifts and rotations, [BinBase], [BinWithZero] and [Bin] for the values,
+ * shifts and rotations, [BinBase], [BinWithZero] and [SignedBin] for the values,
  * [Nat0] and [Integer] for the values read in unary, [Product] for the
  * carry, the borrow and the overflow, [Comparison] for [compare], [Numeral]
  * and [Option] for the literals, [List] for the bytes of a word, [Endian]
@@ -35,7 +35,7 @@ From JW Require Export Data.Base.Bool.
 From JW Require Export Data.Base.Comparison.
 From JW Require Export Data.Collection.List.
 From JW Require Export Data.Comparable.
-From JW Require Export Data.Number.Binary.Bin.
+From JW Require Export Data.Number.Binary.SignedBin.
 From JW Require Export Data.Number.Binary.BinBase.
 From JW Require Export Data.Number.Binary.BinWithZero.
 From JW Require Export Data.Number.Integer.

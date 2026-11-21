@@ -17,7 +17,7 @@ From JW Require Import Data.Machine.Endian.
 From JW Require Import Data.Machine.HWord.
 From JW Require Import Data.Machine.Modular.
 From JW Require Import Data.Machine.Unsigned.
-From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
 From JW Require Import Data.Number.Nat.
@@ -78,9 +78,9 @@ Definition to_bin_with_zero := fun (x : UInt16) .
 Local Coercion to_bin_with_zero : T >-> BinWithZero.
 Add Printing Coercion to_bin_with_zero.
 
-(* The value as a [Bin], through [to_bin_with_zero]. *)
-(* [UInt16 -> Bin] *)
-Definition to_bin := fun (x : UInt16) . Bin.from_bin_with_zero (to_bin_with_zero x).
+(* The value as a [SignedBin], through [to_bin_with_zero]. *)
+(* [UInt16 -> SignedBin] *)
+Definition to_b_signed := fun (x : UInt16) . SignedBin.from_bin_with_zero (to_bin_with_zero x).
 
 (* The value in [Nat0], through [to_bin_with_zero]; [Nat0] is unary, so it is
  * for stating and proving, and computing goes through [to_bin_with_zero].
@@ -320,12 +320,12 @@ Definition from_nat := fun (n : Nat) . from_bin_base (BinBase.from_nat n).
 Definition from_nat0 := fun (n : Nat0) . from_bin_with_zero (BinWithZero.from_nat0 n).
 
 (* [z] modulo 65536 (2^16), a negative [z] counted down from 65536. *)
-(* [Bin -> UInt16] *)
-Definition from_bin := fun (z : Bin) .
+(* [SignedBin -> UInt16] *)
+Definition from_b_signed := fun (z : SignedBin) .
   match z with
-  | Bin.Negative p => negate (from_bin_base p)
-  | Bin.Zero       => Zero
-  | Bin.Positive p => from_bin_base p
+  | SignedBin.Negative p => negate (from_bin_base p)
+  | SignedBin.Zero       => Zero
+  | SignedBin.Positive p => from_bin_base p
   end.
 
 (* The quotient through [BinWithZero], [None] when [y] is zero. It is at most
@@ -1139,28 +1139,28 @@ Proof.
   quod idem est.
 Qed.
 
-Module bin. (* conversion.bin *)
+Module signed_bin. (* conversion.signed_bin *)
 
-(* conversion.bin.section *)
-Theorem section : forall (x : UInt16) . from_bin (to_bin x) = x.
+(* conversion.signed_bin.section *)
+Theorem section : forall (x : UInt16) . from_b_signed (to_b_signed x) = x.
 Proof.
   intros x.
   lemma through
-    : forall (n : BinWithZero) . from_bin (Bin.from_bin_with_zero n) = from_bin_with_zero n.
+    : forall (n : BinWithZero) . from_b_signed (SignedBin.from_bin_with_zero n) = from_bin_with_zero n.
   {
     intros n.
     match &n with | Zero | Positive p end.
-    - simpl Bin.from_bin_with_zero, from_bin, from_bin_with_zero in |- *.
+    - simpl SignedBin.from_bin_with_zero, from_b_signed, from_bin_with_zero in |- *.
       quod idem est.
-    - simpl Bin.from_bin_with_zero, from_bin, from_bin_with_zero in |- *.
+    - simpl SignedBin.from_bin_with_zero, from_b_signed, from_bin_with_zero in |- *.
       quod idem est.
   }
-  simpl to_bin in |- *.
+  simpl to_b_signed in |- *.
   leibniz (&through (to_bin_with_zero &x)), (conversion.section &x) in |- *.
   quod idem est.
 Qed.
 
-End bin. (* conversion.bin *)
+End signed_bin. (* conversion.signed_bin *)
 
 Module hword. (* conversion.hword *)
 
