@@ -42,6 +42,7 @@ Extraction "JW.ml"
   JW.Data.Base.Empty.Empty
   JW.Data.Base.Kleene3.Kleene3
   JW.Data.Base.Unit.Unit
+  JW.Data.Calendar.Month.Month
   JW.Data.Comparable.Comparable
   JW.Data.Coproduct.Coproduct
   JW.Data.Option.Option
