@@ -56,6 +56,13 @@ let int_of_bin = function
 let int8_flagged (flag, x) = flag = Bit.One, int_of_bin (Int8.to_bin x)
 let int8 k = Int8.from_bin (bin k)
 
+(* A carry or borrow and a [UInt8] result, as OCaml integers. *)
+let uint8_flagged (flag, x) =
+  flag = Bit.One, int_of_bin_with_zero (UInt8.to_bin_with_zero x)
+;;
+
+let uint8 k = UInt8.from_bin (bin k)
+
 (* [2^n - 1] and [2^n] as [BinBase] values, for numbers past OCaml's [int]. *)
 let rec ones n = if n = 1 then BinBase.One else BinBase.Coq_b1 (ones (n - 1))
 let rec power2 n = if n = 0 then BinBase.One else BinBase.Coq_b0 (power2 (n - 1))
@@ -140,6 +147,15 @@ let () =
     "Int8.sub_with_overflow 0 (-128)"
     (int8_flagged (Int8.sub_with_overflow (int8 0) (int8 (-128))) = (true, -128));
   check "Int8.negate (-128)" (int_of_bin (Int8.to_bin (Int8.negate (int8 (-128)))) = -128);
+  check
+    "UInt8.add_with_carry 0 200 100"
+    (uint8_flagged (UInt8.add_with_carry Bit.Zero (uint8 200) (uint8 100)) = (true, 44));
+  check
+    "UInt8.sub_with_borrow 0 3 5"
+    (uint8_flagged (UInt8.sub_with_borrow Bit.Zero (uint8 3) (uint8 5)) = (true, 254));
+  check
+    "UInt8.add_with_carry 0 100 27"
+    (uint8_flagged (UInt8.add_with_carry Bit.Zero (uint8 100) (uint8 27)) = (false, 127));
   (let flag, sum =
      Int64.add_with_overflow
        (Int64.from_bin (Bin.Positive (ones 63)))

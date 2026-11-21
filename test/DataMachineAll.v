@@ -544,6 +544,153 @@ Definition data_machine_all_delivers_int64_negation_exactness
   : forall (x : Int64) . ~ (x = Int64.Min) -> Int64.to_bin (- x)%int64 = Bin.negate (Int64.to_bin x)
   := Int64.negation.exactness.
 
+Definition data_machine_all_computes_uint8_maximum
+  : UInt8.Max = 255%uint8
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_uint8_addition_past_maximum
+  : UInt8.add_with_carry 0 200 100 = (1%bit, 44%uint8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_uint8_subtraction_below_zero
+  : UInt8.sub_with_borrow 0 3 5 = (1%bit, 254%uint8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_uint8_bound_range
+  : forall (x : UInt8) .
+      (UInt8.to_bin_with_zero x <= UInt8.to_bin_with_zero UInt8.Max)%bin_with_zero
+  := UInt8.bound.range.
+
+Definition data_machine_all_delivers_uint8_bound_lower
+  : forall (x : UInt8) . (UInt8.Zero <= x)%uint8
+  := UInt8.bound.lower.
+
+Definition data_machine_all_delivers_uint8_bound_upper
+  : forall (x : UInt8) . (x <= UInt8.Max)%uint8
+  := UInt8.bound.upper.
+
+Definition data_machine_all_delivers_uint8_overflow_addition_specification
+  : forall (x : UInt8) (y : UInt8) .
+      (pi_1 (UInt8.add_with_carry 0 x y))%product = 0%bit
+      <-> (UInt8.to_bin_with_zero x + UInt8.to_bin_with_zero y
+           < BinWithZero.Positive UInt8.modulus)%bin_with_zero
+  := UInt8.overflow.addition.specification.
+
+Definition data_machine_all_delivers_uint8_overflow_addition_exactness
+  : forall (x : UInt8) (y : UInt8) .
+      (pi_1 (UInt8.add_with_carry 0 x y))%product = 0%bit
+      -> (UInt8.to_bin_with_zero (x + y)%uint8
+          = UInt8.to_bin_with_zero x + UInt8.to_bin_with_zero y)%bin_with_zero
+  := UInt8.overflow.addition.exactness.
+
+Definition data_machine_all_delivers_uint8_overflow_addition_monotonicity
+  : forall (x : UInt8) (y : UInt8) (z : UInt8) .
+      (pi_1 (UInt8.add_with_carry 0 x y))%product = 0%bit
+      -> (pi_1 (UInt8.add_with_carry 0 x z))%product = 0%bit
+      -> (y < z -> x + y < x + z)%uint8
+  := UInt8.overflow.addition.monotonicity.
+
+Definition data_machine_all_delivers_uint8_overflow_subtraction_specification
+  : forall (x : UInt8) (y : UInt8) .
+      (pi_1 (UInt8.sub_with_borrow 0 x y))%product = 0%bit <-> (y <= x)%uint8
+  := UInt8.overflow.subtraction.specification.
+
+Definition data_machine_all_delivers_uint8_overflow_subtraction_exactness
+  : forall (x : UInt8) (y : UInt8) .
+      (pi_1 (UInt8.sub_with_borrow 0 x y))%product = 0%bit
+      -> (UInt8.to_bin_with_zero y + UInt8.to_bin_with_zero (x - y)%uint8
+          = UInt8.to_bin_with_zero x)%bin_with_zero
+  := UInt8.overflow.subtraction.exactness.
+
+Definition data_machine_all_delivers_uint8_increment_exactness
+  : forall (x : UInt8) .
+      ~ (x = UInt8.Max)
+      -> (UInt8.to_bin_with_zero (x + UInt8.One)%uint8 = UInt8.to_bin_with_zero x + 1)%bin_with_zero
+  := UInt8.increment.exactness.
+
+Definition data_machine_all_delivers_uint8_increment_extensivity
+  : forall (x : UInt8) . ~ (x = UInt8.Max) -> (x < x + UInt8.One)%uint8
+  := UInt8.increment.extensivity.
+
+Definition data_machine_all_delivers_uint8_increment_specification
+  : forall (x : UInt8) (y : UInt8) . (x < y -> x + UInt8.One <= y)%uint8
+  := UInt8.increment.specification.
+
+Definition data_machine_all_delivers_uint8_increment_sufficiency
+  : forall (x : UInt8) (y : UInt8) . ~ (x = UInt8.Max) -> (x + UInt8.One <= y -> x < y)%uint8
+  := UInt8.increment.sufficiency.
+
+Definition data_machine_all_delivers_uint8_decrement_exactness
+  : forall (x : UInt8) .
+      ~ (x = UInt8.Zero)
+      -> (UInt8.to_bin_with_zero (x - UInt8.One)%uint8 + 1 = UInt8.to_bin_with_zero x)%bin_with_zero
+  := UInt8.decrement.exactness.
+
+Definition data_machine_all_delivers_uint8_decrement_extensivity
+  : forall (x : UInt8) . ~ (x = UInt8.Zero) -> (x - UInt8.One < x)%uint8
+  := UInt8.decrement.extensivity.
+
+Theorem data_machine_all_delivers_uint8_increment_exactness_rewriting
+  : forall (x : UInt8) .
+      ~ (x = UInt8.Max)
+      -> (UInt8.to_bin_with_zero (x + UInt8.One)%uint8 + 0
+          = UInt8.to_bin_with_zero x + 1 + 0)%bin_with_zero.
+Proof.
+  intros x h.
+  leibniz (UInt8.increment.exactness &x &h) in |- *.
+  quod idem est.
+Qed.
+
+Definition data_machine_all_computes_uint16_maximum
+  : UInt16.Max = 65535%uint16
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_uint16_overflow_subtraction_specification
+  : forall (x : UInt16) (y : UInt16) .
+      (pi_1 (UInt16.sub_with_borrow 0 x y))%product = 0%bit <-> (y <= x)%uint16
+  := UInt16.overflow.subtraction.specification.
+
+Definition data_machine_all_delivers_uint16_increment_specification
+  : forall (x : UInt16) (y : UInt16) . (x < y -> x + UInt16.One <= y)%uint16
+  := UInt16.increment.specification.
+
+Definition data_machine_all_computes_uint32_maximum
+  : UInt32.Max = 4294967295%uint32
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_uint32_bound_upper
+  : forall (x : UInt32) . (x <= UInt32.Max)%uint32
+  := UInt32.bound.upper.
+
+Definition data_machine_all_delivers_uint32_overflow_addition_monotonicity
+  : forall (x : UInt32) (y : UInt32) (z : UInt32) .
+      (pi_1 (UInt32.add_with_carry 0 x y))%product = 0%bit
+      -> (pi_1 (UInt32.add_with_carry 0 x z))%product = 0%bit
+      -> (y < z -> x + y < x + z)%uint32
+  := UInt32.overflow.addition.monotonicity.
+
+Definition data_machine_all_computes_uint64_maximum
+  : UInt64.Max = 18446744073709551615%uint64
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_uint64_addition_past_maximum
+  : UInt64.add_with_carry 0 18446744073709551615 1 = (1%bit, 0%uint64)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_uint64_overflow_addition_specification
+  : forall (x : UInt64) (y : UInt64) .
+      (pi_1 (UInt64.add_with_carry 0 x y))%product = 0%bit
+      <-> (UInt64.to_bin_with_zero x + UInt64.to_bin_with_zero y
+           < BinWithZero.Positive UInt64.modulus)%bin_with_zero
+  := UInt64.overflow.addition.specification.
+
+Definition data_machine_all_delivers_uint64_decrement_exactness
+  : forall (x : UInt64) .
+      ~ (x = UInt64.Zero)
+      -> (UInt64.to_bin_with_zero (x - UInt64.One)%uint64 + 1
+          = UInt64.to_bin_with_zero x)%bin_with_zero
+  := UInt64.decrement.exactness.
+
 Definition data_machine_all_delivers_int8_bound_range
   : forall (x : Int8) . ((-10000000) <= Int8.to_bin x /\ Int8.to_bin x <= 1111111)%b
   := Int8.bound.range.
