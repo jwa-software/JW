@@ -5,13 +5,14 @@ SPDX-License-Identifier: MIT
 
 # Calendar
 
-`Data/Calendar/` holds the months of the year, the days of the week and the proleptic Gregorian calendar:
+`Data/Calendar/` holds the months of the year, the days of the week, the proleptic Gregorian calendar and its ISO week dates:
 
 | Type | What it is |
 |:---|:---|
 | `Month` | The twelve months, `Month.January` to `Month.December` |
 | `Weekday` | The seven days of the week, `Weekday.Monday` to `Weekday.Sunday` |
 | `Date` | A date of the proleptic Gregorian calendar: a year, a month and a day of that month |
+| `IsoWeekDate` | The same day in the ISO 8601 week calendar: an ISO year, a week of it and a weekday |
 
 - **Proleptic.** The Gregorian leap rule holds for every year, also for the years before 1582, when the calendar came into use.
 - **The years count from 1.** There is no year 0 and no negative year, so every number is a binary number without a sign: `Bin` for the year and the day, which are never 0, and `Bin0` for a count of days. `Date.v` names them `Year`, `Day` and `Days`.
@@ -160,3 +161,26 @@ SPDX-License-Identifier: MIT
 | 0001-01-01 | -719162 |
 | 1970-01-01 | 0 |
 | 2000-01-01 | 10957 |
+
+## IsoWeekDate
+
+ISO 8601 numbers the weeks of a year, Monday first: week 1 is the week that holds January 4, so it holds the year's first Thursday. An ISO year therefore starts on the Monday of that week, which may fall in the last days of December, and ends before the next one.
+
+- **Only a real week can be built.** The constructor `IsoWeekDate.introduction y w d` takes the ISO year `y`, the week `w`, the weekday `d` and a proof of `Assert (IsoWeekDate.is_valid y w)`: the year has a week `w`. For a written value the proof is `I`, as for `Date`.
+- **The start of an ISO year.** `IsoWeekDate.january_4th y` is January 4 of `y`, and `IsoWeekDate.week_one_start y` is the day number of the Monday of its week. `IsoWeekDate.start.weekday` states that it is a Monday, and `IsoWeekDate.start.boundedness` that January 4 lies in the week it starts.
+- **52 or 53 weeks.** `IsoWeekDate.weeks_in_year y` is the distance from the start of `y` to the start of `y + 1`, in weeks. `IsoWeekDate.year.length.dichotomy` states that it is 52 or 53, and `IsoWeekDate.year.length.specification` that it is 53 exactly when January 1 is a Thursday, or a Wednesday in a leap year. `IsoWeekDate.year.succession` states that the next ISO year starts that many weeks later.
+- **From a date and back.** `IsoWeekDate.from_date` counts the whole weeks of the day number, 0001-01-01 being a Monday, and takes as the ISO year the year of that week's Thursday; `IsoWeekDate.to_date` goes back. `IsoWeekDate.conversion.date.retraction` and `IsoWeekDate.conversion.date.section` state that each undoes the other, and `IsoWeekDate.weekday.agreement` that the weekday is kept.
+
+| Date | `IsoWeekDate.from_date` |
+|:---|:---|
+| 0001-01-01 | year 1, week 1, Monday |
+| 2021-01-03 | year 2020, week 53, Sunday |
+| 2024-12-30 | year 2025, week 1, Monday |
+| 2026-11-21 | year 2026, week 47, Saturday |
+
+| ISO year | `IsoWeekDate.weeks_in_year` | January 1 |
+|:---|:---|:---|
+| 2015 | 53 | Thursday |
+| 2020 | 53 | Wednesday, leap year |
+| 2024 | 52 | Monday |
+| 2026 | 53 | Thursday |
