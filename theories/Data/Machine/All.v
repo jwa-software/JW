@@ -60,4 +60,5 @@ From JW Require Export Data.Machine.UInt16.
 From JW Require Export Data.Machine.UInt32.
 From JW Require Export Data.Machine.UInt64.
 From JW Require Export Data.Machine.UInt8.
+From JW Require Export Data.Machine.Unsigned.
 From JW Require Export Data.Machine.Word.
