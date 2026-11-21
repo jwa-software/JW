@@ -8,7 +8,7 @@
  *
  * A binary number carries its digits, where the unary types carry their value
  * in units, so an operation costs a step per digit rather than per unit.
- * [BinBase] is the positives, [Bin0] adds zero, [SignedBin] adds a sign.
+ * [Bin] is the positives, [Bin0] adds zero, [SignedBin] adds a sign.
  *)
 (* The modules below only [Import] [Core.All], so the open scope reaches a
  * client of this umbrella only from here.
@@ -35,6 +35,6 @@ From JW Require Export Relation.Accessible.
 From JW Require Export Relation.Induced.
 From JW Require Export Relation.WellFounded.
 
-From JW Require Export Data.Number.Binary.BinBase.
+From JW Require Export Data.Number.Binary.Bin.
 From JW Require Export Data.Number.Binary.SignedBin.
 From JW Require Export Data.Number.Binary.Bin0.

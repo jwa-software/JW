@@ -206,12 +206,12 @@ Declare Scope jw_integer_scope.
 Delimit Scope jw_integer_scope with z.
 Declare Scope jw_rational_scope.
 Delimit Scope jw_rational_scope with q.
-Declare Scope jw_bin_base_scope.
-Delimit Scope jw_bin_base_scope with bin_base.
+Declare Scope jw_bin_scope.
+Delimit Scope jw_bin_scope with b.
 Declare Scope jw_bin0_scope.
 Delimit Scope jw_bin0_scope with b0.
-Declare Scope jw_bin_base_decimal_scope.
-Delimit Scope jw_bin_base_decimal_scope with bin_base_decimal.
+Declare Scope jw_bin_decimal_scope.
+Delimit Scope jw_bin_decimal_scope with b_decimal.
 Declare Scope jw_bin0_decimal_scope.
 Delimit Scope jw_bin0_decimal_scope with b0_decimal.
 
