@@ -38,6 +38,27 @@ let int_of_bin_with_zero = function
   | BinWithZero.Positive p -> int_of_bin_base p
 ;;
 
+let bin k =
+  if k = 0
+  then Bin.Zero
+  else if k > 0
+  then Bin.Positive (bin_base k)
+  else Bin.Negative (bin_base (-k))
+;;
+
+let int_of_bin = function
+  | Bin.Zero -> 0
+  | Bin.Positive p -> int_of_bin_base p
+  | Bin.Negative p -> -int_of_bin_base p
+;;
+
+(* A flag and an [Int8] result, as OCaml integers. *)
+let int8_flagged (flag, x) = flag = Bit.One, int_of_bin (Int8.to_bin x)
+let int8 k = Int8.from_bin (bin k)
+
+(* [2^n - 1] and [2^n] as [BinBase] values, for numbers past OCaml's [int]. *)
+let rec ones n = if n = 1 then BinBase.One else BinBase.Coq_b1 (ones (n - 1))
+let rec power2 n = if n = 0 then BinBase.One else BinBase.Coq_b0 (power2 (n - 1))
 let date y m d = Date.make (bin_base y) m (bin_base d)
 
 let day_number y m d =
@@ -102,5 +123,37 @@ let () =
     "Date.make, refusal"
     (date 2023 Month.February 29 = None
      && date 1900 Month.February 29 = None
-     && date 2024 Month.April 31 = None)
+     && date 2024 Month.April 31 = None);
+  check
+    "Int8.add_with_overflow 100 27"
+    (int8_flagged (Int8.add_with_overflow (int8 100) (int8 27)) = (false, 127));
+  check
+    "Int8.add_with_overflow 127 1"
+    (int8_flagged (Int8.add_with_overflow (int8 127) (int8 1)) = (true, -128));
+  check
+    "Int8.add_with_overflow (-128) (-1)"
+    (int8_flagged (Int8.add_with_overflow (int8 (-128)) (int8 (-1))) = (true, 127));
+  check
+    "Int8.sub_with_overflow (-128) 1"
+    (int8_flagged (Int8.sub_with_overflow (int8 (-128)) (int8 1)) = (true, 127));
+  check
+    "Int8.sub_with_overflow 0 (-128)"
+    (int8_flagged (Int8.sub_with_overflow (int8 0) (int8 (-128))) = (true, -128));
+  check "Int8.negate (-128)" (int_of_bin (Int8.to_bin (Int8.negate (int8 (-128)))) = -128);
+  (let flag, sum =
+     Int64.add_with_overflow
+       (Int64.from_bin (Bin.Positive (ones 63)))
+       (Int64.from_bin (Bin.Positive BinBase.One))
+   in
+   check
+     "Int64.add_with_overflow 9223372036854775807 1"
+     (flag = Bit.One && Int64.to_bin sum = Bin.Negative (power2 63)));
+  let flag, sum =
+    Int64.add_with_overflow
+      (Int64.from_bin (Bin.Positive (BinBase.Coq_b0 (ones 62))))
+      (Int64.from_bin (Bin.Positive BinBase.One))
+  in
+  check
+    "Int64.add_with_overflow 9223372036854775806 1"
+    (flag = Bit.Zero && Int64.to_bin sum = Bin.Positive (ones 63))
 ;;

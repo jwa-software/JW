@@ -357,6 +357,240 @@ Definition data_machine_all_computes_int8_no_overflow
   : (pi_1 (Int8.add_with_overflow 100 (-50)))%product = 0%bit
   := Identity.reflexivity _.
 
+Definition data_machine_all_computes_int8_minimum
+  : Int8.Min = (-128)%int8
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_maximum
+  : Int8.Max = 127%int8
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_addition_clear
+  : Int8.add_with_overflow 100 27 = (0%bit, 127%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_addition_past_maximum
+  : Int8.add_with_overflow 127 1 = (1%bit, (-128)%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_addition_past_minimum
+  : Int8.add_with_overflow (-128) (-1) = (1%bit, 127%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_negation_minimum
+  : (- (-128) = -128)%int8
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_subtraction_past_maximum
+  : Int8.sub_with_overflow (-128) 1 = (1%bit, 127%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_subtraction_past_minimum
+  : Int8.sub_with_overflow 0 (-128) = (1%bit, (-128)%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_subtraction_clear
+  : Int8.sub_with_overflow 100 27 = (0%bit, 73%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_int8_negation_minimum
+  : (- Int8.Min = Int8.Min)%int8
+  := Int8.negation.minimum.
+
+Definition data_machine_all_delivers_int8_wrapping_negation
+  : forall (a : Bin) . Int8.from_bin (Bin.negate a) = (- Int8.from_bin a)%int8
+  := Int8.wrapping.negation.
+
+Definition data_machine_all_delivers_int8_wrapping_summation
+  : forall (x : Int8) (y : Int8) . (x + y)%int8 = Int8.from_bin (Int8.to_bin x + Int8.to_bin y)%b
+  := Int8.wrapping.summation.
+
+Definition data_machine_all_delivers_int8_wrapping_difference
+  : forall (x : Int8) (y : Int8) . (x - y)%int8 = Int8.from_bin (Int8.to_bin x - Int8.to_bin y)%b
+  := Int8.wrapping.difference.
+
+Definition data_machine_all_delivers_int8_wrapping_upper
+  : forall (s : Bin) .
+      (1111111 < s /\ s < 110000000)%b -> Int8.to_bin (Int8.from_bin s) = (s - 100000000)%b
+  := Int8.wrapping.upper.
+
+Definition data_machine_all_delivers_int8_wrapping_lower
+  : forall (s : Bin) .
+      (s < (-10000000) /\ (-110000000) < s)%b -> Int8.to_bin (Int8.from_bin s) = (s + 100000000)%b
+  := Int8.wrapping.lower.
+
+Definition data_machine_all_delivers_int8_negation_exactness
+  : forall (x : Int8) . ~ (x = Int8.Min) -> Int8.to_bin (- x)%int8 = Bin.negate (Int8.to_bin x)
+  := Int8.negation.exactness.
+
+Definition data_machine_all_delivers_int8_increment_exactness
+  : forall (x : Int8) . ~ (x = Int8.Max) -> Int8.to_bin (x + Int8.One)%int8 = (Int8.to_bin x + 1)%b
+  := Int8.increment.exactness.
+
+Definition data_machine_all_delivers_int8_decrement_exactness
+  : forall (x : Int8) . ~ (x = Int8.Min) -> Int8.to_bin (x - Int8.One)%int8 = (Int8.to_bin x - 1)%b
+  := Int8.decrement.exactness.
+
+Definition data_machine_all_delivers_int8_overflow_addition_wrap
+  : forall (x : Int8) (y : Int8) .
+      (pi_1 (Int8.add_with_overflow x y))%product = 1%bit
+      -> Int8.to_bin (x + y)%int8 = (Int8.to_bin x + Int8.to_bin y - 100000000)%b
+         \/ Int8.to_bin (x + y)%int8 = (Int8.to_bin x + Int8.to_bin y + 100000000)%b
+  := Int8.overflow.addition.wrap.
+
+Definition data_machine_all_delivers_int8_overflow_addition_monotonicity
+  : forall (x : Int8) (y : Int8) (z : Int8) .
+      (pi_1 (Int8.add_with_overflow x y))%product = 0%bit
+      -> (pi_1 (Int8.add_with_overflow x z))%product = 0%bit
+      -> (y < z -> x + y < x + z)%int8
+  := Int8.overflow.addition.monotonicity.
+
+Definition data_machine_all_delivers_int8_overflow_subtraction_specification
+  : forall (x : Int8) (y : Int8) .
+      (pi_1 (Int8.sub_with_overflow x y))%product = 0%bit
+      <-> ((-10000000) <= (Int8.to_bin x - Int8.to_bin y)
+           /\ (Int8.to_bin x - Int8.to_bin y) <= 1111111)%b
+  := Int8.overflow.subtraction.specification.
+
+Definition data_machine_all_delivers_int8_overflow_subtraction_exactness
+  : forall (x : Int8) (y : Int8) .
+      (pi_1 (Int8.sub_with_overflow x y))%product = 0%bit
+      -> Int8.to_bin (x - y)%int8 = (Int8.to_bin x - Int8.to_bin y)%b
+  := Int8.overflow.subtraction.exactness.
+
+Definition data_machine_all_delivers_int8_overflow_subtraction_left_monotonicity
+  : forall (x : Int8) (y : Int8) (z : Int8) .
+      (pi_1 (Int8.sub_with_overflow y x))%product = 0%bit
+      -> (pi_1 (Int8.sub_with_overflow z x))%product = 0%bit
+      -> (y < z -> y - x < z - x)%int8
+  := Int8.overflow.subtraction.left.monotonicity.
+
+Definition data_machine_all_delivers_int8_overflow_subtraction_right_antitonicity
+  : forall (x : Int8) (y : Int8) (z : Int8) .
+      (pi_1 (Int8.sub_with_overflow x z))%product = 0%bit
+      -> (pi_1 (Int8.sub_with_overflow x y))%product = 0%bit
+      -> (y < z -> x - z < x - y)%int8
+  := Int8.overflow.subtraction.right.antitonicity.
+
+Definition data_machine_all_delivers_int8_negation_reversal
+  : forall (x : Int8) (y : Int8) .
+      ~ (x = Int8.Min) -> ~ (y = Int8.Min) -> ((x < y <-> - y < - x)%int8)
+  := Int8.negation.reversal.
+
+Definition data_machine_all_delivers_int8_increment_extensivity
+  : forall (x : Int8) . ~ (x = Int8.Max) -> (x < x + Int8.One)%int8
+  := Int8.increment.extensivity.
+
+Definition data_machine_all_delivers_int8_increment_specification
+  : forall (x : Int8) (y : Int8) . (x < y -> x + Int8.One <= y)%int8
+  := Int8.increment.specification.
+
+Definition data_machine_all_delivers_int8_increment_sufficiency
+  : forall (x : Int8) (y : Int8) . ~ (x = Int8.Max) -> (x + Int8.One <= y -> x < y)%int8
+  := Int8.increment.sufficiency.
+
+Definition data_machine_all_delivers_int8_decrement_extensivity
+  : forall (x : Int8) . ~ (x = Int8.Min) -> (x - Int8.One < x)%int8
+  := Int8.decrement.extensivity.
+
+Definition data_machine_all_computes_int64_addition_past_maximum
+  : Int64.add_with_overflow 9223372036854775807 1
+    = (1%bit, (-9223372036854775808)%int64)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int64_addition_to_maximum
+  : Int64.add_with_overflow 9223372036854775806 1 = (0%bit, 9223372036854775807%int64)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_int16_bound_lower
+  : forall (x : Int16) . (Int16.Min <= x)%int16
+  := Int16.bound.lower.
+
+Definition data_machine_all_delivers_int16_overflow_subtraction_exactness
+  : forall (x : Int16) (y : Int16) .
+      (pi_1 (Int16.sub_with_overflow x y))%product = 0%bit
+      -> Int16.to_bin (x - y)%int16 = (Int16.to_bin x - Int16.to_bin y)%b
+  := Int16.overflow.subtraction.exactness.
+
+Definition data_machine_all_delivers_int16_increment_specification
+  : forall (x : Int16) (y : Int16) . (x < y -> x + Int16.One <= y)%int16
+  := Int16.increment.specification.
+
+Definition data_machine_all_delivers_int32_bound_upper
+  : forall (x : Int32) . (x <= Int32.Max)%int32
+  := Int32.bound.upper.
+
+Definition data_machine_all_delivers_int32_overflow_addition_monotonicity
+  : forall (x : Int32) (y : Int32) (z : Int32) .
+      (pi_1 (Int32.add_with_overflow x y))%product = 0%bit
+      -> (pi_1 (Int32.add_with_overflow x z))%product = 0%bit
+      -> (y < z -> x + y < x + z)%int32
+  := Int32.overflow.addition.monotonicity.
+
+Definition data_machine_all_delivers_int32_negation_minimum
+  : (- Int32.Min = Int32.Min)%int32
+  := Int32.negation.minimum.
+
+Definition data_machine_all_delivers_int64_overflow_addition_specification
+  : forall (x : Int64) (y : Int64) .
+      (pi_1 (Int64.add_with_overflow x y))%product = 0%bit
+      <-> ((-1000000000000000000000000000000000000000000000000000000000000000)
+             <= (Int64.to_bin x + Int64.to_bin y)
+           /\ (Int64.to_bin x + Int64.to_bin y)
+                <= 111111111111111111111111111111111111111111111111111111111111111)%b
+  := Int64.overflow.addition.specification.
+
+Definition data_machine_all_delivers_int64_negation_exactness
+  : forall (x : Int64) . ~ (x = Int64.Min) -> Int64.to_bin (- x)%int64 = Bin.negate (Int64.to_bin x)
+  := Int64.negation.exactness.
+
+Definition data_machine_all_delivers_int8_bound_range
+  : forall (x : Int8) . ((-10000000) <= Int8.to_bin x /\ Int8.to_bin x <= 1111111)%b
+  := Int8.bound.range.
+
+Definition data_machine_all_delivers_int8_bound_lower
+  : forall (x : Int8) . (Int8.Min <= x)%int8
+  := Int8.bound.lower.
+
+Definition data_machine_all_delivers_int8_bound_upper
+  : forall (x : Int8) . (x <= Int8.Max)%int8
+  := Int8.bound.upper.
+
+Definition data_machine_all_delivers_int8_negation_additivity
+  : forall (x : Int8) (y : Int8) . (- (x + y) = - x + - y)%int8
+  := Int8.negation.additivity.
+
+Theorem data_machine_all_delivers_int8_negation_additivity_rewriting
+  : forall (x : Int8) (y : Int8) . (- (x + y) + y = - x + - y + y)%int8.
+Proof.
+  intros x y.
+  leibniz (Int8.negation.additivity &x &y) in |- *.
+  quod idem est.
+Qed.
+
+Definition data_machine_all_delivers_int8_wrapping_additivity
+  : forall (a : Bin) (b : Bin) . Int8.from_bin (a + b)%b = (Int8.from_bin a + Int8.from_bin b)%int8
+  := Int8.wrapping.additivity.
+
+Definition data_machine_all_delivers_int8_sign_clear
+  : forall (x : Int8) . Int8.sign_bit x = 0%bit -> (0 <= Int8.to_bin x)%b
+  := Int8.sign.clear.
+
+Definition data_machine_all_delivers_int8_sign_set
+  : forall (x : Int8) . Int8.sign_bit x = 1%bit -> (Int8.to_bin x < 0)%b
+  := Int8.sign.set.
+
+Definition data_machine_all_delivers_int8_wrapping_retraction
+  : forall (z : Bin) . ((-10000000) <= z /\ z <= 1111111)%b -> Int8.to_bin (Int8.from_bin z) = z
+  := Int8.wrapping.retraction.
+
+Definition data_machine_all_delivers_int8_overflow_addition_specification
+  : forall (x : Int8) (y : Int8) .
+      (pi_1 (Int8.add_with_overflow x y))%product = 0%bit
+      <-> ((-10000000) <= (Int8.to_bin x + Int8.to_bin y)
+           /\ (Int8.to_bin x + Int8.to_bin y) <= 1111111)%b
+  := Int8.overflow.addition.specification.
+
 Definition data_machine_all_computes_int8_multiplication
   : ((-3) * 5 = -15)%int8
   := Identity.reflexivity _.
