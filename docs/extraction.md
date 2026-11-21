@@ -18,6 +18,7 @@ A definition proved correct in Rocq can be run outside it. Rocq's extraction tur
 `extraction/Extract.v` extracts every module of `Data` that computes into one OCaml module, `JW`, in `JW.ml` and `JW.mli`:
 
 - the base types `Bool`, `Comparison`, `Empty`, `Unit` and `Kleene3`, with `Comparable`, `Coproduct`, `Option` and `Product`;
+- the calendar types `Month` and `Date`, the proof a `Date` carries erased;
 - the numbers `Nat`, `Nat0`, `Integer`, `Rational`, `Numeral`, `BinBase`, `BinWithZero` and `Bin`;
 - the machine units `Bit`, `Byte`, `Endian`, `HWord` to `QWord`, `UInt8` to `UInt64` and `Int8` to `Int64`;
 - the collections `List`, `NonEmptyList`, `BinaryTree`, `BST`, `AVL` and `SortedSet`;
@@ -57,7 +58,7 @@ A definition proved correct in Rocq can be run outside it. Rocq's extraction tur
 
 ## The test
 
-`extraction/extraction_test.ml` runs the extracted code on known values and fails on a wrong one: it builds a `SortedSet` from `1`, `3` and `2` and checks its elements, membership of a present and an absent element, removal and size, checks that `UInt8.add` wraps `200 + 100` to `44`, checks two cases of `Kleene3`, and checks each of the four mappings through an operation of its type (`Bool.and`, `Option.unwrap_or`, `Product.first` and `Product.second`, `List.concat`). OCaml integers go in and come out through conversions to and from the unary numbers.
+`extraction/extraction_test.ml` runs the extracted code on known values and fails on a wrong one: it builds a `SortedSet` from `1`, `3` and `2` and checks its elements, membership of a present and an absent element, removal and size, checks that `UInt8.add` wraps `200 + 100` to `44`, checks two cases of `Kleene3`, checks each of the four mappings through an operation of its type (`Bool.and`, `Option.unwrap_or`, `Product.first` and `Product.second`, `List.concat`), and checks the calendar: four leap years, five day numbers from 0001-01-01 to 9999-12-31, the days before 2001, and three dates that `Date.make` refuses. OCaml integers go in and come out through conversions to and from the unary numbers, and to and from `BinBase` and `BinWithZero` for the calendar.
 
 - **`make build`** extracts the code and compiles it, the library `jw_extraction` and the test with it.
 - **`make test`** runs the test. CI runs it after the build.
