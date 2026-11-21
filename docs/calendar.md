@@ -74,7 +74,7 @@ SPDX-License-Identifier: MIT
 - **One year more.** `Date.year.succession` states `Date.days_before_year (y + 1) = Date.days_before_year y + Date.days_in_year y`. The carry of one more year stops at the single years, the quadrennia, the centuries or the quadricentennia, which adds 365, 366, 365 or 366 days: the four cases of the leap rule.
 - **400 years more.** `Date.year.periodicity` states `Date.days_before_year (y + 400) = Date.days_before_year y + Date.days_in_quadricentennium`.
 - **One month more.** `Date.month.succession` states that, for a month `m` before December, the days before the next month are the days before `m` plus the length of `m`. `Date.month.completion` closes the year: the days before December plus 31 are the year's length.
-- **The day of the year.** `Date.ordinal.positivity` and `Date.ordinal.boundedness` place `Date.day_of_year x` between 1 and the length of the year.
+- **The day of the year.** `Date.day_of_year x` is a `Bin`, so it is never 0; `Date.ordinal.decomposition` states it is the days before the month plus the day, and `Date.ordinal.boundedness` keeps it within the length of the year.
 
 ### The order of dates
 

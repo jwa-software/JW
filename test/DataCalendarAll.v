@@ -75,19 +75,19 @@ Definition data_calendar_all_computes_date_leap_2024
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_date_days_in_common_year
-  : Date.days_in_common_year = 365%b0_decimal
+  : Date.days_in_common_year = 365
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_date_days_in_quadrennium
-  : Date.days_in_quadrennium = 1461%b0_decimal
+  : Date.days_in_quadrennium = 1461
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_date_days_in_century
-  : Date.days_in_century = 36524%b0_decimal
+  : Date.days_in_century = 36524
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_date_days_in_quadricentennium
-  : Date.days_in_quadricentennium = 146097%b0_decimal
+  : Date.days_in_quadricentennium = 146097
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_date_day_number_0001_01_01
@@ -131,7 +131,7 @@ Definition data_calendar_all_computes_date_days_before_year_10000
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_date_day_of_year_2024_12_31
-  : Date.day_of_year (Date.introduction 2024 Month.December 31 I) = 366%b0_decimal
+  : Date.day_of_year (Date.introduction 2024 Month.December 31 I) = 366
   := Identity.reflexivity _.
 
 Definition data_calendar_all_computes_date_make
@@ -192,9 +192,11 @@ Definition data_calendar_all_delivers_date_year_length_specification
   : forall (y : Bin) . Date.days_in_year y = 366 <-> Date.is_leap y = true
   := Date.year.length.specification.
 
-Definition data_calendar_all_delivers_date_ordinal_positivity
-  : forall (x : Date) . (0 < Date.day_of_year x)%b0
-  := Date.ordinal.positivity.
+Definition data_calendar_all_delivers_date_ordinal_decomposition
+  : forall (x : Date) .
+      (Date.day_of_year x : Bin0)
+      = (Date.days_before_month (Date.year x) (Date.month x) + Date.day x)%b0
+  := Date.ordinal.decomposition.
 
 Definition data_calendar_all_delivers_date_ordinal_boundedness
   : forall (x : Date) . (Date.day_of_year x <= Date.days_in_year (Date.year x))%b0
