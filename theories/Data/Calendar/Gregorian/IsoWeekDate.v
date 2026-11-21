@@ -1188,6 +1188,32 @@ End date. (* conversion.date *)
 
 End conversion. (* conversion *)
 
+Module weekday. (* weekday *)
+
+Module agreement. (* weekday.agreement *)
+
+(* [from_date] takes the date's weekday as it is. *)
+(* weekday.agreement.forward *)
+Theorem forward : forall (d : Date) . weekday (from_date d) = Date.weekday d.
+Proof.
+  intro d.
+  ipso (Identity.reflexivity (Date.weekday &d)).
+Qed.
+
+(* By [conversion.date.section], the weekday of [x] is that of the date
+ * [to_date x] read back.
+ *)
+(* weekday.agreement.backward *)
+Theorem backward : forall (x : IsoWeekDate) . Date.weekday (to_date x) = weekday x.
+Proof.
+  intro x.
+  ipso (congru weekday, (conversion.date.section &x)).
+Qed.
+
+End agreement. (* weekday.agreement *)
+
+End weekday. (* weekday *)
+
 End IsoWeekDate. (* IsoWeekDate *)
 
 Abbreviation IsoWeekDate := IsoWeekDate.T.
