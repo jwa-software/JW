@@ -279,6 +279,25 @@ Definition data_all_delivers_comparable
   : forall (m : Nat) (n : Nat) . Nat.LessThan m n \/ m = n \/ Nat.LessThan n m
   := Comparable.order.strict.trichotomy.
 
+Definition data_all_delivers_comparable_strict_weakening
+  : forall (m : Nat) (n : Nat) . Nat.LessThan m n -> Comparable.LessOrEqual Nat.LessThan m n
+  := Comparable.order.strict.weakening.
+
+Definition data_all_delivers_comparable_strict_negation
+  : forall (m : Nat) (n : Nat) .
+      ~ (Nat.LessThan m n) <-> Comparable.LessOrEqual Nat.LessThan n m
+  := Comparable.order.strict.negation.
+
+Definition data_all_delivers_comparable_mixed_left_transitivity
+  : forall (l : Nat) (m : Nat) (n : Nat) .
+      Comparable.LessOrEqual Nat.LessThan l m -> Nat.LessThan m n -> Nat.LessThan l n
+  := fun (l : Nat) (m : Nat) (n : Nat) . @Comparable.order.mixed.left.transitivity _ _ _ _ l m n.
+
+Definition data_all_delivers_comparable_mixed_right_transitivity
+  : forall (l : Nat) (m : Nat) (n : Nat) .
+      Nat.LessThan l m -> Comparable.LessOrEqual Nat.LessThan m n -> Nat.LessThan l n
+  := fun (l : Nat) (m : Nat) (n : Nat) . @Comparable.order.mixed.right.transitivity _ _ _ _ l m n.
+
 Definition data_all_delivers_comparable_min
   : forall (m : Nat0) (n : Nat0) .
       Nat0.min m n = Nat0.min n m

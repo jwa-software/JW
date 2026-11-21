@@ -253,6 +253,50 @@ Proof.
     ipso (disjoin _, (disjoin _, h)).
 Qed.
 
+(* order.strict.weakening *)
+Theorem weakening
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    lt m n -> LessOrEqual lt m n.
+Proof.
+  intros A compare lt C m n h.
+  simpl LessOrEqual in |- *.
+  ipso (disjoin _, &h).
+Qed.
+
+(* By trichotomy one of [m < n], [m = n] and [n < m] holds, so ruling out the
+ * first leaves [n <= m].
+ *)
+(* order.strict.negation *)
+Theorem negation
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    ~ (lt m n) <-> LessOrEqual lt n m.
+Proof.
+  intros A compare lt C m n.
+  simpl LessOrEqual in |- *.
+  divide et impera.
+  - intro h.
+    match (order.strict.trichotomy &m &n) with | smaller | rest end.
+    + ex (&h &smaller) quodlibet.
+    + match &rest with | e | greater end.
+      * ipso (disjoin (symm &e), _).
+      * ipso (disjoin _, &greater).
+  - intro h.
+    simpl (~ _) in |- *.
+    intro l.
+    match &h with | e | greater end.
+    + leibniz &e in &l.
+      ipso (order.strict.irreflexivity &m &l).
+    + ipso (order.strict.asymmetry &m &n &l &greater).
+Qed.
+
 End strict. (* order.strict *)
 
 (* order.reflexivity *)
@@ -310,6 +354,52 @@ Proof.
       ipso (disjoin _, lt1).
     + ipso (disjoin _, (Comparable.transitivity l m n lt1 lt2)).
 Qed.
+
+Module mixed. (* order.mixed *)
+
+Module left. (* order.mixed.left *)
+
+(* order.mixed.left.transitivity *)
+Theorem transitivity
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      {l : A} {m : A} {n : A} .
+    LessOrEqual lt l m -> lt m n -> lt l n.
+Proof.
+  intros A compare lt C l m n h k.
+  simpl LessOrEqual in &h.
+  match &h with | e | smaller end.
+  - leibniz &e in |- *.
+    ipso &k.
+  - ipso (Comparable.transitivity &l &m &n &smaller &k).
+Qed.
+
+End left. (* order.mixed.left *)
+
+Module right. (* order.mixed.right *)
+
+(* order.mixed.right.transitivity *)
+Theorem transitivity
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      {l : A} {m : A} {n : A} .
+    lt l m -> LessOrEqual lt m n -> lt l n.
+Proof.
+  intros A compare lt C l m n h k.
+  simpl LessOrEqual in &k.
+  match &k with | e | smaller end.
+  - leibniz &e in &h.
+    ipso &h.
+  - ipso (Comparable.transitivity &l &m &n &h &smaller).
+Qed.
+
+End right. (* order.mixed.right *)
+
+End mixed. (* order.mixed *)
 
 (* order.totality *)
 Theorem totality
