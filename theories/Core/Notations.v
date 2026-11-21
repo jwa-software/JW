@@ -96,6 +96,12 @@ Delimit Scope jw_uint64_scope with uint64.
 Declare Scope jw_int64_scope.
 Delimit Scope jw_int64_scope with int64.
 
+(* The arithmetic of the width that [Signed.Laws] takes, delimited but not
+ * opened.
+ *)
+Declare Scope jw_signed_scope.
+Delimit Scope jw_signed_scope with signed.
+
 (* The [HWord] operations, the [Byte] ones taken byte by byte, delimited but
  * not opened under the same spellings; a literal under it is little-endian.
  *)
