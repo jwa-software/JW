@@ -11,6 +11,9 @@ From JW Require Import Data.Comparable.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
 From JW Require Import Data.Option.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
+From JW Require Import Tactics.Witness.
 
 (* A date of the proleptic Gregorian calendar: the Gregorian leap rule holds
  * for every year, the years count from 1, and day 0 is 0001-01-01.
@@ -98,7 +101,7 @@ Definition day := fun (x : Date) .
 Definition make := fun (y : Year) (m : Month) (d : Day) .
   Assert.guard (is_valid y m d) (Date.introduction y m d).
 
-(* [BinBase -> BinWithZero] *)
+(* [BinBase -> BinBase] *)
 Definition days_in_year := fun (y : Year) .
   match is_leap y with
   | true  => 366
@@ -204,6 +207,261 @@ Definition compare := fun (x1 : Date) (x2 : Date) .
       end
   | Comparison.Gt => Comparison.Gt
   end.
+
+Module leap. (* leap *)
+
+(* The statement adds years, so [+] is read as [BinBase]'s. *)
+Local Open Scope jw_bin_base_scope.
+Local Open Scope jw_bin_base_decimal_scope.
+
+(* leap.periodicity *)
+Theorem periodicity : forall (y : Year) . is_leap (y + 400) = is_leap y.
+Proof.
+  intro y.
+  lemma four : (y + 400) %. 4 = y %. 4.
+  {
+    lemma zero : 400 %. 4 = 0%bin_with_zero.
+    {
+      simpl BinWithZero.modulo in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    ipso (BinWithZero.modulo.sum.right.invariance y 400 4 &zero).
+  }
+  lemma hundred : (y + 400) %. 100 = y %. 100.
+  {
+    lemma zero : 400 %. 100 = 0%bin_with_zero.
+    {
+      simpl BinWithZero.modulo in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    ipso (BinWithZero.modulo.sum.right.invariance y 400 100 &zero).
+  }
+  lemma four_hundred : (y + 400) %. 400 = y %. 400.
+  {
+    lemma zero : 400 %. 400 = 0%bin_with_zero.
+    {
+      simpl BinWithZero.modulo in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    ipso (BinWithZero.modulo.sum.right.invariance y 400 400 &zero).
+  }
+  simpl is_leap in |- *.
+  leibniz &four, &hundred, &four_hundred in |- *.
+  quod idem est.
+Qed.
+
+End leap. (* leap *)
+
+Module month. (* month *)
+
+Module length. (* month.length *)
+
+(* The statement compares days of a month, so [<=] is read as [BinBase]'s. *)
+Local Open Scope jw_bin_base_scope.
+Local Open Scope jw_bin_base_decimal_scope.
+
+(* month.length.boundedness *)
+Theorem boundedness
+  : forall (y : Year) (m : Month) . 28 <= days_in_month y m /\ days_in_month y m <= 31.
+Proof.
+  intros y m.
+  lemma lower : Comparable.le BinBase.compare 28 (days_in_month y m) = true.
+  {
+    simpl days_in_month, Comparable.le, BinBase.compare in |- *.
+    match (is_leap &y) with | | end;
+      match &m with
+      | January | February | March | April | May | June
+      | July | August | September | October | November | December
+      end; simpl in |- *; quod idem est.
+  }
+  lemma upper : Comparable.le BinBase.compare (days_in_month y m) 31 = true.
+  {
+    simpl days_in_month, Comparable.le, BinBase.compare in |- *.
+    match (is_leap &y) with | | end;
+      match &m with
+      | January | February | March | April | May | June
+      | July | August | September | October | November | December
+      end; simpl in |- *; quod idem est.
+  }
+  divide et impera.
+  - ipso (modus aequans (Comparable.order.reflection 28 (days_in_month &y &m)), &lower).
+  - ipso (modus aequans (Comparable.order.reflection (days_in_month &y &m) 31), &upper).
+Qed.
+
+End length. (* month.length *)
+
+(* Each month's count is defined as the one before it plus the length of the
+ * month before it, so each case reduces to the same term on both sides.
+ *)
+(* month.succession *)
+Theorem succession
+  : forall (y : Year) (m : Month) .
+      ~ (m = Month.December)
+      -> days_before_month y (Month.next m) = days_before_month y m + days_in_month y m.
+Proof.
+  intros y m h.
+  match &m with
+  | January | February | March | April | May | June
+  | July | August | September | October | November | December
+  end.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - ex (&h (refl Month.December)) quodlibet.
+Qed.
+
+(* month.completion *)
+Theorem completion
+  : forall (y : Year) . days_before_month y Month.December + 31 = days_in_year y.
+Proof.
+  intro y.
+  simpl days_before_month, days_in_month, days_in_year in |- *.
+  match (is_leap &y) with | | end;
+    simpl in |- *; simpl BinBase.add in |- *; simpl in |- *; quod idem est.
+Qed.
+
+(* month.boundedness *)
+Theorem boundedness
+  : forall (y : Year) (m : Month) .
+      days_before_month y m + days_in_month y m <= days_in_year y.
+Proof.
+  intros y m.
+  lemma facto
+    : Comparable.le BinWithZero.compare
+        (days_before_month y m + days_in_month y m) (days_in_year y)
+      = true.
+  {
+    simpl days_before_month, days_in_month, days_in_year, Comparable.le, BinWithZero.compare
+      in |- *.
+    match (is_leap &y) with | | end;
+      match &m with
+      | January | February | March | April | May | June
+      | July | August | September | October | November | December
+      end; simpl in |- *; quod idem est.
+  }
+  ipso (modus aequans
+          (Comparable.order.reflection
+             (days_before_month &y &m + days_in_month &y &m) (days_in_year &y)),
+          &facto).
+Qed.
+
+End month. (* month *)
+
+Module year. (* year *)
+
+Module length. (* year.length *)
+
+(* year.length.dichotomy *)
+Theorem dichotomy : forall (y : Year) . days_in_year y = 365 \/ days_in_year y = 366.
+Proof.
+  intro y.
+  simpl days_in_year in |- *.
+  match (is_leap &y) with | | end.
+  - ipso (disjoin _, (refl 366)).
+  - ipso (disjoin (refl 365), _).
+Qed.
+
+(* year.length.specification *)
+Theorem specification : forall (y : Year) . days_in_year y = 366 <-> is_leap y = true.
+Proof.
+  intro y.
+  simpl days_in_year in |- *.
+  match (is_leap &y) with | | end.
+  - divide et impera.
+    + intro e.
+      quod idem est.
+    + intro e.
+      quod idem est.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro e.
+      ex &e quodlibet.
+Qed.
+
+End length. (* year.length *)
+
+End year. (* year *)
+
+Module ordinal. (* ordinal *)
+
+(* ordinal.positivity *)
+Theorem positivity : forall (x : Date) . 0%bin_with_zero < day_of_year x.
+Proof.
+  intro x.
+  simpl day_of_year, BinWithZero.LessThan in |- *.
+  match (days_before_month (year &x) (month &x)) with | | p end.
+  - exists (day &x).
+    simpl in |- *.
+    quod idem est.
+  - exists (&p + day &x)%bin_base.
+    simpl in |- *.
+    quod idem est.
+Qed.
+
+(* ordinal.boundedness *)
+Theorem boundedness : forall (x : Date) . day_of_year x <= days_in_year (year x).
+Proof.
+  intro x.
+  match &x with | introduction y m d a end.
+  simpl day_of_year, year, month, day in |- *.
+  simpl is_valid in &a.
+  let proof t := modus aequans (Assert.specification _), &a.
+  let proof b := modus aequans (Comparable.order.reflection &d (days_in_month &y &m)), &t.
+  lemma widened : (d : BinWithZero) <= days_in_month y m.
+  {
+    match &b with | e | s end.
+    - ipso (disjoin (congru BinWithZero.Positive, &e), _).
+    - match &s with | k e end.
+      lemma facto : (d : BinWithZero) < days_in_month y m.
+      {
+        simpl BinWithZero.LessThan in |- *.
+        exists &k.
+        ipso (congru BinWithZero.Positive, &e).
+      }
+      ipso (disjoin _, &facto).
+  }
+  lemma shifted
+    : days_before_month y m + d <= days_before_month y m + days_in_month y m.
+  {
+    match &widened with | e | s end.
+    - leibniz &e in |- *.
+      ipso (disjoin (refl (days_before_month &y &m + days_in_month &y &m)), _).
+    - ipso (disjoin _,
+              (BinWithZero.addition.order.strict.monotonicity
+                 (days_before_month &y &m) d (days_before_month &y &m) (days_in_month &y &m)
+                 (disjoin (refl (days_before_month &y &m)), _) &s)).
+  }
+  ipso (@Comparable.order.transitivity _ BinWithZero.compare BinWithZero.LessThan _
+          (days_before_month &y &m + d)
+          (days_before_month &y &m + days_in_month &y &m)
+          (days_in_year &y)
+          &shifted (month.boundedness &y &m)).
+Qed.
+
+End ordinal. (* ordinal *)
 
 End Date. (* Date *)
 

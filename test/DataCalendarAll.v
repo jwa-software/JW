@@ -155,3 +155,47 @@ Definition data_calendar_all_computes_date_compare
       (Date.introduction 1970 Month.January 1 I) (Date.introduction 2000 Month.January 1 I)
     = Comparison.Lt
   := Identity.reflexivity _.
+
+Definition data_calendar_all_delivers_date_leap_periodicity
+  : forall (y : BinBase) . Date.is_leap (y + 400%bin_base_decimal)%bin_base = Date.is_leap y
+  := Date.leap.periodicity.
+
+Definition data_calendar_all_delivers_date_month_length_boundedness
+  : forall (y : BinBase) (m : Month) .
+      (28%bin_base_decimal <= Date.days_in_month y m
+       /\ Date.days_in_month y m <= 31%bin_base_decimal)%bin_base
+  := Date.month.length.boundedness.
+
+Definition data_calendar_all_delivers_date_month_succession
+  : forall (y : BinBase) (m : Month) .
+      ~ (m = Month.December)
+      -> Date.days_before_month y (Month.next m)
+         = (Date.days_before_month y m + Date.days_in_month y m)%bin_with_zero
+  := Date.month.succession.
+
+Definition data_calendar_all_delivers_date_month_completion
+  : forall (y : BinBase) .
+      (Date.days_before_month y Month.December + 31%bin_base_decimal)%bin_with_zero
+      = Date.days_in_year y
+  := Date.month.completion.
+
+Definition data_calendar_all_delivers_date_month_boundedness
+  : forall (y : BinBase) (m : Month) .
+      (Date.days_before_month y m + Date.days_in_month y m <= Date.days_in_year y)%bin_with_zero
+  := Date.month.boundedness.
+
+Definition data_calendar_all_delivers_date_year_length_dichotomy
+  : forall (y : BinBase) . Date.days_in_year y = 365 \/ Date.days_in_year y = 366
+  := Date.year.length.dichotomy.
+
+Definition data_calendar_all_delivers_date_year_length_specification
+  : forall (y : BinBase) . Date.days_in_year y = 366 <-> Date.is_leap y = true
+  := Date.year.length.specification.
+
+Definition data_calendar_all_delivers_date_ordinal_positivity
+  : forall (x : Date) . (0 < Date.day_of_year x)%bin_with_zero
+  := Date.ordinal.positivity.
+
+Definition data_calendar_all_delivers_date_ordinal_boundedness
+  : forall (x : Date) . (Date.day_of_year x <= Date.days_in_year (Date.year x))%bin_with_zero
+  := Date.ordinal.boundedness.
