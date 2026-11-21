@@ -8,7 +8,7 @@ From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Number.Binary.BinBase.
-From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Product.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
@@ -29,8 +29,8 @@ Parameter Inline Min : T.
 Parameter Inline Max : T.
 Parameter Inline to_b_signed : T -> SignedBin.
 Parameter Inline from_b_signed : SignedBin -> T.
-Parameter Inline from_bin_with_zero : BinWithZero -> T.
-Parameter Inline unsigned_value : T -> BinWithZero.
+Parameter Inline from_b0 : Bin0 -> T.
+Parameter Inline unsigned_value : T -> Bin0.
 Parameter Inline sign_bit : T -> Bit.
 Parameter Inline add : T -> T -> T.
 Parameter Inline sub : T -> T -> T.
@@ -71,17 +71,17 @@ Parameter addition
       (pi_1 (add_with_overflow x y))%product = 0%bit
       -> to_b_signed (add x y) = (to_b_signed x + to_b_signed y)%b_signed.
 Parameter difference
-  : forall (a : BinWithZero) (b : BinWithZero) .
-      from_b_signed (SignedBin.bin_with_zero_difference a b)
-      = add (from_bin_with_zero a) (negate (from_bin_with_zero b)).
+  : forall (a : Bin0) (b : Bin0) .
+      from_b_signed (SignedBin.b0_difference a b)
+      = add (from_b0 a) (negate (from_b0 b)).
 
 Module forward. (* conversion.forward *)
 
 Parameter specification
   : forall (x : T) .
       to_b_signed x
-      = SignedBin.bin_with_zero_difference (unsigned_value x)
-          (BinWithZero.Positive modulus * Bit.to_bin_with_zero (sign_bit x))%bin_with_zero.
+      = SignedBin.b0_difference (unsigned_value x)
+          (Bin0.Positive modulus * Bit.to_b0 (sign_bit x))%b0.
 
 End forward. (* conversion.forward *)
 
@@ -90,8 +90,8 @@ Module backward. (* conversion.backward *)
 Parameter specification
   : forall (z : SignedBin) .
       from_b_signed z
-      = add (from_bin_with_zero (SignedBin.ramp z))
-          (negate (from_bin_with_zero (SignedBin.ramp (SignedBin.negate z)))).
+      = add (from_b0 (SignedBin.ramp z))
+          (negate (from_b0 (SignedBin.ramp (SignedBin.negate z)))).
 
 End backward. (* conversion.backward *)
 
@@ -100,23 +100,23 @@ Module boundedness. (* conversion.boundedness *)
 Parameter positive
   : forall (x : T) (p : BinBase) .
       to_b_signed x = SignedBin.Positive p
-      -> (BinWithZero.Positive p < BinWithZero.Positive half)%bin_with_zero.
+      -> (Bin0.Positive p < Bin0.Positive half)%b0.
 Parameter negative
   : forall (x : T) (p : BinBase) .
       to_b_signed x = SignedBin.Negative p
-      -> (BinWithZero.Positive p <= BinWithZero.Positive half)%bin_with_zero.
+      -> (Bin0.Positive p <= Bin0.Positive half)%b0.
 
 End boundedness. (* conversion.boundedness *)
 
 Module retraction. (* conversion.retraction *)
 
 Parameter nonnegative
-  : forall (n : BinWithZero) .
-      (n < BinWithZero.Positive half)%bin_with_zero
-      -> to_b_signed (from_b_signed (SignedBin.from_bin_with_zero n)) = SignedBin.from_bin_with_zero n.
+  : forall (n : Bin0) .
+      (n < Bin0.Positive half)%b0
+      -> to_b_signed (from_b_signed (SignedBin.from_b0 n)) = SignedBin.from_b0 n.
 Parameter negative
   : forall (p : BinBase) .
-      (BinWithZero.Positive p <= BinWithZero.Positive half)%bin_with_zero
+      (Bin0.Positive p <= Bin0.Positive half)%b0
       -> to_b_signed (from_b_signed (SignedBin.Negative p)) = SignedBin.Negative p.
 
 End retraction. (* conversion.retraction *)
@@ -126,25 +126,25 @@ End conversion. (* conversion *)
 Module reinterpretation. (* reinterpretation *)
 
 Parameter boundedness
-  : forall (x : T) . (unsigned_value x < BinWithZero.Positive modulus)%bin_with_zero.
+  : forall (x : T) . (unsigned_value x < Bin0.Positive modulus)%b0.
 Parameter injectivity
   : forall {x : T} {y : T} . unsigned_value x = unsigned_value y -> x = y.
 Parameter multiplication
   : forall (x : T) (y : T) .
       (unsigned_value (mul x y)
-       = (unsigned_value x * unsigned_value y) %. modulus)%bin_with_zero.
+       = (unsigned_value x * unsigned_value y) %. modulus)%b0.
 Parameter reduction
-  : forall (n : BinWithZero) .
-      (unsigned_value (from_bin_with_zero n) = n %. modulus)%bin_with_zero.
+  : forall (n : Bin0) .
+      (unsigned_value (from_b0 n) = n %. modulus)%b0.
 
 Module reduction. (* reinterpretation.reduction *)
 
 Parameter additivity
-  : forall (m : BinWithZero) (n : BinWithZero) .
-      from_bin_with_zero (m + n)%bin_with_zero
-      = add (from_bin_with_zero m) (from_bin_with_zero n).
+  : forall (m : Bin0) (n : Bin0) .
+      from_b0 (m + n)%b0
+      = add (from_b0 m) (from_b0 n).
 Parameter zero
-  : from_bin_with_zero BinWithZero.Zero = Zero.
+  : from_b0 Bin0.Zero = Zero.
 
 End reduction. (* reinterpretation.reduction *)
 
@@ -334,22 +334,22 @@ Qed.
 
 (* Both sides have the unsigned reading [(m * n) %. W.modulus]. *)
 Lemma multiplicativity
-  : forall (m : BinWithZero) (n : BinWithZero) .
-      W.from_bin_with_zero (m * n)%bin_with_zero
-      = W.from_bin_with_zero m * W.from_bin_with_zero n.
+  : forall (m : Bin0) (n : Bin0) .
+      W.from_b0 (m * n)%b0
+      = W.from_b0 m * W.from_b0 n.
 Proof.
   intros m n.
   lemma facto
-    : W.unsigned_value (W.from_bin_with_zero (m * n)%bin_with_zero)
-      = W.unsigned_value (W.from_bin_with_zero m * W.from_bin_with_zero n).
+    : W.unsigned_value (W.from_b0 (m * n)%b0)
+      = W.unsigned_value (W.from_b0 m * W.from_b0 n).
   {
     leibniz
-      (W.reinterpretation.reduction (&m * &n)%bin_with_zero),
-      (W.reinterpretation.multiplication (W.from_bin_with_zero &m) (W.from_bin_with_zero &n)),
+      (W.reinterpretation.reduction (&m * &n)%b0),
+      (W.reinterpretation.multiplication (W.from_b0 &m) (W.from_b0 &n)),
       (W.reinterpretation.reduction &m),
       (W.reinterpretation.reduction &n),
-      (BinWithZero.modulo.product.left.absorption &m (&n %. W.modulus)%bin_with_zero W.modulus),
-      (BinWithZero.modulo.product.right.absorption &m &n W.modulus)
+      (Bin0.modulo.product.left.absorption &m (&n %. W.modulus)%b0 W.modulus),
+      (Bin0.modulo.product.right.absorption &m &n W.modulus)
       in |- *.
     quod idem est.
   }
@@ -372,10 +372,10 @@ Proof.
     + match &b with | same | smaller end.
       * lemma facto : W.half = p.
         {
-          ipso (symm (congru (fun (n : BinWithZero) .
+          ipso (symm (congru (fun (n : Bin0) .
                                 match n with
-                                | BinWithZero.Zero       => &p
-                                | BinWithZero.Positive q => q
+                                | Bin0.Zero       => &p
+                                | Bin0.Positive q => q
                                 end), &same)).
         }
         leibniz &facto in |- *.
@@ -383,7 +383,7 @@ Proof.
       * let proof lifted :=
           modus aequans
             (SignedBin.order.embedding.preservation
-               (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
+               (Bin0.Positive &p) (Bin0.Positive W.half)),
             &smaller.
         lemma facto : (SignedBin.Negative W.half < SignedBin.Negative p)%b_signed.
         {
@@ -406,7 +406,7 @@ Proof.
     + let proof lifted :=
         modus aequans
           (SignedBin.order.embedding.preservation
-             (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
+             (Bin0.Positive &p) (Bin0.Positive W.half)),
           &b.
       lemma facto : (SignedBin.Positive p < W.to_b_signed W.Max + 1)%b_signed.
       {
@@ -457,16 +457,16 @@ Theorem clear : forall (x : W.T) . W.sign_bit x = 0%bit -> (0 <= W.to_b_signed x
 Proof.
   intros x s.
   leibniz (W.conversion.forward.specification &x), &s in |- *.
-  lemma scaled : (BinWithZero.Positive W.modulus * Bit.to_bin_with_zero 0 = 0)%bin_with_zero.
+  lemma scaled : (Bin0.Positive W.modulus * Bit.to_b0 0 = 0)%b0.
   {
-    simpl Bit.to_bin_with_zero in |- *.
+    simpl Bit.to_b0 in |- *.
     simpl in |- *.
     quod idem est.
   }
   leibniz &scaled in |- *.
   lemma facto
-    : SignedBin.bin_with_zero_difference (W.unsigned_value x) 0%bin_with_zero
-      = SignedBin.from_bin_with_zero (W.unsigned_value x).
+    : SignedBin.b0_difference (W.unsigned_value x) 0%b0
+      = SignedBin.from_b0 (W.unsigned_value x).
   {
     match (W.unsigned_value &x) with | | p end; simpl in |- *; quod idem est.
   }
@@ -481,35 +481,35 @@ Proof.
   intros x s.
   leibniz (W.conversion.forward.specification &x), &s in |- *.
   lemma whole
-    : (BinWithZero.Positive W.modulus * Bit.to_bin_with_zero 1
-       = BinWithZero.Positive W.modulus)%bin_with_zero.
+    : (Bin0.Positive W.modulus * Bit.to_b0 1
+       = Bin0.Positive W.modulus)%b0.
   {
-    match (BinWithZero.multiplication.identity (BinWithZero.Positive W.modulus)) with | _ r end.
+    match (Bin0.multiplication.identity (Bin0.Positive W.modulus)) with | _ r end.
     ipso &r.
   }
   leibniz &whole in |- *.
   lemma split
-    : forall (a : BinWithZero) (b : BinWithZero) .
-        SignedBin.bin_with_zero_difference a b
-        = (SignedBin.from_bin_with_zero a + SignedBin.negate (SignedBin.from_bin_with_zero b))%b_signed.
+    : forall (a : Bin0) (b : Bin0) .
+        SignedBin.b0_difference a b
+        = (SignedBin.from_b0 a + SignedBin.negate (SignedBin.from_b0 b))%b_signed.
   {
     intros a b.
     match &a with | | p end; match &b with | | q end;
       simpl SignedBin.add in |- *; simpl in |- *; quod idem est.
   }
-  leibniz (&split (W.unsigned_value &x) (BinWithZero.Positive W.modulus)) in |- *.
+  leibniz (&split (W.unsigned_value &x) (Bin0.Positive W.modulus)) in |- *.
   let proof lifted :=
     modus aequans
-      (SignedBin.order.embedding.preservation (W.unsigned_value &x) (BinWithZero.Positive W.modulus)),
+      (SignedBin.order.embedding.preservation (W.unsigned_value &x) (Bin0.Positive W.modulus)),
       (W.reinterpretation.boundedness &x).
   let proof shifted :=
     SignedBin.addition.order.strict.monotonicity
-      (SignedBin.negate (SignedBin.from_bin_with_zero (BinWithZero.Positive W.modulus))) _ _ &lifted.
+      (SignedBin.negate (SignedBin.from_b0 (Bin0.Positive W.modulus))) _ _ &lifted.
   leibniz
     (SignedBin.addition.commutativity
-       (SignedBin.negate (SignedBin.from_bin_with_zero (BinWithZero.Positive W.modulus)))
-       (SignedBin.from_bin_with_zero (W.unsigned_value &x))),
-    (SignedBin.addition.left.inverse (SignedBin.from_bin_with_zero (BinWithZero.Positive W.modulus)))
+       (SignedBin.negate (SignedBin.from_b0 (Bin0.Positive W.modulus)))
+       (SignedBin.from_b0 (W.unsigned_value &x))),
+    (SignedBin.addition.left.inverse (SignedBin.from_b0 (Bin0.Positive W.modulus)))
     in &shifted.
   ipso &shifted.
 Qed.
@@ -554,24 +554,24 @@ Proof.
   simpl SignedBin.add in |- *.
   leibniz
     (W.conversion.difference
-       (SignedBin.ramp &a + SignedBin.ramp &b)%bin_with_zero
-       (SignedBin.ramp (SignedBin.negate &a) + SignedBin.ramp (SignedBin.negate &b))%bin_with_zero),
+       (SignedBin.ramp &a + SignedBin.ramp &b)%b0
+       (SignedBin.ramp (SignedBin.negate &a) + SignedBin.ramp (SignedBin.negate &b))%b0),
     (W.reinterpretation.reduction.additivity (SignedBin.ramp &a) (SignedBin.ramp &b)),
     (W.reinterpretation.reduction.additivity (SignedBin.ramp (SignedBin.negate &a)) (SignedBin.ramp (SignedBin.negate &b)))
     in |- *.
   leibniz
     (&inverted
-       (W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &a)))
-       (W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &b))))
+       (W.from_b0 (SignedBin.ramp (SignedBin.negate &a)))
+       (W.from_b0 (SignedBin.ramp (SignedBin.negate &b))))
     in |- *.
   leibniz
     (W.conversion.backward.specification &a),
     (W.conversion.backward.specification &b)
     in |- *.
-  let pa := W.from_bin_with_zero (SignedBin.ramp &a) in |- *.
-  let pb := W.from_bin_with_zero (SignedBin.ramp &b) in |- *.
-  let na := (- W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &a))) in |- *.
-  let nb := (- W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate &b))) in |- *.
+  let pa := W.from_b0 (SignedBin.ramp &a) in |- *.
+  let pb := W.from_b0 (SignedBin.ramp &b) in |- *.
+  let na := (- W.from_b0 (SignedBin.ramp (SignedBin.negate &a))) in |- *.
+  let nb := (- W.from_b0 (SignedBin.ramp (SignedBin.negate &b))) in |- *.
   leibniz
     (W.addition.associativity &pa &pb (&na + &nb)),
     <- (W.addition.associativity &pb &na &nb),
@@ -596,11 +596,11 @@ Proof.
       (SignedBin.addition.right.inverse &a),
       (W.conversion.backward.specification 0%b_signed)
       in |- *.
-    lemma origin : W.from_bin_with_zero (SignedBin.ramp 0%b_signed) = W.Zero.
+    lemma origin : W.from_b0 (SignedBin.ramp 0%b_signed) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
-    lemma negated_origin : W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate 0%b_signed)) = W.Zero.
+    lemma negated_origin : W.from_b0 (SignedBin.ramp (SignedBin.negate 0%b_signed)) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
@@ -649,8 +649,8 @@ Proof.
 Qed.
 
 (* By the signs of [a] and [b]: [W.from_b_signed] of a positive [p] is
- * [W.from_bin_with_zero p] and of a negative one its negation, [W.mul] takes
- * the signs out as [SignedBin.mul] does, and [W.from_bin_with_zero] is
+ * [W.from_b0 p] and of a negative one its negation, [W.mul] takes
+ * the signs out as [SignedBin.mul] does, and [W.from_b0] is
  * multiplicative.
  *)
 (* wrapping.multiplicativity *)
@@ -667,43 +667,43 @@ Proof.
   }
   lemma positive
     : forall (p : BinBase) .
-        W.from_b_signed (SignedBin.Positive p) = W.from_bin_with_zero (BinWithZero.Positive p).
+        W.from_b_signed (SignedBin.Positive p) = W.from_b0 (Bin0.Positive p).
   {
     intro p.
     leibniz (W.conversion.backward.specification (SignedBin.Positive &p)) in |- *.
-    lemma vanishing : W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate (SignedBin.Positive &p))) = W.Zero.
+    lemma vanishing : W.from_b0 (SignedBin.ramp (SignedBin.negate (SignedBin.Positive &p))) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
     leibniz &vanishing, &negated in |- *.
-    match (W.addition.identity (W.from_bin_with_zero (SignedBin.ramp (SignedBin.Positive &p)))) with | _ i end.
+    match (W.addition.identity (W.from_b0 (SignedBin.ramp (SignedBin.Positive &p)))) with | _ i end.
     leibniz &i in |- *.
-    ipso (refl (W.from_bin_with_zero (BinWithZero.Positive &p))).
+    ipso (refl (W.from_b0 (Bin0.Positive &p))).
   }
   lemma negative
     : forall (p : BinBase) .
-        W.from_b_signed (SignedBin.Negative p) = - W.from_bin_with_zero (BinWithZero.Positive p).
+        W.from_b_signed (SignedBin.Negative p) = - W.from_b0 (Bin0.Positive p).
   {
     intro p.
     leibniz (W.conversion.backward.specification (SignedBin.Negative &p)) in |- *.
-    lemma vanishing : W.from_bin_with_zero (SignedBin.ramp (SignedBin.Negative &p)) = W.Zero.
+    lemma vanishing : W.from_b0 (SignedBin.ramp (SignedBin.Negative &p)) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
     leibniz &vanishing in |- *.
-    match (W.addition.identity (- W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate (SignedBin.Negative &p)))))
+    match (W.addition.identity (- W.from_b0 (SignedBin.ramp (SignedBin.negate (SignedBin.Negative &p)))))
       with | i _ end.
     leibniz &i in |- *.
-    ipso (refl (- W.from_bin_with_zero (BinWithZero.Positive &p))).
+    ipso (refl (- W.from_b0 (Bin0.Positive &p))).
   }
   lemma zero : W.from_b_signed 0%b_signed = W.Zero.
   {
     leibniz (W.conversion.backward.specification 0%b_signed) in |- *.
-    lemma vanishing : W.from_bin_with_zero (SignedBin.ramp 0%b_signed) = W.Zero.
+    lemma vanishing : W.from_b0 (SignedBin.ramp 0%b_signed) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
-    lemma vanished : W.from_bin_with_zero (SignedBin.ramp (SignedBin.negate 0%b_signed)) = W.Zero.
+    lemma vanished : W.from_b0 (SignedBin.ramp (SignedBin.negate 0%b_signed)) = W.Zero.
     {
       ipso W.reinterpretation.reduction.zero.
     }
@@ -713,51 +713,51 @@ Proof.
   }
   lemma product
     : forall (p : BinBase) (q : BinBase) .
-        W.from_bin_with_zero (BinWithZero.Positive (p * q)%bin_base)
-        = W.from_bin_with_zero (BinWithZero.Positive p)
-          * W.from_bin_with_zero (BinWithZero.Positive q).
+        W.from_b0 (Bin0.Positive (p * q)%bin_base)
+        = W.from_b0 (Bin0.Positive p)
+          * W.from_b0 (Bin0.Positive q).
   {
     intros p q.
-    ipso (multiplicativity (BinWithZero.Positive &p) (BinWithZero.Positive &q)).
+    ipso (multiplicativity (Bin0.Positive &p) (Bin0.Positive &q)).
   }
   match &a with | p | | p end.
   - match &b with | q | | q end.
     + let proof e
         : W.from_b_signed (SignedBin.Negative &p * SignedBin.Negative &q)%b_signed
-          = W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+          = W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
         := &positive (&p * &q)%bin_base.
       leibniz
         &e,
         (&negative &p),
         (&negative &q),
         (W.multiplication.left.negation
-           (W.from_bin_with_zero (BinWithZero.Positive &p))
-           (- W.from_bin_with_zero (BinWithZero.Positive &q))),
+           (W.from_b0 (Bin0.Positive &p))
+           (- W.from_b0 (Bin0.Positive &q))),
         (W.multiplication.right.negation
-           (W.from_bin_with_zero (BinWithZero.Positive &p))
-           (W.from_bin_with_zero (BinWithZero.Positive &q))),
+           (W.from_b0 (Bin0.Positive &p))
+           (W.from_b0 (Bin0.Positive &q))),
         (involution
-           (W.from_bin_with_zero (BinWithZero.Positive &p)
-            * W.from_bin_with_zero (BinWithZero.Positive &q))),
+           (W.from_b0 (Bin0.Positive &p)
+            * W.from_b0 (Bin0.Positive &q))),
         (&product &p &q)
         in |- *.
       quod idem est.
     + let proof e : W.from_b_signed (SignedBin.Negative &p * 0)%b_signed = W.Zero := &zero.
-      match (W.multiplication.annihilation (- W.from_bin_with_zero (BinWithZero.Positive &p)))
+      match (W.multiplication.annihilation (- W.from_b0 (Bin0.Positive &p)))
         with | _ r end.
       leibniz &e, (&negative &p), &zero, &r in |- *.
       quod idem est.
     + let proof e
         : W.from_b_signed (SignedBin.Negative &p * SignedBin.Positive &q)%b_signed
-          = - W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+          = - W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
         := &negative (&p * &q)%bin_base.
       leibniz
         &e,
         (&negative &p),
         (&positive &q),
         (W.multiplication.left.negation
-           (W.from_bin_with_zero (BinWithZero.Positive &p))
-           (W.from_bin_with_zero (BinWithZero.Positive &q))),
+           (W.from_b0 (Bin0.Positive &p))
+           (W.from_b0 (Bin0.Positive &q))),
         (&product &p &q)
         in |- *.
       quod idem est.
@@ -768,26 +768,26 @@ Proof.
   - match &b with | q | | q end.
     + let proof e
         : W.from_b_signed (SignedBin.Positive &p * SignedBin.Negative &q)%b_signed
-          = - W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+          = - W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
         := &negative (&p * &q)%bin_base.
       leibniz
         &e,
         (&positive &p),
         (&negative &q),
         (W.multiplication.right.negation
-           (W.from_bin_with_zero (BinWithZero.Positive &p))
-           (W.from_bin_with_zero (BinWithZero.Positive &q))),
+           (W.from_b0 (Bin0.Positive &p))
+           (W.from_b0 (Bin0.Positive &q))),
         (&product &p &q)
         in |- *.
       quod idem est.
     + let proof e : W.from_b_signed (SignedBin.Positive &p * 0)%b_signed = W.Zero := &zero.
-      match (W.multiplication.annihilation (W.from_bin_with_zero (BinWithZero.Positive &p)))
+      match (W.multiplication.annihilation (W.from_b0 (Bin0.Positive &p)))
         with | _ r end.
       leibniz &e, (&positive &p), &zero, &r in |- *.
       quod idem est.
     + let proof e
         : W.from_b_signed (SignedBin.Positive &p * SignedBin.Positive &q)%b_signed
-          = W.from_bin_with_zero (BinWithZero.Positive (&p * &q)%bin_base)
+          = W.from_b0 (Bin0.Positive (&p * &q)%bin_base)
         := &positive (&p * &q)%bin_base.
       leibniz &e, (&positive &p), (&positive &q), (&product &p &q) in |- *.
       quod idem est.
@@ -804,7 +804,7 @@ Proof.
   intros z h.
   match &h with | low high end.
   match &z with | p | | p end.
-  - lemma b : (BinWithZero.Positive p <= BinWithZero.Positive W.half)%bin_with_zero.
+  - lemma b : (Bin0.Positive p <= Bin0.Positive W.half)%b0.
     {
       match &low with | same | smaller end.
       + lemma facto : W.half = p.
@@ -817,7 +817,7 @@ Proof.
                           end), &same).
         }
         leibniz &facto in |- *.
-        ipso (disjoin (refl (BinWithZero.Positive &p)), _).
+        ipso (disjoin (refl (Bin0.Positive &p)), _).
       + let proof reversed :=
           modus aequans
             (SignedBin.order.negation.strict.reversal (SignedBin.Positive &p) (SignedBin.Positive W.half)),
@@ -825,19 +825,19 @@ Proof.
         ipso (disjoin _,
                 (modus aequans
                    (SignedBin.order.embedding.preservation
-                      (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
+                      (Bin0.Positive &p) (Bin0.Positive W.half)),
                    &reversed)).
     }
     ipso (W.conversion.retraction.negative &p &b).
-  - lemma small : (0 < BinWithZero.Positive W.half)%bin_with_zero.
+  - lemma small : (0 < Bin0.Positive W.half)%b0.
     {
-      simpl BinWithZero.LessThan in |- *.
+      simpl Bin0.LessThan in |- *.
       exists W.half.
       simpl in |- *.
       quod idem est.
     }
-    ipso (W.conversion.retraction.nonnegative 0%bin_with_zero &small).
-  - lemma small : (BinWithZero.Positive p < BinWithZero.Positive W.half)%bin_with_zero.
+    ipso (W.conversion.retraction.nonnegative 0%b0 &small).
+  - lemma small : (Bin0.Positive p < Bin0.Positive W.half)%b0.
     {
       lemma lifted : (SignedBin.Positive p < SignedBin.Positive W.half)%b_signed.
       {
@@ -846,10 +846,10 @@ Proof.
       }
       ipso (modus aequans
               (SignedBin.order.embedding.preservation
-                 (BinWithZero.Positive &p) (BinWithZero.Positive W.half)),
+                 (Bin0.Positive &p) (Bin0.Positive W.half)),
               &lifted).
     }
-    ipso (W.conversion.retraction.nonnegative (BinWithZero.Positive &p) &small).
+    ipso (W.conversion.retraction.nonnegative (Bin0.Positive &p) &small).
 Qed.
 
 (* [from_b_signed] of the modulus is [Zero], so shifting by the modulus changes

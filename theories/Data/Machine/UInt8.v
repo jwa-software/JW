@@ -17,7 +17,7 @@ From JW Require Import Data.Machine.Modular.
 From JW Require Import Data.Machine.Unsigned.
 From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Number.Binary.BinBase.
-From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Number.Numeral.
@@ -54,31 +54,31 @@ Definition from_byte := fun (b : Byte) . UInt8.introduction b.
 (* The bits read as a number in base two, the most significant first; [10]
  * is two in binary digits.
  *)
-(* [UInt8 -> BinWithZero] *)
-Definition to_bin_with_zero := fun (x : UInt8) .
+(* [UInt8 -> Bin0] *)
+Definition to_b0 := fun (x : UInt8) .
   match x with
   | UInt8.introduction (Byte.introduction x7 x6 x5 x4 x3 x2 x1 x0) =>
-      (10 * (10 * (10 * (10 * (10 * (10 * (10 * Bit.to_bin_with_zero x7
-        + Bit.to_bin_with_zero x6) + Bit.to_bin_with_zero x5) + Bit.to_bin_with_zero x4)
-        + Bit.to_bin_with_zero x3) + Bit.to_bin_with_zero x2) + Bit.to_bin_with_zero x1)
-        + Bit.to_bin_with_zero x0)%bin_with_zero
+      (10 * (10 * (10 * (10 * (10 * (10 * (10 * Bit.to_b0 x7
+        + Bit.to_b0 x6) + Bit.to_b0 x5) + Bit.to_b0 x4)
+        + Bit.to_b0 x3) + Bit.to_b0 x2) + Bit.to_b0 x1)
+        + Bit.to_b0 x0)%b0
   end.
 
-(* From here to the end of the module a [UInt8] stands where a [BinWithZero] is
+(* From here to the end of the module a [UInt8] stands where a [Bin0] is
  * expected, read as its value; the conversion is printed.
  *)
-Local Coercion to_bin_with_zero : T >-> BinWithZero.
-Add Printing Coercion to_bin_with_zero.
+Local Coercion to_b0 : T >-> Bin0.
+Add Printing Coercion to_b0.
 
-(* The value as a [SignedBin], through [to_bin_with_zero]. *)
+(* The value as a [SignedBin], through [to_b0]. *)
 (* [UInt8 -> SignedBin] *)
-Definition to_b_signed := fun (x : UInt8) . SignedBin.from_bin_with_zero (to_bin_with_zero x).
+Definition to_b_signed := fun (x : UInt8) . SignedBin.from_b0 (to_b0 x).
 
-(* The value in [Nat0], through [to_bin_with_zero]; [Nat0] is unary, so it is
- * for stating and proving, and computing goes through [to_bin_with_zero].
+(* The value in [Nat0], through [to_b0]; [Nat0] is unary, so it is
+ * for stating and proving, and computing goes through [to_b0].
  *)
 (* [UInt8 -> Nat0] *)
-Definition to_nat0 := fun (x : UInt8) . BinWithZero.to_nat0 (to_bin_with_zero x).
+Definition to_nat0 := fun (x : UInt8) . Bin0.to_nat0 (to_b0 x).
 
 (* [UInt8] *)
 Definition Zero := UInt8.introduction Byte.Zero.
@@ -212,8 +212,8 @@ Notation "x * y" := (mul x y) (only parsing)
  *)
 (* [UInt8 -> UInt8 -> Product Bit UInt8] *)
 Definition mul_with_overflow := fun (x : UInt8) (y : UInt8) .
-  (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
-           (BinWithZero.Positive modulus) with
+  (match Bin0.compare (to_b0 x * to_b0 y)%b0
+           (Bin0.Positive modulus) with
    | Comparison.Lt => 0%bit
    | Comparison.Eq => 1%bit
    | Comparison.Gt => 1%bit
@@ -229,18 +229,18 @@ Fixpoint from_bin_base (p : BinBase) : UInt8 :=
   | BinBase.b1 p' => append_bit 1 (from_bin_base p')
   end.
 
-(* [BinWithZero -> UInt8] *)
-Definition from_bin_with_zero := fun (n : BinWithZero) .
+(* [Bin0 -> UInt8] *)
+Definition from_b0 := fun (n : Bin0) .
   match n with
-  | BinWithZero.Zero       => Zero
-  | BinWithZero.Positive p => from_bin_base p
+  | Bin0.Zero       => Zero
+  | Bin0.Positive p => from_bin_base p
   end.
 
 (* [Nat -> UInt8] *)
 Definition from_nat := fun (n : Nat) . from_bin_base (BinBase.from_nat n).
 
 (* [Nat0 -> UInt8] *)
-Definition from_nat0 := fun (n : Nat0) . from_bin_with_zero (BinWithZero.from_nat0 n).
+Definition from_nat0 := fun (n : Nat0) . from_b0 (Bin0.from_nat0 n).
 
 (* [z] modulo 256 (2^8), a negative [z] counted down from 256. *)
 (* [SignedBin -> UInt8] *)
@@ -251,25 +251,25 @@ Definition from_b_signed := fun (z : SignedBin) .
   | SignedBin.Positive p => from_bin_base p
   end.
 
-(* The quotient through [BinWithZero], [None] when [y] is zero. It is at most
+(* The quotient through [Bin0], [None] when [y] is zero. It is at most
  * [x], so it always fits.
  *)
 (* [UInt8 -> UInt8 -> Option UInt8] *)
 Definition divide := fun (x : UInt8) (y : UInt8) .
-  match to_bin_with_zero y with
-  | BinWithZero.Zero       => None
-  | BinWithZero.Positive d => Some (from_bin_with_zero (x /. d)%bin_with_zero)
+  match to_b0 y with
+  | Bin0.Zero       => None
+  | Bin0.Positive d => Some (from_b0 (x /. d)%b0)
   end.
 
 Notation "x /. y" := (divide x y) (only parsing)
   : jw_uint8_scope.
 
-(* The remainder through [BinWithZero], [None] when [y] is zero. *)
+(* The remainder through [Bin0], [None] when [y] is zero. *)
 (* [UInt8 -> UInt8 -> Option UInt8] *)
 Definition modulo := fun (x : UInt8) (y : UInt8) .
-  match to_bin_with_zero y with
-  | BinWithZero.Zero       => None
-  | BinWithZero.Positive d => Some (from_bin_with_zero (x %. d)%bin_with_zero)
+  match to_b0 y with
+  | Bin0.Zero       => None
+  | Bin0.Positive d => Some (from_b0 (x %. d)%b0)
   end.
 
 Notation "x %. y" := (modulo x y) (only parsing)
@@ -277,7 +277,7 @@ Notation "x %. y" := (modulo x y) (only parsing)
 
 (* [UInt8 -> UInt8 -> Prop] *)
 Definition LessThan := fun (x : UInt8) (y : UInt8) .
-  (to_bin_with_zero x < to_bin_with_zero y)%bin_with_zero.
+  (to_b0 x < to_b0 y)%b0.
 
 Notation "x < y" := (LessThan x y) (only parsing)
   : jw_uint8_scope.
@@ -300,7 +300,7 @@ Notation "'(<=)'" := LessOrEqual (only parsing)
 
 (* [UInt8 -> UInt8 -> Comparison] *)
 Definition compare := fun (x : UInt8) (y : UInt8) .
-  BinWithZero.compare (to_bin_with_zero x) (to_bin_with_zero y).
+  Bin0.compare (to_b0 x) (to_b0 y).
 
 (* [UInt8 -> UInt8 -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
@@ -321,11 +321,11 @@ Abbreviation max := (Comparable.max compare).
 Definition from_numeral := fun (u : Numeral.Unsigned) .
   let value :=
     match u with
-    | Numeral.Unsigned.Decimal d     => BinWithZero.from_decimal 0%bin_with_zero d
-    | Numeral.Unsigned.Hexadecimal h => BinWithZero.from_hexadecimal 0%bin_with_zero h
+    | Numeral.Unsigned.Decimal d     => Bin0.from_decimal 0%b0 d
+    | Numeral.Unsigned.Hexadecimal h => Bin0.from_hexadecimal 0%b0 h
     end in
-  match BinWithZero.compare value modulus with
-  | Comparison.Lt => Some (from_bin_with_zero value)
+  match Bin0.compare value modulus with
+  | Comparison.Lt => Some (from_b0 value)
   | Comparison.Eq => None
   | Comparison.Gt => None
   end.
@@ -333,33 +333,33 @@ Definition from_numeral := fun (u : Numeral.Unsigned) .
 (* [x] as a literal, in decimal. *)
 (* [UInt8 -> Numeral.Unsigned] *)
 Definition to_numeral := fun (x : UInt8) .
-  Numeral.Unsigned.Decimal (BinWithZero.to_decimal (to_bin_with_zero x)).
+  Numeral.Unsigned.Decimal (Bin0.to_decimal (to_b0 x)).
 
 Local Open Scope jw_uint8_scope.
 
 Module conversion. (* conversion *)
 
 (* conversion.zero *)
-Theorem zero : to_bin_with_zero Zero = 0%bin_with_zero.
+Theorem zero : to_b0 Zero = 0%b0.
 Proof.
   simpl in |- *.
   quod idem est.
 Qed.
 
 (* conversion.one *)
-Theorem one : to_bin_with_zero One = 1%bin_with_zero.
+Theorem one : to_b0 One = 1%b0.
 Proof.
   simpl in |- *.
   quod idem est.
 Qed.
 
 (* conversion.boundedness *)
-Theorem boundedness : forall (x : UInt8) . (x < modulus)%bin_with_zero.
+Theorem boundedness : forall (x : UInt8) . (x < modulus)%b0.
 Proof.
   intros x.
   match &x with | introduction xb end.
   match &xb with | introduction x7 x6 x5 x4 x3 x2 x1 x0 end.
-  simpl to_bin_with_zero in |- *.
+  simpl to_b0 in |- *.
   ipso
     (Bit.conversion.binary.boundedness.propagation _ _ _
       (Bit.conversion.binary.boundedness.propagation _ _ _
@@ -373,14 +373,14 @@ Qed.
 
 (* conversion.injectivity *)
 Theorem injectivity
-  : forall {x : UInt8} {y : UInt8} . to_bin_with_zero x = to_bin_with_zero y -> x = y.
+  : forall {x : UInt8} {y : UInt8} . to_b0 x = to_b0 y -> x = y.
 Proof.
   intros x y e.
   match &x with | introduction xb end.
   match &xb with | introduction x7 x6 x5 x4 x3 x2 x1 x0 end.
   match &y with | introduction yb end.
   match &yb with | introduction y7 y6 y5 y4 y3 y2 y1 y0 end.
-  simpl to_bin_with_zero in &e.
+  simpl to_b0 in &e.
   match (Bit.conversion.binary.halving.injectivity &e) with | e1 b0 end.
   match (Bit.conversion.binary.halving.injectivity &e1) with | e2 b1 end.
   match (Bit.conversion.binary.halving.injectivity &e2) with | e3 b2 end.
@@ -401,16 +401,16 @@ Qed.
 (* conversion.carry *)
 Theorem carry
   : forall (carry : Bit) (x : UInt8) (y : UInt8) .
-      (Bit.to_bin_with_zero carry + x + y
-        = modulus * Bit.to_bin_with_zero (pi_1 (add_with_carry carry x y))%product
-          + (pi_2 (add_with_carry carry x y))%product)%bin_with_zero.
+      (Bit.to_b0 carry + x + y
+        = modulus * Bit.to_b0 (pi_1 (add_with_carry carry x y))%product
+          + (pi_2 (add_with_carry carry x y))%product)%b0.
 Proof.
   intros carry x y.
   match &x with | introduction xb end.
   match &xb with | introduction x7 x6 x5 x4 x3 x2 x1 x0 end.
   match &y with | introduction yb end.
   match &yb with | introduction y7 y6 y5 y4 y3 y2 y1 y0 end.
-  simpl to_bin_with_zero, add_with_carry in |- *.
+  simpl to_b0, add_with_carry in |- *.
   ipso
     (Bit.conversion.binary.carry.propagation _ _ _ _ _ _ _ _
       (Bit.conversion.binary.carry.propagation _ _ _ _ _ _ _ _
@@ -425,16 +425,16 @@ Qed.
 (* conversion.borrow *)
 Theorem borrow
   : forall (borrow : Bit) (x : UInt8) (y : UInt8) .
-      (x + modulus * Bit.to_bin_with_zero (pi_1 (sub_with_borrow borrow x y))%product
-        = y + Bit.to_bin_with_zero borrow
-          + (pi_2 (sub_with_borrow borrow x y))%product)%bin_with_zero.
+      (x + modulus * Bit.to_b0 (pi_1 (sub_with_borrow borrow x y))%product
+        = y + Bit.to_b0 borrow
+          + (pi_2 (sub_with_borrow borrow x y))%product)%b0.
 Proof.
   intros borrow x y.
   match &x with | introduction xb end.
   match &xb with | introduction x7 x6 x5 x4 x3 x2 x1 x0 end.
   match &y with | introduction yb end.
   match &yb with | introduction y7 y6 y5 y4 y3 y2 y1 y0 end.
-  simpl to_bin_with_zero, sub_with_borrow in |- *.
+  simpl to_b0, sub_with_borrow in |- *.
   ipso
     (Bit.conversion.binary.borrow.propagation _ _ _ _ _ _ _ _
       (Bit.conversion.binary.borrow.propagation _ _ _ _ _ _ _ _
@@ -449,20 +449,20 @@ Qed.
 (* conversion.addition *)
 Theorem addition
   : forall (x : UInt8) (y : UInt8) .
-      (to_bin_with_zero (x + y)%uint8 = (x + y) %. modulus)%bin_with_zero.
+      (to_b0 (x + y)%uint8 = (x + y) %. modulus)%b0.
 Proof.
   intros x y.
   lemma witness
-    : (Bit.to_bin_with_zero (pi_1 (add_with_carry 0 &x &y))%product * modulus
-        + to_bin_with_zero (&x + &y)%uint8
-        = to_bin_with_zero &x + to_bin_with_zero &y
-      /\ to_bin_with_zero (&x + &y)%uint8 < modulus)%bin_with_zero.
+    : (Bit.to_b0 (pi_1 (add_with_carry 0 &x &y))%product * modulus
+        + to_b0 (&x + &y)%uint8
+        = to_b0 &x + to_b0 &y
+      /\ to_b0 (&x + &y)%uint8 < modulus)%b0.
   {
     divide et impera.
     - simpl add in |- *.
       leibniz
-        (BinWithZero.multiplication.commutativity
-          (Bit.to_bin_with_zero (pi_1 (add_with_carry 0 &x &y))%product)
+        (Bin0.multiplication.commutativity
+          (Bit.to_b0 (pi_1 (add_with_carry 0 &x &y))%product)
           modulus),
         <- (conversion.carry 0 &x &y)
         in |- *.
@@ -470,10 +470,10 @@ Proof.
       quod idem est.
     - ipso (conversion.boundedness (&x + &y)).
   }
-  match (BinWithZero.division.uniqueness
-          (to_bin_with_zero &x + to_bin_with_zero &y)%bin_with_zero modulus
-          (Bit.to_bin_with_zero (pi_1 (add_with_carry 0 &x &y))%product)
-          (to_bin_with_zero (&x + &y)%uint8)
+  match (Bin0.division.uniqueness
+          (to_b0 &x + to_b0 &y)%b0 modulus
+          (Bit.to_b0 (pi_1 (add_with_carry 0 &x &y))%product)
+          (to_b0 (&x + &y)%uint8)
           &witness)
   with | _ facto end.
   ipso (symm &facto).
@@ -482,42 +482,42 @@ Qed.
 (* conversion.subtraction *)
 Theorem subtraction
   : forall (x : UInt8) (y : UInt8) .
-      ((sub x y + y) %. modulus = x)%bin_with_zero.
+      ((sub x y + y) %. modulus = x)%b0.
 Proof.
   intros x y.
   lemma witness
-    : (Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product * modulus
-        + to_bin_with_zero &x
-        = to_bin_with_zero (sub &x &y) + to_bin_with_zero &y
-      /\ to_bin_with_zero &x < modulus)%bin_with_zero.
+    : (Bit.to_b0 (pi_1 (sub_with_borrow 0 &x &y))%product * modulus
+        + to_b0 &x
+        = to_b0 (sub &x &y) + to_b0 &y
+      /\ to_b0 &x < modulus)%b0.
   {
     divide et impera.
     - simpl sub in |- *.
       leibniz
-        (BinWithZero.multiplication.commutativity
-          (Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product)
+        (Bin0.multiplication.commutativity
+          (Bit.to_b0 (pi_1 (sub_with_borrow 0 &x &y))%product)
           modulus),
-        (BinWithZero.addition.commutativity
+        (Bin0.addition.commutativity
           (modulus
-            * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product)%bin_with_zero
-          (to_bin_with_zero &x)),
+            * Bit.to_b0 (pi_1 (sub_with_borrow 0 &x &y))%product)%b0
+          (to_b0 &x)),
         (conversion.borrow 0 &x &y),
-        (BinWithZero.addition.commutativity
-          (to_bin_with_zero &y) (Bit.to_bin_with_zero 0))
+        (Bin0.addition.commutativity
+          (to_b0 &y) (Bit.to_b0 0))
         in |- *.
       simpl in |- *.
       leibniz
-        (BinWithZero.addition.commutativity
-          (to_bin_with_zero &y)
-          (to_bin_with_zero (pi_2 (sub_with_borrow 0 &x &y))%product))
+        (Bin0.addition.commutativity
+          (to_b0 &y)
+          (to_b0 (pi_2 (sub_with_borrow 0 &x &y))%product))
         in |- *.
       quod idem est.
     - ipso (conversion.boundedness &x).
   }
-  match (BinWithZero.division.uniqueness
-          (to_bin_with_zero (sub &x &y) + to_bin_with_zero &y)%bin_with_zero modulus
-          (Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product)
-          (to_bin_with_zero &x)
+  match (Bin0.division.uniqueness
+          (to_b0 (sub &x &y) + to_b0 &y)%b0 modulus
+          (Bit.to_b0 (pi_1 (sub_with_borrow 0 &x &y))%product)
+          (to_b0 &x)
           &witness)
   with | _ facto end.
   ipso facto.
@@ -526,7 +526,7 @@ Qed.
 (* conversion.negation *)
 Theorem negation
   : forall (x : UInt8) .
-      (((- x)%uint8 + x) %. modulus = 0)%bin_with_zero.
+      (((- x)%uint8 + x) %. modulus = 0)%b0.
 Proof.
   intros x.
   simpl negate in |- *.
@@ -541,38 +541,38 @@ Qed.
 (* conversion.appending *)
 Theorem appending
   : forall (b : Bit) (x : UInt8) .
-      (to_bin_with_zero (append_bit b x)
-        = (10 * x + Bit.to_bin_with_zero b) %. modulus)%bin_with_zero.
+      (to_b0 (append_bit b x)
+        = (10 * x + Bit.to_b0 b) %. modulus)%b0.
 Proof.
   intros b x.
   match &x with | introduction xb end.
   match &xb with | introduction x7 x6 x5 x4 x3 x2 x1 x0 end.
   lemma witness
-    : (Bit.to_bin_with_zero &x7 * modulus
-        + to_bin_with_zero
+    : (Bit.to_b0 &x7 * modulus
+        + to_b0
             (append_bit &b
               (UInt8.introduction (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0)))
         = 10
-            * to_bin_with_zero
+            * to_b0
                 (UInt8.introduction (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0))
-          + Bit.to_bin_with_zero &b
-      /\ to_bin_with_zero
+          + Bit.to_b0 &b
+      /\ to_b0
           (append_bit &b
             (UInt8.introduction (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0)))
-        < modulus)%bin_with_zero.
+        < modulus)%b0.
   {
     divide et impera.
     - lemma top
-        : (Bit.to_bin_with_zero &x7 = Bit.to_bin_with_zero &x7 * 1 + 0)%bin_with_zero.
+        : (Bit.to_b0 &x7 = Bit.to_b0 &x7 * 1 + 0)%b0.
       {
-        match (BinWithZero.addition.identity (Bit.to_bin_with_zero &x7 * 1)%bin_with_zero)
+        match (Bin0.addition.identity (Bit.to_b0 &x7 * 1)%b0)
         with | _ sum end.
-        match (BinWithZero.multiplication.identity (Bit.to_bin_with_zero &x7))
+        match (Bin0.multiplication.identity (Bit.to_b0 &x7))
         with | _ product end.
         leibniz &sum, &product in |- *.
         quod idem est.
       }
-      simpl to_bin_with_zero, append_bit in |- *.
+      simpl to_b0, append_bit in |- *.
       ipso
         (symm
           (Bit.conversion.binary.appending.propagation _ _ _ _ &b
@@ -589,13 +589,13 @@ Proof.
           (append_bit &b
             (UInt8.introduction (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0)))).
   }
-  match (BinWithZero.division.uniqueness
-          (10 * to_bin_with_zero
+  match (Bin0.division.uniqueness
+          (10 * to_b0
                   (UInt8.introduction (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0))
-            + Bit.to_bin_with_zero &b)%bin_with_zero
+            + Bit.to_b0 &b)%b0
           modulus
-          (Bit.to_bin_with_zero &x7)
-          (to_bin_with_zero
+          (Bit.to_b0 &x7)
+          (to_b0
             (append_bit &b
               (UInt8.introduction (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0))))
           &witness)
@@ -605,17 +605,17 @@ Qed.
 
 (* conversion.reduction *)
 Theorem reduction
-  : forall (n : BinWithZero) .
-      to_bin_with_zero (from_bin_with_zero n) = (n %. modulus)%bin_with_zero.
+  : forall (n : Bin0) .
+      to_b0 (from_b0 n) = (n %. modulus)%b0.
 Proof.
   intros n.
   match &n with | Zero | Positive p end.
-  - simpl from_bin_with_zero, BinWithZero.modulo, BinWithZero.div, Product.second in |- *.
+  - simpl from_b0, Bin0.modulo, Bin0.div, Product.second in |- *.
     simpl in |- *.
     quod idem est.
-  - simpl from_bin_with_zero in |- *.
+  - simpl from_b0 in |- *.
     match p with | One | b0 (p' by IH) | b1 (p' by IH) end per BinBase.induction.
-    + simpl BinWithZero.modulo, BinWithZero.div in |- *.
+    + simpl Bin0.modulo, Bin0.div in |- *.
       simpl in |- *.
       quod idem est.
     + lemma unfolding
@@ -628,14 +628,14 @@ Proof.
         &unfolding,
         (conversion.appending 0 (from_bin_base &p')),
         &IH,
-        <- (BinWithZero.modulo.sum.left.absorption
-          (10 * (BinWithZero.Positive &p' %. modulus))%bin_with_zero
-          (Bit.to_bin_with_zero 0) modulus),
-        (BinWithZero.modulo.product.right.absorption
-          10%bin_with_zero (BinWithZero.Positive &p') modulus),
-        (BinWithZero.modulo.sum.left.absorption
-          (10 * BinWithZero.Positive &p')%bin_with_zero
-          (Bit.to_bin_with_zero 0) modulus)
+        <- (Bin0.modulo.sum.left.absorption
+          (10 * (Bin0.Positive &p' %. modulus))%b0
+          (Bit.to_b0 0) modulus),
+        (Bin0.modulo.product.right.absorption
+          10%b0 (Bin0.Positive &p') modulus),
+        (Bin0.modulo.sum.left.absorption
+          (10 * Bin0.Positive &p')%b0
+          (Bit.to_b0 0) modulus)
         in |- *.
       simpl in |- *.
       quod idem est.
@@ -649,14 +649,14 @@ Proof.
         &unfolding,
         (conversion.appending 1 (from_bin_base &p')),
         &IH,
-        <- (BinWithZero.modulo.sum.left.absorption
-          (10 * (BinWithZero.Positive &p' %. modulus))%bin_with_zero
-          (Bit.to_bin_with_zero 1) modulus),
-        (BinWithZero.modulo.product.right.absorption
-          10%bin_with_zero (BinWithZero.Positive &p') modulus),
-        (BinWithZero.modulo.sum.left.absorption
-          (10 * BinWithZero.Positive &p')%bin_with_zero
-          (Bit.to_bin_with_zero 1) modulus)
+        <- (Bin0.modulo.sum.left.absorption
+          (10 * (Bin0.Positive &p' %. modulus))%b0
+          (Bit.to_b0 1) modulus),
+        (Bin0.modulo.product.right.absorption
+          10%b0 (Bin0.Positive &p') modulus),
+        (Bin0.modulo.sum.left.absorption
+          (10 * Bin0.Positive &p')%b0
+          (Bit.to_b0 1) modulus)
         in |- *.
       simpl in |- *.
       simpl BinBase.add in |- *.
@@ -665,16 +665,16 @@ Proof.
 Qed.
 
 (* conversion.section *)
-Theorem section : forall (x : UInt8) . from_bin_with_zero (to_bin_with_zero x) = x.
+Theorem section : forall (x : UInt8) . from_b0 (to_b0 x) = x.
 Proof.
   intros x.
   lemma facto
-    : to_bin_with_zero (from_bin_with_zero (to_bin_with_zero &x)) = to_bin_with_zero &x.
+    : to_b0 (from_b0 (to_b0 &x)) = to_b0 &x.
   {
     leibniz
-      (conversion.reduction (to_bin_with_zero &x)),
-      (BinWithZero.modulo.identity
-        (to_bin_with_zero &x) modulus (conversion.boundedness &x))
+      (conversion.reduction (to_b0 &x)),
+      (Bin0.modulo.identity
+        (to_b0 &x) modulus (conversion.boundedness &x))
       in |- *.
     quod idem est.
   }
@@ -686,7 +686,7 @@ Module left. (* conversion.left *)
 (* conversion.left.doubling *)
 Lemma doubling
   : forall (x : UInt8) .
-      (to_bin_with_zero (shift_left x 1%n0) = (10 * x) %. modulus)%bin_with_zero.
+      (to_b0 (shift_left x 1%n0) = (10 * x) %. modulus)%b0.
 Proof.
   intros x.
   lemma appended : shift_left &x 1%n0 = append_bit 0 &x.
@@ -696,10 +696,10 @@ Proof.
     simpl in |- *.
     quod idem est.
   }
-  match (BinWithZero.addition.identity (10 * to_bin_with_zero &x)%bin_with_zero)
+  match (Bin0.addition.identity (10 * to_b0 &x)%b0)
   with | _ sum end.
   leibniz &appended, (conversion.appending 0 &x) in |- *.
-  simpl Bit.to_bin_with_zero in |- *.
+  simpl Bit.to_b0 in |- *.
   leibniz &sum in |- *.
   quod idem est.
 Qed.
@@ -707,7 +707,7 @@ Qed.
 (* conversion.left.shift *)
 Theorem shift
   : forall (x : UInt8) (k : Nat0) .
-      (to_bin_with_zero (shift_left x k) = BinWithZero.shift_left x k %. modulus)%bin_with_zero.
+      (to_b0 (shift_left x k) = Bin0.shift_left x k %. modulus)%b0.
 Proof.
   intros x k.
   match &k with | Zero | Positive n end.
@@ -718,10 +718,10 @@ Proof.
       quod idem est.
     }
     leibniz &unchanged in |- *.
-    simpl BinWithZero.shift_left in |- *.
+    simpl Bin0.shift_left in |- *.
     leibniz
-      (BinWithZero.modulo.identity
-        (to_bin_with_zero &x) modulus (conversion.boundedness &x))
+      (Bin0.modulo.identity
+        (to_b0 &x) modulus (conversion.boundedness &x))
       in |- *.
     quod idem est.
   - extro &x.
@@ -729,7 +729,7 @@ Proof.
     + intros x.
       leibniz
         (conversion.left.doubling &x),
-        (BinWithZero.shift.left.doubling (to_bin_with_zero &x))
+        (Bin0.shift.left.doubling (to_b0 &x))
         in |- *.
       quod idem est.
     + intros x.
@@ -745,16 +745,16 @@ Proof.
         &unfolding,
         (&IH (shift_left &x 1%n0)),
         (conversion.left.doubling &x),
-        (BinWithZero.shift.left.multiplication
-          ((10 * to_bin_with_zero &x) %. modulus)%bin_with_zero
+        (Bin0.shift.left.multiplication
+          ((10 * to_b0 &x) %. modulus)%b0
           (Nat0.Positive &n')),
-        (BinWithZero.modulo.product.left.absorption
-          (10 * to_bin_with_zero &x)%bin_with_zero
-          (BinWithZero.shift_left 1%bin_with_zero (Nat0.Positive &n'))
+        (Bin0.modulo.product.left.absorption
+          (10 * to_b0 &x)%b0
+          (Bin0.shift_left 1%b0 (Nat0.Positive &n'))
           modulus),
-        <- (BinWithZero.shift.left.multiplication
-          (10 * to_bin_with_zero &x)%bin_with_zero (Nat0.Positive &n')),
-        <- (BinWithZero.shift.left.successor (to_bin_with_zero &x) &n')
+        <- (Bin0.shift.left.multiplication
+          (10 * to_b0 &x)%b0 (Nat0.Positive &n')),
+        <- (Bin0.shift.left.successor (to_b0 &x) &n')
         in |- *.
       quod idem est.
 Qed.
@@ -766,7 +766,7 @@ Module right. (* conversion.right *)
 (* conversion.right.halving *)
 Lemma halving
   : forall (x : UInt8) .
-      to_bin_with_zero (shift_right x 1%n0) = BinWithZero.halve x.
+      to_b0 (shift_right x 1%n0) = Bin0.halve x.
 Proof.
   intros x.
   match &x with | introduction xb end.
@@ -774,7 +774,7 @@ Proof.
   ipso
     (symm
       (Bit.conversion.binary.halving
-        (to_bin_with_zero
+        (to_b0
           (shift_right
             (UInt8.introduction (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0))
             1%n0))
@@ -784,7 +784,7 @@ Qed.
 (* conversion.right.shift *)
 Theorem shift
   : forall (x : UInt8) (k : Nat0) .
-      to_bin_with_zero (shift_right x k) = BinWithZero.shift_right x k.
+      to_b0 (shift_right x k) = Bin0.shift_right x k.
 Proof.
   intros x k.
   match &k with | Zero | Positive n end.
@@ -795,14 +795,14 @@ Proof.
       quod idem est.
     }
     leibniz &unchanged in |- *.
-    simpl BinWithZero.shift_right in |- *.
+    simpl Bin0.shift_right in |- *.
     quod idem est.
   - extro &x.
     match n with | One | Successor (n' by IH) end per Nat.induction.
     + intros x.
       leibniz (conversion.right.halving &x) in |- *.
-      simpl BinWithZero.shift_right in |- *.
-      simpl BinWithZero.shift_right_nat in |- *.
+      simpl Bin0.shift_right in |- *.
+      simpl Bin0.shift_right_nat in |- *.
       quod idem est.
     + intros x.
       lemma unfolding
@@ -814,11 +814,11 @@ Proof.
         quod idem est.
       }
       lemma step
-        : BinWithZero.shift_right (to_bin_with_zero &x) (Nat0.Positive (Nat.Successor &n'))
-          = BinWithZero.shift_right
-              (BinWithZero.halve (to_bin_with_zero &x)) (Nat0.Positive &n').
+        : Bin0.shift_right (to_b0 &x) (Nat0.Positive (Nat.Successor &n'))
+          = Bin0.shift_right
+              (Bin0.halve (to_b0 &x)) (Nat0.Positive &n').
       {
-        ipso (BinWithZero.shift.right.successor (to_bin_with_zero &x) (Nat0.Positive &n')).
+        ipso (Bin0.shift.right.successor (to_b0 &x) (Nat0.Positive &n')).
       }
       leibniz
         &unfolding,
@@ -836,79 +836,79 @@ Module multiplication. (* conversion.multiplication *)
 (* One step of [mul]: the product so far doubled, plus [x] for a 1. *)
 (* conversion.multiplication.step *)
 Lemma step
-  : forall (x : UInt8) (p : UInt8) (h : BinWithZero) (b : Bit) .
-      (to_bin_with_zero p = (x * h) %. modulus)%bin_with_zero ->
-      to_bin_with_zero
+  : forall (x : UInt8) (p : UInt8) (h : Bin0) (b : Bit) .
+      (to_b0 p = (x * h) %. modulus)%b0 ->
+      to_b0
         (add (shift_left p 1%n0)
           match b with
           | 0%bit => Zero
           | 1%bit => x
           end)
-      = ((x * (10 * h + Bit.to_bin_with_zero b)) %. modulus)%bin_with_zero.
+      = ((x * (10 * h + Bit.to_b0 b)) %. modulus)%b0.
 Proof.
   intros x p h b e.
   lemma doubled
-    : ((10 * to_bin_with_zero &p) %. modulus
-        = (10 * (to_bin_with_zero &x * &h)) %. modulus)%bin_with_zero.
+    : ((10 * to_b0 &p) %. modulus
+        = (10 * (to_b0 &x * &h)) %. modulus)%b0.
   {
     leibniz
       &e,
-      (BinWithZero.modulo.product.right.absorption
-        10%bin_with_zero (to_bin_with_zero &x * &h)%bin_with_zero modulus)
+      (Bin0.modulo.product.right.absorption
+        10%b0 (to_b0 &x * &h)%b0 modulus)
       in |- *.
     quod idem est.
   }
   lemma regrouped
-    : (to_bin_with_zero &x * (10 * &h) = 10 * (to_bin_with_zero &x * &h))%bin_with_zero.
+    : (to_b0 &x * (10 * &h) = 10 * (to_b0 &x * &h))%b0.
   {
     leibniz
-      <- (BinWithZero.multiplication.associativity (to_bin_with_zero &x) 10%bin_with_zero &h),
-      (BinWithZero.multiplication.commutativity (to_bin_with_zero &x) 10%bin_with_zero),
-      (BinWithZero.multiplication.associativity 10%bin_with_zero (to_bin_with_zero &x) &h)
+      <- (Bin0.multiplication.associativity (to_b0 &x) 10%b0 &h),
+      (Bin0.multiplication.commutativity (to_b0 &x) 10%b0),
+      (Bin0.multiplication.associativity 10%b0 (to_b0 &x) &h)
       in |- *.
     quod idem est.
   }
   match &b with | Zero | One end.
   - lemma facto
-      : to_bin_with_zero (add (shift_left &p 1%n0) Zero)
-        = ((to_bin_with_zero &x * (10 * &h + Bit.to_bin_with_zero 0))
-            %. modulus)%bin_with_zero.
+      : to_b0 (add (shift_left &p 1%n0) Zero)
+        = ((to_b0 &x * (10 * &h + Bit.to_b0 0))
+            %. modulus)%b0.
     {
-      match (BinWithZero.addition.identity (10 * to_bin_with_zero &p)%bin_with_zero)
+      match (Bin0.addition.identity (10 * to_b0 &p)%b0)
       with | _ right end.
-      match (BinWithZero.addition.identity (10 * &h)%bin_with_zero) with | _ right' end.
+      match (Bin0.addition.identity (10 * &h)%b0) with | _ right' end.
       leibniz
         (conversion.addition (shift_left &p 1%n0) Zero),
         (conversion.left.doubling &p),
         conversion.zero,
-        (BinWithZero.modulo.sum.left.absorption
-          (10 * to_bin_with_zero &p)%bin_with_zero 0%bin_with_zero modulus),
+        (Bin0.modulo.sum.left.absorption
+          (10 * to_b0 &p)%b0 0%b0 modulus),
         &right,
         &doubled
         in |- *.
-      simpl Bit.to_bin_with_zero in |- *.
+      simpl Bit.to_b0 in |- *.
       leibniz &right', &regrouped in |- *.
       quod idem est.
     }
     ipso facto.
   - lemma facto
-      : to_bin_with_zero (add (shift_left &p 1%n0) &x)
-        = ((to_bin_with_zero &x * (10 * &h + Bit.to_bin_with_zero 1))
-            %. modulus)%bin_with_zero.
+      : to_b0 (add (shift_left &p 1%n0) &x)
+        = ((to_b0 &x * (10 * &h + Bit.to_b0 1))
+            %. modulus)%b0.
     {
-      match (BinWithZero.multiplication.identity (to_bin_with_zero &x)) with | _ right end.
-      match (BinWithZero.multiplication.distributivity.over.addition
-              (to_bin_with_zero &x) (10 * &h)%bin_with_zero 1%bin_with_zero)
+      match (Bin0.multiplication.identity (to_b0 &x)) with | _ right end.
+      match (Bin0.multiplication.distributivity.over.addition
+              (to_b0 &x) (10 * &h)%b0 1%b0)
       with | spread _ end.
       leibniz
         (conversion.addition (shift_left &p 1%n0) &x),
         (conversion.left.doubling &p),
         &doubled,
-        (BinWithZero.modulo.sum.left.absorption
-          (10 * (to_bin_with_zero &x * &h))%bin_with_zero (to_bin_with_zero &x)
+        (Bin0.modulo.sum.left.absorption
+          (10 * (to_b0 &x * &h))%b0 (to_b0 &x)
           modulus)
         in |- *.
-      simpl Bit.to_bin_with_zero in |- *.
+      simpl Bit.to_b0 in |- *.
       leibniz &spread, &right, &regrouped in |- *.
       quod idem est.
     }
@@ -920,16 +920,16 @@ End multiplication. (* conversion.multiplication *)
 (* conversion.multiplication *)
 Theorem multiplication
   : forall (x : UInt8) (y : UInt8) .
-      (to_bin_with_zero (x * y)%uint8 = (x * y) %. modulus)%bin_with_zero.
+      (to_b0 (x * y)%uint8 = (x * y) %. modulus)%b0.
 Proof.
   intros x y.
   lemma base
-    : (to_bin_with_zero Zero
-        = (to_bin_with_zero &x * 0) %. modulus)%bin_with_zero.
+    : (to_b0 Zero
+        = (to_b0 &x * 0) %. modulus)%b0.
   {
-    match (BinWithZero.multiplication.annihilation (to_bin_with_zero &x)) with | _ right end.
+    match (Bin0.multiplication.annihilation (to_b0 &x)) with | _ right end.
     leibniz &right, conversion.zero in |- *.
-    simpl BinWithZero.modulo, BinWithZero.div, Product.second in |- *.
+    simpl Bin0.modulo, Bin0.div, Product.second in |- *.
     quod idem est.
   }
   match &y with | introduction yb end.
@@ -949,23 +949,23 @@ Qed.
 (* conversion.division *)
 Theorem division
   : forall (x : UInt8) (y : UInt8) (d : BinBase) .
-      to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map to_bin_with_zero (x /. y)%uint8 = Some (x /. d)%bin_with_zero.
+      to_b0 y = Bin0.Positive d
+      -> Option.map to_b0 (x /. y)%uint8 = Some (x /. d)%b0.
 Proof.
   intros x y d e.
-  lemma below : ((x /. &d) < modulus)%bin_with_zero.
+  lemma below : ((x /. &d) < modulus)%b0.
   {
-    match (BinWithZero.division.quotient.boundedness x &d) with | same | smaller end.
+    match (Bin0.division.quotient.boundedness x &d) with | same | smaller end.
     - leibniz &same in |- *.
       ipso (conversion.boundedness &x).
-    - ipso (BinWithZero.order.strict.transitivity &smaller (conversion.boundedness &x)).
+    - ipso (Bin0.order.strict.transitivity &smaller (conversion.boundedness &x)).
   }
   simpl divide in |- *.
   leibniz &e in |- *.
   simpl Option.map in |- *.
   leibniz
-    (conversion.reduction (x /. &d)%bin_with_zero),
-    (BinWithZero.modulo.identity (x /. &d)%bin_with_zero modulus &below)
+    (conversion.reduction (x /. &d)%b0),
+    (Bin0.modulo.identity (x /. &d)%b0 modulus &below)
     in |- *.
   quod idem est.
 Qed.
@@ -973,23 +973,23 @@ Qed.
 (* conversion.modulo *)
 Theorem modulo
   : forall (x : UInt8) (y : UInt8) (d : BinBase) .
-      to_bin_with_zero y = BinWithZero.Positive d
-      -> Option.map to_bin_with_zero (x %. y)%uint8 = Some (x %. d)%bin_with_zero.
+      to_b0 y = Bin0.Positive d
+      -> Option.map to_b0 (x %. y)%uint8 = Some (x %. d)%b0.
 Proof.
   intros x y d e.
-  lemma below : ((x %. &d) < modulus)%bin_with_zero.
+  lemma below : ((x %. &d) < modulus)%b0.
   {
-    match (BinWithZero.division.specification x &d) with | _ smaller end.
+    match (Bin0.division.specification x &d) with | _ smaller end.
     let proof bound := conversion.boundedness &y.
     leibniz &e in &bound.
-    ipso (BinWithZero.order.strict.transitivity &smaller &bound).
+    ipso (Bin0.order.strict.transitivity &smaller &bound).
   }
   simpl modulo in |- *.
   leibniz &e in |- *.
   simpl Option.map in |- *.
   leibniz
-    (conversion.reduction (x %. &d)%bin_with_zero),
-    (BinWithZero.modulo.identity (x %. &d)%bin_with_zero modulus &below)
+    (conversion.reduction (x %. &d)%b0),
+    (Bin0.modulo.identity (x %. &d)%b0 modulus &below)
     in |- *.
   quod idem est.
 Qed.
@@ -1001,17 +1001,17 @@ Theorem section : forall (x : UInt8) . from_b_signed (to_b_signed x) = x.
 Proof.
   intros x.
   lemma through
-    : forall (n : BinWithZero) . from_b_signed (SignedBin.from_bin_with_zero n) = from_bin_with_zero n.
+    : forall (n : Bin0) . from_b_signed (SignedBin.from_b0 n) = from_b0 n.
   {
     intros n.
     match &n with | Zero | Positive p end.
-    - simpl SignedBin.from_bin_with_zero, from_b_signed, from_bin_with_zero in |- *.
+    - simpl SignedBin.from_b0, from_b_signed, from_b0 in |- *.
       quod idem est.
-    - simpl SignedBin.from_bin_with_zero, from_b_signed, from_bin_with_zero in |- *.
+    - simpl SignedBin.from_b0, from_b_signed, from_b0 in |- *.
       quod idem est.
   }
   simpl to_b_signed in |- *.
-  leibniz (&through (to_bin_with_zero &x)), (conversion.section &x) in |- *.
+  leibniz (&through (to_b0 &x)), (conversion.section &x) in |- *.
   quod idem est.
 Qed.
 
@@ -1048,7 +1048,7 @@ Module Residue <: Modular.Width.
 Definition T := T.
 Definition Zero := Zero.
 Definition One := One.
-Definition to_bin_with_zero := to_bin_with_zero.
+Definition to_b0 := to_b0.
 Definition add := add.
 Definition sub := sub.
 Definition negate := negate.
@@ -1082,7 +1082,7 @@ Definition T := T.
 Definition Zero := Zero.
 Definition One := One.
 Definition Max := Max.
-Definition to_bin_with_zero := to_bin_with_zero.
+Definition to_b0 := to_b0.
 Definition add := add.
 Definition sub := sub.
 Definition LessThan := LessThan.
@@ -1100,7 +1100,7 @@ Module strict. (* Width.order.strict *)
 
 Theorem specification
   : forall (x : T) (y : T) .
-      LessThan x y <-> (to_bin_with_zero x < to_bin_with_zero y)%bin_with_zero.
+      LessThan x y <-> (to_b0 x < to_b0 y)%b0.
 Proof.
   intros x y.
   divide et impera.
@@ -1133,7 +1133,7 @@ Definition injectivity := @UInt8.conversion.injectivity.
 
 Theorem comparison
   : forall (x : T) (y : T) .
-      compare x y = BinWithZero.compare (to_bin_with_zero x) (to_bin_with_zero y).
+      compare x y = Bin0.compare (to_b0 x) (to_b0 y).
 Proof.
   intros x y.
   ipso (refl (compare &x &y)).
@@ -1149,10 +1149,10 @@ Module addition. (* Width.flag.addition *)
 
 Theorem specification
   : forall (x : T) (y : T) .
-      (to_bin_with_zero x + to_bin_with_zero y
-       = BinWithZero.Positive modulus
-           * Bit.to_bin_with_zero (pi_1 (add_with_carry 0 x y))%product
-         + to_bin_with_zero (add x y))%bin_with_zero.
+      (to_b0 x + to_b0 y
+       = Bin0.Positive modulus
+           * Bit.to_b0 (pi_1 (add_with_carry 0 x y))%product
+         + to_b0 (add x y))%b0.
 Proof.
   intros x y.
   ipso (UInt8.conversion.carry 0 &x &y).
@@ -1164,19 +1164,19 @@ Module subtraction. (* Width.flag.subtraction *)
 
 Theorem specification
   : forall (x : T) (y : T) .
-      (to_bin_with_zero x
-         + BinWithZero.Positive modulus
-             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 x y))%product
-       = to_bin_with_zero y + to_bin_with_zero (sub x y))%bin_with_zero.
+      (to_b0 x
+         + Bin0.Positive modulus
+             * Bit.to_b0 (pi_1 (sub_with_borrow 0 x y))%product
+       = to_b0 y + to_b0 (sub x y))%b0.
 Proof.
   intros x y.
   let proof b
-    : (to_bin_with_zero &x
-         + BinWithZero.Positive modulus
-             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product
-       = (to_bin_with_zero &y + 0) + to_bin_with_zero (sub &x &y))%bin_with_zero
+    : (to_b0 &x
+         + Bin0.Positive modulus
+             * Bit.to_b0 (pi_1 (sub_with_borrow 0 &x &y))%product
+       = (to_b0 &y + 0) + to_b0 (sub &x &y))%b0
     := UInt8.conversion.borrow 0 &x &y.
-  match (BinWithZero.addition.identity (to_bin_with_zero &y)) with | _ r end.
+  match (Bin0.addition.identity (to_b0 &y)) with | _ r end.
   leibniz &r in &b.
   ipso &b.
 Qed.
@@ -1188,8 +1188,8 @@ Module multiplication. (* Width.flag.multiplication *)
 Theorem specification
   : forall (x : T) (y : T) .
       mul_with_overflow x y
-      = (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
-                 (BinWithZero.Positive modulus) with
+      = (match Bin0.compare (to_b0 x * to_b0 y)%b0
+                 (Bin0.Positive modulus) with
          | Comparison.Lt => 0%bit
          | Comparison.Eq => 1%bit
          | Comparison.Gt => 1%bit
@@ -1206,9 +1206,9 @@ End flag. (* Width.flag *)
 
 Module maximum. (* Width.maximum *)
 
-Theorem specification : (to_bin_with_zero Max + 1 = BinWithZero.Positive modulus)%bin_with_zero.
+Theorem specification : (to_b0 Max + 1 = Bin0.Positive modulus)%b0.
 Proof.
-  ipso (refl (BinWithZero.Positive modulus)).
+  ipso (refl (Bin0.Positive modulus)).
 Qed.
 
 End maximum. (* Width.maximum *)
@@ -1240,12 +1240,12 @@ Number Notation UInt8.T UInt8.from_numeral UInt8.to_numeral
  *)
 Bind Scope jw_uint8_scope with UInt8.T.
 
-(* A [UInt8] stands wherever a [BinWithZero] is expected, read as its value,
+(* A [UInt8] stands wherever a [Bin0] is expected, read as its value,
  * and wherever a [Nat0] is, through that value; each conversion is printed
  * where it happened.
  *)
-Coercion UInt8.to_bin_with_zero : UInt8 >-> BinWithZero.
-Add Printing Coercion UInt8.to_bin_with_zero.
+Coercion UInt8.to_b0 : UInt8 >-> Bin0.
+Add Printing Coercion UInt8.to_b0.
 Coercion UInt8.to_nat0 : UInt8 >-> Nat0.
 Add Printing Coercion UInt8.to_nat0.
 

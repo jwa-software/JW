@@ -10,7 +10,7 @@ From JW Require Import Algebra.Ring.
 From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
-From JW Require Import Data.Number.Binary.BinWithZero.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Number.Numeral.
@@ -100,11 +100,11 @@ Definition to_nat0 := fun (b : Bit) .
   | One  => 1%n0
   end.
 
-(* [Bit -> BinWithZero] *)
-Definition to_bin_with_zero := fun (b : Bit) .
+(* [Bit -> Bin0] *)
+Definition to_b0 := fun (b : Bit) .
   match b with
-  | Zero => 0%bin_with_zero
-  | One  => 1%bin_with_zero
+  | Zero => 0%b0
+  | One  => 1%b0
   end.
 
 (* The carry out and the sum of [carry + a + b], the carry first on both
@@ -675,14 +675,14 @@ Qed.
 
 End halving. (* conversion.halving *)
 
-(* The laws above for the value in [BinWithZero], where [10] is two in binary
+(* The laws above for the value in [Bin0], where [10] is two in binary
  * digits. Each is proved by reading both sides in [Nat0] through
- * [BinWithZero.to_nat0], on variables only, so no large number is built.
+ * [Bin0.to_nat0], on variables only, so no large number is built.
  *)
 Module binary. (* conversion.binary *)
 
 (* conversion.binary.base *)
-Lemma base : BinWithZero.to_nat0 10%bin_with_zero = 2%n0.
+Lemma base : Bin0.to_nat0 10%b0 = 2%n0.
 Proof.
   simpl in |- *.
   quod idem est.
@@ -690,7 +690,7 @@ Qed.
 
 (* conversion.binary.agreement *)
 Theorem agreement
-  : forall (b : Bit) . BinWithZero.to_nat0 (to_bin_with_zero b) = to_nat0 b.
+  : forall (b : Bit) . Bin0.to_nat0 (to_b0 b) = to_nat0 b.
 Proof.
   intros b.
   match &b with | Zero | One end; simpl in |- *; quod idem est.
@@ -698,7 +698,7 @@ Qed.
 
 (* conversion.binary.injectivity *)
 Theorem injectivity
-  : forall {a : Bit} {b : Bit} . to_bin_with_zero a = to_bin_with_zero b -> a = b.
+  : forall {a : Bit} {b : Bit} . to_b0 a = to_b0 b -> a = b.
 Proof.
   intros a b e.
   match &a with | Zero | One end;
@@ -713,27 +713,27 @@ Qed.
 (* conversion.binary.carry *)
 Theorem carry
   : forall (carry : Bit) (a : Bit) (b : Bit) .
-      (to_bin_with_zero carry + to_bin_with_zero a + to_bin_with_zero b
-        = 10 * to_bin_with_zero (pi_1 (add_with_carry carry a b))%product
-          + to_bin_with_zero (pi_2 (add_with_carry carry a b))%product)%bin_with_zero.
+      (to_b0 carry + to_b0 a + to_b0 b
+        = 10 * to_b0 (pi_1 (add_with_carry carry a b))%product
+          + to_b0 (pi_2 (add_with_carry carry a b))%product)%b0.
 Proof.
   intros carry a b.
   lemma facto
-    : BinWithZero.to_nat0
-        (to_bin_with_zero &carry + to_bin_with_zero &a + to_bin_with_zero &b)%bin_with_zero
-      = BinWithZero.to_nat0
-          (10 * to_bin_with_zero (pi_1 (add_with_carry &carry &a &b))%product
-            + to_bin_with_zero (pi_2 (add_with_carry &carry &a &b))%product)%bin_with_zero.
+    : Bin0.to_nat0
+        (to_b0 &carry + to_b0 &a + to_b0 &b)%b0
+      = Bin0.to_nat0
+          (10 * to_b0 (pi_1 (add_with_carry &carry &a &b))%product
+            + to_b0 (pi_2 (add_with_carry &carry &a &b))%product)%b0.
   {
     leibniz
-      (BinWithZero.conversion.addition
-        (to_bin_with_zero &carry + to_bin_with_zero &a)%bin_with_zero (to_bin_with_zero &b)),
-      (BinWithZero.conversion.addition (to_bin_with_zero &carry) (to_bin_with_zero &a)),
-      (BinWithZero.conversion.addition
-        (10 * to_bin_with_zero (pi_1 (add_with_carry &carry &a &b))%product)%bin_with_zero
-        (to_bin_with_zero (pi_2 (add_with_carry &carry &a &b))%product)),
-      (BinWithZero.conversion.multiplication
-        10%bin_with_zero (to_bin_with_zero (pi_1 (add_with_carry &carry &a &b))%product)),
+      (Bin0.conversion.addition
+        (to_b0 &carry + to_b0 &a)%b0 (to_b0 &b)),
+      (Bin0.conversion.addition (to_b0 &carry) (to_b0 &a)),
+      (Bin0.conversion.addition
+        (10 * to_b0 (pi_1 (add_with_carry &carry &a &b))%product)%b0
+        (to_b0 (pi_2 (add_with_carry &carry &a &b))%product)),
+      (Bin0.conversion.multiplication
+        10%b0 (to_b0 (pi_1 (add_with_carry &carry &a &b))%product)),
       conversion.binary.base,
       (conversion.binary.agreement &carry),
       (conversion.binary.agreement &a),
@@ -743,61 +743,61 @@ Proof.
       in |- *.
     ipso (conversion.carry &carry &a &b).
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 Module carry. (* conversion.binary.carry *)
 
-(* [conversion.carry.propagation] for the value in [BinWithZero]. *)
+(* [conversion.carry.propagation] for the value in [Bin0]. *)
 (* conversion.binary.carry.propagation *)
 Theorem propagation
   : forall (carry : Bit) (a : Bit) (b : Bit)
-      (x : BinWithZero) (y : BinWithZero) (m : BinWithZero) (o : BinWithZero)
-      (s : BinWithZero) .
-      (to_bin_with_zero (pi_1 (add_with_carry carry a b))%product + x + y
-        = m * o + s)%bin_with_zero ->
-      (to_bin_with_zero carry + (10 * x + to_bin_with_zero a) + (10 * y + to_bin_with_zero b)
+      (x : Bin0) (y : Bin0) (m : Bin0) (o : Bin0)
+      (s : Bin0) .
+      (to_b0 (pi_1 (add_with_carry carry a b))%product + x + y
+        = m * o + s)%b0 ->
+      (to_b0 carry + (10 * x + to_b0 a) + (10 * y + to_b0 b)
         = (10 * m) * o
-          + (10 * s + to_bin_with_zero (pi_2 (add_with_carry carry a b))%product))%bin_with_zero.
+          + (10 * s + to_b0 (pi_2 (add_with_carry carry a b))%product))%b0.
 Proof.
   intros carry a b x y m o s h.
-  let proof g := congru BinWithZero.to_nat0, &h.
+  let proof g := congru Bin0.to_nat0, &h.
   leibniz
-    (BinWithZero.conversion.addition
-      (to_bin_with_zero (pi_1 (add_with_carry &carry &a &b))%product + &x)%bin_with_zero &y),
-    (BinWithZero.conversion.addition
-      (to_bin_with_zero (pi_1 (add_with_carry &carry &a &b))%product) &x),
-    (BinWithZero.conversion.addition (&m * &o)%bin_with_zero &s),
-    (BinWithZero.conversion.multiplication &m &o),
+    (Bin0.conversion.addition
+      (to_b0 (pi_1 (add_with_carry &carry &a &b))%product + &x)%b0 &y),
+    (Bin0.conversion.addition
+      (to_b0 (pi_1 (add_with_carry &carry &a &b))%product) &x),
+    (Bin0.conversion.addition (&m * &o)%b0 &s),
+    (Bin0.conversion.multiplication &m &o),
     (conversion.binary.agreement (pi_1 (add_with_carry &carry &a &b))%product)
     in &g.
   lemma facto
-    : BinWithZero.to_nat0
-        (to_bin_with_zero &carry + (10 * &x + to_bin_with_zero &a)
-          + (10 * &y + to_bin_with_zero &b))%bin_with_zero
-      = BinWithZero.to_nat0
+    : Bin0.to_nat0
+        (to_b0 &carry + (10 * &x + to_b0 &a)
+          + (10 * &y + to_b0 &b))%b0
+      = Bin0.to_nat0
           ((10 * &m) * &o
             + (10 * &s
-              + to_bin_with_zero (pi_2 (add_with_carry &carry &a &b))%product))%bin_with_zero.
+              + to_b0 (pi_2 (add_with_carry &carry &a &b))%product))%b0.
   {
     leibniz
-      (BinWithZero.conversion.addition
-        (to_bin_with_zero &carry + (10 * &x + to_bin_with_zero &a))%bin_with_zero
-        (10 * &y + to_bin_with_zero &b)%bin_with_zero),
-      (BinWithZero.conversion.addition
-        (to_bin_with_zero &carry) (10 * &x + to_bin_with_zero &a)%bin_with_zero),
-      (BinWithZero.conversion.addition (10 * &x)%bin_with_zero (to_bin_with_zero &a)),
-      (BinWithZero.conversion.addition (10 * &y)%bin_with_zero (to_bin_with_zero &b)),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &x),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &y),
-      (BinWithZero.conversion.addition
-        ((10 * &m) * &o)%bin_with_zero
-        (10 * &s + to_bin_with_zero (pi_2 (add_with_carry &carry &a &b))%product)%bin_with_zero),
-      (BinWithZero.conversion.multiplication (10 * &m)%bin_with_zero &o),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &m),
-      (BinWithZero.conversion.addition
-        (10 * &s)%bin_with_zero (to_bin_with_zero (pi_2 (add_with_carry &carry &a &b))%product)),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &s),
+      (Bin0.conversion.addition
+        (to_b0 &carry + (10 * &x + to_b0 &a))%b0
+        (10 * &y + to_b0 &b)%b0),
+      (Bin0.conversion.addition
+        (to_b0 &carry) (10 * &x + to_b0 &a)%b0),
+      (Bin0.conversion.addition (10 * &x)%b0 (to_b0 &a)),
+      (Bin0.conversion.addition (10 * &y)%b0 (to_b0 &b)),
+      (Bin0.conversion.multiplication 10%b0 &x),
+      (Bin0.conversion.multiplication 10%b0 &y),
+      (Bin0.conversion.addition
+        ((10 * &m) * &o)%b0
+        (10 * &s + to_b0 (pi_2 (add_with_carry &carry &a &b))%product)%b0),
+      (Bin0.conversion.multiplication (10 * &m)%b0 &o),
+      (Bin0.conversion.multiplication 10%b0 &m),
+      (Bin0.conversion.addition
+        (10 * &s)%b0 (to_b0 (pi_2 (add_with_carry &carry &a &b))%product)),
+      (Bin0.conversion.multiplication 10%b0 &s),
       conversion.binary.base,
       (conversion.binary.agreement &carry),
       (conversion.binary.agreement &a),
@@ -806,33 +806,33 @@ Proof.
       in |- *.
     ipso
       (conversion.carry.propagation &carry &a &b
-        (BinWithZero.to_nat0 &x) (BinWithZero.to_nat0 &y) (BinWithZero.to_nat0 &m)
-        (BinWithZero.to_nat0 &o) (BinWithZero.to_nat0 &s) &g).
+        (Bin0.to_nat0 &x) (Bin0.to_nat0 &y) (Bin0.to_nat0 &m)
+        (Bin0.to_nat0 &o) (Bin0.to_nat0 &s) &g).
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
-(* [conversion.carry.conservation] for the value in [BinWithZero]. *)
+(* [conversion.carry.conservation] for the value in [Bin0]. *)
 (* conversion.binary.carry.conservation *)
 Theorem conservation
   : forall (carry : Bit) (a : Bit) (b : Bit) .
       and (flip (xor a b)) (xor (pi_2 (add_with_carry carry a b))%product a) = Zero ->
-      (to_bin_with_zero a + to_bin_with_zero b
-        = to_bin_with_zero (pi_1 (add_with_carry carry a b))%product
-          + to_bin_with_zero (pi_2 (add_with_carry carry a b))%product)%bin_with_zero.
+      (to_b0 a + to_b0 b
+        = to_b0 (pi_1 (add_with_carry carry a b))%product
+          + to_b0 (pi_2 (add_with_carry carry a b))%product)%b0.
 Proof.
   intros carry a b h.
   lemma facto
-    : BinWithZero.to_nat0 (to_bin_with_zero &a + to_bin_with_zero &b)%bin_with_zero
-      = BinWithZero.to_nat0
-          (to_bin_with_zero (pi_1 (add_with_carry &carry &a &b))%product
-            + to_bin_with_zero (pi_2 (add_with_carry &carry &a &b))%product)%bin_with_zero.
+    : Bin0.to_nat0 (to_b0 &a + to_b0 &b)%b0
+      = Bin0.to_nat0
+          (to_b0 (pi_1 (add_with_carry &carry &a &b))%product
+            + to_b0 (pi_2 (add_with_carry &carry &a &b))%product)%b0.
   {
     leibniz
-      (BinWithZero.conversion.addition (to_bin_with_zero &a) (to_bin_with_zero &b)),
-      (BinWithZero.conversion.addition
-        (to_bin_with_zero (pi_1 (add_with_carry &carry &a &b))%product)
-        (to_bin_with_zero (pi_2 (add_with_carry &carry &a &b))%product)),
+      (Bin0.conversion.addition (to_b0 &a) (to_b0 &b)),
+      (Bin0.conversion.addition
+        (to_b0 (pi_1 (add_with_carry &carry &a &b))%product)
+        (to_b0 (pi_2 (add_with_carry &carry &a &b))%product)),
       (conversion.binary.agreement &a),
       (conversion.binary.agreement &b),
       (conversion.binary.agreement (pi_1 (add_with_carry &carry &a &b))%product),
@@ -840,7 +840,7 @@ Proof.
       in |- *.
     ipso (conversion.carry.conservation &carry &a &b &h).
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 End carry. (* conversion.binary.carry *)
@@ -848,29 +848,29 @@ End carry. (* conversion.binary.carry *)
 (* conversion.binary.borrow *)
 Theorem borrow
   : forall (borrow : Bit) (a : Bit) (b : Bit) .
-      (to_bin_with_zero a + 10 * to_bin_with_zero (pi_1 (sub_with_borrow borrow a b))%product
-        = to_bin_with_zero b + to_bin_with_zero borrow
-          + to_bin_with_zero (pi_2 (sub_with_borrow borrow a b))%product)%bin_with_zero.
+      (to_b0 a + 10 * to_b0 (pi_1 (sub_with_borrow borrow a b))%product
+        = to_b0 b + to_b0 borrow
+          + to_b0 (pi_2 (sub_with_borrow borrow a b))%product)%b0.
 Proof.
   intros borrow a b.
   lemma facto
-    : BinWithZero.to_nat0
-        (to_bin_with_zero &a
-          + 10 * to_bin_with_zero (pi_1 (sub_with_borrow &borrow &a &b))%product)%bin_with_zero
-      = BinWithZero.to_nat0
-          (to_bin_with_zero &b + to_bin_with_zero &borrow
-            + to_bin_with_zero (pi_2 (sub_with_borrow &borrow &a &b))%product)%bin_with_zero.
+    : Bin0.to_nat0
+        (to_b0 &a
+          + 10 * to_b0 (pi_1 (sub_with_borrow &borrow &a &b))%product)%b0
+      = Bin0.to_nat0
+          (to_b0 &b + to_b0 &borrow
+            + to_b0 (pi_2 (sub_with_borrow &borrow &a &b))%product)%b0.
   {
     leibniz
-      (BinWithZero.conversion.addition
-        (to_bin_with_zero &a)
-        (10 * to_bin_with_zero (pi_1 (sub_with_borrow &borrow &a &b))%product)%bin_with_zero),
-      (BinWithZero.conversion.multiplication
-        10%bin_with_zero (to_bin_with_zero (pi_1 (sub_with_borrow &borrow &a &b))%product)),
-      (BinWithZero.conversion.addition
-        (to_bin_with_zero &b + to_bin_with_zero &borrow)%bin_with_zero
-        (to_bin_with_zero (pi_2 (sub_with_borrow &borrow &a &b))%product)),
-      (BinWithZero.conversion.addition (to_bin_with_zero &b) (to_bin_with_zero &borrow)),
+      (Bin0.conversion.addition
+        (to_b0 &a)
+        (10 * to_b0 (pi_1 (sub_with_borrow &borrow &a &b))%product)%b0),
+      (Bin0.conversion.multiplication
+        10%b0 (to_b0 (pi_1 (sub_with_borrow &borrow &a &b))%product)),
+      (Bin0.conversion.addition
+        (to_b0 &b + to_b0 &borrow)%b0
+        (to_b0 (pi_2 (sub_with_borrow &borrow &a &b))%product)),
+      (Bin0.conversion.addition (to_b0 &b) (to_b0 &borrow)),
       conversion.binary.base,
       (conversion.binary.agreement &a),
       (conversion.binary.agreement &b),
@@ -880,62 +880,62 @@ Proof.
       in |- *.
     ipso (conversion.borrow &borrow &a &b).
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 Module borrow. (* conversion.binary.borrow *)
 
-(* [conversion.borrow.propagation] for the value in [BinWithZero]. *)
+(* [conversion.borrow.propagation] for the value in [Bin0]. *)
 (* conversion.binary.borrow.propagation *)
 Theorem propagation
   : forall (borrow : Bit) (a : Bit) (b : Bit)
-      (x : BinWithZero) (y : BinWithZero) (m : BinWithZero) (o : BinWithZero)
-      (s : BinWithZero) .
+      (x : Bin0) (y : Bin0) (m : Bin0) (o : Bin0)
+      (s : Bin0) .
       (x + m * o
-        = y + to_bin_with_zero (pi_1 (sub_with_borrow borrow a b))%product + s)%bin_with_zero ->
-      (10 * x + to_bin_with_zero a + (10 * m) * o
-        = 10 * y + to_bin_with_zero b + to_bin_with_zero borrow
+        = y + to_b0 (pi_1 (sub_with_borrow borrow a b))%product + s)%b0 ->
+      (10 * x + to_b0 a + (10 * m) * o
+        = 10 * y + to_b0 b + to_b0 borrow
           + (10 * s
-            + to_bin_with_zero (pi_2 (sub_with_borrow borrow a b))%product))%bin_with_zero.
+            + to_b0 (pi_2 (sub_with_borrow borrow a b))%product))%b0.
 Proof.
   intros borrow a b x y m o s h.
-  let proof g := congru BinWithZero.to_nat0, &h.
+  let proof g := congru Bin0.to_nat0, &h.
   leibniz
-    (BinWithZero.conversion.addition &x (&m * &o)%bin_with_zero),
-    (BinWithZero.conversion.multiplication &m &o),
-    (BinWithZero.conversion.addition
-      (&y + to_bin_with_zero (pi_1 (sub_with_borrow &borrow &a &b))%product)%bin_with_zero &s),
-    (BinWithZero.conversion.addition
-      &y (to_bin_with_zero (pi_1 (sub_with_borrow &borrow &a &b))%product)),
+    (Bin0.conversion.addition &x (&m * &o)%b0),
+    (Bin0.conversion.multiplication &m &o),
+    (Bin0.conversion.addition
+      (&y + to_b0 (pi_1 (sub_with_borrow &borrow &a &b))%product)%b0 &s),
+    (Bin0.conversion.addition
+      &y (to_b0 (pi_1 (sub_with_borrow &borrow &a &b))%product)),
     (conversion.binary.agreement (pi_1 (sub_with_borrow &borrow &a &b))%product)
     in &g.
   lemma facto
-    : BinWithZero.to_nat0
-        (10 * &x + to_bin_with_zero &a + (10 * &m) * &o)%bin_with_zero
-      = BinWithZero.to_nat0
-          (10 * &y + to_bin_with_zero &b + to_bin_with_zero &borrow
+    : Bin0.to_nat0
+        (10 * &x + to_b0 &a + (10 * &m) * &o)%b0
+      = Bin0.to_nat0
+          (10 * &y + to_b0 &b + to_b0 &borrow
             + (10 * &s
-              + to_bin_with_zero (pi_2 (sub_with_borrow &borrow &a &b))%product))%bin_with_zero.
+              + to_b0 (pi_2 (sub_with_borrow &borrow &a &b))%product))%b0.
   {
     leibniz
-      (BinWithZero.conversion.addition
-        (10 * &x + to_bin_with_zero &a)%bin_with_zero ((10 * &m) * &o)%bin_with_zero),
-      (BinWithZero.conversion.addition (10 * &x)%bin_with_zero (to_bin_with_zero &a)),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &x),
-      (BinWithZero.conversion.multiplication (10 * &m)%bin_with_zero &o),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &m),
-      (BinWithZero.conversion.addition
-        (10 * &y + to_bin_with_zero &b + to_bin_with_zero &borrow)%bin_with_zero
+      (Bin0.conversion.addition
+        (10 * &x + to_b0 &a)%b0 ((10 * &m) * &o)%b0),
+      (Bin0.conversion.addition (10 * &x)%b0 (to_b0 &a)),
+      (Bin0.conversion.multiplication 10%b0 &x),
+      (Bin0.conversion.multiplication (10 * &m)%b0 &o),
+      (Bin0.conversion.multiplication 10%b0 &m),
+      (Bin0.conversion.addition
+        (10 * &y + to_b0 &b + to_b0 &borrow)%b0
         (10 * &s
-          + to_bin_with_zero (pi_2 (sub_with_borrow &borrow &a &b))%product)%bin_with_zero),
-      (BinWithZero.conversion.addition
-        (10 * &y + to_bin_with_zero &b)%bin_with_zero (to_bin_with_zero &borrow)),
-      (BinWithZero.conversion.addition (10 * &y)%bin_with_zero (to_bin_with_zero &b)),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &y),
-      (BinWithZero.conversion.addition
-        (10 * &s)%bin_with_zero
-        (to_bin_with_zero (pi_2 (sub_with_borrow &borrow &a &b))%product)),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &s),
+          + to_b0 (pi_2 (sub_with_borrow &borrow &a &b))%product)%b0),
+      (Bin0.conversion.addition
+        (10 * &y + to_b0 &b)%b0 (to_b0 &borrow)),
+      (Bin0.conversion.addition (10 * &y)%b0 (to_b0 &b)),
+      (Bin0.conversion.multiplication 10%b0 &y),
+      (Bin0.conversion.addition
+        (10 * &s)%b0
+        (to_b0 (pi_2 (sub_with_borrow &borrow &a &b))%product)),
+      (Bin0.conversion.multiplication 10%b0 &s),
       conversion.binary.base,
       (conversion.binary.agreement &a),
       (conversion.binary.agreement &b),
@@ -944,58 +944,58 @@ Proof.
       in |- *.
     ipso
       (conversion.borrow.propagation &borrow &a &b
-        (BinWithZero.to_nat0 &x) (BinWithZero.to_nat0 &y) (BinWithZero.to_nat0 &m)
-        (BinWithZero.to_nat0 &o) (BinWithZero.to_nat0 &s) &g).
+        (Bin0.to_nat0 &x) (Bin0.to_nat0 &y) (Bin0.to_nat0 &m)
+        (Bin0.to_nat0 &o) (Bin0.to_nat0 &s) &g).
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 End borrow. (* conversion.binary.borrow *)
 
 (* conversion.binary.boundedness *)
-Theorem boundedness : forall (b : Bit) . (to_bin_with_zero b < 10)%bin_with_zero.
+Theorem boundedness : forall (b : Bit) . (to_b0 b < 10)%b0.
 Proof.
   intros b.
   lemma facto
-    : (BinWithZero.to_nat0 (to_bin_with_zero &b) < BinWithZero.to_nat0 10%bin_with_zero)%n0.
+    : (Bin0.to_nat0 (to_b0 &b) < Bin0.to_nat0 10%b0)%n0.
   {
     leibniz conversion.binary.base, (conversion.binary.agreement &b) in |- *.
     ipso (conversion.boundedness &b).
   }
   ipso
     (modus aequans
-      (BinWithZero.conversion.order (to_bin_with_zero &b) 10%bin_with_zero), &facto).
+      (Bin0.conversion.order (to_b0 &b) 10%b0), &facto).
 Qed.
 
 Module boundedness. (* conversion.binary.boundedness *)
 
-(* [conversion.boundedness.propagation] for the value in [BinWithZero]. *)
+(* [conversion.boundedness.propagation] for the value in [Bin0]. *)
 (* conversion.binary.boundedness.propagation *)
 Theorem propagation
-  : forall (h : BinWithZero) (m : BinWithZero) (b : Bit) .
-      (h < m -> 10 * h + to_bin_with_zero b < 10 * m)%bin_with_zero.
+  : forall (h : Bin0) (m : Bin0) (b : Bit) .
+      (h < m -> 10 * h + to_b0 b < 10 * m)%b0.
 Proof.
   intros h m b e.
-  let proof f := modus aequans (BinWithZero.conversion.order &h &m), &e.
+  let proof f := modus aequans (Bin0.conversion.order &h &m), &e.
   lemma facto
-    : (BinWithZero.to_nat0 (10 * &h + to_bin_with_zero &b)%bin_with_zero
-        < BinWithZero.to_nat0 (10 * &m)%bin_with_zero)%n0.
+    : (Bin0.to_nat0 (10 * &h + to_b0 &b)%b0
+        < Bin0.to_nat0 (10 * &m)%b0)%n0.
   {
     leibniz
-      (BinWithZero.conversion.addition (10 * &h)%bin_with_zero (to_bin_with_zero &b)),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &h),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &m),
+      (Bin0.conversion.addition (10 * &h)%b0 (to_b0 &b)),
+      (Bin0.conversion.multiplication 10%b0 &h),
+      (Bin0.conversion.multiplication 10%b0 &m),
       conversion.binary.base,
       (conversion.binary.agreement &b)
       in |- *.
     ipso
       (conversion.boundedness.propagation
-        (BinWithZero.to_nat0 &h) (BinWithZero.to_nat0 &m) &b &f).
+        (Bin0.to_nat0 &h) (Bin0.to_nat0 &m) &b &f).
   }
   ipso
     (modus aequans
-      (BinWithZero.conversion.order
-        (10 * &h + to_bin_with_zero &b)%bin_with_zero (10 * &m)%bin_with_zero),
+      (Bin0.conversion.order
+        (10 * &h + to_b0 &b)%b0 (10 * &m)%b0),
       &facto).
 Qed.
 
@@ -1004,29 +1004,29 @@ Module lower. (* conversion.binary.boundedness.lower *)
 (* A bit appended below a number at least [m] gives one at least [2 * m]. *)
 (* conversion.binary.boundedness.lower.propagation *)
 Theorem propagation
-  : forall (h : BinWithZero) (m : BinWithZero) (b : Bit) .
-      (m <= h -> 10 * m <= 10 * h + to_bin_with_zero b)%bin_with_zero.
+  : forall (h : Bin0) (m : Bin0) (b : Bit) .
+      (m <= h -> 10 * m <= 10 * h + to_b0 b)%b0.
 Proof.
   intros h m b e.
   lemma doubled
-    : (2 * BinWithZero.to_nat0 &m <= 2 * BinWithZero.to_nat0 &h + to_nat0 &b)%n0.
+    : (2 * Bin0.to_nat0 &m <= 2 * Bin0.to_nat0 &h + to_nat0 &b)%n0.
   {
     lemma padded
-      : (2 * BinWithZero.to_nat0 &h <= 2 * BinWithZero.to_nat0 &h + to_nat0 &b)%n0.
+      : (2 * Bin0.to_nat0 &h <= 2 * Bin0.to_nat0 &h + to_nat0 &b)%n0.
     {
       leibniz
-        (Nat0.addition.commutativity (2 * BinWithZero.to_nat0 &h)%n0 (to_nat0 &b))
+        (Nat0.addition.commutativity (2 * Bin0.to_nat0 &h)%n0 (to_nat0 &b))
         in |- *.
       ipso
-        (Nat0.addition.right.order.extensivity (to_nat0 &b) (2 * BinWithZero.to_nat0 &h)%n0).
+        (Nat0.addition.right.order.extensivity (to_nat0 &b) (2 * Bin0.to_nat0 &h)%n0).
     }
     match &e with | same | smaller end.
     - leibniz &same in |- *.
       ipso &padded.
-    - let proof below := modus aequans (BinWithZero.conversion.order &m &h), &smaller.
+    - let proof below := modus aequans (Bin0.conversion.order &m &h), &smaller.
       let proof twice
         := Nat0.multiplication.left.order.strict.monotonicity
-            2%n (BinWithZero.to_nat0 &m) (BinWithZero.to_nat0 &h) &below.
+            2%n (Bin0.to_nat0 &m) (Bin0.to_nat0 &h) &below.
       simpl Nat0.LessOrEqual in |- *.
       match &padded with | same | above end.
       + leibniz <- &same in |- *.
@@ -1036,18 +1036,18 @@ Proof.
   leibniz
     <- (conversion.binary.agreement &b),
     <- conversion.binary.base,
-    <- (BinWithZero.conversion.multiplication 10%bin_with_zero &m),
-    <- (BinWithZero.conversion.multiplication 10%bin_with_zero &h),
-    <- (BinWithZero.conversion.addition (10 * &h)%bin_with_zero (to_bin_with_zero &b))
+    <- (Bin0.conversion.multiplication 10%b0 &m),
+    <- (Bin0.conversion.multiplication 10%b0 &h),
+    <- (Bin0.conversion.addition (10 * &h)%b0 (to_b0 &b))
     in &doubled.
-  simpl BinWithZero.LessOrEqual in |- *.
+  simpl Bin0.LessOrEqual in |- *.
   match &doubled with | same | smaller end.
-  - ipso (disjoin (BinWithZero.conversion.injectivity &same), _).
+  - ipso (disjoin (Bin0.conversion.injectivity &same), _).
   - ipso
       (disjoin _,
         (modus aequans
-          (BinWithZero.conversion.order
-            (10 * &m)%bin_with_zero (10 * &h + to_bin_with_zero &b)%bin_with_zero),
+          (Bin0.conversion.order
+            (10 * &m)%b0 (10 * &h + to_b0 &b)%b0),
           &smaller)).
 Qed.
 
@@ -1055,52 +1055,52 @@ End lower. (* conversion.binary.boundedness.lower *)
 
 End boundedness. (* conversion.binary.boundedness *)
 
-(* [BinWithZero.halve] drops the bit appended last. *)
+(* [Bin0.halve] drops the bit appended last. *)
 (* conversion.binary.halving *)
 Theorem halving
-  : forall (h : BinWithZero) (b : Bit) .
-      BinWithZero.halve (10 * h + to_bin_with_zero b)%bin_with_zero = h.
+  : forall (h : Bin0) (b : Bit) .
+      Bin0.halve (10 * h + to_b0 b)%b0 = h.
 Proof.
   intros h b.
   lemma facto
-    : BinWithZero.to_nat0 (BinWithZero.halve (10 * &h + to_bin_with_zero &b)%bin_with_zero)
-      = BinWithZero.to_nat0 &h.
+    : Bin0.to_nat0 (Bin0.halve (10 * &h + to_b0 &b)%b0)
+      = Bin0.to_nat0 &h.
   {
     leibniz
-      (BinWithZero.conversion.halving (10 * &h + to_bin_with_zero &b)%bin_with_zero),
-      (BinWithZero.conversion.addition (10 * &h)%bin_with_zero (to_bin_with_zero &b)),
-      (BinWithZero.conversion.multiplication 10%bin_with_zero &h),
+      (Bin0.conversion.halving (10 * &h + to_b0 &b)%b0),
+      (Bin0.conversion.addition (10 * &h)%b0 (to_b0 &b)),
+      (Bin0.conversion.multiplication 10%b0 &h),
       conversion.binary.base,
       (conversion.binary.agreement &b)
       in |- *.
-    match (conversion.halving (BinWithZero.to_nat0 &h) &b) with | quotient _ end.
+    match (conversion.halving (Bin0.to_nat0 &h) &b) with | quotient _ end.
     ipso &quotient.
   }
-  ipso (BinWithZero.conversion.injectivity &facto).
+  ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
 Module halving. (* conversion.binary.halving *)
 
 (* conversion.binary.halving.injectivity *)
 Theorem injectivity
-  : forall {h : BinWithZero} {k : BinWithZero} {a : Bit} {b : Bit} .
-      (10 * h + to_bin_with_zero a = 10 * k + to_bin_with_zero b)%bin_with_zero ->
+  : forall {h : Bin0} {k : Bin0} {a : Bit} {b : Bit} .
+      (10 * h + to_b0 a = 10 * k + to_b0 b)%b0 ->
       h = k /\ a = b.
 Proof.
   intros h k a b e.
-  let proof f := congru BinWithZero.to_nat0, &e.
+  let proof f := congru Bin0.to_nat0, &e.
   leibniz
-    (BinWithZero.conversion.addition (10 * &h)%bin_with_zero (to_bin_with_zero &a)),
-    (BinWithZero.conversion.multiplication 10%bin_with_zero &h),
-    (BinWithZero.conversion.addition (10 * &k)%bin_with_zero (to_bin_with_zero &b)),
-    (BinWithZero.conversion.multiplication 10%bin_with_zero &k),
+    (Bin0.conversion.addition (10 * &h)%b0 (to_b0 &a)),
+    (Bin0.conversion.multiplication 10%b0 &h),
+    (Bin0.conversion.addition (10 * &k)%b0 (to_b0 &b)),
+    (Bin0.conversion.multiplication 10%b0 &k),
     conversion.binary.base,
     (conversion.binary.agreement &a),
     (conversion.binary.agreement &b)
     in &f.
   match (conversion.halving.injectivity &f) with | values bits end.
   divide et impera.
-  - ipso (BinWithZero.conversion.injectivity &values).
+  - ipso (Bin0.conversion.injectivity &values).
   - ipso &bits.
 Qed.
 
@@ -1114,22 +1114,22 @@ Module appending. (* conversion.binary.appending *)
  *)
 (* conversion.binary.appending.propagation *)
 Theorem propagation
-  : forall (v : BinWithZero) (c : BinWithZero) (p : BinWithZero) (t : BinWithZero) (a : Bit) .
-      v = (c * p + t)%bin_with_zero ->
-      (10 * v + to_bin_with_zero a = c * (10 * p) + (10 * t + to_bin_with_zero a))%bin_with_zero.
+  : forall (v : Bin0) (c : Bin0) (p : Bin0) (t : Bin0) (a : Bit) .
+      v = (c * p + t)%b0 ->
+      (10 * v + to_b0 a = c * (10 * p) + (10 * t + to_b0 a))%b0.
 Proof.
   intros v c p t a e.
-  match (BinWithZero.multiplication.distributivity.over.addition
-          10%bin_with_zero (&c * &p)%bin_with_zero &t)
+  match (Bin0.multiplication.distributivity.over.addition
+          10%b0 (&c * &p)%b0 &t)
   with | spread _ end.
   leibniz
     &e,
     &spread,
-    <- (BinWithZero.multiplication.associativity 10%bin_with_zero &c &p),
-    (BinWithZero.multiplication.commutativity 10%bin_with_zero &c),
-    (BinWithZero.multiplication.associativity &c 10%bin_with_zero &p),
-    (BinWithZero.addition.associativity
-      (&c * (10 * &p))%bin_with_zero (10 * &t)%bin_with_zero (to_bin_with_zero &a))
+    <- (Bin0.multiplication.associativity 10%b0 &c &p),
+    (Bin0.multiplication.commutativity 10%b0 &c),
+    (Bin0.multiplication.associativity &c 10%b0 &p),
+    (Bin0.addition.associativity
+      (&c * (10 * &p))%b0 (10 * &t)%b0 (to_b0 &a))
     in |- *.
   quod idem est.
 Qed.
