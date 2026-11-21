@@ -335,6 +335,20 @@ Definition compare := fun (x1 : Date) (x2 : Date) .
 (* [Date -> Date -> Prop] *)
 Definition LessThan := fun (x1 : Date) (x2 : Date) . compare x1 x2 = Comparison.Lt.
 
+Notation "x1 < x2" := (LessThan x1 x2) (only parsing)
+  : jw_date_scope.
+
+(* [Date -> Date -> Prop] *)
+Definition LessOrEqual := fun (x1 : Date) (x2 : Date) . x1 = x2 \/ LessThan x1 x2.
+
+Notation "x1 <= x2" := (LessOrEqual x1 x2) (only parsing)
+  : jw_date_scope.
+
+Notation "x1 > x2" := (LessThan x2 x1) (only parsing)
+  : jw_date_scope.
+Notation "x1 >= x2" := (LessOrEqual x2 x1) (only parsing)
+  : jw_date_scope.
+
 (* antisymmetry *)
 Theorem antisymmetry
   : forall (x1 : Date) (x2 : Date) . compare x1 x2 = Comparison.transpose (compare x2 x1).
@@ -2511,7 +2525,7 @@ Qed.
  *)
 (* number.monotonicity *)
 Theorem monotonicity
-  : forall (d1 : Date) (d2 : Date) . LessThan d1 d2 -> day_number d1 < day_number d2.
+  : forall (d1 : Date) (d2 : Date) . (d1 < d2)%date -> day_number d1 < day_number d2.
 Proof.
   intros d1 d2 h.
   simpl LessThan in &h.
@@ -2705,7 +2719,7 @@ Qed.
 (* Spec law 9, as an order. *)
 (* number.order *)
 Theorem order
-  : forall (d1 : Date) (d2 : Date) . LessThan d1 d2 <-> day_number d1 < day_number d2.
+  : forall (d1 : Date) (d2 : Date) . (d1 < d2)%date <-> day_number d1 < day_number d2.
 Proof.
   intros d1 d2.
   divide et impera.
@@ -3496,7 +3510,7 @@ Module strict. (* order.strict *)
 (* order.strict.transitivity *)
 Theorem transitivity
   : forall {x1 : Date} {x2 : Date} {x3 : Date} .
-      LessThan x1 x2 -> LessThan x2 x3 -> LessThan x1 x3.
+      (x1 < x2)%date -> (x2 < x3)%date -> (x1 < x3)%date.
 Proof.
   intros x1 x2 x3 h1 h2.
   let proof n1 := modus aequans (number.order &x1 &x2), &h1.
@@ -3513,7 +3527,7 @@ Module comparison. (* comparison *)
 (* comparison.specification *)
 Theorem specification
   : forall (x1 : Date) (x2 : Date) .
-      (compare x1 x2 = Comparison.Lt <-> LessThan x1 x2)
+      (compare x1 x2 = Comparison.Lt <-> (x1 < x2)%date)
       /\ (compare x1 x2 = Comparison.Eq <-> x1 = x2).
 Proof.
   intros x1 x2.
@@ -3543,5 +3557,7 @@ Instance comparable
 End Date. (* Date *)
 
 Abbreviation Date := Date.T.
+
+Export (notations) Date.
 
 Existing Instance Date.comparable.
