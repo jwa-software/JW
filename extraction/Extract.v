@@ -54,7 +54,7 @@ Extraction "JW.ml"
   JW.Data.Number.Rational.Rational
   JW.Data.Number.Numeral.Numeral
   JW.Data.Number.Binary.BinBase.BinBase
-  JW.Data.Number.Binary.BinWithZero.BinWithZero
+  JW.Data.Number.Binary.Bin0.Bin0
   JW.Data.Number.Binary.SignedBin.SignedBin
   JW.Data.Machine.Bit.Bit
   JW.Data.Machine.Byte.Byte

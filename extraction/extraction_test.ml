@@ -33,9 +33,9 @@ let rec int_of_bin_base = function
   | BinBase.Coq_b1 b -> (2 * int_of_bin_base b) + 1
 ;;
 
-let int_of_bin_with_zero = function
-  | BinWithZero.Zero -> 0
-  | BinWithZero.Positive p -> int_of_bin_base p
+let int_of_bin0 = function
+  | Bin0.Zero -> 0
+  | Bin0.Positive p -> int_of_bin_base p
 ;;
 
 let signed_bin k =
@@ -57,10 +57,7 @@ let int8_flagged (flag, x) = flag = Bit.One, int_of_signed_bin (Int8.to_b_signed
 let int8 k = Int8.from_b_signed (signed_bin k)
 
 (* A carry or borrow and a [UInt8] result, as OCaml integers. *)
-let uint8_flagged (flag, x) =
-  flag = Bit.One, int_of_bin_with_zero (UInt8.to_bin_with_zero x)
-;;
-
+let uint8_flagged (flag, x) = flag = Bit.One, int_of_bin0 (UInt8.to_b0 x)
 let uint8 k = UInt8.from_b_signed (signed_bin k)
 
 (* [2^n - 1] and [2^n] as [BinBase] values, for numbers past OCaml's [int]. *)
@@ -70,7 +67,7 @@ let date y m d = Date.make (bin_base y) m (bin_base d)
 
 let day_number y m d =
   match date y m d with
-  | Some x -> int_of_bin_with_zero (Date.day_number x)
+  | Some x -> int_of_bin0 (Date.day_number x)
   | None -> -1
 ;;
 
@@ -125,7 +122,7 @@ let () =
   check "Date.day_number 9999-12-31" (day_number 9999 Month.December 31 = 3652058);
   check
     "Date.days_before_year 2001"
-    (int_of_bin_with_zero (Date.days_before_year (bin_base 2001)) = 730485);
+    (int_of_bin0 (Date.days_before_year (bin_base 2001)) = 730485);
   check
     "Date.make, refusal"
     (date 2023 Month.February 29 = None
