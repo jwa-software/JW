@@ -57,6 +57,8 @@ Arithmetic is written with each type's notation and scope key, `(a + b)%n`, `(p 
 
 **They are written in binary digits**: `1011%bin_base`, `1011%bin_with_zero` and `1011%b` are eleven, and `(-1011)%b` is minus eleven. A closed value prints the same way. Any other digit is refused, and so is a `BinBase` literal opening with 0. The short key `%b` goes to `Bin` because only its literals can carry a sign.
 
+**`BinBase` and `BinWithZero` also read decimal digits**, under a key of their own: `2024%bin_base_decimal` is the same term as `11111101000%bin_base`, and `738944%bin_with_zero_decimal` the same as `10110100011010000000%bin_with_zero`. A `BinBase` literal opening with 0 is refused here too. A closed value still prints in binary, unless the decimal scope is open.
+
 **Division takes a `BinBase` divisor, which is never zero:**
 
 - `(1011 /. 11%bin_base)%bin_with_zero` is three, and `(1011 %. 11%bin_base)%bin_with_zero` is two;
