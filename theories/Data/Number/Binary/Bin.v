@@ -1080,6 +1080,22 @@ Qed.
 
 End mixed. (* addition.order.mixed *)
 
+(* Equal right summands leave the left ones' order; a smaller right one makes
+ * the sum smaller by [addition.order.mixed.monotonicity].
+ *)
+(* addition.order.accumulation *)
+Theorem accumulation
+  : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . a <= c -> b <= d -> a + b <= c + d.
+Proof.
+  intros a b c d h k.
+  match &k with | e | smaller end.
+  - leibniz &e in |- *.
+    let proof s := addition.order.monotonicity &d &a &c &h.
+    leibniz (addition.commutativity &d &a), (addition.commutativity &d &c) in &s.
+    ipso &s.
+  - ipso (disjoin _, (addition.order.mixed.monotonicity &a &b &c &d &h &smaller)).
+Qed.
+
 End order. (* addition.order *)
 
 End addition. (* addition *)
@@ -1162,12 +1178,39 @@ Qed.
 
 End strict. (* order.strict *)
 
+Module sign. (* order.sign *)
+
+(* [Negative p] plus [+ p] is 0. *)
+(* order.sign.negativity *)
+Theorem negativity : forall (p : BinBase) . Bin.Negative p < 0.
+Proof.
+  intro p.
+  simpl LessThan in |- *.
+  exists &p.
+  ipso (addition.left.inverse (Bin.Positive &p)).
+Qed.
+
+(* order.sign.positivity *)
+Theorem positivity : forall (p : BinBase) . 0 < Bin.Positive p.
+Proof.
+  intro p.
+  simpl LessThan in |- *.
+  exists &p.
+  simpl add in |- *.
+  simpl in |- *.
+  quod idem est.
+Qed.
+
+End sign. (* order.sign *)
+
 Module negation. (* order.negation *)
+
+Module strict. (* order.negation.strict *)
 
 (* Adding [negate x + negate y] to both sides of [x < y] leaves
  * [negate y < negate x].
  *)
-(* order.negation.reversal *)
+(* order.negation.strict.reversal *)
 Theorem reversal : forall (x : Bin) (y : Bin) . x < y <-> negate y < negate x.
 Proof.
   intros x y.
@@ -1195,6 +1238,21 @@ Proof.
     ipso &s.
 Qed.
 
+End strict. (* order.negation.strict *)
+
+(* Equal sides stay equal, and a strict order reverses by
+ * [order.negation.strict.reversal].
+ *)
+(* order.negation.reversal *)
+Theorem reversal : forall (x : Bin) (y : Bin) . x <= y -> negate y <= negate x.
+Proof.
+  intros x y h.
+  match &h with | e | smaller end.
+  - leibniz &e in |- *.
+    ipso (disjoin (refl (negate &y)), _).
+  - ipso (disjoin _, (modus aequans (order.negation.strict.reversal &x &y), &smaller)).
+Qed.
+
 End negation. (* order.negation *)
 
 Module subtraction. (* order.subtraction *)
@@ -1220,7 +1278,7 @@ Proof.
   intros x y z h.
   leibniz (subtraction.specification &x &z), (subtraction.specification &x &y) in |- *.
   ipso (addition.order.strict.monotonicity &x (negate &z) (negate &y)
-          (modus aequans (order.negation.reversal &y &z), &h)).
+          (modus aequans (order.negation.strict.reversal &y &z), &h)).
 Qed.
 
 End right. (* order.subtraction.right *)
@@ -1626,11 +1684,11 @@ Proof.
   intros k x y hk h.
   lemma positive : 0 < negate k.
   {
-    ipso (modus aequans (order.negation.reversal &k 0), &hk).
+    ipso (modus aequans (order.negation.strict.reversal &k 0), &hk).
   }
   let proof m := multiplication.left.order.strict.monotonicity (negate &k) &x &y &positive &h.
   leibniz (multiplication.left.negation &k &x), (multiplication.left.negation &k &y) in &m.
-  ipso (modus aequans (order.negation.reversal (&k * &y) (&k * &x)), &m).
+  ipso (modus aequans (order.negation.strict.reversal (&k * &y) (&k * &x)), &m).
 Qed.
 
 End strict. (* multiplication.left.order.strict *)
@@ -1839,7 +1897,9 @@ Proof.
     quod idem est.
 Qed.
 
-(* Negation reverses each of the three answers, by [order.negation.reversal]. *)
+(* Negation reverses each of the three answers, by
+ * [order.negation.strict.reversal].
+ *)
 (* comparison.negation *)
 Theorem negation : forall (x : Bin) (y : Bin) . compare (negate x) (negate y) = compare y x.
 Proof.
@@ -1848,7 +1908,8 @@ Proof.
   - match (comparison.specification &y &x) with | strict _ end.
     match (comparison.specification (negate &x) (negate &y)) with | negated _ end.
     let proof smaller := modus aequans &strict, &c.
-    ipso (modus aequans &negated, (modus aequans (order.negation.reversal &y &x), &smaller)).
+    ipso (modus aequans &negated,
+          (modus aequans (order.negation.strict.reversal &y &x), &smaller)).
   - match (comparison.specification &y &x) with | _ equality end.
     leibniz (modus aequans &equality, &c) in |- *.
     match (comparison.specification (negate &x) (negate &x)) with | _ same end.
@@ -1863,7 +1924,7 @@ Proof.
     match (comparison.specification (negate &y) (negate &x)) with | negated_reversed _ end.
     let proof below :=
       modus aequans &negated_reversed,
-        (modus aequans (order.negation.reversal &x &y),
+        (modus aequans (order.negation.strict.reversal &x &y),
            (modus aequans &strict_reversed, &reversed)).
     leibniz (comparison.antisymmetry (negate &x) (negate &y)), &below in |- *.
     simpl in |- *.

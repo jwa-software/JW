@@ -298,8 +298,24 @@ Definition data_number_binary_all_delivers_bin_addition_order_mixed_monotonicity
   : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . (a <= c -> b < d -> a + b < c + d)%b
   := Bin.addition.order.mixed.monotonicity.
 
-Definition data_number_binary_all_delivers_bin_order_negation_reversal
+Definition data_number_binary_all_delivers_bin_addition_order_accumulation
+  : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . (a <= c -> b <= d -> a + b <= c + d)%b
+  := Bin.addition.order.accumulation.
+
+Definition data_number_binary_all_delivers_bin_order_sign_negativity
+  : forall (p : BinBase) . (Bin.Negative p < 0)%b
+  := Bin.order.sign.negativity.
+
+Definition data_number_binary_all_delivers_bin_order_sign_positivity
+  : forall (p : BinBase) . (0 < Bin.Positive p)%b
+  := Bin.order.sign.positivity.
+
+Definition data_number_binary_all_delivers_bin_order_negation_strict_reversal
   : forall (x : Bin) (y : Bin) . (x < y <-> - y < - x)%b
+  := Bin.order.negation.strict.reversal.
+
+Definition data_number_binary_all_delivers_bin_order_negation_reversal
+  : forall (x : Bin) (y : Bin) . (x <= y -> - y <= - x)%b
   := Bin.order.negation.reversal.
 
 Definition data_number_binary_all_delivers_bin_order_subtraction_left_monotonicity
