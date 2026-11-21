@@ -30,43 +30,44 @@ Inductive T : Type :=
 
 Abbreviation Month := T.
 
-(* The month's place in the year, [January] being 1; a [BinBase] literal is
- * written in binary digits, so [1100%bin_base] is 12.
- *)
+(* A month's place is written in decimal. *)
+Local Open Scope jw_bin_base_decimal_scope.
+
+(* The month's place in the year, [January] being 1. *)
 (* [Month -> BinBase] *)
 Definition to_number := fun (m : Month) .
   match m with
-  | January   =>    1%bin_base
-  | February  =>   10%bin_base
-  | March     =>   11%bin_base
-  | April     =>  100%bin_base
-  | May       =>  101%bin_base
-  | June      =>  110%bin_base
-  | July      =>  111%bin_base
-  | August    => 1000%bin_base
-  | September => 1001%bin_base
-  | October   => 1010%bin_base
-  | November  => 1011%bin_base
-  | December  => 1100%bin_base
+  | January   =>  1
+  | February  =>  2
+  | March     =>  3
+  | April     =>  4
+  | May       =>  5
+  | June      =>  6
+  | July      =>  7
+  | August    =>  8
+  | September =>  9
+  | October   => 10
+  | November  => 11
+  | December  => 12
   end.
 
 (* The month at a place in the year, [None] past 12. *)
 (* [BinBase -> Option Month] *)
 Definition from_number := fun (n : BinBase) .
   match n with
-  |    1%bin_base => Some January
-  |   10%bin_base => Some February
-  |   11%bin_base => Some March
-  |  100%bin_base => Some April
-  |  101%bin_base => Some May
-  |  110%bin_base => Some June
-  |  111%bin_base => Some July
-  | 1000%bin_base => Some August
-  | 1001%bin_base => Some September
-  | 1010%bin_base => Some October
-  | 1011%bin_base => Some November
-  | 1100%bin_base => Some December
-  | _             => None
+  |  1 => Some January
+  |  2 => Some February
+  |  3 => Some March
+  |  4 => Some April
+  |  5 => Some May
+  |  6 => Some June
+  |  7 => Some July
+  |  8 => Some August
+  |  9 => Some September
+  | 10 => Some October
+  | 11 => Some November
+  | 12 => Some December
+  | _  => None
   end.
 
 (* The month after, [January] after [December]. *)
