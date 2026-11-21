@@ -27,6 +27,7 @@ SPDX-License-Identifier: MIT
 - **The number counted from 0.** `Month.to_b0` gives the same place counted from 0, `Month.January` being 0, and `Month.from_b0` goes back, `None` past 11. The laws are the same, under `Month.conversion.bin0`.
 - **The next and the previous month.** `Month.next` and `Month.prev` go round the year, `Month.January` after `Month.December`. Each undoes the other: `Month.succession.forward.inverse` and `Month.succession.backward.inverse`.
 - **The order of the year.** `Month.compare` compares the months' numbers, and `Month.comparable` makes it an instance of `Comparable`.
+- **The length of a year.** `Month.months_in_year` is 12.
 
 ---
 
@@ -116,6 +117,46 @@ SPDX-License-Identifier: MIT
 
 ### The order of dates
 
-- **By year, then by month, then by day.** `Date.compare` compares the dates that way, and `Date.LessThan x1 x2` states that `x1` comes first. `Date.comparable` makes it an instance of `Comparable`.
+- **By year, then by month, then by day.** `Date.compare` compares the dates that way, and `Date.LessThan x1 x2` states that `x1` comes first. `Date.LessOrEqual x1 x2` states that `x1` comes first or is `x2`. `Date.comparable` makes it an instance of `Comparable`.
+- **The notations.** Under `jw_date_scope`, key `%date`, `(x1 < x2)%date`, `<=`, `>` and `>=` stand for the order. The scope is not opened, so a date's `<` and a number's `<` can share a file.
 - **The order is the order of the day numbers.** `Date.number.comparison` states `Date.compare x1 x2 = Bin0.compare (Date.day_number x1) (Date.day_number x2)`, and `Date.number.order` states that `x1` comes first exactly when its day number is the smaller.
-- **A day number names one date.** `Date.number.injectivity` states that two dates with the same day number are the same date.
+- **A day number names one date.** `Date.number.injectivity` states that two dates with the same day number are the same date, and `Date.extensionality` that two dates with the same year, month and day are the same date.
+
+### Day arithmetic
+
+- **Days after and before.** `Date.add_days x k` is the date `k` days after `x`, and `Date.subtract_days x k` the date `k` days before it, `None` before 0001-01-01. `Date.next_day` and `Date.previous_day` step by one day. Each goes through the day number and back.
+- **The laws.** `Date.addition.specification` states `Date.day_number (Date.add_days x k) = Date.day_number x + k`, with `Date.addition.identity` (adding 0) and `Date.addition.associativity`. `Date.subtraction.specification` states that `Date.subtract_days x k = Some y` exactly when `Date.add_days y k = x`, and `Date.subtraction.failure` that the answer is `None` exactly when the day number is less than `k`. `Date.succession.inversion` states the same for `Date.previous_day` and `Date.next_day`, and `Date.succession.origin` that only the first day of year 1 has no day before it.
+- **The days between.** `Date.days_between x1 x2` is a `SignedBin`, negative when `x2` is the earlier date; `Date.difference.specification` states that the days from `x` to `Date.add_days x k` are `k`.
+
+| From | To | `Date.days_between` |
+|:---|:---|:---|
+| 2000-01-01 | 2024-02-29 | 8825 |
+| 2024-02-29 | 2000-01-01 | -8825 |
+
+### The first and the last day
+
+- **Of the month and of the year.** `Date.first_day_of_month`, `Date.last_day_of_month`, `Date.first_day_of_year` and `Date.last_day_of_year` take a date and give the first or the last day of its month or its year. Day 1 and the month's length are valid days of every month, by `Date.month.validity.minimum` and `Date.month.validity.maximum`, so each builds its date with no `Option`.
+- **The laws.** For each, `.specification` gives the year, the month and the day, `.decomposition` gives the day number, and `.order` states that the date lies between the first and the last day: `Date.first.month`, `Date.first.year`, `Date.last.month` and `Date.last.year`.
+
+### Months and years
+
+- **The month number.** `Date.month_number x` counts the months from January of year 1, which is 0.
+- **Months and years after a date.** `Date.add_months x k` and `Date.add_years x k` move the month or the year and hold the day at the length of the month they land in, by `Date.month.validity.clamping`. So January 31 plus one month is February 29 in 2024 and February 28 in 2023, and February 29, 2024 plus one year is February 28, 2025.
+- **The laws.** `Date.addition.month.specification` states `Date.month_number (Date.add_months x k) = Date.month_number x + k`; `Date.addition.month.preservation` states that a day that fits stays; `Date.addition.month.identity` states that 0 months change nothing. `Date.addition.year` has the same three laws, and `Date.addition.year.reduction` states that `k` years are `k * 12` months.
+- **No associativity.** The day is held at each step, so two steps of one month differ from one step of two months:
+
+| Date | Operation | Result |
+|:---|:---|:---|
+| 2024-01-31 | `add_months` 1, then 1 | 2024-03-29 |
+| 2024-01-31 | `add_months` 2 | 2024-03-31 |
+
+### The Unix day
+
+- **The epoch.** `Date.unix_epoch` is 1970-01-01, and `Date.unix_day x` is `Date.days_between Date.unix_epoch x`: 0 at the epoch, negative before it. The offset is the epoch's day number, 719162, computed and not written.
+- **The way back.** `Date.from_unix_day u` is the date of Unix day `u`, `None` below -719162. `Date.unix.section` states `Date.from_unix_day (Date.unix_day x) = Some x`, `Date.unix.specification` states that `Date.from_unix_day u = Some x` exactly when `Date.unix_day x = u`, and `Date.unix.addition` that `k` days more are `k` more Unix days.
+
+| Date | `Date.unix_day` |
+|:---|:---|
+| 0001-01-01 | -719162 |
+| 1970-01-01 | 0 |
+| 2000-01-01 | 10957 |
