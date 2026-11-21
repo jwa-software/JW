@@ -6,6 +6,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
 From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Witness.
 
 (* A fixed-width integer whose arithmetic wraps modulo [modulus], read through
  * [to_bin_with_zero], a value below it: its operations, and the facts about
@@ -319,6 +320,37 @@ Proof.
     ipso &left.
 Qed.
 
+(* multiplication.annihilation *)
+Theorem annihilation : forall (x : W.T) . (W.Zero * x = W.Zero) /\ (x * W.Zero = W.Zero).
+Proof.
+  intros x.
+  lemma right : &x * W.Zero = W.Zero.
+  {
+    lemma facto : W.to_bin_with_zero (&x * W.Zero) = W.to_bin_with_zero W.Zero.
+    {
+      match (BinWithZero.multiplication.annihilation (W.to_bin_with_zero &x)) with | _ r end.
+      lemma positive : (0 < BinWithZero.Positive W.modulus)%bin_with_zero.
+      {
+        simpl BinWithZero.LessThan in |- *.
+        exists W.modulus.
+        ipso (refl (BinWithZero.Positive W.modulus)).
+      }
+      leibniz
+        (W.conversion.multiplication &x W.Zero),
+        W.conversion.zero,
+        &r,
+        (BinWithZero.modulo.identity 0%bin_with_zero W.modulus &positive)
+        in |- *.
+      quod idem est.
+    }
+    ipso (W.conversion.injectivity &facto).
+  }
+  divide et impera.
+  - leibniz (multiplication.commutativity W.Zero &x) in |- *.
+    ipso &right.
+  - ipso &right.
+Qed.
+
 Module left. (* multiplication.left *)
 
 Module distributivity. (* multiplication.left.distributivity *)
@@ -362,6 +394,34 @@ End over. (* multiplication.left.distributivity.over *)
 
 End distributivity. (* multiplication.left.distributivity *)
 
+(* [(- x) * y + x * y] is [y * (- x + x)], which is zero, so [(- x) * y] is
+ * the inverse of [x * y].
+ *)
+(* multiplication.left.negation *)
+Theorem negation : forall (x : W.T) (y : W.T) . (- x) * y = - (x * y).
+Proof.
+  intros x y.
+  lemma sum : (- &x) * &y + &x * &y = W.Zero.
+  {
+    leibniz
+      (multiplication.commutativity (- &x) &y),
+      (multiplication.commutativity &x &y),
+      <- (multiplication.left.distributivity.over.addition &y (- &x) &x)
+      in |- *.
+    match (addition.inverse &x) with | l _ end.
+    leibniz &l in |- *.
+    match (multiplication.annihilation &y) with | _ r end.
+    ipso &r.
+  }
+  match (addition.identity ((- &x) * &y)) with | _ i end.
+  leibniz <- &i in |- *.
+  match (addition.inverse (&x * &y)) with | _ r end.
+  leibniz <- &r in |- *.
+  leibniz <- (addition.associativity ((- &x) * &y) (&x * &y) (- (&x * &y))), &sum in |- *.
+  match (addition.identity (- (&x * &y))) with | l _ end.
+  ipso &l.
+Qed.
+
 End left. (* multiplication.left *)
 
 Module right. (* multiplication.right *)
@@ -386,6 +446,18 @@ Qed.
 End over. (* multiplication.right.distributivity.over *)
 
 End distributivity. (* multiplication.right.distributivity *)
+
+(* multiplication.right.negation *)
+Theorem negation : forall (x : W.T) (y : W.T) . x * (- y) = - (x * y).
+Proof.
+  intros x y.
+  leibniz
+    (multiplication.commutativity &x (- &y)),
+    (multiplication.left.negation &y &x),
+    (multiplication.commutativity &y &x)
+    in |- *.
+  quod idem est.
+Qed.
 
 End right. (* multiplication.right *)
 
