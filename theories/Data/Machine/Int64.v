@@ -15,6 +15,7 @@ From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Machine.DWord.
 From JW Require Import Data.Machine.Endian.
+From JW Require Import Data.Machine.Signed.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
@@ -151,6 +152,41 @@ Definition One :=
     Byte.Zero
     (Byte.introduction
       0 0 0 0 0 0 0 1).
+
+(* The least value, -9223372036854775808: only the sign bit set. *)
+(* [Int64] *)
+Definition Min :=
+  Int64.introduction
+    (Byte.introduction
+      1 0 0 0 0 0 0 0)
+    Byte.Zero
+    Byte.Zero
+    Byte.Zero
+    Byte.Zero
+    Byte.Zero
+    Byte.Zero
+    Byte.Zero.
+
+(* The greatest value, 9223372036854775807: every bit but the sign bit set. *)
+(* [Int64] *)
+Definition Max :=
+  Int64.introduction
+    (Byte.introduction
+      0 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1).
 
 (* [k] places toward the most significant end, a 0 coming in at the
  * other; one place first, then [k - 1].
@@ -603,6 +639,18 @@ Definition add_with_overflow := fun (x : Int64) (y : Int64) .
       (Bit.flip (Bit.xor (sign_bit x) (sign_bit y)))
       (Bit.xor (sign_bit (add x y)) (sign_bit x)) in
   (flag, add x y)%product.
+
+(* The overflow flag and the difference of [x - y]: the flag is set when [x]
+ * and [y] have different signs and the difference has the sign of [y], the
+ * true difference lying past -9223372036854775808 or 9223372036854775807.
+ *)
+(* [Int64 -> Int64 -> Product Bit Int64] *)
+Definition sub_with_overflow := fun (x : Int64) (y : Int64) .
+  let flag :=
+    Bit.and
+      (Bit.xor (sign_bit x) (sign_bit y))
+      (Bit.xor (sign_bit (sub x y)) (sign_bit x)) in
+  (flag, sub x y)%product.
 
 (* [Int64 -> Int64 -> Prop] *)
 Definition LessThan := fun (x : Int64) (y : Int64) . (to_bin x < to_bin y)%b.
@@ -3312,6 +3360,242 @@ Instance comparable
   {| Comparable.transitivity := @order.strict.transitivity
   ; Comparable.specification := comparison.specification
   ; Comparable.antisymmetry := comparison.antisymmetry |}.
+
+(* [Int64] as a [Signed.Width]: its operations, the laws above, and its
+ * constants, 2^63, 2^64 and 3 * 2^63. The facts about fixed values are closed
+ * computations, checked by the kernel.
+ *)
+Module Width <: Signed.Width.
+
+Definition T := T.
+Definition Zero := Zero.
+Definition One := One.
+Definition Min := Min.
+Definition Max := Max.
+Definition to_bin := to_bin.
+Definition from_bin := from_bin.
+Definition from_bin_with_zero := from_bin_with_zero.
+Definition unsigned_value := unsigned_value.
+Definition sign_bit := sign_bit.
+Definition add := add.
+Definition sub := sub.
+Definition negate := negate.
+Definition LessThan := LessThan.
+Definition LessOrEqual := LessOrEqual.
+Definition add_with_overflow := add_with_overflow.
+Definition sub_with_overflow := sub_with_overflow.
+Definition half :=
+  1000000000000000000000000000000000000000000000000000000000000000%bin_base.
+Definition modulus := modulus.
+Definition beyond :=
+  11000000000000000000000000000000000000000000000000000000000000000%bin_base.
+
+Module order. (* Width.order *)
+
+Module strict. (* Width.order.strict *)
+
+Theorem specification : forall (x : T) (y : T) . LessThan x y <-> (to_bin x < to_bin y)%b.
+Proof.
+  intros x y.
+  divide et impera.
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
+Qed.
+
+End strict. (* Width.order.strict *)
+
+Theorem specification : forall (x : T) (y : T) . LessOrEqual x y <-> x = y \/ LessThan x y.
+Proof.
+  intros x y.
+  divide et impera.
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
+Qed.
+
+End order. (* Width.order *)
+
+Module conversion. (* Width.conversion *)
+
+Definition section := Int64.conversion.section.
+Definition addition := Int64.conversion.addition.
+Definition difference := Int64.conversion.difference.
+
+Module forward. (* Width.conversion.forward *)
+
+Theorem specification
+  : forall (x : T) .
+      to_bin x
+      = Bin.bin_with_zero_difference (unsigned_value x)
+          (BinWithZero.Positive modulus * Bit.to_bin_with_zero (sign_bit x))%bin_with_zero.
+Proof.
+  intro x.
+  ipso (refl (to_bin &x)).
+Qed.
+
+End forward. (* Width.conversion.forward *)
+
+Module backward. (* Width.conversion.backward *)
+
+Theorem specification
+  : forall (z : Bin) .
+      from_bin z
+      = add (from_bin_with_zero (Bin.ramp z))
+          (negate (from_bin_with_zero (Bin.ramp (Bin.negate z)))).
+Proof.
+  intro z.
+  ipso (refl (from_bin &z)).
+Qed.
+
+End backward. (* Width.conversion.backward *)
+
+Module boundedness. (* Width.conversion.boundedness *)
+
+Definition positive := Int64.conversion.boundedness.positive.
+Definition negative := Int64.conversion.boundedness.negative.
+
+End boundedness. (* Width.conversion.boundedness *)
+
+Module retraction. (* Width.conversion.retraction *)
+
+Definition nonnegative := Int64.conversion.retraction.nonnegative.
+Definition negative := Int64.conversion.retraction.negative.
+
+End retraction. (* Width.conversion.retraction *)
+
+End conversion. (* Width.conversion *)
+
+Module valuation. (* Width.valuation *)
+
+Definition boundedness := Int64.valuation.boundedness.
+
+Module reduction. (* Width.valuation.reduction *)
+
+Definition additivity := Int64.valuation.reduction.additivity.
+
+Theorem zero : from_bin_with_zero BinWithZero.Zero = Zero.
+Proof.
+  ipso (refl Zero).
+Qed.
+
+End reduction. (* Width.valuation.reduction *)
+
+End valuation. (* Width.valuation *)
+
+Module addition. (* Width.addition *)
+
+Definition associativity := Int64.addition.associativity.
+Definition commutativity := Int64.addition.commutativity.
+Definition identity := Int64.addition.identity.
+Definition inverse := Int64.addition.inverse.
+
+End addition. (* Width.addition *)
+
+Module subtraction. (* Width.subtraction *)
+
+Definition specification := Int64.subtraction.specification.
+
+End subtraction. (* Width.subtraction *)
+
+Module flag. (* Width.flag *)
+
+Module addition. (* Width.flag.addition *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (pi_1 (add_with_overflow x y))%product
+      = Bit.and (Bit.flip (Bit.xor (sign_bit x) (sign_bit y)))
+          (Bit.xor (sign_bit (add x y)) (sign_bit x)).
+Proof.
+  intros x y.
+  ipso (refl ((pi_1 (add_with_overflow &x &y))%product)).
+Qed.
+
+End addition. (* Width.flag.addition *)
+
+Module subtraction. (* Width.flag.subtraction *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (pi_1 (sub_with_overflow x y))%product
+      = Bit.and (Bit.xor (sign_bit x) (sign_bit y)) (Bit.xor (sign_bit (sub x y)) (sign_bit x)).
+Proof.
+  intros x y.
+  ipso (refl ((pi_1 (sub_with_overflow &x &y))%product)).
+Qed.
+
+End subtraction. (* Width.flag.subtraction *)
+
+End flag. (* Width.flag *)
+
+Module minimum. (* Width.minimum *)
+
+Theorem specification : to_bin Min = Bin.Negative half.
+Proof.
+  ipso (refl (Bin.Negative half)).
+Qed.
+
+Theorem negation : negate Min = Min.
+Proof.
+  ipso (refl Min).
+Qed.
+
+End minimum. (* Width.minimum *)
+
+Module maximum. (* Width.maximum *)
+
+Theorem specification : (to_bin Max + 1 = Bin.Positive half)%b.
+Proof.
+  ipso (refl (Bin.Positive half)).
+Qed.
+
+Theorem positivity : (0 < to_bin Max)%b.
+Proof.
+  simpl Bin.LessThan in |- *.
+  exists 111111111111111111111111111111111111111111111111111111111111111%bin_base.
+  ipso (refl (to_bin Max)).
+Qed.
+
+End maximum. (* Width.maximum *)
+
+Module one. (* Width.one *)
+
+Theorem specification : to_bin One = 1%b.
+Proof.
+  ipso (refl 1%b).
+Qed.
+
+End one. (* Width.one *)
+
+Module modulus. (* Width.modulus *)
+
+Theorem specification : (Bin.Positive modulus = Bin.Positive half + Bin.Positive half)%b.
+Proof.
+  ipso (refl (Bin.Positive modulus)).
+Qed.
+
+Theorem wrapping : from_bin (Bin.Positive modulus) = Zero.
+Proof.
+  ipso (refl Zero).
+Qed.
+
+End modulus. (* Width.modulus *)
+
+Module beyond. (* Width.beyond *)
+
+Theorem specification : (Bin.Positive beyond = Bin.Positive modulus + Bin.Positive half)%b.
+Proof.
+  ipso (refl (Bin.Positive beyond)).
+Qed.
+
+End beyond. (* Width.beyond *)
+
+End Width.
+
+Include Signed.Laws Width.
 
 End Int64. (* Int64 *)
 
