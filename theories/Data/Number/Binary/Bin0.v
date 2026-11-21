@@ -2211,6 +2211,28 @@ Module subtraction. (* subtraction *)
 
 Module saturating. (* subtraction.saturating *)
 
+(* subtraction.saturating.specification *)
+Theorem specification : forall {m : Bin0} {n : Bin0} . n <= m -> n + saturating_sub m n = m.
+Proof.
+  intros m n h.
+  lemma facto : to_nat0 (n + saturating_sub m n) = to_nat0 m.
+  {
+    leibniz
+      (conversion.addition &n (saturating_sub &m &n)),
+      (conversion.subtraction.saturating &m &n)
+      in |- *.
+    lemma below : (to_nat0 n <= to_nat0 m)%n0.
+    {
+      match &h with | same | smaller end.
+      - leibniz &same in |- *.
+        ipso (disjoin (refl (to_nat0 &m)), _).
+      - ipso (disjoin _, (modus aequans (conversion.order &n &m), &smaller)).
+    }
+    ipso (Nat0.subtraction.saturating.specification &below).
+  }
+  ipso (conversion.injectivity &facto).
+Qed.
+
 Module inversion. (* subtraction.saturating.inversion *)
 
 (* subtraction.saturating.inversion.addition *)
