@@ -3,6 +3,7 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Number.Binary.BinBase.
@@ -31,6 +32,7 @@ Parameter Inline LessThan : T -> T -> Prop.
 Parameter Inline LessOrEqual : T -> T -> Prop.
 Parameter Inline add_with_carry : Bit -> T -> T -> Product Bit T.
 Parameter Inline sub_with_borrow : Bit -> T -> T -> Product Bit T.
+Parameter Inline compare : T -> T -> Comparison.
 Parameter Inline modulus : BinBase.
 
 Module order. (* order *)
@@ -58,6 +60,9 @@ Parameter boundedness
   : forall (x : T) . (to_bin_with_zero x < BinWithZero.Positive modulus)%bin_with_zero.
 Parameter injectivity
   : forall {x : T} {y : T} . to_bin_with_zero x = to_bin_with_zero y -> x = y.
+Parameter comparison
+  : forall (x : T) (y : T) .
+      compare x y = BinWithZero.compare (to_bin_with_zero x) (to_bin_with_zero y).
 
 End conversion. (* conversion *)
 
@@ -96,8 +101,8 @@ End maximum. (* maximum *)
 
 End Width.
 
-(* The laws of the bounds, of the carry and the borrow, and of the successor,
- * for every width.
+(* The laws of the bounds, of the carry and the borrow, of the successor, of
+ * the order and of the comparison, for every width.
  *)
 Module Laws (W : Width).
 
@@ -509,5 +514,60 @@ Proof.
 Qed.
 
 End decrement. (* decrement *)
+
+Module order. (* order *)
+
+Module strict. (* order.strict *)
+
+(* order.strict.transitivity *)
+Theorem transitivity
+  : forall {x : W.T} {y : W.T} {z : W.T} . x < y -> y < z -> x < z.
+Proof.
+  intros x y z h1 h2.
+  let proof g1 := modus aequans (W.order.strict.specification &x &y), &h1.
+  let proof g2 := modus aequans (W.order.strict.specification &y &z), &h2.
+  ipso (modus aequans (W.order.strict.specification &x &z),
+        (BinWithZero.order.strict.transitivity &g1 &g2)).
+Qed.
+
+End strict. (* order.strict *)
+
+End order. (* order *)
+
+Module comparison. (* comparison *)
+
+(* comparison.specification *)
+Theorem specification
+  : forall (x : W.T) (y : W.T) .
+      (W.compare x y = Comparison.Lt <-> x < y) /\ (W.compare x y = Comparison.Eq <-> x = y).
+Proof.
+  intros x y.
+  leibniz (W.conversion.comparison &x &y) in |- *.
+  let proof s :=
+    BinWithZero.comparison.specification (W.to_bin_with_zero &x) (W.to_bin_with_zero &y).
+  match &s with | strict equality end.
+  divide et impera.
+  - divide et impera.
+    + intro c.
+      ipso (modus aequans (W.order.strict.specification &x &y), (modus aequans &strict, &c)).
+    + intro h.
+      ipso (modus aequans &strict, (modus aequans (W.order.strict.specification &x &y), &h)).
+  - divide et impera.
+    + intro c.
+      ipso (W.conversion.injectivity (modus aequans &equality, &c)).
+    + intro e.
+      ipso (modus aequans &equality, (congru W.to_bin_with_zero, &e)).
+Qed.
+
+(* comparison.antisymmetry *)
+Theorem antisymmetry
+  : forall (x : W.T) (y : W.T) . W.compare x y = Comparison.transpose (W.compare y x).
+Proof.
+  intros x y.
+  leibniz (W.conversion.comparison &x &y), (W.conversion.comparison &y &x) in |- *.
+  ipso (BinWithZero.comparison.antisymmetry (W.to_bin_with_zero &x) (W.to_bin_with_zero &y)).
+Qed.
+
+End comparison. (* comparison *)
 
 End Laws.

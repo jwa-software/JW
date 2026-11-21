@@ -3,6 +3,7 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Number.Binary.Bin.
@@ -38,6 +39,7 @@ Parameter Inline LessThan : T -> T -> Prop.
 Parameter Inline LessOrEqual : T -> T -> Prop.
 Parameter Inline add_with_overflow : T -> T -> Product Bit T.
 Parameter Inline sub_with_overflow : T -> T -> Product Bit T.
+Parameter Inline compare : T -> T -> Comparison.
 Parameter Inline half : BinBase.
 Parameter Inline modulus : BinBase.
 Parameter Inline beyond : BinBase.
@@ -60,6 +62,8 @@ Module conversion. (* conversion *)
 
 Parameter section
   : forall (x : T) . from_bin (to_bin x) = x.
+Parameter comparison
+  : forall (x : T) (y : T) . compare x y = Bin.compare (to_bin x) (to_bin y).
 Parameter addition
   : forall (x : T) (y : T) .
       (pi_1 (add_with_overflow x y))%product = 0%bit
@@ -117,12 +121,12 @@ End retraction. (* conversion.retraction *)
 
 End conversion. (* conversion *)
 
-Module valuation. (* valuation *)
+Module reinterpretation. (* reinterpretation *)
 
 Parameter boundedness
   : forall (x : T) . (unsigned_value x < BinWithZero.Positive modulus)%bin_with_zero.
 
-Module reduction. (* valuation.reduction *)
+Module reduction. (* reinterpretation.reduction *)
 
 Parameter additivity
   : forall (m : BinWithZero) (n : BinWithZero) .
@@ -131,9 +135,9 @@ Parameter additivity
 Parameter zero
   : from_bin_with_zero BinWithZero.Zero = Zero.
 
-End reduction. (* valuation.reduction *)
+End reduction. (* reinterpretation.reduction *)
 
-End valuation. (* valuation *)
+End reinterpretation. (* reinterpretation *)
 
 Module addition. (* addition *)
 
@@ -221,8 +225,8 @@ End beyond. (* beyond *)
 
 End Width.
 
-(* The laws of the bounds, of overflow, of negation and of the successor, for
- * every width.
+(* The laws of the bounds, of overflow, of negation, of the successor, of the
+ * order and of the comparison, for every width.
  *)
 Module Laws (W : Width).
 
@@ -405,7 +409,7 @@ Proof.
   let proof lifted :=
     modus aequans
       (Bin.order.embedding.preservation (W.unsigned_value &x) (BinWithZero.Positive W.modulus)),
-      (W.valuation.boundedness &x).
+      (W.reinterpretation.boundedness &x).
   let proof shifted :=
     Bin.addition.order.strict.monotonicity
       (Bin.negate (Bin.from_bin_with_zero (BinWithZero.Positive W.modulus))) _ _ &lifted.
@@ -460,8 +464,8 @@ Proof.
     (W.conversion.difference
        (Bin.ramp &a + Bin.ramp &b)%bin_with_zero
        (Bin.ramp (Bin.negate &a) + Bin.ramp (Bin.negate &b))%bin_with_zero),
-    (W.valuation.reduction.additivity (Bin.ramp &a) (Bin.ramp &b)),
-    (W.valuation.reduction.additivity (Bin.ramp (Bin.negate &a)) (Bin.ramp (Bin.negate &b)))
+    (W.reinterpretation.reduction.additivity (Bin.ramp &a) (Bin.ramp &b)),
+    (W.reinterpretation.reduction.additivity (Bin.ramp (Bin.negate &a)) (Bin.ramp (Bin.negate &b)))
     in |- *.
   leibniz
     (&inverted
@@ -502,11 +506,11 @@ Proof.
       in |- *.
     lemma origin : W.from_bin_with_zero (Bin.ramp 0%b) = W.Zero.
     {
-      ipso W.valuation.reduction.zero.
+      ipso W.reinterpretation.reduction.zero.
     }
     lemma negated_origin : W.from_bin_with_zero (Bin.ramp (Bin.negate 0%b)) = W.Zero.
     {
-      ipso W.valuation.reduction.zero.
+      ipso W.reinterpretation.reduction.zero.
     }
     leibniz &origin, &negated_origin in |- *.
     match (W.addition.inverse W.Zero) with | _ right_inverse end.
@@ -1611,5 +1615,59 @@ Proof.
 Qed.
 
 End decrement. (* decrement *)
+
+Module order. (* order *)
+
+Module strict. (* order.strict *)
+
+(* order.strict.transitivity *)
+Theorem transitivity
+  : forall {x : W.T} {y : W.T} {z : W.T} . x < y -> y < z -> x < z.
+Proof.
+  intros x y z h1 h2.
+  let proof g1 := modus aequans (W.order.strict.specification &x &y), &h1.
+  let proof g2 := modus aequans (W.order.strict.specification &y &z), &h2.
+  ipso (modus aequans (W.order.strict.specification &x &z),
+        (Bin.order.strict.transitivity &g1 &g2)).
+Qed.
+
+End strict. (* order.strict *)
+
+End order. (* order *)
+
+Module comparison. (* comparison *)
+
+(* comparison.specification *)
+Theorem specification
+  : forall (x : W.T) (y : W.T) .
+      (W.compare x y = Comparison.Lt <-> x < y) /\ (W.compare x y = Comparison.Eq <-> x = y).
+Proof.
+  intros x y.
+  leibniz (W.conversion.comparison &x &y) in |- *.
+  let proof s := Bin.comparison.specification (W.to_bin &x) (W.to_bin &y).
+  match &s with | strict equality end.
+  divide et impera.
+  - divide et impera.
+    + intro c.
+      ipso (modus aequans (W.order.strict.specification &x &y), (modus aequans &strict, &c)).
+    + intro h.
+      ipso (modus aequans &strict, (modus aequans (W.order.strict.specification &x &y), &h)).
+  - divide et impera.
+    + intro c.
+      ipso (injectivity (modus aequans &equality, &c)).
+    + intro e.
+      ipso (modus aequans &equality, (congru W.to_bin, &e)).
+Qed.
+
+(* comparison.antisymmetry *)
+Theorem antisymmetry
+  : forall (x : W.T) (y : W.T) . W.compare x y = Comparison.transpose (W.compare y x).
+Proof.
+  intros x y.
+  leibniz (W.conversion.comparison &x &y), (W.conversion.comparison &y &x) in |- *.
+  ipso (Bin.comparison.antisymmetry (W.to_bin &x) (W.to_bin &y)).
+Qed.
+
+End comparison. (* comparison *)
 
 End Laws.
