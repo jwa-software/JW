@@ -43,6 +43,7 @@ Extraction "JW.ml"
   JW.Data.Base.Kleene3.Kleene3
   JW.Data.Base.Unit.Unit
   JW.Data.Calendar.Month.Month
+  JW.Data.Calendar.Weekday.Weekday
   JW.Data.Calendar.Gregorian.Date.Date
   JW.Data.Comparable.Comparable
   JW.Data.Coproduct.Coproduct

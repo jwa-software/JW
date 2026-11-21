@@ -71,6 +71,18 @@ let day_number y m d =
   | None -> -1
 ;;
 
+let bin0 k = if k = 0 then Bin0.Zero else Bin0.Positive (bin k)
+
+(* A date as its year, month and day, the proof having been erased. *)
+let calendar x = int_of_bin (Date.year x), Date.month x, int_of_bin (Date.day x)
+let from_day_number n = calendar (Date.from_day_number (bin0 n))
+
+let from_day_of_year y d =
+  match Date.from_day_of_year (bin y) (bin d) with
+  | Some x -> Some (calendar x)
+  | None -> None
+;;
+
 (* [JW] has a [List] module of its own, which [open JW] puts in front of
    OCaml's. *)
 let ints l = Stdlib.List.map int_of_nat0 l
@@ -120,6 +132,25 @@ let () =
   check "Date.day_number 2000-01-01" (day_number 2000 Month.January 1 = 730119);
   check "Date.day_number 2024-02-29" (day_number 2024 Month.February 29 = 738944);
   check "Date.day_number 9999-12-31" (day_number 9999 Month.December 31 = 3652058);
+  check "Date.from_day_number 0" (from_day_number 0 = (1, Month.January, 1));
+  check "Date.from_day_number 36523" (from_day_number 36523 = (100, Month.December, 31));
+  check "Date.from_day_number 146096" (from_day_number 146096 = (400, Month.December, 31));
+  check "Date.from_day_number 738944" (from_day_number 738944 = (2024, Month.February, 29));
+  check "Date.from_day_number 739940" (from_day_number 739940 = (2026, Month.November, 21));
+  check
+    "Date.from_day_number 3652058"
+    (from_day_number 3652058 = (9999, Month.December, 31));
+  check
+    "Date.from_day_of_year"
+    (from_day_of_year 2024 60 = Some (2024, Month.February, 29)
+     && from_day_of_year 2024 366 = Some (2024, Month.December, 31)
+     && from_day_of_year 2023 366 = None);
+  check
+    "Date.weekday_of_day_number"
+    (Date.weekday_of_day_number (bin0 0) = Weekday.Monday
+     && Date.weekday_of_day_number (bin0 719162) = Weekday.Thursday
+     && Date.weekday_of_day_number (bin0 146096) = Weekday.Sunday
+     && Date.weekday_of_day_number (bin0 739940) = Weekday.Saturday);
   check
     "Date.days_before_year 2001"
     (int_of_bin0 (Date.days_before_year (bin 2001)) = 730485);
