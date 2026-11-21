@@ -691,6 +691,84 @@ Definition data_machine_all_delivers_uint64_decrement_exactness
           = UInt64.to_bin_with_zero x)%bin_with_zero
   := UInt64.decrement.exactness.
 
+Definition data_machine_all_computes_uint8_multiplication_past_maximum
+  : UInt8.mul_with_overflow 16 16 = (1%bit, 0%uint8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_uint8_multiplication_to_maximum
+  : UInt8.mul_with_overflow 15 17 = (0%bit, 255%uint8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_uint8_overflow_multiplication_specification
+  : forall (x : UInt8) (y : UInt8) .
+      (pi_1 (UInt8.mul_with_overflow x y))%product = 0%bit
+      <-> (UInt8.to_bin_with_zero x * UInt8.to_bin_with_zero y
+           < BinWithZero.Positive UInt8.modulus)%bin_with_zero
+  := UInt8.overflow.multiplication.specification.
+
+Definition data_machine_all_delivers_uint8_overflow_multiplication_exactness
+  : forall (x : UInt8) (y : UInt8) .
+      (pi_1 (UInt8.mul_with_overflow x y))%product = 0%bit
+      -> (UInt8.to_bin_with_zero (x * y)%uint8
+          = UInt8.to_bin_with_zero x * UInt8.to_bin_with_zero y)%bin_with_zero
+  := UInt8.overflow.multiplication.exactness.
+
+Definition data_machine_all_delivers_uint8_overflow_multiplication_monotonicity
+  : forall (x : UInt8) (y : UInt8) (z : UInt8) .
+      (pi_1 (UInt8.mul_with_overflow x y))%product = 0%bit
+      -> (pi_1 (UInt8.mul_with_overflow x z))%product = 0%bit
+      -> (UInt8.Zero < x -> y < z -> x * y < x * z)%uint8
+  := UInt8.overflow.multiplication.monotonicity.
+
+Definition data_machine_all_delivers_uint64_overflow_multiplication_exactness
+  : forall (x : UInt64) (y : UInt64) .
+      (pi_1 (UInt64.mul_with_overflow x y))%product = 0%bit
+      -> (UInt64.to_bin_with_zero (x * y)%uint64
+          = UInt64.to_bin_with_zero x * UInt64.to_bin_with_zero y)%bin_with_zero
+  := UInt64.overflow.multiplication.exactness.
+
+Definition data_machine_all_computes_int8_multiplication_past_maximum
+  : Int8.mul_with_overflow 16 8 = (1%bit, (-128)%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_multiplication_to_minimum
+  : Int8.mul_with_overflow (-16) 8 = (0%bit, (-128)%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_computes_int8_multiplication_minimum_by_minus_one
+  : Int8.mul_with_overflow (-128) (-1) = (1%bit, (-128)%int8)%product
+  := Identity.reflexivity _.
+
+Definition data_machine_all_delivers_int8_overflow_multiplication_specification
+  : forall (x : Int8) (y : Int8) .
+      (pi_1 (Int8.mul_with_overflow x y))%product = 0%bit
+      <-> ((-10000000) <= Int8.to_bin x * Int8.to_bin y
+           /\ Int8.to_bin x * Int8.to_bin y <= 1111111)%b
+  := Int8.overflow.multiplication.specification.
+
+Definition data_machine_all_delivers_int8_overflow_multiplication_exactness
+  : forall (x : Int8) (y : Int8) .
+      (pi_1 (Int8.mul_with_overflow x y))%product = 0%bit
+      -> Int8.to_bin (x * y)%int8 = (Int8.to_bin x * Int8.to_bin y)%b
+  := Int8.overflow.multiplication.exactness.
+
+Definition data_machine_all_delivers_int8_overflow_multiplication_monotonicity
+  : forall (x : Int8) (y : Int8) (z : Int8) .
+      (pi_1 (Int8.mul_with_overflow x y))%product = 0%bit
+      -> (pi_1 (Int8.mul_with_overflow x z))%product = 0%bit
+      -> (0 < Int8.to_bin x)%b -> (y < z -> x * y < x * z)%int8
+  := Int8.overflow.multiplication.monotonicity.
+
+Definition data_machine_all_delivers_int8_wrapping_multiplicativity
+  : forall (a : Bin) (b : Bin) . Int8.from_bin (a * b)%b = (Int8.from_bin a * Int8.from_bin b)%int8
+  := Int8.wrapping.multiplicativity.
+
+Definition data_machine_all_delivers_int64_overflow_multiplication_exactness
+  : forall (x : Int64) (y : Int64) .
+      (pi_1 (Int64.mul_with_overflow x y))%product = 0%bit
+      -> Int64.to_bin (x * y)%int64 = (Int64.to_bin x * Int64.to_bin y)%b
+  := Int64.overflow.multiplication.exactness.
+
 Definition data_machine_all_delivers_int8_bound_range
   : forall (x : Int8) . ((-10000000) <= Int8.to_bin x /\ Int8.to_bin x <= 1111111)%b
   := Int8.bound.range.

@@ -156,6 +156,18 @@ let () =
   check
     "UInt8.add_with_carry 0 100 27"
     (uint8_flagged (UInt8.add_with_carry Bit.Zero (uint8 100) (uint8 27)) = (false, 127));
+  check
+    "UInt8.mul_with_overflow 16 16"
+    (uint8_flagged (UInt8.mul_with_overflow (uint8 16) (uint8 16)) = (true, 0));
+  check
+    "UInt8.mul_with_overflow 15 17"
+    (uint8_flagged (UInt8.mul_with_overflow (uint8 15) (uint8 17)) = (false, 255));
+  check
+    "Int8.mul_with_overflow 16 8"
+    (int8_flagged (Int8.mul_with_overflow (int8 16) (int8 8)) = (true, -128));
+  check
+    "Int8.mul_with_overflow (-16) 8"
+    (int8_flagged (Int8.mul_with_overflow (int8 (-16)) (int8 8)) = (false, -128));
   (let flag, sum =
      Int64.add_with_overflow
        (Int64.from_bin (Bin.Positive (ones 63)))
