@@ -755,7 +755,58 @@ Proof.
   ipso (Bin0.conversion.injectivity &facto).
 Qed.
 
+(* difference.identity *)
+Theorem identity : forall (a : Bin0) . b0_difference a 0%b0 = from_b0 a.
+Proof.
+  intro a.
+  match &a with | | p end; simpl in |- *; quod idem est.
+Qed.
+
+(* difference.negation *)
+Theorem negation : forall (b : Bin0) . b0_difference 0%b0 b = negate (from_b0 b).
+Proof.
+  intro b.
+  match &b with | | q end; simpl in |- *; quod idem est.
+Qed.
+
 End difference. (* difference *)
+
+Module narrowing. (* narrowing *)
+
+Module bin0. (* narrowing.bin0 *)
+
+(* narrowing.bin0.retraction *)
+Theorem retraction : forall (n : Bin0) . to_b0 (from_b0 n) = Some n.
+Proof.
+  intro n.
+  match &n with | | p end; simpl in |- *; quod idem est.
+Qed.
+
+(* narrowing.bin0.specification *)
+Theorem specification : forall (x : SignedBin) (n : Bin0) . to_b0 x = Some n <-> x = from_b0 n.
+Proof.
+  intros x n.
+  divide et impera.
+  - intro e.
+    match &x with | p | | p end.
+    + simpl in &e.
+      ex &e quodlibet.
+    + simpl in &e.
+      leibniz <- (Option.some.injectivity &e) in |- *.
+      simpl in |- *.
+      quod idem est.
+    + simpl in &e.
+      leibniz <- (Option.some.injectivity &e) in |- *.
+      simpl in |- *.
+      quod idem est.
+  - intro e.
+    leibniz &e in |- *.
+    ipso (narrowing.bin0.retraction &n).
+Qed.
+
+End bin0. (* narrowing.bin0 *)
+
+End narrowing. (* narrowing *)
 
 Module magnitude. (* magnitude *)
 
