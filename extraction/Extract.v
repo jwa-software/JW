@@ -45,6 +45,7 @@ Extraction "JW.ml"
   JW.Data.Calendar.Month.Month
   JW.Data.Calendar.Weekday.Weekday
   JW.Data.Calendar.Gregorian.Date.Date
+  JW.Data.Calendar.Gregorian.IsoWeekDate.IsoWeekDate
   JW.Data.Comparable.Comparable
   JW.Data.Coproduct.Coproduct
   JW.Data.Option.Option
