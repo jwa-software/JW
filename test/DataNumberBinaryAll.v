@@ -281,3 +281,55 @@ Definition data_number_binary_all_delivers_numeral
 Definition data_number_binary_all_delivers_well_founded
   : forall (x : Bin) . Accessible (Induced (<)%bin_with_zero Bin.abs) x
   := fun (x : Bin) . WellFounded.accessibility x.
+
+Definition data_number_binary_all_delivers_bin_addition_order_strict_monotonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y < z -> x + y < x + z)%b
+  := Bin.addition.order.strict.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_addition_order_strict_cancellation
+  : forall (x : Bin) (y : Bin) (z : Bin) . (x + y < x + z -> y < z)%b
+  := Bin.addition.order.strict.cancellation.
+
+Definition data_number_binary_all_delivers_bin_addition_order_monotonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y <= z -> x + y <= x + z)%b
+  := Bin.addition.order.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_addition_order_mixed_monotonicity
+  : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . (a <= c -> b < d -> a + b < c + d)%b
+  := Bin.addition.order.mixed.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_order_negation_reversal
+  : forall (x : Bin) (y : Bin) . (x < y <-> - y < - x)%b
+  := Bin.order.negation.reversal.
+
+Definition data_number_binary_all_delivers_bin_order_subtraction_left_monotonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y < z -> y - x < z - x)%b
+  := Bin.order.subtraction.left.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_order_subtraction_right_antitonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y < z -> x - z < x - y)%b
+  := Bin.order.subtraction.right.antitonicity.
+
+Definition data_number_binary_all_delivers_bin_order_subtraction_positivity
+  : forall (x : Bin) (y : Bin) . (x < y <-> 0 < y - x)%b
+  := Bin.order.subtraction.positivity.
+
+Definition data_number_binary_all_delivers_bin_order_increment_extensivity
+  : forall (x : Bin) . (x < x + 1)%b
+  := Bin.order.increment.extensivity.
+
+Definition data_number_binary_all_delivers_bin_order_increment_specification
+  : forall (x : Bin) (y : Bin) . (x < y <-> x + 1 <= y)%b
+  := Bin.order.increment.specification.
+
+Definition data_number_binary_all_delivers_bin_order_increment_adjacency
+  : forall (x : Bin) (y : Bin) . (~ (x < y /\ y < x + 1))%b
+  := Bin.order.increment.adjacency.
+
+Definition data_number_binary_all_delivers_bin_order_decrement_extensivity
+  : forall (x : Bin) . (x - 1 < x)%b
+  := Bin.order.decrement.extensivity.
+
+Definition data_number_binary_all_delivers_bin_order_discreteness
+  : forall (x : Bin) (y : Bin) . (x < y + 1 <-> x <= y)%b
+  := Bin.order.discreteness.
