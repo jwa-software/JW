@@ -2068,6 +2068,49 @@ Qed.
 
 End mixed. (* order.mixed *)
 
+(* Read in [Nat0], where [m < n] gives [m + k = n] for a [k] that is [1] or
+ * a successor: [1] gives [m + 1 = n], a successor [m + 1 < n].
+ *)
+(* order.succession *)
+Theorem succession
+  : forall (m : BinWithZero) (n : BinWithZero) . m < n -> m + (+ BinBase.One) <= n.
+Proof.
+  intros m n h.
+  let proof g := modus aequans (conversion.order &m &n), &h.
+  simpl Nat0.LessThan in &g.
+  match &g with | k e end.
+  lemma one : to_nat0 (+ BinBase.One) = Nat0.Positive Nat.One.
+  {
+    simpl in |- *.
+    quod idem est.
+  }
+  match &k with | One | Successor k' end.
+  - lemma facto : to_nat0 (m + (+ BinBase.One)) = to_nat0 n.
+    {
+      leibniz (conversion.addition &m (+ BinBase.One)), &one in |- *.
+      ipso &e.
+    }
+    ipso (disjoin (conversion.injectivity &facto), _).
+  - lemma facto : (to_nat0 (m + (+ BinBase.One))%bin_with_zero < to_nat0 n)%n0.
+    {
+      simpl Nat0.LessThan in |- *.
+      exists &k'.
+      leibniz (conversion.addition &m (+ BinBase.One)), &one in |- *.
+      leibniz
+        (Nat0.addition.associativity (to_nat0 &m) (Nat0.Positive Nat.One) (Nat0.Positive &k'))
+        in |- *.
+      lemma two
+        : (Nat0.Positive Nat.One + Nat0.Positive k')%n0 = Nat0.Positive (Nat.Successor k').
+      {
+        simpl in |- *.
+        quod idem est.
+      }
+      leibniz &two in |- *.
+      ipso &e.
+    }
+    ipso (disjoin _, (modus aequans (conversion.order (&m + (+ BinBase.One)) &n), &facto)).
+Qed.
+
 End order. (* order *)
 
 Module comparison. (* comparison *)
@@ -2290,6 +2333,106 @@ Proof.
     ipso (conversion.injectivity &remainder).
 Qed.
 
+(* Adding the divisor adds one to the quotient: [((n /. d) + 1) * d] plus
+ * the old remainder is [n + d], and [division.uniqueness] takes it from there.
+ *)
+(* division.translation *)
+Theorem translation
+  : forall (n : BinWithZero) (d : BinBase) . (n + (+ d)) /. d = (n /. d) + (+ BinBase.One).
+Proof.
+  intros n d.
+  match (division.specification &n &d) with | e lt end.
+  lemma sum : (((n /. d) + (+ BinBase.One)) * (+ d)) + (n %. d) = n + (+ d).
+  {
+    match (multiplication.distributivity.over.addition (+ &d) (&n /. &d) (+ BinBase.One))
+      with | _ right end.
+    leibniz &right in |- *.
+    match (multiplication.identity (+ &d)) with | left _ end.
+    leibniz &left in |- *.
+    leibniz
+      (addition.associativity ((&n /. &d) * (+ &d)) (+ &d) (&n %. &d)),
+      (addition.commutativity (+ &d) (&n %. &d)),
+      <- (addition.associativity ((&n /. &d) * (+ &d)) (&n %. &d) (+ &d)),
+      &e
+      in |- *.
+    quod idem est.
+  }
+  match (division.uniqueness (&n + (+ &d)) &d ((&n /. &d) + (+ BinBase.One)) (&n %. &d)
+           (conjoin &sum, &lt))
+    with | quotient _ end.
+  ipso &quotient.
+Qed.
+
+Module succession. (* division.succession *)
+
+(* Below the divisor, one more is one more remainder. *)
+(* division.succession.interior *)
+Theorem interior
+  : forall (n : BinWithZero) (d : BinBase) .
+      (n %. d) + (+ BinBase.One) < + d
+      -> ((n + (+ BinBase.One)) /. d = n /. d)
+         /\ ((n + (+ BinBase.One)) %. d = (n %. d) + (+ BinBase.One)).
+Proof.
+  intros n d h.
+  match (division.specification &n &d) with | e _ end.
+  lemma sum
+    : ((n /. d) * (+ d)) + ((n %. d) + (+ BinBase.One)) = n + (+ BinBase.One).
+  {
+    leibniz
+      <- (addition.associativity ((&n /. &d) * (+ &d)) (&n %. &d) (+ BinBase.One)),
+      &e
+      in |- *.
+    quod idem est.
+  }
+  ipso (division.uniqueness (&n + (+ BinBase.One)) &d (&n /. &d) ((&n %. &d) + (+ BinBase.One))
+          (conjoin &sum, &h)).
+Qed.
+
+(* Reaching the divisor carries one into the quotient and leaves no
+ * remainder.
+ *)
+(* division.succession.carry *)
+Theorem carry
+  : forall (n : BinWithZero) (d : BinBase) .
+      (n %. d) + (+ BinBase.One) = + d
+      -> ((n + (+ BinBase.One)) /. d = (n /. d) + (+ BinBase.One))
+         /\ ((n + (+ BinBase.One)) %. d = 0).
+Proof.
+  intros n d h.
+  match (division.specification &n &d) with | e _ end.
+  lemma sum : (((n /. d) + (+ BinBase.One)) * (+ d)) + 0 = n + (+ BinBase.One).
+  {
+    match (addition.identity (((&n /. &d) + (+ BinBase.One)) * (+ &d))) with | _ right end.
+    leibniz &right in |- *.
+    match (multiplication.distributivity.over.addition (+ &d) (&n /. &d) (+ BinBase.One))
+      with | _ distributed end.
+    leibniz &distributed in |- *.
+    match (multiplication.identity (+ &d)) with | left _ end.
+    leibniz &left in |- *.
+    lemma stepped : ((n /. d) * (+ d)) + ((n %. d) + (+ BinBase.One)) = n + (+ BinBase.One).
+    {
+      leibniz
+        <- (addition.associativity ((&n /. &d) * (+ &d)) (&n %. &d) (+ BinBase.One)),
+        &e
+        in |- *.
+      quod idem est.
+    }
+    leibniz &h in &stepped.
+    ipso &stepped.
+  }
+  lemma positive : 0 < + d.
+  {
+    simpl LessThan in |- *.
+    exists &d.
+    simpl in |- *.
+    quod idem est.
+  }
+  ipso (division.uniqueness (&n + (+ BinBase.One)) &d ((&n /. &d) + (+ BinBase.One)) 0
+          (conjoin &sum, &positive)).
+Qed.
+
+End succession. (* division.succession *)
+
 End division. (* division *)
 
 Module modulo. (* modulo *)
@@ -2411,6 +2554,78 @@ Qed.
 End right. (* modulo.product.right *)
 
 End product. (* modulo.product *)
+
+(* [n] is a multiple of [d * k] plus [n %. (d * k)], and the multiple is
+ * also one of [d], so it leaves the remainder by [d] as it was.
+ *)
+(* modulo.nesting *)
+Theorem nesting
+  : forall (n : BinWithZero) (d : BinBase) (k : BinBase) .
+      (n %. (d * k)%bin_base) %. d = n %. d.
+Proof.
+  intros n d k.
+  match (division.specification &n (&d * &k)%bin_base) with | e _ end.
+  lemma self : (+ d) %. d = 0.
+  {
+    lemma positive : 0 < + d.
+    {
+      simpl LessThan in |- *.
+      exists &d.
+      simpl in |- *.
+      quod idem est.
+    }
+    lemma sum : ((+ BinBase.One) * (+ d)) + 0 = + d.
+    {
+      match (multiplication.identity (+ &d)) with | left _ end.
+      match (addition.identity ((+ BinBase.One) * (+ &d))) with | _ right end.
+      leibniz &right, &left in |- *.
+      quod idem est.
+    }
+    match (division.uniqueness (+ &d) &d (+ BinBase.One) 0 (conjoin &sum, &positive))
+      with | _ remainder end.
+    ipso &remainder.
+  }
+  lemma multiple : ((n /. (d * k)%bin_base) * (+ (d * k)%bin_base)) %. d = 0.
+  {
+    lemma reordered
+      : (n /. (d * k)%bin_base) * ((+ d) * (+ k))
+        = (+ d) * ((n /. (d * k)%bin_base) * (+ k)).
+    {
+      leibniz
+        <- (multiplication.associativity (&n /. (&d * &k)%bin_base) (+ &d) (+ &k)),
+        (multiplication.commutativity (&n /. (&d * &k)%bin_base) (+ &d)),
+        (multiplication.associativity (+ &d) (&n /. (&d * &k)%bin_base) (+ &k))
+        in |- *.
+      quod idem est.
+    }
+    lemma facto : ((n /. (d * k)%bin_base) * ((+ d) * (+ k))) %. d = 0.
+    {
+      leibniz &reordered in |- *.
+      leibniz <- (modulo.product.left.absorption (+ &d) ((&n /. (&d * &k)%bin_base) * (+ &k)) &d)
+        in |- *.
+      leibniz &self in |- *.
+      match (multiplication.annihilation ((&n /. (&d * &k)%bin_base) * (+ &k))) with | left _ end.
+      leibniz &left in |- *.
+      simpl modulo in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    ipso &facto.
+  }
+  lemma facto
+    : (((n /. (d * k)%bin_base) * (+ (d * k)%bin_base)) + (n %. (d * k)%bin_base)) %. d
+      = (n %. (d * k)%bin_base) %. d.
+  {
+    leibniz
+      (addition.commutativity
+         ((&n /. (&d * &k)%bin_base) * (+ (&d * &k)%bin_base)) (&n %. (&d * &k)%bin_base))
+      in |- *.
+    ipso (modulo.sum.right.invariance (&n %. (&d * &k)%bin_base)
+            ((&n /. (&d * &k)%bin_base) * (+ (&d * &k)%bin_base)) &d &multiple).
+  }
+  leibniz &e in &facto.
+  ipso (symm &facto).
+Qed.
 
 End modulo. (* modulo *)
 
