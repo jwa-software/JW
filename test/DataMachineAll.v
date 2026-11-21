@@ -284,9 +284,9 @@ Definition data_machine_all_delivers_int8_section
   : forall (x : Int8) . Int8.from_bin (Int8.to_bin x) = x
   := Int8.conversion.section.
 
-Definition data_machine_all_delivers_int8_valuation_section
+Definition data_machine_all_delivers_int8_reinterpretation_section
   : forall (x : Int8) . Int8.from_bin_with_zero (Int8.unsigned_value x) = x
-  := Int8.valuation.section.
+  := Int8.reinterpretation.section.
 
 Definition data_machine_all_computes_int8_value
   : Int8.to_bin (-128)%int8 = (-10000000)%b
@@ -1065,9 +1065,9 @@ Definition data_machine_all_delivers_int16_section
   : forall (x : Int16) . Int16.from_bin (Int16.to_bin x) = x
   := Int16.conversion.section.
 
-Definition data_machine_all_delivers_int16_valuation_section
+Definition data_machine_all_delivers_int16_reinterpretation_section
   : forall (x : Int16) . Int16.from_bin_with_zero (Int16.unsigned_value x) = x
-  := Int16.valuation.section.
+  := Int16.reinterpretation.section.
 
 Definition data_machine_all_computes_int16_value
   : Int16.to_bin (-1000)%int16 = (-1111101000)%b
@@ -1472,9 +1472,9 @@ Definition data_machine_all_delivers_int32_section
   : forall (x : Int32) . Int32.from_bin (Int32.to_bin x) = x
   := Int32.conversion.section.
 
-Definition data_machine_all_delivers_int32_valuation_section
+Definition data_machine_all_delivers_int32_reinterpretation_section
   : forall (x : Int32) . Int32.from_bin_with_zero (Int32.unsigned_value x) = x
-  := Int32.valuation.section.
+  := Int32.reinterpretation.section.
 
 Definition data_machine_all_computes_int32_value
   : Int32.to_bin (-1000000)%int32 = (-11110100001001000000)%b
@@ -1873,9 +1873,9 @@ Definition data_machine_all_delivers_int64_section
   : forall (x : Int64) . Int64.from_bin (Int64.to_bin x) = x
   := Int64.conversion.section.
 
-Definition data_machine_all_delivers_int64_valuation_section
+Definition data_machine_all_delivers_int64_reinterpretation_section
   : forall (x : Int64) . Int64.from_bin_with_zero (Int64.unsigned_value x) = x
-  := Int64.valuation.section.
+  := Int64.reinterpretation.section.
 
 Definition data_machine_all_computes_int64_value
   : Int64.to_bin (-1000000000000)%int64 = (-1110100011010100101001010001000000000000)%b
