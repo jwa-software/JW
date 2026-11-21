@@ -220,3 +220,54 @@ Definition data_calendar_all_delivers_date_year_succession
       Date.days_before_year (y + 1)%bin_base
       = (Date.days_before_year y + Date.days_in_year y)%bin_with_zero
   := Date.year.succession.
+
+Definition data_calendar_all_delivers_date_year_monotonicity
+  : forall (y : BinBase) (k : BinBase) .
+      (Date.days_before_year y + Date.days_in_year y
+       <= Date.days_before_year (y + k)%bin_base)%bin_with_zero
+  := Date.year.monotonicity.
+
+Definition data_calendar_all_delivers_date_month_monotonicity
+  : forall (y : BinBase) (m1 : Month) (m2 : Month) .
+      Month.compare m1 m2 = Comparison.Lt
+      -> (Date.days_before_month y m1 + Date.days_in_month y m1
+          <= Date.days_before_month y m2)%bin_with_zero
+  := Date.month.monotonicity.
+
+Definition data_calendar_all_delivers_date_validity_boundedness
+  : forall (x : Date) .
+      (Date.day x <= Date.days_in_month (Date.year x) (Date.month x))%bin_with_zero
+  := Date.validity.boundedness.
+
+Definition data_calendar_all_delivers_date_antisymmetry
+  : forall (x1 : Date) (x2 : Date) .
+      Date.compare x1 x2 = Comparison.transpose (Date.compare x2 x1)
+  := Date.antisymmetry.
+
+Definition data_calendar_all_delivers_date_separation
+  : forall (x1 : Date) (x2 : Date) . Date.compare x1 x2 = Comparison.Eq -> x1 = x2
+  := Date.separation.
+
+Definition data_calendar_all_delivers_date_number_decomposition
+  : forall (x : Date) .
+      (Date.day_number x + 1%bin_base_decimal)%bin_with_zero
+      = (Date.days_before_year (Date.year x) + Date.day_of_year x)%bin_with_zero
+  := Date.number.decomposition.
+
+Definition data_calendar_all_delivers_date_number_comparison
+  : forall (x1 : Date) (x2 : Date) .
+      Date.compare x1 x2 = BinWithZero.compare (Date.day_number x1) (Date.day_number x2)
+  := Date.number.comparison.
+
+Definition data_calendar_all_delivers_date_number_order
+  : forall (x1 : Date) (x2 : Date) .
+      Date.LessThan x1 x2 <-> (Date.day_number x1 < Date.day_number x2)%bin_with_zero
+  := Date.number.order.
+
+Definition data_calendar_all_delivers_date_number_injectivity
+  : forall (x1 : Date) (x2 : Date) . Date.day_number x1 = Date.day_number x2 -> x1 = x2
+  := @Date.number.injectivity.
+
+Definition data_calendar_all_delivers_date_comparable
+  : Comparable Date.compare Date.LessThan
+  := _.
