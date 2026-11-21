@@ -13,7 +13,7 @@ SPDX-License-Identifier: MIT
 | `Nat0` | from 0 | `%n0` |
 | `Integer` | every integer | `%z` |
 | `Rational` | every fraction | `%q` |
-| `BinBase` | from 1, in binary | `%bin_base` |
+| `Bin` | from 1, in binary | `%b` |
 | `Bin0` | from 0, in binary | `%b0` |
 | `SignedBin` | every integer, in binary | `%b_signed` |
 
@@ -21,7 +21,7 @@ SPDX-License-Identifier: MIT
 
 ## Conversions
 
-**Upward, without being written.** A `Nat` stands wherever a `Nat0`, an `Integer` or a `Rational` is expected, and so on up; a `BinBase` stands wherever a `Bin0` or a `SignedBin` is. So `(numerator x * denominator y)%z` multiplies an `Integer` by a `Nat`. **Every such conversion is still printed** in the goal, as `Integer.Positive (denominator y)`, so a `leibniz` step can be aimed at what the goal shows.
+**Upward, without being written.** A `Nat` stands wherever a `Nat0`, an `Integer` or a `Rational` is expected, and so on up; a `Bin` stands wherever a `Bin0` or a `SignedBin` is. So `(numerator x * denominator y)%z` multiplies an `Integer` by a `Nat`. **Every such conversion is still printed** in the goal, as `Integer.Positive (denominator y)`, so a `leibniz` step can be aimed at what the goal shows.
 
 **Downward, by name, into an `Option`**, since there may be no answer: `Nat0.to_nat`, `Integer.to_nat0`, `Integer.to_nat`, `Rational.to_integer`, `Rational.to_nat0` and `Rational.to_nat`. Each is `None` exactly where the value has no counterpart below, such as `Integer.to_nat0` below zero or `Rational.to_integer` at a denominator other than one. Its laws sit in a `narrowing` module:
 
@@ -45,7 +45,7 @@ Arithmetic is written with each type's notation and scope key, `(a + b)%n`, `(p 
 **Subtraction is written `x - y` on the types where it is total**, `Integer`, `Rational` and `SignedBin`: `(3 - 5)%z` is `-2`.
 
 - A chain with a `-` is written grouped, `((1 - 2) - 3)%z`, never `(1 - 2 - 3)%z`, though both parse alike.
-- `Nat`, `Nat0`, `BinBase` and `Bin0` keep `sub` by name, since it answers an `Option` that is `None` where the result would not be in the type, beside `saturating_sub` where the type has it.
+- `Nat`, `Nat0`, `Bin` and `Bin0` keep `sub` by name, since it answers an `Option` that is `None` where the result would not be in the type, beside `saturating_sub` where the type has it.
 - The laws are the same in the three types: `subtraction.specification` (`x - y = x + negate y`), `subtraction.inversion.addition` (`(x + y) - y = x`), `addition.inversion.subtraction` (`(x - y) + y = x`), `subtraction.right.identity` (`x - 0 = x`) and `subtraction.annihilation` (`x - x = 0`).
 - These types spend one constructor per unit, so a `Nat0` or `Integer` literal of 5000 or more stays a call to its parsing function until something computes it, and a `Nat` literal that large, which is built in full, draws a warning.
 
@@ -53,23 +53,23 @@ Arithmetic is written with each type's notation and scope key, `(a + b)%n`, `(p 
 
 ## Binary numbers
 
-**They compute.** A `BinBase` is `One` with bits appended at the low end, `b0` for a 0 and `b1` for a 1; `Bin0` adds zero, and `SignedBin` adds a sign. Their arithmetic works bit by bit, so `(10 ^ 11001000)%b0`, two to the power two hundred, reduces in the kernel at once, where a `Nat` that large could not even be written out.
+**They compute.** A `Bin` is `One` with bits appended at the low end, `b0` for a 0 and `b1` for a 1; `Bin0` adds zero, and `SignedBin` adds a sign. Their arithmetic works bit by bit, so `(10 ^ 11001000)%b0`, two to the power two hundred, reduces in the kernel at once, where a `Nat` that large could not even be written out.
 
-**They are written in binary digits**: `1011%bin_base`, `1011%b0` and `1011%b_signed` are eleven, and `(-1011)%b_signed` is minus eleven. A closed value prints the same way. Any other digit is refused, and so is a `BinBase` literal opening with 0. The short key `%b_signed` goes to `SignedBin` because only its literals can carry a sign.
+**They are written in binary digits**: `1011%b`, `1011%b0` and `1011%b_signed` are eleven, and `(-1011)%b_signed` is minus eleven. A closed value prints the same way. Any other digit is refused, and so is a `Bin` literal opening with 0. The short key `%b_signed` goes to `SignedBin` because only its literals can carry a sign.
 
-**`BinBase` and `Bin0` also read decimal digits**, under a key of their own: `2024%bin_base_decimal` is the same term as `11111101000%bin_base`, and `738944%b0_decimal` the same as `10110100011010000000%b0`. A `BinBase` literal opening with 0 is refused here too. A closed value still prints in binary, unless the decimal scope is open.
+**`Bin` and `Bin0` also read decimal digits**, under a key of their own: `2024%b_decimal` is the same term as `11111101000%b`, and `738944%b0_decimal` the same as `10110100011010000000%b0`. A `Bin` literal opening with 0 is refused here too. A closed value still prints in binary, unless the decimal scope is open.
 
-**Division takes a `BinBase` divisor, which is never zero:**
+**Division takes a `Bin` divisor, which is never zero:**
 
-- `(1011 /. 11%bin_base)%b0` is three, and `(1011 %. 11%bin_base)%b0` is two;
-- `SignedBin` divides the magnitude and keeps the sign, so `((-1011) /. 11%bin_base)%b_signed` is minus three, and it has no remainder, as `Integer` has none.
+- `(1011 /. 11%b)%b0` is three, and `(1011 %. 11%b)%b0` is two;
+- `SignedBin` divides the magnitude and keeps the sign, so `((-1011) /. 11%b)%b_signed` is minus three, and it has no remainder, as `Integer` has none.
 
 **`Bin0` also has:**
 
 - `Bin0.gcd`, by Euclid's algorithm; a quotient or a gcd of two 64-bit numbers reduces in the kernel at once;
 - the bitwise `&&`, `||` and `^^`, with `shift_left`, `shift_right` and `test_bit`; `shift_right` is division by a power of two (`Bin0.shift.right.quotient`).
 
-**Their laws are proved through the unary types.** `BinBase.to_nat`, `Bin0.to_nat0` and `SignedBin.to_integer` convert each to its counterpart, and the laws go through them (`Bin0.conversion.addition`, `SignedBin.conversion.difference`). The algebraic laws and instances are those of `Nat`, `Nat0` and `Integer`: `SignedBin` is a ring, and its addition an abelian group.
+**Their laws are proved through the unary types.** `Bin.to_nat`, `Bin0.to_nat0` and `SignedBin.to_integer` convert each to its counterpart, and the laws go through them (`Bin0.conversion.addition`, `SignedBin.conversion.difference`). The algebraic laws and instances are those of `Nat`, `Nat0` and `Integer`: `SignedBin` is a ring, and its addition an abelian group.
 
 **`SignedBin`'s order meets its arithmetic.** The laws of `<` and `<=` against the operations:
 

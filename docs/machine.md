@@ -59,7 +59,7 @@ A literal too wide for its type is refused when the file is compiled, whatever i
 The fixed-width integers come in pairs, one per width: `UInt8` and `Int8` hold one byte, `UInt16` and `Int16` two, `UInt32` and `Int32` four, `UInt64` and `Int64` eight, the most significant byte first. Every width is built the same way, so what this page says of `UInt8` holds of `UInt16`, `UInt32` and `UInt64` with the width changed, and what it says of `Int8` holds of the other signed types.
 
 - **The values compute in binary.** An unsigned value is read as a `Bin0` (`UInt8.to_b0`), a signed one as a `SignedBin` (`Int8.to_b_signed`), and `compare`, the literals and the printing all go through that value, so 64-bit arithmetic computes at once where a unary `Nat0` would build the value one successor at a time.
-- **Each type names its modulus.** `UInt8.modulus` is 256 (2^8) as a `BinBase`, `UInt64.modulus` is 2^64, and the laws are stated with it.
+- **Each type names its modulus.** `UInt8.modulus` is 256 (2^8) as a `Bin`, `UInt64.modulus` is 2^64, and the laws are stated with it.
 - **Each width proves its bit-level laws itself, and shares the rest.** `Int8` wraps a `Byte` of its own and imports nothing of `UInt8`, and no width imports a narrower one; the laws that follow from the bit-level ones are proved once for every width, as [Shared laws](#shared-laws) describes.
 
 ---
