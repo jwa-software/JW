@@ -281,3 +281,134 @@ Definition data_number_binary_all_delivers_numeral
 Definition data_number_binary_all_delivers_well_founded
   : forall (x : Bin) . Accessible (Induced (<)%bin_with_zero Bin.abs) x
   := fun (x : Bin) . WellFounded.accessibility x.
+
+Definition data_number_binary_all_delivers_bin_addition_order_strict_monotonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y < z -> x + y < x + z)%b
+  := Bin.addition.order.strict.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_addition_order_strict_cancellation
+  : forall (x : Bin) (y : Bin) (z : Bin) . (x + y < x + z -> y < z)%b
+  := Bin.addition.order.strict.cancellation.
+
+Definition data_number_binary_all_delivers_bin_addition_order_monotonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y <= z -> x + y <= x + z)%b
+  := Bin.addition.order.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_addition_order_mixed_monotonicity
+  : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . (a <= c -> b < d -> a + b < c + d)%b
+  := Bin.addition.order.mixed.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_addition_order_accumulation
+  : forall (a : Bin) (b : Bin) (c : Bin) (d : Bin) . (a <= c -> b <= d -> a + b <= c + d)%b
+  := Bin.addition.order.accumulation.
+
+Definition data_number_binary_all_delivers_bin_order_sign_negativity
+  : forall (p : BinBase) . (Bin.Negative p < 0)%b
+  := Bin.order.sign.negativity.
+
+Definition data_number_binary_all_delivers_bin_order_sign_positivity
+  : forall (p : BinBase) . (0 < Bin.Positive p)%b
+  := Bin.order.sign.positivity.
+
+Definition data_number_binary_all_delivers_bin_order_negation_strict_reversal
+  : forall (x : Bin) (y : Bin) . (x < y <-> - y < - x)%b
+  := Bin.order.negation.strict.reversal.
+
+Definition data_number_binary_all_delivers_bin_order_negation_reversal
+  : forall (x : Bin) (y : Bin) . (x <= y -> - y <= - x)%b
+  := Bin.order.negation.reversal.
+
+Definition data_number_binary_all_delivers_bin_order_subtraction_left_monotonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y < z -> y - x < z - x)%b
+  := Bin.order.subtraction.left.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_order_subtraction_right_antitonicity
+  : forall (x : Bin) (y : Bin) (z : Bin) . (y < z -> x - z < x - y)%b
+  := Bin.order.subtraction.right.antitonicity.
+
+Definition data_number_binary_all_delivers_bin_order_subtraction_positivity
+  : forall (x : Bin) (y : Bin) . (x < y <-> 0 < y - x)%b
+  := Bin.order.subtraction.positivity.
+
+Definition data_number_binary_all_delivers_bin_order_increment_extensivity
+  : forall (x : Bin) . (x < x + 1)%b
+  := Bin.order.increment.extensivity.
+
+Definition data_number_binary_all_delivers_bin_order_increment_specification
+  : forall (x : Bin) (y : Bin) . (x < y <-> x + 1 <= y)%b
+  := Bin.order.increment.specification.
+
+Definition data_number_binary_all_delivers_bin_order_increment_adjacency
+  : forall (x : Bin) (y : Bin) . (~ (x < y /\ y < x + 1))%b
+  := Bin.order.increment.adjacency.
+
+Definition data_number_binary_all_delivers_bin_order_decrement_extensivity
+  : forall (x : Bin) . (x - 1 < x)%b
+  := Bin.order.decrement.extensivity.
+
+Definition data_number_binary_all_delivers_bin_order_discreteness
+  : forall (x : Bin) (y : Bin) . (x < y + 1 <-> x <= y)%b
+  := Bin.order.discreteness.
+
+Definition data_number_binary_all_delivers_bin_order_embedding_preservation
+  : forall (m : BinWithZero) (n : BinWithZero) .
+      (m < n)%bin_with_zero <-> (Bin.from_bin_with_zero m < Bin.from_bin_with_zero n)%b
+  := Bin.order.embedding.preservation.
+
+Definition data_number_binary_all_delivers_bin_order_embedding_nonnegativity
+  : forall (n : BinWithZero) . (0 <= Bin.from_bin_with_zero n)%b
+  := Bin.order.embedding.nonnegativity.
+
+Definition data_number_binary_all_delivers_bin_multiplication_left_negation
+  : forall (x : Bin) (y : Bin) . (- x * y = - (x * y))%b
+  := Bin.multiplication.left.negation.
+
+Definition data_number_binary_all_delivers_bin_multiplication_left_order_strict_monotonicity
+  : forall (k : Bin) (x : Bin) (y : Bin) . (0 < k -> x < y -> k * x < k * y)%b
+  := Bin.multiplication.left.order.strict.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_multiplication_left_order_strict_reversal
+  : forall (k : Bin) (x : Bin) (y : Bin) . (k < 0 -> x < y -> k * y < k * x)%b
+  := Bin.multiplication.left.order.strict.reversal.
+
+Definition data_number_binary_all_delivers_bin_multiplication_left_order_monotonicity
+  : forall (k : Bin) (x : Bin) (y : Bin) . (0 <= k -> x <= y -> k * x <= k * y)%b
+  := Bin.multiplication.left.order.monotonicity.
+
+Definition data_number_binary_all_delivers_bin_multiplication_sign_positivity
+  : forall (x : Bin) (y : Bin) . (0 < x -> 0 < y -> 0 < x * y)%b
+  := Bin.multiplication.sign.positivity.
+
+Definition data_number_binary_all_delivers_bin_multiplication_sign_negation_positivity
+  : forall (x : Bin) (y : Bin) . (x < 0 -> y < 0 -> 0 < x * y)%b
+  := Bin.multiplication.sign.negation.positivity.
+
+Definition data_number_binary_all_delivers_bin_multiplication_sign_left_negativity
+  : forall (x : Bin) (y : Bin) . (x < 0 -> 0 < y -> x * y < 0)%b
+  := Bin.multiplication.sign.left.negativity.
+
+Definition data_number_binary_all_delivers_bin_multiplication_sign_right_negativity
+  : forall (x : Bin) (y : Bin) . (0 < x -> y < 0 -> x * y < 0)%b
+  := Bin.multiplication.sign.right.negativity.
+
+Definition data_number_binary_all_delivers_bin_comparison_translation
+  : forall (z : Bin) (x : Bin) (y : Bin) . Bin.compare (z + x)%b (z + y)%b = Bin.compare x y
+  := Bin.comparison.translation.
+
+Definition data_number_binary_all_delivers_bin_comparison_negation
+  : forall (x : Bin) (y : Bin) . Bin.compare (- x)%b (- y)%b = Bin.compare y x
+  := Bin.comparison.negation.
+
+Definition data_number_binary_all_delivers_bin_minimum_left_distributivity_addition
+  : forall (z : Bin) (x : Bin) (y : Bin) .
+      (z + Bin.min x y)%b = Bin.min (z + x)%b (z + y)%b
+  := Bin.minimum.left.distributivity.addition.
+
+Definition data_number_binary_all_delivers_bin_maximum_left_distributivity_addition
+  : forall (z : Bin) (x : Bin) (y : Bin) .
+      (z + Bin.max x y)%b = Bin.max (z + x)%b (z + y)%b
+  := Bin.maximum.left.distributivity.addition.
+
+Definition data_number_binary_all_delivers_bin_minimum_duality
+  : forall (x : Bin) (y : Bin) . (- Bin.min x y)%b = Bin.max (- x)%b (- y)%b
+  := Bin.minimum.duality.

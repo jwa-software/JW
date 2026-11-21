@@ -15,6 +15,8 @@ From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Machine.Endian.
 From JW Require Import Data.Machine.HWord.
+From JW Require Import Data.Machine.Modular.
+From JW Require Import Data.Machine.Signed.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
@@ -110,6 +112,23 @@ Definition One :=
     Byte.Zero
     (Byte.introduction
       0 0 0 0 0 0 0 1).
+
+(* The least value, -32768: only the sign bit set. *)
+(* [Int16] *)
+Definition Min :=
+  Int16.introduction
+    (Byte.introduction
+      1 0 0 0 0 0 0 0)
+    Byte.Zero.
+
+(* The greatest value, 32767: every bit but the sign bit set. *)
+(* [Int16] *)
+Definition Max :=
+  Int16.introduction
+    (Byte.introduction
+      0 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1).
 
 (* [k] places toward the most significant end, a 0 coming in at the
  * other; one place first, then [k - 1].
@@ -290,6 +309,23 @@ Definition mul := fun (x : Int16) (y : Int16) .
 Notation "x * y" := (mul x y) (only parsing)
   : jw_int16_scope.
 
+(* The flag and the wrapped product: the flag is set when the product of the
+ * signed values lies outside the range, below [Min] or above [Max].
+ *)
+(* [Int16 -> Int16 -> Product Bit Int16] *)
+Definition mul_with_overflow := fun (x : Int16) (y : Int16) .
+  (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+   | Comparison.Lt => 1%bit
+   | Comparison.Eq => 0%bit
+   | Comparison.Gt =>
+       match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+       | Comparison.Lt => 0%bit
+       | Comparison.Eq => 0%bit
+       | Comparison.Gt => 1%bit
+       end
+   end,
+   mul x y)%product.
+
 (* The bit pattern of [p] modulo 65536, its bits appended from the most
  * significant.
  *)
@@ -356,6 +392,18 @@ Definition add_with_overflow := fun (x : Int16) (y : Int16) .
       (Bit.flip (Bit.xor (sign_bit x) (sign_bit y)))
       (Bit.xor (sign_bit (add x y)) (sign_bit x)) in
   (flag, add x y)%product.
+
+(* The overflow flag and the difference of [x - y]: the flag is set when [x]
+ * and [y] have different signs and the difference has the sign of [y], the
+ * true difference lying past -32768 or 32767.
+ *)
+(* [Int16 -> Int16 -> Product Bit Int16] *)
+Definition sub_with_overflow := fun (x : Int16) (y : Int16) .
+  let flag :=
+    Bit.and
+      (Bit.xor (sign_bit x) (sign_bit y))
+      (Bit.xor (sign_bit (sub x y)) (sign_bit x)) in
+  (flag, sub x y)%product.
 
 (* [Int16 -> Int16 -> Prop] *)
 Definition LessThan := fun (x : Int16) (y : Int16) . (to_bin x < to_bin y)%b.
@@ -440,23 +488,23 @@ Definition to_numeral := fun (x : Int16) .
 
 Local Open Scope jw_int16_scope.
 
-Module valuation. (* valuation *)
+Module reinterpretation. (* reinterpretation *)
 
-(* valuation.zero *)
+(* reinterpretation.zero *)
 Theorem zero : unsigned_value Zero = 0%bin_with_zero.
 Proof.
   simpl in |- *.
   quod idem est.
 Qed.
 
-(* valuation.one *)
+(* reinterpretation.one *)
 Theorem one : unsigned_value One = 1%bin_with_zero.
 Proof.
   simpl in |- *.
   quod idem est.
 Qed.
 
-(* valuation.boundedness *)
+(* reinterpretation.boundedness *)
 Theorem boundedness : forall (x : Int16) . (unsigned_value x < modulus)%bin_with_zero.
 Proof.
   intros x.
@@ -483,7 +531,7 @@ Proof.
     (Bit.conversion.binary.boundedness &x15)))))))))))))))).
 Qed.
 
-(* valuation.injectivity *)
+(* reinterpretation.injectivity *)
 Theorem injectivity
   : forall {x : Int16} {y : Int16} . unsigned_value x = unsigned_value y -> x = y.
 Proof.
@@ -521,7 +569,7 @@ Qed.
  * place one [Bit.conversion.binary.carry.propagation] around the places
  * above it.
  *)
-(* valuation.carry *)
+(* reinterpretation.carry *)
 Theorem carry
   : forall (carry : Bit) (x : Int16) (y : Int16) .
       (Bit.to_bin_with_zero carry + unsigned_value x + unsigned_value y
@@ -555,7 +603,7 @@ Proof.
     (Bit.conversion.binary.carry _ &x15 &y15)))))))))))))))).
 Qed.
 
-(* valuation.borrow *)
+(* reinterpretation.borrow *)
 Theorem borrow
   : forall (borrow : Bit) (x : Int16) (y : Int16) .
       (unsigned_value x
@@ -590,7 +638,7 @@ Proof.
     (Bit.conversion.binary.borrow _ &x15 &y15)))))))))))))))).
 Qed.
 
-(* valuation.addition *)
+(* reinterpretation.addition *)
 Theorem addition
   : forall (x : Int16) (y : Int16) .
       (unsigned_value (x + y)%int16
@@ -609,11 +657,11 @@ Proof.
         (BinWithZero.multiplication.commutativity
           (Bit.to_bin_with_zero (pi_1 (add_with_carry 0 &x &y))%product)
           modulus),
-        <- (valuation.carry 0 &x &y)
+        <- (reinterpretation.carry 0 &x &y)
         in |- *.
       simpl in |- *.
       quod idem est.
-    - ipso (valuation.boundedness (&x + &y)).
+    - ipso (reinterpretation.boundedness (&x + &y)).
   }
   match (BinWithZero.division.uniqueness
           (unsigned_value &x + unsigned_value &y)%bin_with_zero modulus
@@ -624,7 +672,7 @@ Proof.
   ipso (symm &facto).
 Qed.
 
-(* valuation.subtraction *)
+(* reinterpretation.subtraction *)
 Theorem subtraction
   : forall (x : Int16) (y : Int16) .
       ((unsigned_value (sub x y) + unsigned_value y) %. modulus
@@ -647,7 +695,7 @@ Proof.
           (modulus
             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product)%bin_with_zero
           (unsigned_value &x)),
-        (valuation.borrow 0 &x &y),
+        (reinterpretation.borrow 0 &x &y),
         (BinWithZero.addition.commutativity
           (unsigned_value &y) (Bit.to_bin_with_zero 0))
         in |- *.
@@ -658,7 +706,7 @@ Proof.
           (unsigned_value (pi_2 (sub_with_borrow 0 &x &y))%product))
         in |- *.
       quod idem est.
-    - ipso (valuation.boundedness &x).
+    - ipso (reinterpretation.boundedness &x).
   }
   match (BinWithZero.division.uniqueness
           (unsigned_value (sub &x &y) + unsigned_value &y)%bin_with_zero modulus
@@ -669,7 +717,7 @@ Proof.
   ipso facto.
 Qed.
 
-(* valuation.negation *)
+(* reinterpretation.negation *)
 Theorem negation
   : forall (x : Int16) .
       ((unsigned_value (- x)%int16 + unsigned_value x) %. modulus
@@ -677,7 +725,7 @@ Theorem negation
 Proof.
   intros x.
   simpl negate in |- *.
-  leibniz (valuation.subtraction Zero &x), valuation.zero in |- *.
+  leibniz (reinterpretation.subtraction Zero &x), reinterpretation.zero in |- *.
   quod idem est.
 Qed.
 
@@ -685,7 +733,7 @@ Qed.
  * below and the highest bit falls out, one
  * [Bit.conversion.binary.appending.propagation] per place.
  *)
-(* valuation.appending *)
+(* reinterpretation.appending *)
 Theorem appending
   : forall (b : Bit) (x : Int16) .
       (unsigned_value (append_bit b x)
@@ -744,7 +792,7 @@ Proof.
           (Bit.conversion.binary.appending.propagation _ _ _ _ &x14
           &top))))))))))))))))).
     - ipso
-        (valuation.boundedness
+        (reinterpretation.boundedness
           (append_bit &b
             (Int16.introduction (Byte.introduction &x15 &x14 &x13 &x12 &x11 &x10 &x9 &x8)
               (Byte.introduction &x7 &x6 &x5 &x4 &x3 &x2 &x1 &x0)))).
@@ -765,7 +813,7 @@ Proof.
   ipso (symm &facto).
 Qed.
 
-(* valuation.reduction *)
+(* reinterpretation.reduction *)
 Theorem reduction
   : forall (n : BinWithZero) .
       unsigned_value (from_bin_with_zero n) = (n %. modulus)%bin_with_zero.
@@ -788,7 +836,7 @@ Proof.
       }
       leibniz
         &unfolding,
-        (valuation.appending 0 (from_bin_base &p')),
+        (reinterpretation.appending 0 (from_bin_base &p')),
         &IH,
         <- (BinWithZero.modulo.sum.left.absorption
           (10 * (BinWithZero.Positive &p' %. modulus))%bin_with_zero
@@ -809,7 +857,7 @@ Proof.
       }
       leibniz
         &unfolding,
-        (valuation.appending 1 (from_bin_base &p')),
+        (reinterpretation.appending 1 (from_bin_base &p')),
         &IH,
         <- (BinWithZero.modulo.sum.left.absorption
           (10 * (BinWithZero.Positive &p' %. modulus))%bin_with_zero
@@ -826,9 +874,9 @@ Proof.
       quod idem est.
 Qed.
 
-Module reduction. (* valuation.reduction *)
+Module reduction. (* reinterpretation.reduction *)
 
-(* valuation.reduction.additivity *)
+(* reinterpretation.reduction.additivity *)
 Theorem additivity
   : forall (m : BinWithZero) (n : BinWithZero) .
       from_bin_with_zero (m + n)%bin_with_zero = from_bin_with_zero m + from_bin_with_zero n.
@@ -839,22 +887,22 @@ Proof.
       = unsigned_value (from_bin_with_zero &m + from_bin_with_zero &n).
   {
     leibniz
-      (valuation.reduction (&m + &n)%bin_with_zero),
-      (valuation.addition (from_bin_with_zero &m) (from_bin_with_zero &n)),
-      (valuation.reduction &m),
-      (valuation.reduction &n),
+      (reinterpretation.reduction (&m + &n)%bin_with_zero),
+      (reinterpretation.addition (from_bin_with_zero &m) (from_bin_with_zero &n)),
+      (reinterpretation.reduction &m),
+      (reinterpretation.reduction &n),
       (BinWithZero.modulo.sum.left.absorption
         &m (&n %. modulus)%bin_with_zero modulus),
       (BinWithZero.modulo.sum.right.absorption &m &n modulus)
       in |- *.
     quod idem est.
   }
-  ipso (valuation.injectivity &facto).
+  ipso (reinterpretation.injectivity &facto).
 Qed.
 
-End reduction. (* valuation.reduction *)
+End reduction. (* reinterpretation.reduction *)
 
-(* valuation.section *)
+(* reinterpretation.section *)
 Theorem section : forall (x : Int16) . from_bin_with_zero (unsigned_value x) = x.
 Proof.
   intros x.
@@ -862,18 +910,18 @@ Proof.
     : unsigned_value (from_bin_with_zero (unsigned_value &x)) = unsigned_value &x.
   {
     leibniz
-      (valuation.reduction (unsigned_value &x)),
+      (reinterpretation.reduction (unsigned_value &x)),
       (BinWithZero.modulo.identity
-        (unsigned_value &x) modulus (valuation.boundedness &x))
+        (unsigned_value &x) modulus (reinterpretation.boundedness &x))
       in |- *.
     quod idem est.
   }
-  ipso (valuation.injectivity &facto).
+  ipso (reinterpretation.injectivity &facto).
 Qed.
 
-Module left. (* valuation.left *)
+Module left. (* reinterpretation.left *)
 
-(* valuation.left.doubling *)
+(* reinterpretation.left.doubling *)
 Lemma doubling
   : forall (x : Int16) .
       (unsigned_value (shift_left x 1%n0)
@@ -890,18 +938,18 @@ Proof.
   }
   match (BinWithZero.addition.identity (10 * unsigned_value &x)%bin_with_zero)
   with | _ sum end.
-  leibniz &appended, (valuation.appending 0 &x) in |- *.
+  leibniz &appended, (reinterpretation.appending 0 &x) in |- *.
   simpl Bit.to_bin_with_zero in |- *.
   leibniz &sum in |- *.
   quod idem est.
 Qed.
 
-End left. (* valuation.left *)
+End left. (* reinterpretation.left *)
 
-Module multiplication. (* valuation.multiplication *)
+Module multiplication. (* reinterpretation.multiplication *)
 
 (* One step of [mul]: the product so far doubled, plus [x] for a 1. *)
-(* valuation.multiplication.step *)
+(* reinterpretation.multiplication.step *)
 Lemma step
   : forall (x : Int16) (p : Int16) (h : BinWithZero) (b : Bit) .
       (unsigned_value p = (unsigned_value x * h) %. modulus)%bin_with_zero ->
@@ -946,9 +994,9 @@ Proof.
       with | _ right end.
       match (BinWithZero.addition.identity (10 * &h)%bin_with_zero) with | _ right' end.
       leibniz
-        (valuation.addition (shift_left &p 1%n0) Zero),
-        (valuation.left.doubling &p),
-        valuation.zero,
+        (reinterpretation.addition (shift_left &p 1%n0) Zero),
+        (reinterpretation.left.doubling &p),
+        reinterpretation.zero,
         (BinWithZero.modulo.sum.left.absorption
           (10 * unsigned_value &p)%bin_with_zero 0%bin_with_zero modulus),
         &right,
@@ -969,8 +1017,8 @@ Proof.
               (unsigned_value &x) (10 * &h)%bin_with_zero 1%bin_with_zero)
       with | spread _ end.
       leibniz
-        (valuation.addition (shift_left &p 1%n0) &x),
-        (valuation.left.doubling &p),
+        (reinterpretation.addition (shift_left &p 1%n0) &x),
+        (reinterpretation.left.doubling &p),
         &doubled,
         (BinWithZero.modulo.sum.left.absorption
           (10 * (unsigned_value &x * &h))%bin_with_zero (unsigned_value &x)
@@ -983,9 +1031,9 @@ Proof.
     ipso facto.
 Qed.
 
-End multiplication. (* valuation.multiplication *)
+End multiplication. (* reinterpretation.multiplication *)
 
-(* valuation.multiplication *)
+(* reinterpretation.multiplication *)
 Theorem multiplication
   : forall (x : Int16) (y : Int16) .
       (unsigned_value (x * y)%int16
@@ -997,7 +1045,7 @@ Proof.
         = (unsigned_value &x * 0) %. modulus)%bin_with_zero.
   {
     match (BinWithZero.multiplication.annihilation (unsigned_value &x)) with | _ right end.
-    leibniz &right, valuation.zero in |- *.
+    leibniz &right, reinterpretation.zero in |- *.
     simpl BinWithZero.modulo, BinWithZero.div, Product.second in |- *.
     quod idem est.
   }
@@ -1006,27 +1054,27 @@ Proof.
   match &yb0 with | introduction y7 y6 y5 y4 y3 y2 y1 y0 end.
   simpl mul in |- *.
   ipso
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _
-    (valuation.multiplication.step _ _ _ _ &base)))))))))))))))).
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _
+    (reinterpretation.multiplication.step _ _ _ _ &base)))))))))))))))).
 Qed.
 
-Module sign. (* valuation.sign *)
+Module sign. (* reinterpretation.sign *)
 
-(* valuation.sign.clear *)
+(* reinterpretation.sign.clear *)
 Theorem clear
   : forall (x : Int16) .
       sign_bit x = 0%bit -> (unsigned_value x < 1000000000000000)%bin_with_zero.
@@ -1064,7 +1112,7 @@ Proof.
     &base))))))))))))))).
 Qed.
 
-(* valuation.sign.set *)
+(* reinterpretation.sign.set *)
 Theorem set
   : forall (x : Int16) .
       sign_bit x = 1%bit -> (1000000000000000 <= unsigned_value x)%bin_with_zero.
@@ -1100,342 +1148,42 @@ Proof.
     &base))))))))))))))).
 Qed.
 
-End sign. (* valuation.sign *)
+End sign. (* reinterpretation.sign *)
 
-End valuation. (* valuation *)
+End reinterpretation. (* reinterpretation *)
 
-Module addition. (* addition *)
-
-(* addition.associativity *)
-Theorem associativity
-  : forall (x : Int16) (y : Int16) (z : Int16) . (x + y) + z = x + (y + z).
-Proof.
-  intros x y z.
-  lemma facto : unsigned_value ((&x + &y) + &z) = unsigned_value (&x + (&y + &z)).
-  {
-    leibniz
-      (valuation.addition (&x + &y) &z),
-      (valuation.addition &x &y),
-      (BinWithZero.modulo.sum.left.absorption
-        (unsigned_value &x + unsigned_value &y)%bin_with_zero (unsigned_value &z)
-        modulus),
-      (valuation.addition &x (&y + &z)),
-      (valuation.addition &y &z),
-      (BinWithZero.modulo.sum.right.absorption
-        (unsigned_value &x) (unsigned_value &y + unsigned_value &z)%bin_with_zero
-        modulus),
-      (BinWithZero.addition.associativity
-        (unsigned_value &x) (unsigned_value &y) (unsigned_value &z))
-      in |- *.
-    quod idem est.
-  }
-  ipso (valuation.injectivity &facto).
-Qed.
-
-(* addition.commutativity *)
-Theorem commutativity : forall (x : Int16) (y : Int16) . x + y = y + x.
-Proof.
-  intros x y.
-  lemma facto : unsigned_value (&x + &y) = unsigned_value (&y + &x).
-  {
-    leibniz
-      (valuation.addition &x &y),
-      (valuation.addition &y &x),
-      (BinWithZero.addition.commutativity (unsigned_value &x) (unsigned_value &y))
-      in |- *.
-    quod idem est.
-  }
-  ipso (valuation.injectivity &facto).
-Qed.
-
-(* addition.identity *)
-Theorem identity : forall (x : Int16) . (Zero + x = x) /\ (x + Zero = x).
-Proof.
-  intros x.
-  lemma left : Zero + &x = &x.
-  {
-    lemma facto : unsigned_value (Zero + &x) = unsigned_value &x.
-    {
-      match (BinWithZero.addition.identity (unsigned_value &x)) with | left _ end.
-      leibniz
-        (valuation.addition Zero &x),
-        valuation.zero,
-        &left,
-        (BinWithZero.modulo.identity
-          (unsigned_value &x) modulus (valuation.boundedness &x))
-        in |- *.
-      quod idem est.
-    }
-    ipso (valuation.injectivity &facto).
-  }
-  divide et impera.
-  - ipso &left.
-  - leibniz (addition.commutativity &x Zero) in |- *.
-    ipso &left.
-Qed.
-
-(* addition.inverse *)
-Theorem inverse : forall (x : Int16) . (- x + x = Zero) /\ (x + - x = Zero).
-Proof.
-  intros x.
-  lemma left : - &x + &x = Zero.
-  {
-    lemma facto : unsigned_value (- &x + &x) = unsigned_value Zero.
-    {
-      leibniz
-        (valuation.addition (- &x) &x),
-        (valuation.negation &x),
-        valuation.zero
-        in |- *.
-      quod idem est.
-    }
-    ipso (valuation.injectivity &facto).
-  }
-  divide et impera.
-  - ipso &left.
-  - leibniz (addition.commutativity &x (- &x)) in |- *.
-    ipso &left.
-Qed.
-
-Module inversion. (* addition.inversion *)
-
-(* The subtraction ripples a borrow, so this is read through the unsigned
- * values modulo [modulus], as the other laws of the type are.
+(* [Int16] as a [Modular.Width]: its unsigned values are the residues modulo
+ * 65536, and the laws of addition, subtraction and multiplication are read
+ * through them.
  *)
-(* addition.inversion.subtraction *)
-Theorem subtraction : forall (x : Int16) (y : Int16) . (x - y) + y = x.
-Proof.
-  intros x y.
-  lemma facto : unsigned_value ((&x - &y) + &y) = unsigned_value &x.
-  {
-    leibniz (valuation.addition (&x - &y) &y) in |- *.
-    ipso (valuation.subtraction &x &y).
-  }
-  ipso (valuation.injectivity &facto).
-Qed.
+Module Residue <: Modular.Width.
 
-End inversion. (* addition.inversion *)
+Definition T := T.
+Definition Zero := Zero.
+Definition One := One.
+Definition to_bin_with_zero := unsigned_value.
+Definition add := add.
+Definition sub := sub.
+Definition negate := negate.
+Definition mul := mul.
+Definition modulus := modulus.
 
-End addition. (* addition *)
+Module conversion. (* Residue.conversion *)
 
-Module subtraction. (* subtraction *)
+Definition zero := Int16.reinterpretation.zero.
+Definition one := Int16.reinterpretation.one.
+Definition boundedness := Int16.reinterpretation.boundedness.
+Definition injectivity := @Int16.reinterpretation.injectivity.
+Definition addition := Int16.reinterpretation.addition.
+Definition subtraction := Int16.reinterpretation.subtraction.
+Definition negation := Int16.reinterpretation.negation.
+Definition multiplication := Int16.reinterpretation.multiplication.
 
-(* Adding [- y] to both sides of [addition.inversion.subtraction]. *)
-(* subtraction.specification *)
-Theorem specification : forall (x : Int16) (y : Int16) . x - y = x + (- y).
-Proof.
-  intros x y.
-  let proof shifted : ((&x - &y) + &y) + (- &y) = &x + (- &y)
-    := congru (fun (z : Int16) . z + (- &y)), (addition.inversion.subtraction &x &y).
-  match (addition.inverse &y) with | _ r end.
-  match (addition.identity (&x - &y)) with | _ i end.
-  leibniz (addition.associativity (&x - &y) &y (- &y)), &r, &i in &shifted.
-  ipso &shifted.
-Qed.
+End conversion. (* Residue.conversion *)
 
-Module inversion. (* subtraction.inversion *)
+End Residue.
 
-(* subtraction.inversion.addition *)
-Theorem addition : forall (x : Int16) (y : Int16) . (x + y) - y = x.
-Proof.
-  intros x y.
-  match (addition.inverse &y) with | _ r end.
-  match (addition.identity &x) with | _ i end.
-  leibniz
-    (subtraction.specification (&x + &y) &y),
-    (addition.associativity &x &y (- &y)),
-    &r,
-    &i
-    in |- *.
-  quod idem est.
-Qed.
-
-End inversion. (* subtraction.inversion *)
-
-Module right. (* subtraction.right *)
-
-(* subtraction.right.identity *)
-Theorem identity : forall (x : Int16) . x - Zero = x.
-Proof.
-  intros x.
-  match (addition.identity (&x - Zero)) with | _ i end.
-  leibniz <- &i in |- *.
-  ipso (addition.inversion.subtraction &x Zero).
-Qed.
-
-End right. (* subtraction.right *)
-
-(* subtraction.annihilation *)
-Theorem annihilation : forall (x : Int16) . x - x = Zero.
-Proof.
-  intros x.
-  match (addition.inverse &x) with | _ r end.
-  leibniz (subtraction.specification &x &x) in |- *.
-  ipso &r.
-Qed.
-
-End subtraction. (* subtraction *)
-
-Module multiplication. (* multiplication *)
-
-(* multiplication.associativity *)
-Theorem associativity
-  : forall (x : Int16) (y : Int16) (z : Int16) . (x * y) * z = x * (y * z).
-Proof.
-  intros x y z.
-  lemma facto : unsigned_value ((&x * &y) * &z) = unsigned_value (&x * (&y * &z)).
-  {
-    leibniz
-      (valuation.multiplication (&x * &y) &z),
-      (valuation.multiplication &x &y),
-      (BinWithZero.modulo.product.left.absorption
-        (unsigned_value &x * unsigned_value &y)%bin_with_zero (unsigned_value &z)
-        modulus),
-      (valuation.multiplication &x (&y * &z)),
-      (valuation.multiplication &y &z),
-      (BinWithZero.modulo.product.right.absorption
-        (unsigned_value &x) (unsigned_value &y * unsigned_value &z)%bin_with_zero
-        modulus),
-      (BinWithZero.multiplication.associativity
-        (unsigned_value &x) (unsigned_value &y) (unsigned_value &z))
-      in |- *.
-    quod idem est.
-  }
-  ipso (valuation.injectivity &facto).
-Qed.
-
-(* multiplication.commutativity *)
-Theorem commutativity : forall (x : Int16) (y : Int16) . x * y = y * x.
-Proof.
-  intros x y.
-  lemma facto : unsigned_value (&x * &y) = unsigned_value (&y * &x).
-  {
-    leibniz
-      (valuation.multiplication &x &y),
-      (valuation.multiplication &y &x),
-      (BinWithZero.multiplication.commutativity (unsigned_value &x) (unsigned_value &y))
-      in |- *.
-    quod idem est.
-  }
-  ipso (valuation.injectivity &facto).
-Qed.
-
-(* multiplication.identity *)
-Theorem identity : forall (x : Int16) . (One * x = x) /\ (x * One = x).
-Proof.
-  intros x.
-  lemma left : One * &x = &x.
-  {
-    lemma facto : unsigned_value (One * &x) = unsigned_value &x.
-    {
-      match (BinWithZero.multiplication.identity (unsigned_value &x)) with | left _ end.
-      leibniz
-        (valuation.multiplication One &x),
-        valuation.one,
-        &left,
-        (BinWithZero.modulo.identity
-          (unsigned_value &x) modulus (valuation.boundedness &x))
-        in |- *.
-      quod idem est.
-    }
-    ipso (valuation.injectivity &facto).
-  }
-  divide et impera.
-  - ipso &left.
-  - leibniz (multiplication.commutativity &x One) in |- *.
-    ipso &left.
-Qed.
-
-Module left. (* multiplication.left *)
-
-Module distributivity. (* multiplication.left.distributivity *)
-
-Module over. (* multiplication.left.distributivity.over *)
-
-(* multiplication.left.distributivity.over.addition *)
-Theorem addition
-  : forall (x : Int16) (y : Int16) (z : Int16) . x * (y + z) = (x * y) + (x * z).
-Proof.
-  intros x y z.
-  lemma facto : unsigned_value (&x * (&y + &z)) = unsigned_value ((&x * &y) + (&x * &z)).
-  {
-    match (BinWithZero.multiplication.distributivity.over.addition
-            (unsigned_value &x) (unsigned_value &y) (unsigned_value &z))
-    with | spread _ end.
-    leibniz
-      (valuation.multiplication &x (&y + &z)),
-      (valuation.addition &y &z),
-      (BinWithZero.modulo.product.right.absorption
-        (unsigned_value &x) (unsigned_value &y + unsigned_value &z)%bin_with_zero
-        modulus),
-      &spread,
-      (valuation.addition (&x * &y) (&x * &z)),
-      (valuation.multiplication &x &y),
-      (valuation.multiplication &x &z),
-      (BinWithZero.modulo.sum.left.absorption
-        (unsigned_value &x * unsigned_value &y)%bin_with_zero
-        ((unsigned_value &x * unsigned_value &z) %. modulus)%bin_with_zero
-        modulus),
-      (BinWithZero.modulo.sum.right.absorption
-        (unsigned_value &x * unsigned_value &y)%bin_with_zero
-        (unsigned_value &x * unsigned_value &z)%bin_with_zero modulus)
-      in |- *.
-    quod idem est.
-  }
-  ipso (valuation.injectivity &facto).
-Qed.
-
-End over. (* multiplication.left.distributivity.over *)
-
-End distributivity. (* multiplication.left.distributivity *)
-
-End left. (* multiplication.left *)
-
-Module right. (* multiplication.right *)
-
-Module distributivity. (* multiplication.right.distributivity *)
-
-Module over. (* multiplication.right.distributivity.over *)
-
-(* multiplication.right.distributivity.over.addition *)
-Theorem addition
-  : forall (x : Int16) (y : Int16) (z : Int16) . (y + z) * x = (y * x) + (z * x).
-Proof.
-  intros x y z.
-  leibniz
-    (multiplication.commutativity (&y + &z) &x),
-    (multiplication.commutativity &y &x),
-    (multiplication.commutativity &z &x)
-    in |- *.
-  ipso (multiplication.left.distributivity.over.addition &x &y &z).
-Qed.
-
-End over. (* multiplication.right.distributivity.over *)
-
-End distributivity. (* multiplication.right.distributivity *)
-
-End right. (* multiplication.right *)
-
-Module distributivity. (* multiplication.distributivity *)
-
-Module over. (* multiplication.distributivity.over *)
-
-(* multiplication.distributivity.over.addition *)
-Theorem addition
-  : forall (x : Int16) (y : Int16) (z : Int16) .
-      (x * (y + z) = (x * y) + (x * z)) /\ ((y + z) * x = (y * x) + (z * x)).
-Proof.
-  intros x y z.
-  divide et impera.
-  - ipso (multiplication.left.distributivity.over.addition  &x &y &z).
-  - ipso (multiplication.right.distributivity.over.addition &x &y &z).
-Qed.
-
-End over. (* multiplication.distributivity.over *)
-
-End distributivity. (* multiplication.distributivity *)
-
-End multiplication. (* multiplication *)
+Include Modular.Laws Residue.
 
 Module conversion. (* conversion *)
 
@@ -1449,8 +1197,8 @@ Proof.
   intros a b.
   let proof e := congru from_bin_with_zero, (Bin.difference.specification &a &b).
   leibniz
-    (valuation.reduction.additivity (Bin.ramp (Bin.bin_with_zero_difference &a &b)) &b),
-    (valuation.reduction.additivity
+    (reinterpretation.reduction.additivity (Bin.ramp (Bin.bin_with_zero_difference &a &b)) &b),
+    (reinterpretation.reduction.additivity
       (Bin.ramp (Bin.negate (Bin.bin_with_zero_difference &a &b))) &a)
     in &e.
   simpl from_bin in |- *.
@@ -1498,8 +1246,8 @@ Proof.
         = unsigned_value Zero.
     {
       leibniz
-        (valuation.reduction (modulus * Bit.to_bin_with_zero (sign_bit &x))%bin_with_zero),
-        valuation.zero
+        (reinterpretation.reduction (modulus * Bit.to_bin_with_zero (sign_bit &x))%bin_with_zero),
+        reinterpretation.zero
         in |- *.
       match (sign_bit &x) with | Zero | One end.
       - simpl Bit.to_bin_with_zero, BinWithZero.modulo, BinWithZero.div, Product.second
@@ -1511,7 +1259,7 @@ Proof.
         simpl in |- *.
         quod idem est.
     }
-    ipso (valuation.injectivity &facto).
+    ipso (reinterpretation.injectivity &facto).
   }
   lemma unsigned : - Zero = Zero.
   {
@@ -1524,7 +1272,7 @@ Proof.
   leibniz
     (conversion.difference
       (unsigned_value &x) (modulus * Bit.to_bin_with_zero (sign_bit &x))%bin_with_zero),
-    (valuation.section &x),
+    (reinterpretation.section &x),
     &vanishing,
     &unsigned,
     &right
@@ -1574,7 +1322,7 @@ Proof.
     : (unsigned_value &x + unsigned_value &y
         = modulus * Bit.to_bin_with_zero (pi_1 (add_with_carry 0 &x &y))%product
           + unsigned_value (&x + &y)%int16)%bin_with_zero
-    := valuation.carry 0 &x &y.
+    := reinterpretation.carry 0 &x &y.
   lemma balance
     : (unsigned_value (&x + &y)%int16
         + (modulus * Bit.to_bin_with_zero (sign_bit &x)
@@ -1874,7 +1622,7 @@ Proof.
       quod idem est.
     }
     leibniz &scaled in &e.
-    let proof small := valuation.sign.clear &x &s.
+    let proof small := reinterpretation.sign.clear &x &s.
     match (unsigned_value &x) with | Zero | Positive q end |- f.
     + simpl Bin.bin_with_zero_difference in &e.
       ex &e quodlibet.
@@ -1895,11 +1643,11 @@ Proof.
     simpl Bin.ramp, Bin.negate in &sp.
     match (BinWithZero.addition.identity (unsigned_value &x)) with | left _ end.
     leibniz &left in &sp.
-    let proof bound := valuation.boundedness &x.
+    let proof bound := reinterpretation.boundedness &x.
     leibniz <- &sp in &bound.
     ex
       (BinWithZero.order.strict.irreflexivity _
-        (BinWithZero.order.mixed.transitivity
+        (Comparable.order.mixed.left.transitivity
           (BinWithZero.addition.right.order.extensivity p modulus) &bound))
       quodlibet.
 Qed.
@@ -1931,7 +1679,7 @@ Proof.
       quod idem est.
     }
     leibniz &whole in &e.
-    let proof big := valuation.sign.set &x &s.
+    let proof big := reinterpretation.sign.set &x &s.
     let proof sp := Bin.difference.specification (unsigned_value &x) modulus.
     leibniz &e in &sp.
     simpl Bin.ramp, Bin.negate in &sp.
@@ -1986,7 +1734,7 @@ Proof.
   lemma value : unsigned_value (from_bin_with_zero &n) = &n.
   {
     leibniz
-      (valuation.reduction &n),
+      (reinterpretation.reduction &n),
       (BinWithZero.modulo.identity &n modulus (BinWithZero.order.strict.transitivity &h &half))
       in |- *.
     quod idem est.
@@ -1995,11 +1743,11 @@ Proof.
   {
     match (sign_bit (from_bin_with_zero &n)) with | Zero | One end |- s.
     - quod idem est.
-    - let proof big := valuation.sign.set _ &s.
+    - let proof big := reinterpretation.sign.set _ &s.
       leibniz &value in &big.
       ex
         (BinWithZero.order.strict.irreflexivity _
-          (BinWithZero.order.mixed.transitivity &big &h))
+          (Comparable.order.mixed.left.transitivity &big &h))
         quodlibet.
   }
   leibniz (conversion.bin.nonnegative &n) in |- *.
@@ -2053,7 +1801,7 @@ Proof.
       quod idem est.
     }
     leibniz
-      &through, (valuation.reduction k), (BinWithZero.modulo.identity k modulus &kbelow)
+      &through, (reinterpretation.reduction k), (BinWithZero.modulo.identity k modulus &kbelow)
       in |- *.
     quod idem est.
   }
@@ -2065,7 +1813,7 @@ Proof.
       quod idem est.
     }
     leibniz
-      &through, (valuation.reduction p), (BinWithZero.modulo.identity p modulus &pbelow)
+      &through, (reinterpretation.reduction p), (BinWithZero.modulo.identity p modulus &pbelow)
       in |- *.
     quod idem est.
   }
@@ -2074,8 +1822,8 @@ Proof.
     lemma facto : unsigned_value (from_bin_base &k + from_bin_base &p) = unsigned_value Zero.
     {
       leibniz
-        (valuation.addition (from_bin_base &k) (from_bin_base &p)),
-        &valuek, &valuep, valuation.zero,
+        (reinterpretation.addition (from_bin_base &k) (from_bin_base &p)),
+        &valuek, &valuep, reinterpretation.zero,
         (BinWithZero.addition.commutativity k p),
         &ek
         in |- *.
@@ -2084,7 +1832,7 @@ Proof.
       simpl in |- *.
       quod idem est.
     }
-    ipso (valuation.injectivity &facto).
+    ipso (reinterpretation.injectivity &facto).
   }
   lemma complement : - from_bin_base &p = from_bin_base &k.
   {
@@ -2111,7 +1859,7 @@ Proof.
   lemma sign : sign_bit (from_bin_base &k) = 1%bit.
   {
     match (sign_bit (from_bin_base &k)) with | Zero | One end |- s.
-    - let proof small := valuation.sign.clear _ &s.
+    - let proof small := reinterpretation.sign.clear _ &s.
       leibniz &valuek in &small.
       let proof total := BinWithZero.addition.order.strict.monotonicity _ _ _ _ &h &small.
       leibniz &ek, &double in &total.
@@ -2175,7 +1923,7 @@ Proof.
           - leibniz &same in &b.
             ipso &b.
           - simpl BinWithZero.LessOrEqual in |- *.
-            ipso (disjoin _, (BinWithZero.order.mixed.transitivity &b &smaller)).
+            ipso (disjoin _, (Comparable.order.mixed.left.transitivity &b &smaller)).
         }
         ipso (conversion.retraction.negative &q &bounded).
     - simpl Bin.divide in |- *.
@@ -2185,7 +1933,7 @@ Proof.
       simpl Bin.divide in |- *.
       ipso
         (conversion.retraction.nonnegative (p /. &d)%bin_with_zero
-          (BinWithZero.order.mixed.transitivity &b &r)).
+          (Comparable.order.mixed.left.transitivity &b &r)).
   }
   simpl divide in |- *.
   leibniz &e in |- *.
@@ -2248,7 +1996,7 @@ Proof.
             leibniz <- &same in |- *.
             ipso (BinWithZero.division.quotient.strict.boundedness &p (BinBase.b1 &d') &differ).
         - ipso
-            (BinWithZero.order.mixed.transitivity
+            (Comparable.order.mixed.left.transitivity
               (BinWithZero.division.quotient.boundedness p &d) &smaller).
       }
       simpl Bin.divide in |- *.
@@ -2266,7 +2014,7 @@ Proof.
         lemma bounded : (q <= 1000000000000000)%bin_with_zero.
         {
           simpl BinWithZero.LessOrEqual in |- *.
-          ipso (disjoin _, (BinWithZero.order.mixed.transitivity &b &r)).
+          ipso (disjoin _, (Comparable.order.mixed.left.transitivity &b &r)).
         }
         ipso (conversion.retraction.negative &q &bounded).
   }
@@ -2307,53 +2055,294 @@ End hword. (* conversion.hword *)
 
 End conversion. (* conversion *)
 
-Module order. (* order *)
+(* [Int16] as a [Signed.Width]: its operations, the laws above, and its
+ * constants, 2^15, 2^16 and 3 * 2^15. The facts about fixed values are closed
+ * computations, checked by the kernel.
+ *)
+Module Width <: Signed.Width.
 
-Module strict. (* order.strict *)
+Definition T := T.
+Definition Zero := Zero.
+Definition One := One.
+Definition Min := Min.
+Definition Max := Max.
+Definition to_bin := to_bin.
+Definition from_bin := from_bin.
+Definition from_bin_with_zero := from_bin_with_zero.
+Definition unsigned_value := unsigned_value.
+Definition sign_bit := sign_bit.
+Definition add := add.
+Definition sub := sub.
+Definition negate := negate.
+Definition LessThan := LessThan.
+Definition LessOrEqual := LessOrEqual.
+Definition add_with_overflow := add_with_overflow.
+Definition sub_with_overflow := sub_with_overflow.
+Definition compare := compare.
+Definition mul := mul.
+Definition mul_with_overflow := mul_with_overflow.
+Definition half := 1000000000000000%bin_base.
+Definition modulus := modulus.
+Definition beyond := 11000000000000000%bin_base.
 
-(* order.strict.transitivity *)
-Theorem transitivity
-  : forall {x : Int16} {y : Int16} {z : Int16} . x < y -> y < z -> x < z.
-Proof.
-  intros x y z h1 h2.
-  simpl LessThan in &h1, &h2 |- *.
-  ipso (Bin.order.strict.transitivity &h1 &h2).
-Qed.
+Module order. (* Width.order *)
 
-End strict. (* order.strict *)
+Module strict. (* Width.order.strict *)
 
-End order. (* order *)
-
-Module comparison. (* comparison *)
-
-(* comparison.specification *)
-Theorem specification
-  : forall (x : Int16) (y : Int16) .
-      (compare x y = Comparison.Lt <-> x < y) /\ (compare x y = Comparison.Eq <-> x = y).
+Theorem specification : forall (x : T) (y : T) . LessThan x y <-> (to_bin x < to_bin y)%b.
 Proof.
   intros x y.
-  simpl compare, LessThan in |- *.
-  let proof s := Bin.comparison.specification (to_bin &x) (to_bin &y).
-  match &s with | strict equality end.
   divide et impera.
-  - ipso &strict.
-  - divide et impera.
-    + intro c.
-      ipso (conversion.injectivity (modus aequans &equality, &c)).
-    + intro e.
-      ipso (modus aequans &equality, (congru to_bin, &e)).
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
 Qed.
 
-(* comparison.antisymmetry *)
-Theorem antisymmetry
-  : forall (x : Int16) (y : Int16) . compare x y = Comparison.transpose (compare y x).
+End strict. (* Width.order.strict *)
+
+Theorem specification : forall (x : T) (y : T) . LessOrEqual x y <-> x = y \/ LessThan x y.
 Proof.
   intros x y.
-  simpl compare in |- *.
-  ipso (Bin.comparison.antisymmetry (to_bin &x) (to_bin &y)).
+  divide et impera.
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
 Qed.
 
-End comparison. (* comparison *)
+End order. (* Width.order *)
+
+Module conversion. (* Width.conversion *)
+
+Definition section := Int16.conversion.section.
+
+Theorem comparison
+  : forall (x : T) (y : T) . compare x y = Bin.compare (to_bin x) (to_bin y).
+Proof.
+  intros x y.
+  ipso (refl (compare &x &y)).
+Qed.
+
+Definition addition := Int16.conversion.addition.
+Definition difference := Int16.conversion.difference.
+
+Module forward. (* Width.conversion.forward *)
+
+Theorem specification
+  : forall (x : T) .
+      to_bin x
+      = Bin.bin_with_zero_difference (unsigned_value x)
+          (BinWithZero.Positive modulus * Bit.to_bin_with_zero (sign_bit x))%bin_with_zero.
+Proof.
+  intro x.
+  ipso (refl (to_bin &x)).
+Qed.
+
+End forward. (* Width.conversion.forward *)
+
+Module backward. (* Width.conversion.backward *)
+
+Theorem specification
+  : forall (z : Bin) .
+      from_bin z
+      = add (from_bin_with_zero (Bin.ramp z))
+          (negate (from_bin_with_zero (Bin.ramp (Bin.negate z)))).
+Proof.
+  intro z.
+  ipso (refl (from_bin &z)).
+Qed.
+
+End backward. (* Width.conversion.backward *)
+
+Module boundedness. (* Width.conversion.boundedness *)
+
+Definition positive := Int16.conversion.boundedness.positive.
+Definition negative := Int16.conversion.boundedness.negative.
+
+End boundedness. (* Width.conversion.boundedness *)
+
+Module retraction. (* Width.conversion.retraction *)
+
+Definition nonnegative := Int16.conversion.retraction.nonnegative.
+Definition negative := Int16.conversion.retraction.negative.
+
+End retraction. (* Width.conversion.retraction *)
+
+End conversion. (* Width.conversion *)
+
+Module reinterpretation. (* Width.reinterpretation *)
+
+Definition boundedness := Int16.reinterpretation.boundedness.
+Definition injectivity := @Int16.reinterpretation.injectivity.
+Definition multiplication := Int16.reinterpretation.multiplication.
+Definition reduction := Int16.reinterpretation.reduction.
+
+Module reduction. (* Width.reinterpretation.reduction *)
+
+Definition additivity := Int16.reinterpretation.reduction.additivity.
+
+Theorem zero : from_bin_with_zero BinWithZero.Zero = Zero.
+Proof.
+  ipso (refl Zero).
+Qed.
+
+End reduction. (* Width.reinterpretation.reduction *)
+
+End reinterpretation. (* Width.reinterpretation *)
+
+Module addition. (* Width.addition *)
+
+Definition associativity := Int16.addition.associativity.
+Definition commutativity := Int16.addition.commutativity.
+Definition identity := Int16.addition.identity.
+Definition inverse := Int16.addition.inverse.
+
+End addition. (* Width.addition *)
+
+Module multiplication. (* Width.multiplication *)
+
+Definition annihilation := Int16.multiplication.annihilation.
+
+Module left. (* Width.multiplication.left *)
+
+Definition negation := Int16.multiplication.left.negation.
+
+End left. (* Width.multiplication.left *)
+
+Module right. (* Width.multiplication.right *)
+
+Definition negation := Int16.multiplication.right.negation.
+
+End right. (* Width.multiplication.right *)
+
+End multiplication. (* Width.multiplication *)
+
+Module subtraction. (* Width.subtraction *)
+
+Definition specification := Int16.subtraction.specification.
+
+End subtraction. (* Width.subtraction *)
+
+Module flag. (* Width.flag *)
+
+Module addition. (* Width.flag.addition *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (pi_1 (add_with_overflow x y))%product
+      = Bit.and (Bit.flip (Bit.xor (sign_bit x) (sign_bit y)))
+          (Bit.xor (sign_bit (add x y)) (sign_bit x)).
+Proof.
+  intros x y.
+  ipso (refl ((pi_1 (add_with_overflow &x &y))%product)).
+Qed.
+
+End addition. (* Width.flag.addition *)
+
+Module subtraction. (* Width.flag.subtraction *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (pi_1 (sub_with_overflow x y))%product
+      = Bit.and (Bit.xor (sign_bit x) (sign_bit y)) (Bit.xor (sign_bit (sub x y)) (sign_bit x)).
+Proof.
+  intros x y.
+  ipso (refl ((pi_1 (sub_with_overflow &x &y))%product)).
+Qed.
+
+End subtraction. (* Width.flag.subtraction *)
+
+Module multiplication. (* Width.flag.multiplication *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      mul_with_overflow x y
+      = (match Bin.compare (to_bin x * to_bin y)%b (to_bin Min) with
+         | Comparison.Lt => 1%bit
+         | Comparison.Eq => 0%bit
+         | Comparison.Gt =>
+             match Bin.compare (to_bin x * to_bin y)%b (to_bin Max) with
+             | Comparison.Lt => 0%bit
+             | Comparison.Eq => 0%bit
+             | Comparison.Gt => 1%bit
+             end
+         end,
+         mul x y)%product.
+Proof.
+  intros x y.
+  ipso (refl (mul_with_overflow &x &y)).
+Qed.
+
+End multiplication. (* Width.flag.multiplication *)
+
+End flag. (* Width.flag *)
+
+Module minimum. (* Width.minimum *)
+
+Theorem specification : to_bin Min = Bin.Negative half.
+Proof.
+  ipso (refl (Bin.Negative half)).
+Qed.
+
+Theorem negation : negate Min = Min.
+Proof.
+  ipso (refl Min).
+Qed.
+
+End minimum. (* Width.minimum *)
+
+Module maximum. (* Width.maximum *)
+
+Theorem specification : (to_bin Max + 1 = Bin.Positive half)%b.
+Proof.
+  ipso (refl (Bin.Positive half)).
+Qed.
+
+Theorem positivity : (0 < to_bin Max)%b.
+Proof.
+  simpl Bin.LessThan in |- *.
+  exists 111111111111111%bin_base.
+  ipso (refl (to_bin Max)).
+Qed.
+
+End maximum. (* Width.maximum *)
+
+Module one. (* Width.one *)
+
+Theorem specification : to_bin One = 1%b.
+Proof.
+  ipso (refl 1%b).
+Qed.
+
+End one. (* Width.one *)
+
+Module modulus. (* Width.modulus *)
+
+Theorem specification : (Bin.Positive modulus = Bin.Positive half + Bin.Positive half)%b.
+Proof.
+  ipso (refl (Bin.Positive modulus)).
+Qed.
+
+Theorem wrapping : from_bin (Bin.Positive modulus) = Zero.
+Proof.
+  ipso (refl Zero).
+Qed.
+
+End modulus. (* Width.modulus *)
+
+Module beyond. (* Width.beyond *)
+
+Theorem specification : (Bin.Positive beyond = Bin.Positive modulus + Bin.Positive half)%b.
+Proof.
+  ipso (refl (Bin.Positive beyond)).
+Qed.
+
+End beyond. (* Width.beyond *)
+
+End Width.
+
+Include Signed.Laws Width.
 
 Instance comparable
   : Comparable compare (<) :=

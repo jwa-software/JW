@@ -60,7 +60,7 @@ The fixed-width integers come in pairs, one per width: `UInt8` and `Int8` hold o
 
 - **The values compute in binary.** An unsigned value is read as a `BinWithZero` (`UInt8.to_bin_with_zero`), a signed one as a `Bin` (`Int8.to_bin`), and `compare`, the literals and the printing all go through that value, so 64-bit arithmetic computes at once where a unary `Nat0` would build the value one successor at a time.
 - **Each type names its modulus.** `UInt8.modulus` is 256 (2^8) as a `BinBase`, `UInt64.modulus` is 2^64, and the laws are stated with it.
-- **No fixed-width integer shares code with another.** `Int8` wraps a `Byte` of its own and imports nothing of `UInt8`, and no width imports a narrower one.
+- **Each width proves its bit-level laws itself, and shares the rest.** `Int8` wraps a `Byte` of its own and imports nothing of `UInt8`, and no width imports a narrower one; the laws that follow from the bit-level ones are proved once for every width, as [Shared laws](#shared-laws) describes.
 
 ---
 
@@ -75,6 +75,10 @@ The fixed-width integers come in pairs, one per width: `UInt8` and `Int8` hold o
 - **Division and remainder return an `Option`.** `x /. y` and `x %. y` divide through `BinWithZero`, and give `None` when `y` is `0`: `(200 /. 7)%uint8` is `Some 28` and `(200 %. 7)%uint8` is `Some 4`. The quotient is never more than `x`, so it never wraps: `UInt8.conversion.division` makes its value the `BinWithZero` quotient, and `UInt8.conversion.modulo` does the same for the remainder.
 - **The arithmetic is a ring.** `+` and `*` form one, `UInt8.from_bin_with_zero`, `UInt8.from_bin` and `UInt8.from_nat0` read a number modulo `UInt8.modulus` (`UInt8.from_bin (-1)` is `255`), `UInt8.to_bin` gives the value as a `Bin`, and `UInt8.compare` orders by value.
 - **A negative literal is refused.** Under `%uint8` and the other unsigned keys, `- 1` is read as a negative literal and refused; the negation of a literal is written `- UInt8.One` or `UInt8.negate 1`.
+- **The bounds are `UInt8.Zero` and `UInt8.Max`.** `UInt8.Max` is 255, every bit set; `UInt8.bound.lower` and `UInt8.bound.upper` put every value between the two, and `UInt8.bound.range` states the upper one for the value in `BinWithZero`.
+- **Each flag says when the result is exact.** `UInt8.overflow.addition.specification` makes the carry of `add_with_carry 0 x y` clear exactly when the sum of the values is below the modulus, and `UInt8.overflow.subtraction.specification` makes the borrow of `sub_with_borrow 0 x y` clear exactly when `y <= x`: `UInt8.add_with_carry 0 200 100` is `(1, 44)`, and `UInt8.sub_with_borrow 0 3 5` is `(1, 254)`. A clear flag makes the result exact (`overflow.addition.exactness`, `overflow.subtraction.exactness`) and keeps the order (`overflow.addition.monotonicity`).
+- **Multiplication returns its flag too.** `UInt8.mul_with_overflow` returns the wrapped product with a flag, set when the product of the values is not below the modulus, so when the high half of the full product is not zero: `UInt8.mul_with_overflow 16 16` is `(1, 0)`, and `UInt8.mul_with_overflow 15 17` is `(0, 255)`. `UInt8.overflow.multiplication` states the flag, the exact product under a clear flag, and the order under a positive factor.
+- **The successor stays in range away from the bounds.** `UInt8.increment.exactness` makes the value of `x + UInt8.One` one more than that of `x` for every `x` but `UInt8.Max`, and `UInt8.decrement.exactness` does the same for `x - UInt8.One` and every `x` but `UInt8.Zero`.
 
 ---
 
@@ -82,13 +86,32 @@ The fixed-width integers come in pairs, one per width: `UInt8` and `Int8` hold o
 
 `Int8`'s `+`, `-` and `*` wrap modulo `Int8.modulus` as well: `(127 + 1)%int8` is `-128`, and so is `(- (-128))%int8`, while `(3 - 5)%int8` is `-2`.
 
-- **Every operation is stated against the signed value.** The laws go through `Int8.unsigned_value`, the value of the bit pattern from 0 to 255 (the `Int8.valuation` laws), and from it `Int8.to_bin` takes the signed value.
+- **Every operation is stated against the signed value.** The laws go through `Int8.unsigned_value`, which reads the same bits as an unsigned number from 0 to 255 (its laws are the `Int8.reinterpretation` ones, the bits being reinterpreted), and from it `Int8.to_bin` takes the signed value.
 - **The overflow is a flag.** `Int8.add_with_overflow` returns the sum with a flag, set when the operands share a sign that the sum does not; `Int8.conversion.addition` makes `to_bin (x + y)` the sum `to_bin x + to_bin y` in `Bin` whenever that flag is clear.
 - **The right shift is arithmetic.** `Int8.shift_right` copies the sign bit, so a shift by one place halves the value rounding down (`Int8.conversion.right.halving`), and `Int8.shift_right (-1) 3` is still `-1`.
 - **The arithmetic is a ring.** `+` and `*` form one, `Int8.from_bin` and `Int8.from_integer` read a number modulo `Int8.modulus`, and `Int8.compare` orders by the signed value, `-1` before `1`.
 - **A value in range comes back.** `Int8.conversion.retraction.nonnegative` and `Int8.conversion.retraction.negative` make `to_bin (from_bin z)` equal to `z` for every `z` from -128 to 127, and `Int8.conversion.boundedness` puts `to_bin x` in that range.
 - **Division rounds toward zero and returns an `Option`.** `x /. y` divides through `Bin`, and gives `None` when `y` is `0`: `((-7) /. 2)%int8` and `(7 /. (-2))%int8` are both `Some (-3)`. Its one overflow, `(-128) /. (-1)`, wraps to `-128`. `Int8.conversion.division.positive` and `Int8.conversion.division.negative` make the quotient's value the `Bin` quotient, the second in every case but that one.
 - **There is no signed remainder.** The remainder that goes with `/.` takes the sign of `x`: it is the remainder of the magnitudes, `(Bin.abs x %. d)%bin_with_zero` for a divisor of magnitude `d`, negated when `x` is negative.
+- **The bounds are `Int8.Min` and `Int8.Max`.** `Int8.Min` is -128 and `Int8.Max` is 127; `Int8.bound.lower` and `Int8.bound.upper` put every value between the two, and `Int8.bound.range` states both for the signed value in `Bin`. `Int8.negation.minimum` is `- Int8.Min = Int8.Min`, and `Int8.negation.exactness` makes `to_bin (- x)` the negation of `to_bin x` for every other `x`.
+- **Each flag says when the result is exact.** `Int8.add_with_overflow`, `Int8.sub_with_overflow` and `Int8.mul_with_overflow` return the wrapped result with a flag, and `Int8.overflow.addition.specification`, `Int8.overflow.subtraction.specification` and `Int8.overflow.multiplication.specification` make the flag clear exactly when the result in `Bin` lies from -128 to 127: `Int8.sub_with_overflow (-128) 1` is `(1, 127)`, `Int8.mul_with_overflow 16 8` is `(1, -128)`, and `Int8.mul_with_overflow (-16) 8` is `(0, -128)`. A clear flag makes the result exact, and keeps the order, the product under a positive factor.
+- **The wrapping is stated in `Bin`.** `Int8.wrapping.additivity`, `Int8.wrapping.negation` and `Int8.wrapping.multiplicativity` make `from_bin` turn `Bin`'s `+`, `-` and `*` into `Int8`'s, and `Int8.wrapping.upper` and `Int8.wrapping.lower` give the value of a sum past one end by less than the modulus.
+- **The successor stays in range away from the bounds.** `Int8.increment.exactness` makes `to_bin (x + Int8.One)` one more than `to_bin x` for every `x` but `Int8.Max`, and `Int8.decrement.exactness` does the same for `x - Int8.One` and every `x` but `Int8.Min`.
+
+---
+
+## Shared laws
+
+The laws that follow from a width's bit-level laws are proved once, in a functor, and each width includes them. The width's file binds its own operations and laws to the functor's parameter in a module, and an `Include` places the functor's laws in the width's module, stated with the width's own operations: `UInt8.addition.associativity` reads `UInt8.add`, so `leibniz` rewrites with it.
+
+| Functor | Binding module | Topics it gives | What the width supplies |
+|---|---|---|---|
+| `Modular.Laws` | `Residue` | `addition`, `subtraction`, `multiplication` | the value below the modulus and its `conversion` laws (`UInt8.conversion.*`, `Int8.reinterpretation.*`) |
+| `Unsigned.Laws` | `Width` | `bound`, `overflow`, `increment`, `decrement`, `order`, `comparison` | the carry and borrow equations, `Max`, `compare` |
+| `Signed.Laws` | `Width` | `bound`, `sign`, `wrapping`, `overflow`, `negation`, `increment`, `decrement`, `order`, `comparison` | the signed value and its retractions, the flags, `Min`, `Max`, `compare` |
+
+- **`Modular.Laws` comes first.** Each width includes it right after its value laws, since the later laws of the file use the ring laws; `Unsigned.Laws` or `Signed.Laws` comes at the end, followed by the `Comparable` instance.
+- **A field is not an axiom.** Every `Parameter` of a module type is a field that each width defines or proves, and `Print Assumptions` of an included law is closed.
 
 ---
 

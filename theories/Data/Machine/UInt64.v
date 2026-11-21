@@ -15,6 +15,8 @@ From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Machine.DWord.
 From JW Require Import Data.Machine.Endian.
+From JW Require Import Data.Machine.Modular.
+From JW Require Import Data.Machine.Unsigned.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.BinBase.
 From JW Require Import Data.Number.Binary.BinWithZero.
@@ -134,6 +136,27 @@ Definition One :=
     Byte.Zero
     (Byte.introduction
       0 0 0 0 0 0 0 1).
+
+(* The greatest value, 18446744073709551615: every bit set. *)
+(* [UInt64] *)
+Definition Max :=
+  UInt64.introduction
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1)
+    (Byte.introduction
+      1 1 1 1 1 1 1 1).
 
 (* [k] places toward the most significant end, a 0 coming in at the
  * other; one place first, then [k - 1].
@@ -514,6 +537,20 @@ Definition mul := fun (x : UInt64) (y : UInt64) .
 
 Notation "x * y" := (mul x y) (only parsing)
   : jw_uint64_scope.
+
+(* The flag and the wrapped product: the flag is set when the product of the
+ * values is not below the modulus, as the high half of the full product is
+ * then not zero.
+ *)
+(* [UInt64 -> UInt64 -> Product Bit UInt64] *)
+Definition mul_with_overflow := fun (x : UInt64) (y : UInt64) .
+  (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
+           (BinWithZero.Positive modulus) with
+   | Comparison.Lt => 0%bit
+   | Comparison.Eq => 1%bit
+   | Comparison.Gt => 1%bit
+   end,
+   mul x y)%product.
 
 (* [p] modulo 18446744073709551616, its bits appended from the most significant. *)
 (* [BinBase -> UInt64] *)
@@ -1814,388 +1851,183 @@ End dword. (* conversion.dword *)
 
 End conversion. (* conversion *)
 
-Module addition. (* addition *)
-
-(* addition.associativity *)
-Theorem associativity
-  : forall (x : UInt64) (y : UInt64) (z : UInt64) . (x + y) + z = x + (y + z).
-Proof.
-  intros x y z.
-  lemma facto : to_bin_with_zero ((&x + &y) + &z) = to_bin_with_zero (&x + (&y + &z)).
-  {
-    leibniz
-      (conversion.addition (&x + &y) &z),
-      (conversion.addition &x &y),
-      (BinWithZero.modulo.sum.left.absorption
-        (to_bin_with_zero &x + to_bin_with_zero &y)%bin_with_zero (to_bin_with_zero &z)
-        modulus),
-      (conversion.addition &x (&y + &z)),
-      (conversion.addition &y &z),
-      (BinWithZero.modulo.sum.right.absorption
-        (to_bin_with_zero &x) (to_bin_with_zero &y + to_bin_with_zero &z)%bin_with_zero
-        modulus),
-      (BinWithZero.addition.associativity
-        (to_bin_with_zero &x) (to_bin_with_zero &y) (to_bin_with_zero &z))
-      in |- *.
-    quod idem est.
-  }
-  ipso (conversion.injectivity &facto).
-Qed.
-
-(* addition.commutativity *)
-Theorem commutativity : forall (x : UInt64) (y : UInt64) . x + y = y + x.
-Proof.
-  intros x y.
-  lemma facto : to_bin_with_zero (&x + &y) = to_bin_with_zero (&y + &x).
-  {
-    leibniz
-      (conversion.addition &x &y),
-      (conversion.addition &y &x),
-      (BinWithZero.addition.commutativity (to_bin_with_zero &x) (to_bin_with_zero &y))
-      in |- *.
-    quod idem est.
-  }
-  ipso (conversion.injectivity &facto).
-Qed.
-
-(* addition.identity *)
-Theorem identity : forall (x : UInt64) . (Zero + x = x) /\ (x + Zero = x).
-Proof.
-  intros x.
-  lemma left : Zero + &x = &x.
-  {
-    lemma facto : to_bin_with_zero (Zero + &x) = to_bin_with_zero &x.
-    {
-      match (BinWithZero.addition.identity (to_bin_with_zero &x)) with | left _ end.
-      leibniz
-        (conversion.addition Zero &x),
-        conversion.zero,
-        &left,
-        (BinWithZero.modulo.identity
-          (to_bin_with_zero &x) modulus (conversion.boundedness &x))
-        in |- *.
-      quod idem est.
-    }
-    ipso (conversion.injectivity &facto).
-  }
-  divide et impera.
-  - ipso &left.
-  - leibniz (addition.commutativity &x Zero) in |- *.
-    ipso &left.
-Qed.
-
-(* addition.inverse *)
-Theorem inverse : forall (x : UInt64) . (- x + x = Zero) /\ (x + - x = Zero).
-Proof.
-  intros x.
-  lemma left : - &x + &x = Zero.
-  {
-    lemma facto : to_bin_with_zero (- &x + &x) = to_bin_with_zero Zero.
-    {
-      leibniz
-        (conversion.addition (- &x) &x),
-        (conversion.negation &x),
-        conversion.zero
-        in |- *.
-      quod idem est.
-    }
-    ipso (conversion.injectivity &facto).
-  }
-  divide et impera.
-  - ipso &left.
-  - leibniz (addition.commutativity &x (- &x)) in |- *.
-    ipso &left.
-Qed.
-
-Module inversion. (* addition.inversion *)
-
-(* The subtraction ripples a borrow, so this is read through the values
- * modulo [modulus], as the other laws of the type are.
+(* [UInt64] as a [Modular.Width]: its values are the residues modulo
+ * 18446744073709551616, and the laws of addition, subtraction and
+ * multiplication are read through them.
  *)
-(* addition.inversion.subtraction *)
-Theorem subtraction : forall (x : UInt64) (y : UInt64) . (x - y) + y = x.
-Proof.
-  intros x y.
-  lemma facto : to_bin_with_zero ((&x - &y) + &y) = to_bin_with_zero &x.
-  {
-    leibniz (conversion.addition (&x - &y) &y) in |- *.
-    ipso (conversion.subtraction &x &y).
-  }
-  ipso (conversion.injectivity &facto).
-Qed.
+Module Residue <: Modular.Width.
 
-End inversion. (* addition.inversion *)
+Definition T := T.
+Definition Zero := Zero.
+Definition One := One.
+Definition to_bin_with_zero := to_bin_with_zero.
+Definition add := add.
+Definition sub := sub.
+Definition negate := negate.
+Definition mul := mul.
+Definition modulus := modulus.
 
-End addition. (* addition *)
+Module conversion. (* Residue.conversion *)
 
-Module subtraction. (* subtraction *)
+Definition zero := UInt64.conversion.zero.
+Definition one := UInt64.conversion.one.
+Definition boundedness := UInt64.conversion.boundedness.
+Definition injectivity := @UInt64.conversion.injectivity.
+Definition addition := UInt64.conversion.addition.
+Definition subtraction := UInt64.conversion.subtraction.
+Definition negation := UInt64.conversion.negation.
+Definition multiplication := UInt64.conversion.multiplication.
 
-(* Adding [- y] to both sides of [addition.inversion.subtraction]. *)
-(* subtraction.specification *)
-Theorem specification : forall (x : UInt64) (y : UInt64) . x - y = x + (- y).
-Proof.
-  intros x y.
-  let proof shifted : ((&x - &y) + &y) + (- &y) = &x + (- &y)
-    := congru (fun (z : UInt64) . z + (- &y)), (addition.inversion.subtraction &x &y).
-  match (addition.inverse &y) with | _ r end.
-  match (addition.identity (&x - &y)) with | _ i end.
-  leibniz (addition.associativity (&x - &y) &y (- &y)), &r, &i in &shifted.
-  ipso &shifted.
-Qed.
+End conversion. (* Residue.conversion *)
 
-Module inversion. (* subtraction.inversion *)
+End Residue.
 
-(* subtraction.inversion.addition *)
-Theorem addition : forall (x : UInt64) (y : UInt64) . (x + y) - y = x.
-Proof.
-  intros x y.
-  match (addition.inverse &y) with | _ r end.
-  match (addition.identity &x) with | _ i end.
-  leibniz
-    (subtraction.specification (&x + &y) &y),
-    (addition.associativity &x &y (- &y)),
-    &r,
-    &i
-    in |- *.
-  quod idem est.
-Qed.
+Include Modular.Laws Residue.
 
-End inversion. (* subtraction.inversion *)
+(* [UInt64] as an [Unsigned.Width]: its operations, the laws above, and its
+ * modulus, 18446744073709551616. The facts about fixed values are closed
+ * computations, checked by the kernel.
+ *)
+Module Width <: Unsigned.Width.
 
-Module right. (* subtraction.right *)
+Definition T := T.
+Definition Zero := Zero.
+Definition One := One.
+Definition Max := Max.
+Definition to_bin_with_zero := to_bin_with_zero.
+Definition add := add.
+Definition sub := sub.
+Definition LessThan := LessThan.
+Definition LessOrEqual := LessOrEqual.
+Definition add_with_carry := add_with_carry.
+Definition sub_with_borrow := sub_with_borrow.
+Definition compare := compare.
+Definition mul := mul.
+Definition mul_with_overflow := mul_with_overflow.
+Definition modulus := modulus.
 
-(* subtraction.right.identity *)
-Theorem identity : forall (x : UInt64) . x - Zero = x.
-Proof.
-  intros x.
-  match (addition.identity (&x - Zero)) with | _ i end.
-  leibniz <- &i in |- *.
-  ipso (addition.inversion.subtraction &x Zero).
-Qed.
+Module order. (* Width.order *)
 
-End right. (* subtraction.right *)
+Module strict. (* Width.order.strict *)
 
-(* subtraction.annihilation *)
-Theorem annihilation : forall (x : UInt64) . x - x = Zero.
-Proof.
-  intros x.
-  match (addition.inverse &x) with | _ r end.
-  leibniz (subtraction.specification &x &x) in |- *.
-  ipso &r.
-Qed.
-
-End subtraction. (* subtraction *)
-
-Module multiplication. (* multiplication *)
-
-(* multiplication.associativity *)
-Theorem associativity
-  : forall (x : UInt64) (y : UInt64) (z : UInt64) . (x * y) * z = x * (y * z).
-Proof.
-  intros x y z.
-  lemma facto : to_bin_with_zero ((&x * &y) * &z) = to_bin_with_zero (&x * (&y * &z)).
-  {
-    leibniz
-      (conversion.multiplication (&x * &y) &z),
-      (conversion.multiplication &x &y),
-      (BinWithZero.modulo.product.left.absorption
-        (to_bin_with_zero &x * to_bin_with_zero &y)%bin_with_zero (to_bin_with_zero &z)
-        modulus),
-      (conversion.multiplication &x (&y * &z)),
-      (conversion.multiplication &y &z),
-      (BinWithZero.modulo.product.right.absorption
-        (to_bin_with_zero &x) (to_bin_with_zero &y * to_bin_with_zero &z)%bin_with_zero
-        modulus),
-      (BinWithZero.multiplication.associativity
-        (to_bin_with_zero &x) (to_bin_with_zero &y) (to_bin_with_zero &z))
-      in |- *.
-    quod idem est.
-  }
-  ipso (conversion.injectivity &facto).
-Qed.
-
-(* multiplication.commutativity *)
-Theorem commutativity : forall (x : UInt64) (y : UInt64) . x * y = y * x.
-Proof.
-  intros x y.
-  lemma facto : to_bin_with_zero (&x * &y) = to_bin_with_zero (&y * &x).
-  {
-    leibniz
-      (conversion.multiplication &x &y),
-      (conversion.multiplication &y &x),
-      (BinWithZero.multiplication.commutativity (to_bin_with_zero &x) (to_bin_with_zero &y))
-      in |- *.
-    quod idem est.
-  }
-  ipso (conversion.injectivity &facto).
-Qed.
-
-(* multiplication.identity *)
-Theorem identity : forall (x : UInt64) . (One * x = x) /\ (x * One = x).
-Proof.
-  intros x.
-  lemma left : One * &x = &x.
-  {
-    lemma facto : to_bin_with_zero (One * &x) = to_bin_with_zero &x.
-    {
-      match (BinWithZero.multiplication.identity (to_bin_with_zero &x)) with | left _ end.
-      leibniz
-        (conversion.multiplication One &x),
-        conversion.one,
-        &left,
-        (BinWithZero.modulo.identity
-          (to_bin_with_zero &x) modulus (conversion.boundedness &x))
-        in |- *.
-      quod idem est.
-    }
-    ipso (conversion.injectivity &facto).
-  }
-  divide et impera.
-  - ipso &left.
-  - leibniz (multiplication.commutativity &x One) in |- *.
-    ipso &left.
-Qed.
-
-Module left. (* multiplication.left *)
-
-Module distributivity. (* multiplication.left.distributivity *)
-
-Module over. (* multiplication.left.distributivity.over *)
-
-(* multiplication.left.distributivity.over.addition *)
-Theorem addition
-  : forall (x : UInt64) (y : UInt64) (z : UInt64) . x * (y + z) = (x * y) + (x * z).
-Proof.
-  intros x y z.
-  lemma facto
-    : to_bin_with_zero (&x * (&y + &z)) = to_bin_with_zero ((&x * &y) + (&x * &z)).
-  {
-    match (BinWithZero.multiplication.distributivity.over.addition
-            (to_bin_with_zero &x) (to_bin_with_zero &y) (to_bin_with_zero &z))
-    with | spread _ end.
-    leibniz
-      (conversion.multiplication &x (&y + &z)),
-      (conversion.addition &y &z),
-      (BinWithZero.modulo.product.right.absorption
-        (to_bin_with_zero &x) (to_bin_with_zero &y + to_bin_with_zero &z)%bin_with_zero
-        modulus),
-      &spread,
-      (conversion.addition (&x * &y) (&x * &z)),
-      (conversion.multiplication &x &y),
-      (conversion.multiplication &x &z),
-      (BinWithZero.modulo.sum.left.absorption
-        (to_bin_with_zero &x * to_bin_with_zero &y)%bin_with_zero
-        ((to_bin_with_zero &x * to_bin_with_zero &z) %. modulus)%bin_with_zero
-        modulus),
-      (BinWithZero.modulo.sum.right.absorption
-        (to_bin_with_zero &x * to_bin_with_zero &y)%bin_with_zero
-        (to_bin_with_zero &x * to_bin_with_zero &z)%bin_with_zero modulus)
-      in |- *.
-    quod idem est.
-  }
-  ipso (conversion.injectivity &facto).
-Qed.
-
-End over. (* multiplication.left.distributivity.over *)
-
-End distributivity. (* multiplication.left.distributivity *)
-
-End left. (* multiplication.left *)
-
-Module right. (* multiplication.right *)
-
-Module distributivity. (* multiplication.right.distributivity *)
-
-Module over. (* multiplication.right.distributivity.over *)
-
-(* multiplication.right.distributivity.over.addition *)
-Theorem addition
-  : forall (x : UInt64) (y : UInt64) (z : UInt64) . (y + z) * x = (y * x) + (z * x).
-Proof.
-  intros x y z.
-  leibniz
-    (multiplication.commutativity (&y + &z) &x),
-    (multiplication.commutativity &y &x),
-    (multiplication.commutativity &z &x)
-    in |- *.
-  ipso (multiplication.left.distributivity.over.addition &x &y &z).
-Qed.
-
-End over. (* multiplication.right.distributivity.over *)
-
-End distributivity. (* multiplication.right.distributivity *)
-
-End right. (* multiplication.right *)
-
-Module distributivity. (* multiplication.distributivity *)
-
-Module over. (* multiplication.distributivity.over *)
-
-(* multiplication.distributivity.over.addition *)
-Theorem addition
-  : forall (x : UInt64) (y : UInt64) (z : UInt64) .
-      (x * (y + z) = (x * y) + (x * z)) /\ ((y + z) * x = (y * x) + (z * x)).
-Proof.
-  intros x y z.
-  divide et impera.
-  - ipso (multiplication.left.distributivity.over.addition  &x &y &z).
-  - ipso (multiplication.right.distributivity.over.addition &x &y &z).
-Qed.
-
-End over. (* multiplication.distributivity.over *)
-
-End distributivity. (* multiplication.distributivity *)
-
-End multiplication. (* multiplication *)
-
-Module order. (* order *)
-
-Module strict. (* order.strict *)
-
-(* order.strict.transitivity *)
-Theorem transitivity
-  : forall {x : UInt64} {y : UInt64} {z : UInt64} . x < y -> y < z -> x < z.
-Proof.
-  intros x y z h1 h2.
-  simpl LessThan in &h1, &h2 |- *.
-  ipso (BinWithZero.order.strict.transitivity &h1 &h2).
-Qed.
-
-End strict. (* order.strict *)
-
-End order. (* order *)
-
-Module comparison. (* comparison *)
-
-(* comparison.specification *)
 Theorem specification
-  : forall (x : UInt64) (y : UInt64) .
-      (compare x y = Comparison.Lt <-> x < y) /\ (compare x y = Comparison.Eq <-> x = y).
+  : forall (x : T) (y : T) .
+      LessThan x y <-> (to_bin_with_zero x < to_bin_with_zero y)%bin_with_zero.
 Proof.
   intros x y.
-  simpl compare, LessThan in |- *.
-  let proof s :=
-    BinWithZero.comparison.specification (to_bin_with_zero &x) (to_bin_with_zero &y).
-  match &s with | strict equality end.
   divide et impera.
-  - ipso &strict.
-  - divide et impera.
-    + intro c.
-      ipso (conversion.injectivity (modus aequans &equality, &c)).
-    + intro e.
-      ipso (modus aequans &equality, (congru to_bin_with_zero, &e)).
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
 Qed.
 
-(* comparison.antisymmetry *)
-Theorem antisymmetry
-  : forall (x : UInt64) (y : UInt64) . compare x y = Comparison.transpose (compare y x).
+End strict. (* Width.order.strict *)
+
+Theorem specification : forall (x : T) (y : T) . LessOrEqual x y <-> x = y \/ LessThan x y.
 Proof.
   intros x y.
-  simpl compare in |- *.
-  ipso (BinWithZero.comparison.antisymmetry (to_bin_with_zero &x) (to_bin_with_zero &y)).
+  divide et impera.
+  - intro h.
+    ipso &h.
+  - intro h.
+    ipso &h.
 Qed.
 
-End comparison. (* comparison *)
+End order. (* Width.order *)
+
+Module conversion. (* Width.conversion *)
+
+Definition zero := UInt64.conversion.zero.
+Definition one := UInt64.conversion.one.
+Definition boundedness := UInt64.conversion.boundedness.
+Definition injectivity := @UInt64.conversion.injectivity.
+
+Theorem comparison
+  : forall (x : T) (y : T) .
+      compare x y = BinWithZero.compare (to_bin_with_zero x) (to_bin_with_zero y).
+Proof.
+  intros x y.
+  ipso (refl (compare &x &y)).
+Qed.
+
+Definition multiplication := UInt64.conversion.multiplication.
+
+End conversion. (* Width.conversion *)
+
+Module flag. (* Width.flag *)
+
+Module addition. (* Width.flag.addition *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (to_bin_with_zero x + to_bin_with_zero y
+       = BinWithZero.Positive modulus
+           * Bit.to_bin_with_zero (pi_1 (add_with_carry 0 x y))%product
+         + to_bin_with_zero (add x y))%bin_with_zero.
+Proof.
+  intros x y.
+  ipso (UInt64.conversion.carry 0 &x &y).
+Qed.
+
+End addition. (* Width.flag.addition *)
+
+Module subtraction. (* Width.flag.subtraction *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      (to_bin_with_zero x
+         + BinWithZero.Positive modulus
+             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 x y))%product
+       = to_bin_with_zero y + to_bin_with_zero (sub x y))%bin_with_zero.
+Proof.
+  intros x y.
+  let proof b
+    : (to_bin_with_zero &x
+         + BinWithZero.Positive modulus
+             * Bit.to_bin_with_zero (pi_1 (sub_with_borrow 0 &x &y))%product
+       = (to_bin_with_zero &y + 0) + to_bin_with_zero (sub &x &y))%bin_with_zero
+    := UInt64.conversion.borrow 0 &x &y.
+  match (BinWithZero.addition.identity (to_bin_with_zero &y)) with | _ r end.
+  leibniz &r in &b.
+  ipso &b.
+Qed.
+
+End subtraction. (* Width.flag.subtraction *)
+
+Module multiplication. (* Width.flag.multiplication *)
+
+Theorem specification
+  : forall (x : T) (y : T) .
+      mul_with_overflow x y
+      = (match BinWithZero.compare (to_bin_with_zero x * to_bin_with_zero y)%bin_with_zero
+                 (BinWithZero.Positive modulus) with
+         | Comparison.Lt => 0%bit
+         | Comparison.Eq => 1%bit
+         | Comparison.Gt => 1%bit
+         end,
+         mul x y)%product.
+Proof.
+  intros x y.
+  ipso (refl (mul_with_overflow &x &y)).
+Qed.
+
+End multiplication. (* Width.flag.multiplication *)
+
+End flag. (* Width.flag *)
+
+Module maximum. (* Width.maximum *)
+
+Theorem specification : (to_bin_with_zero Max + 1 = BinWithZero.Positive modulus)%bin_with_zero.
+Proof.
+  ipso (refl (BinWithZero.Positive modulus)).
+Qed.
+
+End maximum. (* Width.maximum *)
+
+End Width.
+
+Include Unsigned.Laws Width.
 
 Instance comparable
   : Comparable compare (<) :=

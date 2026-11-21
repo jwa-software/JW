@@ -2008,6 +2008,39 @@ End over. (* multiplication.distributivity.over *)
 
 End distributivity. (* multiplication.distributivity *)
 
+Module left. (* multiplication.left *)
+
+Module order. (* multiplication.left.order *)
+
+Module strict. (* multiplication.left.order.strict *)
+
+(* [m + d = n] gives [k * n = k * m + k * d], and [k * d] is positive when [k]
+ * and [d] are.
+ *)
+(* multiplication.left.order.strict.monotonicity *)
+Theorem monotonicity
+  : forall (k : BinWithZero) (m : BinWithZero) (n : BinWithZero) . 0 < k -> m < n -> k * m < k * n.
+Proof.
+  intros k m n hk h.
+  match &k with | | c end.
+  - match &hk with | d e end.
+    simpl in &e.
+    ex &e quodlibet.
+  - match &h with | d e end.
+    simpl LessThan in |- *.
+    exists (&c * &d)%bin_base.
+    leibniz <- &e in |- *.
+    match (multiplication.distributivity.over.addition (+ &c) &m (+ &d)) with | spread _ end.
+    leibniz &spread in |- *.
+    ipso (refl ((+ &c) * &m + (+ (&c * &d)%bin_base))).
+Qed.
+
+End strict. (* multiplication.left.order.strict *)
+
+End order. (* multiplication.left.order *)
+
+End left. (* multiplication.left *)
+
 End multiplication. (* multiplication *)
 
 Module order. (* order *)
@@ -2052,21 +2085,6 @@ Proof.
 Qed.
 
 End strict. (* order.strict *)
-
-Module mixed. (* order.mixed *)
-
-(* order.mixed.transitivity *)
-Theorem transitivity
-  : forall {l : BinWithZero} {m : BinWithZero} {n : BinWithZero} . l <= m -> m < n -> l < n.
-Proof.
-  intros l m n h k.
-  match &h with | same | smaller end.
-  - leibniz &same in |- *.
-    ipso &k.
-  - ipso (order.strict.transitivity &smaller &k).
-Qed.
-
-End mixed. (* order.mixed *)
 
 (* Read in [Nat0], where [m < n] gives [m + k = n] for a [k] that is [1] or
  * a successor: [1] gives [m + 1 = n], a successor [m + 1 < n].
