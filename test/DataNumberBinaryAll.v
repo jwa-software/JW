@@ -275,6 +275,10 @@ Definition data_number_binary_all_delivers_order_discreteness
   : forall (n : Bin0) . (n < 1 -> n = 0)%b0
   := Bin0.order.discreteness.
 
+Definition data_number_binary_all_delivers_division_characterization
+  : forall (m : Bin0) (n : Bin0) (d : Bin) . (m * Bin0.Positive d <= n <-> m <= n /. d)%b0
+  := Bin0.division.characterization.
+
 (* The types the operations above take and return, named rather than merely
  * produced: a client who cannot write them cannot state anything about them.
  *)

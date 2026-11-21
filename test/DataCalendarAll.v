@@ -852,3 +852,187 @@ Definition data_calendar_all_computes_date_from_unix_day_0
 Definition data_calendar_all_computes_date_from_unix_day_refusal
   : Date.from_unix_day (- 719163%b0_decimal)%b_signed = None
   := Identity.reflexivity _.
+
+Definition data_calendar_all_delivers_date_weekday_specification
+  : forall (n : Bin0) .
+      Weekday.to_b0 (Date.weekday_of_day_number n) = (n %. Weekday.days_in_week)%b0
+  := Date.weekday.specification.
+
+Definition data_calendar_all_delivers_date_number_boundedness
+  : forall (d : Date) .
+      (Date.days_before_year (Date.year d) <= Date.day_number d
+       /\ Date.day_number d < Date.days_before_year (Date.year d + 1)%b)%b0
+  := Date.number.boundedness.
+
+Definition data_calendar_all_delivers_date_year_uniqueness
+  : forall (y1 : Bin) (y2 : Bin) (n : Bin0) .
+      (Date.days_before_year y1 <= n)%b0 -> (n < Date.days_before_year (y1 + 1)%b)%b0
+      -> (Date.days_before_year y2 <= n)%b0 -> (n < Date.days_before_year (y2 + 1)%b)%b0
+      -> y1 = y2
+  := @Date.year.uniqueness.
+
+Definition data_calendar_all_delivers_iso_week_date
+  : IsoWeekDate
+  := IsoWeekDate.introduction 2025 1 Weekday.Monday I.
+
+Definition data_calendar_all_delivers_iso_week_date_january_decomposition
+  : forall (y : Bin) .
+      Date.day_number (IsoWeekDate.january_4th y) = (Date.days_before_year y + 3%b0_decimal)%b0
+  := IsoWeekDate.january.decomposition.
+
+Definition data_calendar_all_delivers_iso_week_date_january_succession
+  : forall (y : Bin) .
+      Date.day_number (IsoWeekDate.january_4th (y + 1)%b)
+      = (Date.day_number (IsoWeekDate.january_4th y) + Date.days_in_year y)%b0
+  := IsoWeekDate.january.succession.
+
+Definition data_calendar_all_delivers_iso_week_date_january_weekday
+  : forall (y : Bin) .
+      (Date.day_number (IsoWeekDate.january_4th y) %. Weekday.days_in_week)%b0
+      = Weekday.to_b0
+          (Weekday.next (Weekday.next (Weekday.next
+             (Date.weekday_of_day_number (Date.days_before_year y)))))
+  := IsoWeekDate.january.weekday.
+
+Definition data_calendar_all_delivers_iso_week_date_start_decomposition
+  : forall (y : Bin) .
+      IsoWeekDate.week_one_start y
+      = (Date.day_number (IsoWeekDate.january_4th y) /. Weekday.days_in_week
+         * Weekday.days_in_week)%b0
+  := IsoWeekDate.start.decomposition.
+
+Definition data_calendar_all_delivers_iso_week_date_start_weekday
+  : forall (y : Bin) . Date.weekday_of_day_number (IsoWeekDate.week_one_start y) = Weekday.Monday
+  := IsoWeekDate.start.weekday.
+
+Definition data_calendar_all_delivers_iso_week_date_start_boundedness
+  : forall (y : Bin) .
+      (IsoWeekDate.week_one_start y <= Date.day_number (IsoWeekDate.january_4th y)
+       /\ Date.day_number (IsoWeekDate.january_4th y)
+          < IsoWeekDate.week_one_start y + Weekday.days_in_week)%b0
+  := IsoWeekDate.start.boundedness.
+
+Definition data_calendar_all_delivers_iso_week_date_year_length_dichotomy
+  : forall (y : Bin) .
+      IsoWeekDate.weeks_in_year y = 52%b0_decimal \/ IsoWeekDate.weeks_in_year y = 53%b0_decimal
+  := IsoWeekDate.year.length.dichotomy.
+
+Definition data_calendar_all_delivers_iso_week_date_year_length_specification
+  : forall (y : Bin) .
+      IsoWeekDate.weeks_in_year y = 53%b0_decimal
+      <-> (Date.weekday_of_day_number (Date.days_before_year y) = Weekday.Thursday
+           \/ (Date.is_leap y = true
+               /\ Date.weekday_of_day_number (Date.days_before_year y) = Weekday.Wednesday))
+  := IsoWeekDate.year.length.specification.
+
+Definition data_calendar_all_delivers_iso_week_date_year_length_carry
+  : forall (y : Bin) .
+      (Date.day_number (IsoWeekDate.january_4th (y + 1)%b) /. Weekday.days_in_week
+       = Date.day_number (IsoWeekDate.january_4th y) /. Weekday.days_in_week
+         + IsoWeekDate.weeks_in_year y)%b0
+  := IsoWeekDate.year.length.carry.
+
+Definition data_calendar_all_delivers_iso_week_date_year_succession
+  : forall (y : Bin) .
+      IsoWeekDate.week_one_start (y + 1)%b
+      = (IsoWeekDate.week_one_start y + IsoWeekDate.weeks_in_year y * Weekday.days_in_week)%b0
+  := IsoWeekDate.year.succession.
+
+Definition data_calendar_all_delivers_iso_week_date_extensionality
+  : forall (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+      IsoWeekDate.year x1 = IsoWeekDate.year x2
+      -> IsoWeekDate.week x1 = IsoWeekDate.week x2
+      -> IsoWeekDate.weekday x1 = IsoWeekDate.weekday x2
+      -> x1 = x2
+  := IsoWeekDate.extensionality.
+
+Definition data_calendar_all_delivers_iso_week_date_week_boundedness
+  : forall (k : Bin0) .
+      let y :=
+        Date.year
+          (Date.from_day_number
+             (k * Weekday.days_in_week + Weekday.to_b0 Weekday.Thursday)%b0) in
+      (Date.day_number (IsoWeekDate.january_4th y) /. Weekday.days_in_week <= k
+       /\ k < Date.day_number (IsoWeekDate.january_4th (y + 1)%b) /. Weekday.days_in_week)%b0
+  := IsoWeekDate.week.boundedness.
+
+Definition data_calendar_all_delivers_iso_week_date_week_location
+  : forall (y : Bin) (k : Bin0) .
+      (Date.day_number (IsoWeekDate.january_4th y) /. Weekday.days_in_week <= k
+       -> k < Date.day_number (IsoWeekDate.january_4th (y + 1)%b) /. Weekday.days_in_week
+       -> Date.days_before_year y <= k * Weekday.days_in_week + Weekday.to_b0 Weekday.Thursday
+          /\ k * Weekday.days_in_week + Weekday.to_b0 Weekday.Thursday
+             < Date.days_before_year (y + 1)%b)%b0
+  := IsoWeekDate.week.location.
+
+Definition data_calendar_all_delivers_iso_week_date_conversion_date_retraction
+  : forall (d : Date) . IsoWeekDate.to_date (IsoWeekDate.from_date d) = d
+  := IsoWeekDate.conversion.date.retraction.
+
+Definition data_calendar_all_delivers_iso_week_date_conversion_date_section
+  : forall (x : IsoWeekDate) . IsoWeekDate.from_date (IsoWeekDate.to_date x) = x
+  := IsoWeekDate.conversion.date.section.
+
+Definition data_calendar_all_delivers_iso_week_date_weekday_agreement_forward
+  : forall (d : Date) . IsoWeekDate.weekday (IsoWeekDate.from_date d) = Date.weekday d
+  := IsoWeekDate.weekday.agreement.forward.
+
+Definition data_calendar_all_delivers_iso_week_date_weekday_agreement_backward
+  : forall (x : IsoWeekDate) . Date.weekday (IsoWeekDate.to_date x) = IsoWeekDate.weekday x
+  := IsoWeekDate.weekday.agreement.backward.
+
+Definition data_calendar_all_computes_iso_week_date_week_one_start_2025
+  : IsoWeekDate.week_one_start 2025
+    = Date.day_number (Date.introduction 2024 Month.December 30 I)
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_iso_week_date_weeks_in_year_2015
+  : IsoWeekDate.weeks_in_year 2015 = 53%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_iso_week_date_weeks_in_year_2020
+  : IsoWeekDate.weeks_in_year 2020 = 53%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_iso_week_date_weeks_in_year_2024
+  : IsoWeekDate.weeks_in_year 2024 = 52%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_iso_week_date_weeks_in_year_2026
+  : IsoWeekDate.weeks_in_year 2026 = 53%b0_decimal
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_iso_week_date_is_valid_refusal_2024_53
+  : IsoWeekDate.is_valid 2024 53 = false
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_iso_week_date_from_date_2024_12_30
+  : IsoWeekDate.from_date (Date.introduction 2024 Month.December 30 I)
+    = IsoWeekDate.introduction 2025 1 Weekday.Monday I
+  := IsoWeekDate.extensionality
+       (IsoWeekDate.from_date (Date.introduction 2024 Month.December 30 I))
+       (IsoWeekDate.introduction 2025 1 Weekday.Monday I)
+       (Identity.reflexivity _) (Identity.reflexivity _) (Identity.reflexivity _).
+
+Definition data_calendar_all_computes_iso_week_date_from_date_2021_01_03
+  : IsoWeekDate.from_date (Date.introduction 2021 Month.January 3 I)
+    = IsoWeekDate.introduction 2020 53 Weekday.Sunday I
+  := IsoWeekDate.extensionality
+       (IsoWeekDate.from_date (Date.introduction 2021 Month.January 3 I))
+       (IsoWeekDate.introduction 2020 53 Weekday.Sunday I)
+       (Identity.reflexivity _) (Identity.reflexivity _) (Identity.reflexivity _).
+
+Definition data_calendar_all_computes_iso_week_date_from_date_2026_11_21
+  : IsoWeekDate.from_date (Date.introduction 2026 Month.November 21 I)
+    = IsoWeekDate.introduction 2026 47 Weekday.Saturday I
+  := IsoWeekDate.extensionality
+       (IsoWeekDate.from_date (Date.introduction 2026 Month.November 21 I))
+       (IsoWeekDate.introduction 2026 47 Weekday.Saturday I)
+       (Identity.reflexivity _) (Identity.reflexivity _) (Identity.reflexivity _).
+
+Definition data_calendar_all_computes_iso_week_date_to_date_2020_53_7
+  : Date.compare
+      (IsoWeekDate.to_date (IsoWeekDate.introduction 2020 53 Weekday.Sunday I))
+      (Date.introduction 2021 Month.January 3 I)
+    = Comparison.Eq
+  := Identity.reflexivity _.
