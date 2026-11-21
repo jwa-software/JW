@@ -1408,6 +1408,38 @@ Proof.
     ipso &facto.
 Qed.
 
+(* A later year begins no earlier than the earlier one ends, by
+ * [monotonicity], so two years cannot both hold one day number.
+ *)
+(* year.uniqueness *)
+Theorem uniqueness
+  : forall {y1 : Year} {y2 : Year} {n : Days} .
+      days_before_year y1 <= n -> n < days_before_year (y1 + 1)%b
+      -> days_before_year y2 <= n -> n < days_before_year (y2 + 1)%b
+      -> y1 = y2.
+Proof.
+  intros y1 y2 n l1 u1 l2 u2.
+  lemma apart
+    : forall (a : Year) (b : Year) .
+        n < days_before_year (a + 1)%b -> days_before_year b <= n -> ~ ((a < b)%b).
+  {
+    intros a b ua lb.
+    simpl (~ _) in |- *.
+    intro h.
+    match &h with | k e end.
+    let proof m := year.monotonicity &a &k.
+    leibniz <- (year.succession &a), &e in &m.
+    let proof f := Comparable.order.mixed.right.transitivity &ua &m.
+    let proof g := Comparable.order.mixed.right.transitivity &f &lb.
+    ex (Bin0.order.strict.irreflexivity &n &g) quodlibet.
+  }
+  match (Comparable.order.strict.trichotomy &y1 &y2) with | smaller | rest end.
+  - ex (&apart &y1 &y2 &u1 &l2 &smaller) quodlibet.
+  - match &rest with | same | greater end.
+    + ipso &same.
+    + ex (&apart &y2 &y1 &u2 &l1 &greater) quodlibet.
+Qed.
+
 End year. (* year *)
 
 Module calendar. (* calendar *)
@@ -2715,6 +2747,45 @@ Proof.
   quod idem est.
 Qed.
 
+(* The day number lies within its year: from the days before the year up to,
+ * not including, the days before the next one.
+ *)
+(* number.boundedness *)
+Theorem boundedness
+  : forall (d : Date) .
+      days_before_year (year d) <= day_number d
+      /\ day_number d < days_before_year (year d + 1)%b.
+Proof.
+  intro d.
+  divide et impera.
+  - simpl day_number in |- *.
+    leibniz
+      (Bin0.addition.associativity
+         (days_before_year (year &d)) (days_before_month (year &d) (month &d))
+         (Bin0.saturating_sub (day &d) 1)),
+      (Bin0.addition.commutativity
+         (days_before_year (year &d))
+         (days_before_month (year &d) (month &d) + Bin0.saturating_sub (day &d) 1))
+      in |- *.
+    ipso (Bin0.addition.right.order.extensivity
+            (days_before_month (year &d) (month &d) + Bin0.saturating_sub (day &d) 1)
+            (days_before_year (year &d))).
+  - leibniz (year.succession (year &d)) in |- *.
+    lemma raised : day_number d + 1 <= days_before_year (year d) + days_in_year (year d).
+    {
+      leibniz (number.decomposition &d) in |- *.
+      ipso (Bin0.addition.order.monotonicity (days_before_year (year &d)) _ _
+              (ordinal.boundedness &d)).
+    }
+    lemma step : day_number d < day_number d + 1.
+    {
+      simpl Bin0.LessThan in |- *.
+      exists Bin.One.
+      quod idem est.
+    }
+    ipso (Comparable.order.mixed.right.transitivity &step &raised).
+Qed.
+
 (* An earlier date has the smaller day number: by an earlier year, the
  * earlier date's year ends no later than the later year begins; by an
  * earlier month of the same year, its month ends no later than the later
@@ -3057,6 +3128,22 @@ Proof.
   }
   simpl in &f.
   ex &f quodlibet.
+Qed.
+
+(* The weekday's place counted from 0 is the remainder by 7, since its
+ * [None] case never occurs.
+ *)
+(* weekday.specification *)
+Theorem specification
+  : forall (n : Days) .
+      Weekday.to_b0 (weekday_of_day_number n) = n %. Weekday.days_in_week.
+Proof.
+  intro n.
+  simpl weekday_of_day_number in |- *.
+  match (Weekday.from_b0 (&n %. Weekday.days_in_week)) with | | w end |- e.
+  - ex (weekday.totality &n &e) quodlibet.
+  - ipso (modus aequans
+            (Weekday.conversion.bin0.specification (&n %. Weekday.days_in_week) &w), &e).
 Qed.
 
 (* The remainder by 7 either steps up by one or wraps from 6 to 0, and the

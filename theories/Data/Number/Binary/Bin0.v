@@ -2485,6 +2485,84 @@ Proof.
     ipso (conversion.injectivity &remainder).
 Qed.
 
+(* [n] is [q] whole [d]s and less than one more, so a multiple of [d] fits
+ * in [n] exactly when its factor is at most [q].
+ *)
+(* division.characterization *)
+Theorem characterization
+  : forall (m : Bin0) (n : Bin0) (d : Bin) . m * (+ d) <= n <-> m <= n /. d.
+Proof.
+  intros m n d.
+  match (division.specification &n &d) with | e below end.
+  let q := n /. d in &e |- *.
+  let r := n %. d in &e, &below.
+  lemma positive : 0 < (+ d).
+  {
+    simpl LessThan in |- *.
+    exists &d.
+    ipso (Identity.reflexivity _).
+  }
+  lemma raised : forall (a : Bin0) (b : Bin0) . a <= b -> a * (+ d) <= b * (+ d).
+  {
+    intros a b h.
+    match &h with | same | smaller end.
+    - leibniz &same in |- *.
+      ipso (disjoin (Identity.reflexivity (&b * (+ &d))), _).
+    - leibniz
+        (multiplication.commutativity &a (+ &d)),
+        (multiplication.commutativity &b (+ &d))
+        in |- *.
+      ipso (disjoin _,
+              (multiplication.left.order.strict.monotonicity (+ &d) &a &b &positive &smaller)).
+  }
+  lemma lowered : forall (a : Bin0) (b : Bin0) . a * (+ d) < b * (+ d) -> a < b.
+  {
+    intros a b h.
+    match (Comparable.order.strict.trichotomy &a &b) with | smaller | rest end.
+    - ipso &smaller.
+    - lemma reversed : b * (+ d) <= a * (+ d).
+      {
+        match &rest with | same | greater end.
+        - ipso (&raised &b &a (disjoin (symm &same), _)).
+        - ipso (&raised &b &a (disjoin _, &greater)).
+      }
+      ex (order.strict.irreflexivity (&a * (+ &d))
+            (Comparable.order.mixed.right.transitivity &h &reversed)) quodlibet.
+  }
+  divide et impera.
+  -
+    intro h.
+    leibniz <- &e in &h.
+    lemma next : &q * (+ d) + &r < (&q + (+ Bin.One)) * (+ d).
+    {
+      match (multiplication.distributivity.over.addition (+ &d) &q (+ Bin.One))
+        with | _ distributed end.
+      match (multiplication.identity (+ &d)) with | one _ end.
+      leibniz &distributed, &one in |- *.
+      ipso (addition.order.strict.monotonicity (&q * (+ &d)) &r (&q * (+ &d)) (+ &d)
+              (disjoin (Identity.reflexivity (&q * (+ &d))), _) &below).
+    }
+    let proof f := Comparable.order.mixed.left.transitivity &h &next.
+    let proof g := &lowered &m (&q + (+ Bin.One)) &f.
+    match (Comparable.order.strict.trichotomy &m &q) with | smaller | rest end.
+    + ipso (disjoin _, &smaller).
+    + match &rest with | same | greater end.
+      * ipso (disjoin &same, _).
+      * let proof s := order.succession &q &m &greater.
+        ex (order.strict.irreflexivity &m (Comparable.order.mixed.right.transitivity &g &s))
+          quodlibet.
+  -
+    intro h.
+    leibniz <- &e in |- *.
+    lemma whole : &q * (+ d) <= &q * (+ d) + &r.
+    {
+      leibniz (addition.commutativity (&q * (+ &d)) &r) in |- *.
+      ipso (addition.right.order.extensivity &r (&q * (+ &d))).
+    }
+    ipso (Comparable.order.transitivity (&m * (+ &d)) (&q * (+ &d)) (&q * (+ &d) + &r)
+            (&raised &m &q &h) &whole).
+Qed.
+
 (* Adding the divisor adds one to the quotient: [((n /. d) + 1) * d] plus
  * the old remainder is [n + d], and [division.uniqueness] takes it from there.
  *)

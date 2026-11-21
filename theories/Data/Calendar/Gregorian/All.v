@@ -16,3 +16,4 @@ From JW Require Export Data.Option.
 From JW Require Export Data.Product.
 
 From JW Require Export Data.Calendar.Gregorian.Date.
+From JW Require Export Data.Calendar.Gregorian.IsoWeekDate.

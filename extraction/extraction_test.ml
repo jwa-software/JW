@@ -108,6 +108,25 @@ let from_unix_day u =
   | None -> None
 ;;
 
+(* The ISO week date of [y]-[m]-[d] as its ISO year, week and weekday. *)
+let iso_week_date y m d =
+  match date y m d with
+  | Some x ->
+    let w = IsoWeekDate.from_date x in
+    Some
+      ( int_of_bin (IsoWeekDate.year w)
+      , int_of_bin (IsoWeekDate.week w)
+      , IsoWeekDate.weekday w )
+  | None -> None
+;;
+
+(* The date [y]-[m]-[d] taken to its ISO week date and back. *)
+let iso_week_date_round_trip y m d =
+  match date y m d with
+  | Some x -> Some (calendar (IsoWeekDate.to_date (IsoWeekDate.from_date x)))
+  | None -> None
+;;
+
 (* [JW] has a [List] module of its own, which [open JW] puts in front of
    OCaml's. *)
 let ints l = Stdlib.List.map int_of_nat0 l
@@ -207,6 +226,21 @@ let () =
   check
     "Date.from_unix_day"
     (from_unix_day 0 = Some (1970, Month.January, 1) && from_unix_day (-719163) = None);
+  check
+    "IsoWeekDate.from_date"
+    (iso_week_date 2024 Month.December 30 = Some (2025, 1, Weekday.Monday)
+     && iso_week_date 2021 Month.January 3 = Some (2020, 53, Weekday.Sunday)
+     && iso_week_date 2026 Month.November 21 = Some (2026, 47, Weekday.Saturday));
+  check
+    "IsoWeekDate.to_date"
+    (iso_week_date_round_trip 2024 Month.December 30 = Some (2024, Month.December, 30)
+     && iso_week_date_round_trip 2021 Month.January 3 = Some (2021, Month.January, 3));
+  check
+    "IsoWeekDate.weeks_in_year"
+    (int_of_bin0 (IsoWeekDate.weeks_in_year (bin 2015)) = 53
+     && int_of_bin0 (IsoWeekDate.weeks_in_year (bin 2020)) = 53
+     && int_of_bin0 (IsoWeekDate.weeks_in_year (bin 2024)) = 52
+     && int_of_bin0 (IsoWeekDate.weeks_in_year (bin 2026)) = 53);
   check
     "Int8.add_with_overflow 100 27"
     (int8_flagged (Int8.add_with_overflow (int8 100) (int8 27)) = (false, 127));
