@@ -7,6 +7,7 @@ From JW Require Import Data.Assert.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Calendar.Month.
+From JW Require Import Data.Calendar.Weekday.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
@@ -216,6 +217,19 @@ Definition day_number := fun (x : Date) .
   days_before_year (year x)
     + days_before_month (year x) (month x)
     + Bin0.saturating_sub (day x) 1.
+
+(* The weekday of day number [n], 0001-01-01 being a Monday. The remainder
+ * by 7 is below 7, so [Weekday.from_b0] never gives [None] here.
+ *)
+(* [Days -> Weekday] *)
+Definition weekday_of_day_number := fun (n : Days) .
+  match Weekday.from_b0 (n %. Weekday.days_in_week) with
+  | Some w => w
+  | None   => Weekday.Monday
+  end.
+
+(* [Date -> Weekday] *)
+Definition weekday := fun (x : Date) . weekday_of_day_number (day_number x).
 
 (* [r] divided by [d], the quotient held at 3: a fourth period may be one day
  * longer than [d], and its last day stays in it.
@@ -2674,6 +2688,234 @@ Proof.
 Qed.
 
 End number. (* number *)
+
+Module weekday. (* weekday *)
+
+(* The remainder by 7 is one of 0 to 6, pinned from 6 down, and each has its
+ * weekday; so the [None] case of [weekday_of_day_number] never occurs.
+ *)
+(* weekday.totality *)
+Theorem totality
+  : forall (n : Days) . ~ (Weekday.from_b0 (n %. Weekday.days_in_week) = None).
+Proof.
+  intro n.
+  match (Bin0.division.specification n Weekday.days_in_week) with | _ below end.
+  let r := n %. Weekday.days_in_week in &below |- *.
+  let proof r := &r.
+  lemma pin : forall (k : Bin0) . r < k + 1 -> r = k \/ r < k.
+  {
+    intros k h.
+    match (Comparable.order.strict.trichotomy r k) with | smaller | rest end.
+    - ipso (disjoin _, &smaller).
+    - match &rest with | same | greater end.
+      + ipso (disjoin &same, _).
+      + let proof after := Bin0.order.succession &k &r &greater.
+        let proof loop := Comparable.order.mixed.left.transitivity &after &h.
+        ex (Bin0.order.strict.irreflexivity (&k + 1) &loop) quodlibet.
+  }
+  simpl (~ _) in |- *.
+  intro e.
+  match (&pin 6 &below) with | six | below6 end.
+  {
+    leibniz &six in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 5 &below6) with | five | below5 end.
+  {
+    leibniz &five in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 4 &below5) with | four | below4 end.
+  {
+    leibniz &four in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 3 &below4) with | three | below3 end.
+  {
+    leibniz &three in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 2 &below3) with | two | below2 end.
+  {
+    leibniz &two in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 1 &below2) with | one | below1 end.
+  {
+    leibniz &one in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match (&pin 0%b0 &below1) with | zero | below0 end.
+  {
+    leibniz &zero in &e.
+    simpl in &e.
+    ex &e quodlibet.
+  }
+  match &below0 with | k f end.
+  match &r with | | p end.
+  {
+    simpl in &f.
+    ex &f quodlibet.
+  }
+  simpl in &f.
+  ex &f quodlibet.
+Qed.
+
+(* The remainder by 7 either steps up by one or wraps from 6 to 0, and the
+ * weekday follows it; every remainder from 6 on is refused by computing its
+ * comparison with 7.
+ *)
+(* weekday.succession *)
+Theorem succession
+  : forall (n : Days) .
+      weekday_of_day_number (n + 1) = Weekday.next (weekday_of_day_number n).
+Proof.
+  intro n.
+  simpl weekday_of_day_number in |- *.
+  match (Bin0.division.specification n Weekday.days_in_week) with | _ below end.
+  match (Bin0.order.succession (n %. Weekday.days_in_week) Weekday.days_in_week &below)
+    with | carry | interior end.
+  - match (Bin0.division.succession.carry n Weekday.days_in_week &carry) with | _ wrapped end.
+    leibniz &wrapped in |- *.
+    lemma last : n %. Weekday.days_in_week = 6.
+    {
+      lemma shifted : (n %. Weekday.days_in_week) + 1 = 6 + 1.
+      {
+        ipso &carry.
+      }
+      match (Bin0.addition.cancellation (n %. Weekday.days_in_week) 1 6) with | _ right end.
+      ipso (&right &shifted).
+    }
+    leibniz &last in |- *.
+    simpl in |- *.
+    quod idem est.
+  - match (Bin0.division.succession.interior n Weekday.days_in_week &interior)
+      with | _ stepped end.
+    leibniz &stepped in |- *.
+    let r := n %. Weekday.days_in_week in &interior, &below |- *.
+    let proof r := &r.
+    match (Bin0.comparison.specification (&r + 1) Weekday.days_in_week) with | strict _ end.
+    let proof c := modus aequans &strict, &interior.
+    lemma pin : forall (k : Bin0) . r < k + 1 -> r = k \/ r < k.
+    {
+      intros k h.
+      match (Comparable.order.strict.trichotomy r k) with | smaller | rest end.
+      - ipso (disjoin _, &smaller).
+      - match &rest with | same | greater end.
+        + ipso (disjoin &same, _).
+        + let proof after := Bin0.order.succession &k &r &greater.
+          let proof loop := Comparable.order.mixed.left.transitivity &after &h.
+          ex (Bin0.order.strict.irreflexivity (&k + 1) &loop) quodlibet.
+    }
+    match (&pin 6 &below) with | six | below6 end.
+    {
+      leibniz &six in &c.
+      simpl Weekday.days_in_week in &c.
+      simpl in &c.
+      simpl Bin.add in &c.
+      simpl in &c.
+      simpl Bin.compare in &c.
+      simpl in &c.
+      ex &c quodlibet.
+    }
+    match (&pin 5 &below6) with | five | below5 end.
+    {
+      leibniz &five in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match (&pin 4 &below5) with | four | below4 end.
+    {
+      leibniz &four in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match (&pin 3 &below4) with | three | below3 end.
+    {
+      leibniz &three in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match (&pin 2 &below3) with | two | below2 end.
+    {
+      leibniz &two in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match (&pin 1 &below2) with | one | below1 end.
+    {
+      leibniz &one in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match (&pin 0%b0 &below1) with | zero | below0 end.
+    {
+      leibniz &zero in |- *.
+      simpl in |- *.
+      quod idem est.
+    }
+    match &below0 with | k e end.
+    match &r with | | p end.
+    {
+      simpl in &e.
+      ex &e quodlibet.
+    }
+    simpl in &e.
+    ex &e quodlibet.
+Qed.
+
+(* weekday.periodicity *)
+Theorem periodicity
+  : forall (n : Days) .
+      weekday_of_day_number (n + Weekday.days_in_week) = weekday_of_day_number n.
+Proof.
+  intro n.
+  lemma whole : Weekday.days_in_week %. Weekday.days_in_week = 0%b0.
+  {
+    simpl Weekday.days_in_week, Bin0.modulo in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  simpl weekday_of_day_number in |- *.
+  leibniz
+    (Bin0.modulo.sum.right.invariance n Weekday.days_in_week Weekday.days_in_week &whole)
+    in |- *.
+  quod idem est.
+Qed.
+
+Module quadricentennium. (* weekday.quadricentennium *)
+
+(* A quadricentennium is 20871 whole weeks. *)
+(* weekday.quadricentennium.periodicity *)
+Theorem periodicity
+  : forall (n : Days) .
+      weekday_of_day_number (n + days_in_quadricentennium) = weekday_of_day_number n.
+Proof.
+  intro n.
+  lemma whole : days_in_quadricentennium %. Weekday.days_in_week = 0%b0.
+  {
+    simpl days_in_quadricentennium, days_in_century, days_in_quadrennium, days_in_leap_year,
+      days_in_common_year, years_in_quadrennium, Weekday.days_in_week, Bin0.modulo
+      in |- *.
+    simpl in |- *.
+    quod idem est.
+  }
+  simpl weekday_of_day_number in |- *.
+  leibniz
+    (Bin0.modulo.sum.right.invariance n days_in_quadricentennium Weekday.days_in_week &whole)
+    in |- *.
+  quod idem est.
+Qed.
+
+End quadricentennium. (* weekday.quadricentennium *)
+
+End weekday. (* weekday *)
 
 Module order. (* order *)
 
