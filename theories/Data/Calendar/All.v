@@ -11,3 +11,4 @@ From JW Require Export Data.Option.
 
 From JW Require Export Data.Calendar.Gregorian.All.
 From JW Require Export Data.Calendar.Month.
+From JW Require Export Data.Calendar.Weekday.

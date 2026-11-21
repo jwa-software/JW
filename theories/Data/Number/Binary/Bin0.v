@@ -86,6 +86,14 @@ Definition inc := fun (n : Bin0) .
 Notation "++ n" := (inc n) (only parsing)
   : jw_bin0_scope.
 
+(* [n + 1] as a [Bin], which it always is. *)
+(* [Bin0 -> Bin] *)
+Definition successor := fun (n : Bin0) .
+  match n with
+  | 0   => Bin.One
+  | + p => Bin.inc p
+  end.
+
 (* [Bin0 -> Bin0 -> Bin0] *)
 Definition power := fun (m : Bin0) (n : Bin0) .
   match n with
@@ -1767,6 +1775,31 @@ Qed.
 
 End conversion. (* conversion *)
 
+Module successor. (* successor *)
+
+(* successor.specification *)
+Theorem specification : forall (n : Bin0) . (+ (successor n)) = n + (+ Bin.One).
+Proof.
+  intro n.
+  lemma facto : to_nat0 (+ (successor n)) = to_nat0 (n + (+ Bin.One)).
+  {
+    leibniz (conversion.addition &n (+ Bin.One)) in |- *.
+    match &n with | | p end.
+    - simpl in |- *.
+      quod idem est.
+    - simpl successor in |- *.
+      simpl to_nat0 in |- *.
+      leibniz (Bin.conversion.successor &p) in |- *.
+      simpl in |- *.
+      leibniz (Nat.addition.commutativity (Bin.to_nat &p) Nat.One) in |- *.
+      simpl in |- *.
+      quod idem est.
+  }
+  ipso (conversion.injectivity &facto).
+Qed.
+
+End successor. (* successor *)
+
 Module addition. (* addition *)
 
 (* addition.associativity *)
@@ -2173,6 +2206,52 @@ Proof.
 Qed.
 
 End comparison. (* comparison *)
+
+Module subtraction. (* subtraction *)
+
+Module saturating. (* subtraction.saturating *)
+
+(* subtraction.saturating.specification *)
+Theorem specification : forall {m : Bin0} {n : Bin0} . n <= m -> n + saturating_sub m n = m.
+Proof.
+  intros m n h.
+  lemma facto : to_nat0 (n + saturating_sub m n) = to_nat0 m.
+  {
+    leibniz
+      (conversion.addition &n (saturating_sub &m &n)),
+      (conversion.subtraction.saturating &m &n)
+      in |- *.
+    lemma below : (to_nat0 n <= to_nat0 m)%n0.
+    {
+      match &h with | same | smaller end.
+      - leibniz &same in |- *.
+        ipso (disjoin (refl (to_nat0 &m)), _).
+      - ipso (disjoin _, (modus aequans (conversion.order &n &m), &smaller)).
+    }
+    ipso (Nat0.subtraction.saturating.specification &below).
+  }
+  ipso (conversion.injectivity &facto).
+Qed.
+
+Module inversion. (* subtraction.saturating.inversion *)
+
+(* subtraction.saturating.inversion.addition *)
+Theorem addition : forall (m : Bin0) (n : Bin0) . saturating_sub (m + n) n = m.
+Proof.
+  intros m n.
+  lemma facto : to_nat0 (saturating_sub (m + n) n) = to_nat0 m.
+  {
+    leibniz (conversion.subtraction.saturating (&m + &n) &n), (conversion.addition &m &n) in |- *.
+    ipso (Nat0.subtraction.saturating.inversion.addition (to_nat0 &m) (to_nat0 &n)).
+  }
+  ipso (conversion.injectivity &facto).
+Qed.
+
+End inversion. (* subtraction.saturating.inversion *)
+
+End saturating. (* subtraction.saturating *)
+
+End subtraction. (* subtraction *)
 
 Instance comparable
   : Comparable compare (<) :=

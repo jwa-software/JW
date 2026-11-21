@@ -6,6 +6,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Number.Binary.Bin.
+From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Option.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
@@ -35,7 +36,7 @@ Local Open Scope jw_bin_decimal_scope.
 
 (* The month's place in the year, [January] being 1. *)
 (* [Month -> Bin] *)
-Definition to_number := fun (m : Month) .
+Definition to_b := fun (m : Month) .
   match m with
   | January   =>  1
   | February  =>  2
@@ -53,7 +54,7 @@ Definition to_number := fun (m : Month) .
 
 (* The month at a place in the year, [None] past 12. *)
 (* [Bin -> Option Month] *)
-Definition from_number := fun (n : Bin) .
+Definition from_b := fun (n : Bin) .
   match n with
   |  1 => Some January
   |  2 => Some February
@@ -68,6 +69,43 @@ Definition from_number := fun (n : Bin) .
   | 11 => Some November
   | 12 => Some December
   | _  => None
+  end.
+
+(* The month's place in the year counted from 0, [January] being 0. *)
+(* [Month -> Bin0] *)
+Definition to_b0 := fun (m : Month) .
+  match m with
+  | January   => Bin0.Zero
+  | February  => Bin0.Positive  1
+  | March     => Bin0.Positive  2
+  | April     => Bin0.Positive  3
+  | May       => Bin0.Positive  4
+  | June      => Bin0.Positive  5
+  | July      => Bin0.Positive  6
+  | August    => Bin0.Positive  7
+  | September => Bin0.Positive  8
+  | October   => Bin0.Positive  9
+  | November  => Bin0.Positive 10
+  | December  => Bin0.Positive 11
+  end.
+
+(* The month at a place in the year counted from 0, [None] past 11. *)
+(* [Bin0 -> Option Month] *)
+Definition from_b0 := fun (k : Bin0) .
+  match k with
+  | Bin0.Zero        => Some January
+  | Bin0.Positive  1 => Some February
+  | Bin0.Positive  2 => Some March
+  | Bin0.Positive  3 => Some April
+  | Bin0.Positive  4 => Some May
+  | Bin0.Positive  5 => Some June
+  | Bin0.Positive  6 => Some July
+  | Bin0.Positive  7 => Some August
+  | Bin0.Positive  8 => Some September
+  | Bin0.Positive  9 => Some October
+  | Bin0.Positive 10 => Some November
+  | Bin0.Positive 11 => Some December
+  | Bin0.Positive  _ => None
   end.
 
 (* The month after, [January] after [December]. *)
@@ -109,16 +147,18 @@ Definition prev := fun (m : Month) .
 (* The order of the year, read off the months' places. *)
 (* [Month -> Month -> Comparison] *)
 Definition compare := fun (m1 : Month) (m2 : Month) .
-  Bin.compare (to_number m1) (to_number m2).
+  Bin.compare (to_b m1) (to_b m2).
 
 (* [Month -> Month -> Prop] *)
 Definition LessThan := fun (m1 : Month) (m2 : Month) .
-  (to_number m1 < to_number m2)%b.
+  (to_b m1 < to_b m2)%b.
 
 Module conversion. (* conversion *)
 
-(* conversion.retraction *)
-Theorem retraction : forall (m : Month) . from_number (to_number m) = Some m.
+Module bin. (* conversion.bin *)
+
+(* conversion.bin.retraction *)
+Theorem retraction : forall (m : Month) . from_b (to_b m) = Some m.
 Proof.
   intro m.
   match &m with
@@ -127,12 +167,12 @@ Proof.
   end; simpl in |- *; quod idem est.
 Qed.
 
-(* Every [n] that [from_number] does not map to a month is refused within
+(* Every [n] that [from_b] does not map to a month is refused within
  * four bits, so the case analysis on [n] ends there.
  *)
-(* conversion.specification *)
+(* conversion.bin.specification *)
 Theorem specification
-  : forall (n : Bin) (m : Month) . from_number n = Some m <-> to_number m = n.
+  : forall (n : Bin) (m : Month) . from_b n = Some m <-> to_b m = n.
 Proof.
   intros n m.
   divide et impera.
@@ -225,18 +265,143 @@ Proof.
            ex &e quodlibet.
   - intro e.
     leibniz <- &e in |- *.
-    ipso (conversion.retraction &m).
+    ipso (conversion.bin.retraction &m).
 Qed.
 
-(* conversion.injectivity *)
+(* conversion.bin.injectivity *)
 Theorem injectivity
-  : forall {m1 : Month} {m2 : Month} . to_number m1 = to_number m2 -> m1 = m2.
+  : forall {m1 : Month} {m2 : Month} . to_b m1 = to_b m2 -> m1 = m2.
 Proof.
   intros m1 m2 e.
-  congru from_number, &e |- f.
-  leibniz (conversion.retraction &m1), (conversion.retraction &m2) in &f.
+  congru from_b, &e |- f.
+  leibniz (conversion.bin.retraction &m1), (conversion.bin.retraction &m2) in &f.
   ipso (Option.some.injectivity &f).
 Qed.
+
+End bin. (* conversion.bin *)
+
+Module bin0. (* conversion.bin0 *)
+
+(* conversion.bin0.retraction *)
+Theorem retraction : forall (m : Month) . from_b0 (to_b0 m) = Some m.
+Proof.
+  intro m.
+  match &m with
+  | January | February | March | April | May | June
+  | July | August | September | October | November | December
+  end; simpl in |- *; quod idem est.
+Qed.
+
+(* Every [k] that [from_b0] does not map to a month is refused within
+ * four bits, so the case analysis on [k] ends there.
+ *)
+(* conversion.bin0.specification *)
+Theorem specification
+  : forall (k : Bin0) (m : Month) . from_b0 k = Some m <-> to_b0 m = k.
+Proof.
+  intros k m.
+  divide et impera.
+  - intro e.
+    match &k with | | p end.
+    + simpl in &e.
+      leibniz <- (Option.some.injectivity &e) in |- *.
+      simpl in |- *.
+      quod idem est.
+    + match &p with | One | b0 p1 | b1 p1 end.
+      * simpl in &e.
+        leibniz <- (Option.some.injectivity &e) in |- *.
+        simpl in |- *.
+        quod idem est.
+      * match &p1 with | One | b0 p2 | b1 p2 end.
+        -- simpl in &e.
+           leibniz <- (Option.some.injectivity &e) in |- *.
+           simpl in |- *.
+           quod idem est.
+        -- match &p2 with | One | b0 p3 | b1 p3 end.
+           ++ simpl in &e.
+              leibniz <- (Option.some.injectivity &e) in |- *.
+              simpl in |- *.
+              quod idem est.
+           ++ match &p3 with | One | b0 p4 | b1 p4 end.
+              ** simpl in &e.
+                 leibniz <- (Option.some.injectivity &e) in |- *.
+                 simpl in |- *.
+                 quod idem est.
+              ** simpl in &e.
+                 ex &e quodlibet.
+              ** simpl in &e.
+                 ex &e quodlibet.
+           ++ simpl in &e.
+              ex &e quodlibet.
+        -- match &p2 with | One | b0 p3 | b1 p3 end.
+           ++ simpl in &e.
+              leibniz <- (Option.some.injectivity &e) in |- *.
+              simpl in |- *.
+              quod idem est.
+           ++ match &p3 with | One | b0 p4 | b1 p4 end.
+              ** simpl in &e.
+                 leibniz <- (Option.some.injectivity &e) in |- *.
+                 simpl in |- *.
+                 quod idem est.
+              ** simpl in &e.
+                 ex &e quodlibet.
+              ** simpl in &e.
+                 ex &e quodlibet.
+           ++ simpl in &e.
+              ex &e quodlibet.
+      * match &p1 with | One | b0 p2 | b1 p2 end.
+        -- simpl in &e.
+           leibniz <- (Option.some.injectivity &e) in |- *.
+           simpl in |- *.
+           quod idem est.
+        -- match &p2 with | One | b0 p3 | b1 p3 end.
+           ++ simpl in &e.
+              leibniz <- (Option.some.injectivity &e) in |- *.
+              simpl in |- *.
+              quod idem est.
+           ++ match &p3 with | One | b0 p4 | b1 p4 end.
+              ** simpl in &e.
+                 leibniz <- (Option.some.injectivity &e) in |- *.
+                 simpl in |- *.
+                 quod idem est.
+              ** simpl in &e.
+                 ex &e quodlibet.
+              ** simpl in &e.
+                 ex &e quodlibet.
+           ++ simpl in &e.
+              ex &e quodlibet.
+        -- match &p2 with | One | b0 p3 | b1 p3 end.
+           ++ simpl in &e.
+              leibniz <- (Option.some.injectivity &e) in |- *.
+              simpl in |- *.
+              quod idem est.
+           ++ match &p3 with | One | b0 p4 | b1 p4 end.
+              ** simpl in &e.
+                 leibniz <- (Option.some.injectivity &e) in |- *.
+                 simpl in |- *.
+                 quod idem est.
+              ** simpl in &e.
+                 ex &e quodlibet.
+              ** simpl in &e.
+                 ex &e quodlibet.
+           ++ simpl in &e.
+              ex &e quodlibet.
+  - intro e.
+    leibniz <- &e in |- *.
+    ipso (conversion.bin0.retraction &m).
+Qed.
+
+(* conversion.bin0.injectivity *)
+Theorem injectivity
+  : forall {m1 : Month} {m2 : Month} . to_b0 m1 = to_b0 m2 -> m1 = m2.
+Proof.
+  intros m1 m2 e.
+  congru from_b0, &e |- f.
+  leibniz (conversion.bin0.retraction &m1), (conversion.bin0.retraction &m2) in &f.
+  ipso (Option.some.injectivity &f).
+Qed.
+
+End bin0. (* conversion.bin0 *)
 
 End conversion. (* conversion *)
 
@@ -300,15 +465,15 @@ Theorem specification
 Proof.
   intros m1 m2.
   simpl compare, LessThan in |- *.
-  let proof s := Bin.comparison.specification (to_number &m1) (to_number &m2).
+  let proof s := Bin.comparison.specification (to_b &m1) (to_b &m2).
   match &s with | strict equality end.
   divide et impera.
   - ipso &strict.
   - divide et impera.
     + intro c.
-      ipso (conversion.injectivity (modus aequans &equality, &c)).
+      ipso (conversion.bin.injectivity (modus aequans &equality, &c)).
     + intro e.
-      ipso (modus aequans &equality, (congru to_number, &e)).
+      ipso (modus aequans &equality, (congru to_b, &e)).
 Qed.
 
 (* comparison.antisymmetry *)
@@ -317,7 +482,7 @@ Theorem antisymmetry
 Proof.
   intros m1 m2.
   simpl compare in |- *.
-  ipso (Bin.comparison.antisymmetry (to_number &m1) (to_number &m2)).
+  ipso (Bin.comparison.antisymmetry (to_b &m1) (to_b &m2)).
 Qed.
 
 End comparison. (* comparison *)
