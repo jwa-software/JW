@@ -79,3 +79,12 @@ Arithmetic is written with each type's notation and scope key, `(a + b)%n`, `(p 
 - **signs:** `SignedBin.order.sign.negativity` (`Negative p < 0`) and `SignedBin.order.sign.positivity` (`0 < Positive p`), and `SignedBin.order.embedding.{preservation, nonnegativity}` for a `Bin0` read as a `SignedBin`;
 - **multiplication:** `SignedBin.multiplication.left.order.strict.{monotonicity, reversal}` (by a positive factor, by a negative one), `SignedBin.multiplication.left.order.monotonicity`, `SignedBin.multiplication.left.negation` and the signs of a product, `SignedBin.multiplication.sign.*`; `Bin0.multiplication.left.order.strict.monotonicity` is the same law for `Bin0`;
 - **comparison, minimum and maximum:** `SignedBin.comparison.{translation, negation}`, `SignedBin.minimum.left.distributivity.addition`, `SignedBin.maximum.left.distributivity.addition` and `SignedBin.minimum.duality`.
+
+**`Bin0`'s order meets its arithmetic** in the same way, with no sign to track:
+
+- **the least number:** `Bin0.order.minimum` (`0 <= n`);
+- **addition:** `Bin0.addition.right.order.extensivity` (`n <= m + n`), `Bin0.addition.order.monotonicity` (`m <= n -> k + m <= k + n`), its `cancellation`, `Bin0.addition.order.strict.monotonicity` (`a <= c -> b < d -> a + b < c + d`) and `Bin0.addition.order.accumulation` (both `<=`);
+- **the successor:** `Bin0.order.succession` (`m < n -> m + 1 <= n`) and `Bin0.order.discreteness` (`n < 1 -> n = 0`);
+- **multiplication:** `Bin0.multiplication.left.order.strict.monotonicity` (by a positive factor) and `Bin0.multiplication.left.order.monotonicity`, which needs no premise on the factor;
+- **division:** `Bin0.division.characterization` (`m * d <= n <-> m <= n /. d`);
+- **positional numbers:** for a count `q` of units `k` and a rest `r < k`, `Bin0.order.positional.boundedness` (`q < b -> k * q + r < k * b`) and `Bin0.order.positional.monotonicity` (`q1 < q2 -> k * q1 + r1 < k * q2 + r2`, whatever `r2`).
