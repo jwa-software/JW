@@ -1971,6 +1971,25 @@ Proof.
     ipso (disjoin _, &facto).
 Qed.
 
+(* Every case but two equations is [strict.monotonicity], the strict step put
+ * on the right by [commutativity] where it is the left one.
+ *)
+(* addition.order.accumulation *)
+Theorem accumulation
+  : forall (a : Bin0) (b : Bin0) (c : Bin0) (d : Bin0) . a <= c -> b <= d -> a + b <= c + d.
+Proof.
+  intros a b c d hac hbd.
+  match &hbd with | same | smaller end.
+  - leibniz &same in |- *.
+    match &hac with | equal | less end.
+    + leibniz &equal in |- *.
+      ipso (disjoin (refl (&c + &d)), _).
+    + leibniz (addition.commutativity &a &d), (addition.commutativity &c &d) in |- *.
+      ipso (disjoin _,
+              (addition.order.strict.monotonicity &d &a &d &c (disjoin (refl &d), _) &less)).
+  - ipso (disjoin _, (addition.order.strict.monotonicity &a &b &c &d &hac &smaller)).
+Qed.
+
 End order. (* addition.order *)
 
 End addition. (* addition *)
@@ -2109,6 +2128,32 @@ Qed.
 
 End strict. (* multiplication.left.order.strict *)
 
+(* For [k = 0] both sides are [0]; for a positive [k] the strict law gives the
+ * [<] case.
+ *)
+(* multiplication.left.order.monotonicity *)
+Theorem monotonicity
+  : forall (k : Bin0) (m : Bin0) (n : Bin0) . m <= n -> k * m <= k * n.
+Proof.
+  intros k m n h.
+  match &h with | same | smaller end.
+  - leibniz &same in |- *.
+    ipso (disjoin (refl (&k * &n)), _).
+  - match &k with | | c end.
+    + match (multiplication.annihilation &m) with | zm _ end.
+      match (multiplication.annihilation &n) with | zn _ end.
+      leibniz &zm, &zn in |- *.
+      ipso (disjoin (refl 0), _).
+    + lemma positive : 0 < (+ c).
+      {
+        simpl LessThan in |- *.
+        exists &c.
+        ipso (refl (+ &c)).
+      }
+      ipso (disjoin _,
+              (multiplication.left.order.strict.monotonicity (+ &c) &m &n &positive &smaller)).
+Qed.
+
 End order. (* multiplication.left.order *)
 
 End left. (* multiplication.left *)
@@ -2219,6 +2264,66 @@ Proof.
     + ex (order.strict.irreflexivity (+ Bin.One) (order.strict.transitivity &larger &smaller))
         quodlibet.
 Qed.
+
+(* order.minimum *)
+Theorem minimum : forall (n : Bin0) . 0 <= n.
+Proof.
+  intro n.
+  match &n with | | p end.
+  - ipso (disjoin (refl 0), _).
+  - lemma facto : 0 < (+ p).
+    {
+      simpl LessThan in |- *.
+      exists &p.
+      ipso (refl (+ &p)).
+    }
+    ipso (disjoin _, &facto).
+Qed.
+
+Module positional. (* order.positional *)
+
+(* [k * q + r] is below [k * q + k], which is [k * (q + 1)], and [q + 1] is at
+ * most [b].
+ *)
+(* order.positional.boundedness *)
+Theorem boundedness
+  : forall (k : Bin0) (q : Bin0) (b : Bin0) (r : Bin0) . q < b -> r < k -> k * q + r < k * b.
+Proof.
+  intros k q b r hq hr.
+  let proof step :=
+    addition.order.strict.monotonicity
+      (&k * &q) &r (&k * &q) &k (disjoin (refl (&k * &q)), _) &hr.
+  match (multiplication.distributivity.over.addition &k &q (+ Bin.One)) with | spread _ end.
+  match (multiplication.identity &k) with | _ one end.
+  leibniz &one in &spread.
+  leibniz <- &spread in &step.
+  let proof next :=
+    multiplication.left.order.monotonicity &k (&q + (+ Bin.One)) &b (order.succession &q &b &hq).
+  match &next with | same | smaller end.
+  - leibniz &same in &step.
+    ipso &step.
+  - ipso (order.strict.transitivity &step &smaller).
+Qed.
+
+(* By [boundedness] the smaller number is below [k * q2], which is at most
+ * the larger whatever its rest.
+ *)
+(* order.positional.monotonicity *)
+Theorem monotonicity
+  : forall (k : Bin0) (q1 : Bin0) (r1 : Bin0) (q2 : Bin0) (r2 : Bin0) .
+      q1 < q2 -> r1 < k -> k * q1 + r1 < k * q2 + r2.
+Proof.
+  intros k q1 r1 q2 r2 hq hr.
+  let proof below := order.positional.boundedness &k &q1 &q2 &r1 &hq &hr.
+  let proof wider := addition.right.order.extensivity &r2 (&k * &q2).
+  leibniz (addition.commutativity &r2 (&k * &q2)) in &wider.
+  match &wider with | same | larger end.
+  - leibniz &same in &below.
+    ipso &below.
+  - ipso (order.strict.transitivity &below &larger).
+Qed.
+
+End positional. (* order.positional *)
 
 End order. (* order *)
 
