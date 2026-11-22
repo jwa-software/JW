@@ -214,6 +214,57 @@ Proof.
   - ipso (disjoin _, I).
 Qed.
 
+Module truth. (* negation.truth *)
+
+(* negation.truth.specification *)
+Theorem specification : forall (v : Kleene3) . ! v = true <-> v = false.
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; divide et impera; intro e.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - quod idem est.
+  - quod idem est.
+Qed.
+
+End truth. (* negation.truth *)
+
+Module falsity. (* negation.falsity *)
+
+(* negation.falsity.specification *)
+Theorem specification : forall (v : Kleene3) . ! v = false <-> v = true.
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; divide et impera; intro e.
+  - quod idem est.
+  - quod idem est.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+Qed.
+
+End falsity. (* negation.falsity *)
+
+Module unknown. (* negation.unknown *)
+
+(* negation.unknown.specification *)
+Theorem specification : forall (v : Kleene3) . ! v = unknown <-> v = unknown.
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; divide et impera; intro e.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - quod idem est.
+  - quod idem est.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+Qed.
+
+End unknown. (* negation.unknown *)
+
 End negation. (* negation *)
 
 Module conjunction. (* conjunction *)
@@ -345,6 +396,90 @@ Proof.
   simpl Comparable.min in |- *.
   match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
 Qed.
+
+Module truth. (* conjunction.truth *)
+
+(* [true && v2] and [false && v2] reduce by themselves, so only [unknown]
+ * is split on [v2].
+ *)
+(* conjunction.truth.specification *)
+Theorem specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) . v1 && v2 = true <-> v1 = true /\ v2 = true.
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ipso (conjoin (refl true), &e).
+    + intro h.
+      match &h with | _ e end.
+      ipso &e.
+  - match &v2 with | | | end; simpl in |- *; divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+Qed.
+
+End truth. (* conjunction.truth *)
+
+Module falsity. (* conjunction.falsity *)
+
+(* conjunction.falsity.specification *)
+Theorem specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) . v1 && v2 = false <-> v1 = false \/ v2 = false.
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ipso (disjoin _, &e).
+    + intro h.
+      match &h with | e | e end.
+      * ex &e quodlibet.
+      * ipso &e.
+  - match &v2 with | | | end; simpl in |- *; divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e | e end; ex &e quodlibet.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e | e end; ex &e quodlibet.
+    + intro e.
+      ipso (disjoin _, (refl false)).
+    + intro h.
+      quod idem est.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ipso (disjoin (refl false), _).
+    + intro h.
+      quod idem est.
+Qed.
+
+End falsity. (* conjunction.falsity *)
 
 End conjunction. (* conjunction *)
 
@@ -478,6 +613,90 @@ Proof.
   match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
 Qed.
 
+Module truth. (* disjunction.truth *)
+
+(* [true || v2] and [false || v2] reduce by themselves, so only [unknown]
+ * is split on [v2].
+ *)
+(* disjunction.truth.specification *)
+Theorem specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) . v1 || v2 = true <-> v1 = true \/ v2 = true.
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ipso (disjoin (refl true), _).
+    + intro h.
+      quod idem est.
+  - match &v2 with | | | end; simpl in |- *; divide et impera.
+    + intro e.
+      ipso (disjoin _, (refl true)).
+    + intro h.
+      quod idem est.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e | e end; ex &e quodlibet.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e | e end; ex &e quodlibet.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ipso (disjoin _, &e).
+    + intro h.
+      match &h with | e | e end.
+      * ex &e quodlibet.
+      * ipso &e.
+Qed.
+
+End truth. (* disjunction.truth *)
+
+Module falsity. (* disjunction.falsity *)
+
+(* disjunction.falsity.specification *)
+Theorem specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) . v1 || v2 = false <-> v1 = false /\ v2 = false.
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+  - match &v2 with | | | end; simpl in |- *; divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ipso (conjoin (refl false), &e).
+    + intro h.
+      match &h with | _ e end.
+      ipso &e.
+Qed.
+
+End falsity. (* disjunction.falsity *)
+
 End disjunction. (* disjunction *)
 
 Module implication. (* implication *)
@@ -551,6 +770,36 @@ Proof.
   simpl implies in |- *.
   match b1 with | | end; match b2 with | | end; simpl in |- *; quod idem est.
 Qed.
+
+Module truth. (* conversion.truth *)
+
+(* conversion.truth.specification *)
+Theorem specification : forall (b : Bool) . from_bool b = true <-> b = Bool.true.
+Proof.
+  intros b.
+  match &b with | | end; simpl in |- *; divide et impera; intro e.
+  - quod idem est.
+  - quod idem est.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+Qed.
+
+End truth. (* conversion.truth *)
+
+Module falsity. (* conversion.falsity *)
+
+(* conversion.falsity.specification *)
+Theorem specification : forall (b : Bool) . from_bool b = false <-> b = Bool.false.
+Proof.
+  intros b.
+  match &b with | | end; simpl in |- *; divide et impera; intro e.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - quod idem est.
+  - quod idem est.
+Qed.
+
+End falsity. (* conversion.falsity *)
 
 End conversion. (* conversion *)
 

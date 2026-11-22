@@ -79,6 +79,20 @@ A base type is built from no other type: every constructor takes no argument, so
 
 - **A known argument can decide.** `(Kleene3.unknown && Kleene3.false)%k3` is `Kleene3.false`, and `(Kleene3.unknown || Kleene3.true)%k3` is `Kleene3.true`, whatever the unknown value turns out to be.
 - **The laws.** `Kleene3.negation.involution` and De Morgan both ways, under `Kleene3.negation.de_morgan`. For each of `conjunction` and `disjunction`: `associativity`, `commutativity`, `identity`, `idempotence`, `absorption`, and the distributivity over the other, as `Kleene3.conjunction.distributivity.over.disjunction`.
+- **Reading an equation back.** Each law below is an `<->`, so it serves both ways, and passes between a formula's value and the values of its parts without a case analysis at the use:
+
+| Law | States |
+|:---|:---|
+| `Kleene3.conjunction.truth.specification` | `(v1 && v2)%k3 = Kleene3.true` exactly when both are `Kleene3.true` |
+| `Kleene3.conjunction.falsity.specification` | `(v1 && v2)%k3 = Kleene3.false` exactly when one is `Kleene3.false` |
+| `Kleene3.disjunction.truth.specification` | `(v1 \|\| v2)%k3 = Kleene3.true` exactly when one is `Kleene3.true` |
+| `Kleene3.disjunction.falsity.specification` | `(v1 \|\| v2)%k3 = Kleene3.false` exactly when both are `Kleene3.false` |
+| `Kleene3.negation.truth.specification` | `(! v)%k3 = Kleene3.true` exactly when `v = Kleene3.false` |
+| `Kleene3.negation.falsity.specification` | `(! v)%k3 = Kleene3.false` exactly when `v = Kleene3.true` |
+| `Kleene3.negation.unknown.specification` | `(! v)%k3 = Kleene3.unknown` exactly when `v = Kleene3.unknown` |
+| `Kleene3.conversion.truth.specification` | `Kleene3.from_bool b = Kleene3.true` exactly when `b = true` |
+| `Kleene3.conversion.falsity.specification` | `Kleene3.from_bool b = Kleene3.false` exactly when `b = false` |
+
 - **What it does not have.** The excluded middle and the law of contradiction: `(Kleene3.unknown || ! Kleene3.unknown)%k3` and `(Kleene3.unknown && ! Kleene3.unknown)%k3` are both `Kleene3.unknown`. A law that holds for `Bool` holds for `Kleene3` only when it has no such case.
 - **Implication.** `Kleene3.implies v1 v2` is `(! v1 || v2)%k3`, so `Kleene3.implies Kleene3.unknown Kleene3.unknown` is `Kleene3.unknown`, not `Kleene3.true`. `Kleene3.implication.contraposition` states `implies v1 v2 = implies (! v2) (! v1)`.
 - **From `Bool`.** `Kleene3.from_bool` sends `true` to `Kleene3.true` and `false` to `Kleene3.false`. The laws under `Kleene3.conversion` state that it is injective (`injectivity`), that it never gives `Kleene3.unknown` (`exclusion`), and that it commutes with `negation`, `conjunction`, `disjunction` and `implication`: `Kleene3.from_bool (Bool.and b1 b2) = (Kleene3.from_bool b1 && Kleene3.from_bool b2)%k3`.
