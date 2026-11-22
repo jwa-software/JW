@@ -323,6 +323,9 @@ Abbreviation eq := (Comparable.eq compare).
 (* [Utf8 -> Utf8 -> Bool] *)
 Abbreviation le := (Comparable.le compare).
 
+(* [Utf8 -> Utf8 -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
 (* [Utf8 -> Utf8 -> Utf8] *)
 Abbreviation min := (Comparable.min compare).
 

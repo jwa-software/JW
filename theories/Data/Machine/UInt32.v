@@ -469,6 +469,9 @@ Abbreviation eq := (Comparable.eq compare).
 (* [UInt32 -> UInt32 -> Bool] *)
 Abbreviation le := (Comparable.le compare).
 
+(* [UInt32 -> UInt32 -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
 (* [UInt32 -> UInt32 -> UInt32] *)
 Abbreviation min := (Comparable.min compare).
 

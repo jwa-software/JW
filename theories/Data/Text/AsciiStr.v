@@ -110,6 +110,9 @@ Abbreviation eq := (Comparable.eq compare).
 (* [AsciiStr -> AsciiStr -> Bool] *)
 Abbreviation le := (Comparable.le compare).
 
+(* [AsciiStr -> AsciiStr -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
 (* [AsciiStr -> AsciiStr -> AsciiStr] *)
 Abbreviation min := (Comparable.min compare).
 
