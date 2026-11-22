@@ -275,6 +275,27 @@ Definition data_number_binary_all_delivers_order_discreteness
   : forall (n : Bin0) . (n < 1 -> n = 0)%b0
   := Bin0.order.discreteness.
 
+Definition data_number_binary_all_delivers_order_minimum
+  : forall (n : Bin0) . (0 <= n)%b0
+  := Bin0.order.minimum.
+
+Definition data_number_binary_all_delivers_addition_order_accumulation
+  : forall (a : Bin0) (b : Bin0) (c : Bin0) (d : Bin0) . (a <= c -> b <= d -> a + b <= c + d)%b0
+  := Bin0.addition.order.accumulation.
+
+Definition data_number_binary_all_delivers_multiplication_left_order_monotonicity
+  : forall (k : Bin0) (m : Bin0) (n : Bin0) . (m <= n -> k * m <= k * n)%b0
+  := Bin0.multiplication.left.order.monotonicity.
+
+Definition data_number_binary_all_delivers_order_positional_boundedness
+  : forall (k : Bin0) (q : Bin0) (b : Bin0) (r : Bin0) . (q < b -> r < k -> k * q + r < k * b)%b0
+  := Bin0.order.positional.boundedness.
+
+Definition data_number_binary_all_delivers_order_positional_monotonicity
+  : forall (k : Bin0) (q1 : Bin0) (r1 : Bin0) (q2 : Bin0) (r2 : Bin0) .
+      (q1 < q2 -> r1 < k -> k * q1 + r1 < k * q2 + r2)%b0
+  := Bin0.order.positional.monotonicity.
+
 Definition data_number_binary_all_delivers_division_characterization
   : forall (m : Bin0) (n : Bin0) (d : Bin) . (m * Bin0.Positive d <= n <-> m <= n /. d)%b0
   := Bin0.division.characterization.
