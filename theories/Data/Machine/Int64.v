@@ -701,6 +701,9 @@ Abbreviation eq := (Comparable.eq compare).
 (* [Int64 -> Int64 -> Bool] *)
 Abbreviation le := (Comparable.le compare).
 
+(* [Int64 -> Int64 -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
 (* [Int64 -> Int64 -> Int64] *)
 Abbreviation min := (Comparable.min compare).
 

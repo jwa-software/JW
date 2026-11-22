@@ -148,6 +148,9 @@ Abbreviation eq := (Comparable.eq compare).
 (* [Nat0 -> Nat0 -> Bool] *)
 Abbreviation le := (Comparable.le compare).
 
+(* [Nat0 -> Nat0 -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
 (* [Nat0 -> Nat0 -> Nat0] *)
 Abbreviation min := (Comparable.min compare).
 
@@ -674,7 +677,7 @@ Proof.
     simpl ( _ <= _ ) in |- *.
     ipso (disjoin (refl (k + n)), _).
   - simpl ( _ <= _ ) in |- *.
-    ipso (disjoin _, (addition.order.strict.monotonicity k m n lt)).
+    ipso (disjoin _, (addition.order.strict.monotonicity k m n &lt)).
 Qed.
 
 End order. (* addition.order *)
@@ -1210,7 +1213,7 @@ Proof.
       leibniz e in |- *.
       quod idem est.
     + simpl ( _ < _ ) in lt.
-      match lt with
+      match &lt with
       | k e
       end.
       exists (Nat.Successor k).
@@ -1301,7 +1304,7 @@ Proof.
     simpl in |- *.
     modus aequans (positive.order.embedding m' n'), h |- lt.
     let proof facto
-      := Nat.comparison.strict.backward.specification lt.
+      := Nat.comparison.strict.backward.specification &lt.
     ipso facto.
 Qed.
 
@@ -1551,7 +1554,7 @@ Proof.
 
   -
     simpl ( _ < _ ) in lt.
-    match lt with
+    match &lt with
     | k e
     end.
     leibniz (symm e) in |- *.
@@ -1589,7 +1592,7 @@ Proof.
     match m with | | m' end; simpl in |- *; quod idem est.
   -
     simpl ( _ < _ ) in lt.
-    match lt with
+    match &lt with
     | k e
     end.
     leibniz (symm e) in |- *.
@@ -1673,7 +1676,7 @@ Proof.
       ex falso quodlibet.
     + let proof a := Comparable.order.strict.asymmetry m n h.
       simpl (~ _) in a.
-      modus ponens a, lt |- falso.
+      modus ponens a, &lt |- falso.
       ex falso quodlibet.
   - quod idem est.
 Qed.
@@ -1801,7 +1804,7 @@ Proof.
       simpl in |- *.
       quod idem est.
     * simpl ( _ < _ ) in lt.
-      match lt with | k ek end.
+      match &lt with | k ek end.
       leibniz (increment.specification r) in E.
       leibniz (addition.commutativity (+ Nat.One) r) in E.
       leibniz (increment.specification r) in |- *.
@@ -2695,7 +2698,7 @@ Proof.
       * let proof mono
           := multiplication
               .left
-              .order.strict.monotonicity c k2 k1 lt.
+              .order.strict.monotonicity c k2 k1 &lt.
         leibniz e1, e2 in mono.
         simpl ( _ < _ ) in mono.
         match mono with | j ej end.
@@ -3183,7 +3186,7 @@ Proof.
         (positive.order.embedding r c),
         b
       |- lt.
-      ipso (recurse r lt (+ c)).
+      ipso (recurse r &lt (+ c)).
   }
   ipso (Accessible.recursion &descent &q (WellFounded.accessibility &q)).
 Qed.
