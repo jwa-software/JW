@@ -288,6 +288,36 @@ Definition data_all_delivers_comparable_strict_negation
       ~ (Nat.LessThan m n) <-> Comparable.LessOrEqual Nat.LessThan n m
   := Comparable.order.strict.negation.
 
+Definition data_all_delivers_comparable_refutation
+  : forall (m : Nat) (n : Nat) . Comparable.le Nat.compare m n = false <-> Nat.LessThan n m
+  := Comparable.order.refutation.
+
+Definition data_all_delivers_comparable_equality_refutation
+  : forall (m : Nat) (n : Nat) . Comparable.eq Nat.compare m n = false <-> ~ (m = n)
+  := Comparable.comparison.equality.refutation.
+
+Definition data_all_delivers_comparable_strict_reflection
+  : forall (m : Nat) (n : Nat) . Comparable.lt Nat.compare m n = true <-> Nat.LessThan m n
+  := Comparable.order.strict.reflection.
+
+Definition data_all_delivers_comparable_strict_refutation
+  : forall (m : Nat) (n : Nat) .
+      Comparable.lt Nat.compare m n = false <-> Comparable.LessOrEqual Nat.LessThan n m
+  := Comparable.order.strict.refutation.
+
+Definition data_all_delivers_comparable_strict_complement
+  : forall (m : Nat) (n : Nat) .
+      Comparable.lt Nat.compare m n = Bool.negate (Comparable.le Nat.compare n m)
+  := Comparable.order.strict.complement.
+
+Definition data_all_computes_comparable_lt
+  : Nat0.lt (Nat0.Positive Nat.One) (Nat0.Positive (Nat.Successor Nat.One)) = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_comparable_lt_refusal
+  : Nat0.lt Nat0.Zero Nat0.Zero = false
+  := Identity.reflexivity _.
+
 Definition data_all_delivers_comparable_mixed_left_transitivity
   : forall (l : Nat) (m : Nat) (n : Nat) .
       Comparable.LessOrEqual Nat.LessThan l m -> Nat.LessThan m n -> Nat.LessThan l n
