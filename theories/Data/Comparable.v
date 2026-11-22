@@ -62,6 +62,17 @@ Definition le := fun {A : Type} (compare : A -> A -> Comparison) (m : A) (n : A)
   | Comparison.Gt => false
   end.
 
+(* The test of the strict order. The laws bind the order itself as [lt], which
+ * shadows this name in their statements, so they write it [Comparable.lt].
+ *)
+(* [forall {A : Type} . (A -> A -> Comparison) -> A -> A -> Bool] *)
+Definition lt := fun {A : Type} (compare : A -> A -> Comparison) (m : A) (n : A) .
+  match compare m n with
+  | Comparison.Lt => true
+  | Comparison.Eq => false
+  | Comparison.Gt => false
+  end.
+
 (* [forall {A : Type} . (A -> A -> Comparison) -> A -> A -> A] *)
 Definition min := fun {A : Type} (compare : A -> A -> Comparison) (m : A) (n : A) .
   match compare m n with
@@ -188,6 +199,42 @@ Proof.
     quod idem est.
 Qed.
 
+(* comparison.equality.refutation *)
+Theorem refutation
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    eq compare m n = false <-> ~ (m = n).
+Proof.
+  intros A compare lt C m n.
+  simpl eq in |- *.
+  match (compare &m &n) with | | | end |- c.
+  - divide et impera.
+    + intro e.
+      simpl (~ _) in |- *.
+      intro same.
+      leibniz &same, (comparison.reflexivity &n) in &c.
+      ex &c quodlibet.
+    + intro h.
+      quod idem est.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match (Comparable.specification &m &n) with | _ s end.
+      ex (&h (modus aequans &s, &c)) quodlibet.
+  - divide et impera.
+    + intro e.
+      simpl (~ _) in |- *.
+      intro same.
+      leibniz &same, (comparison.reflexivity &n) in &c.
+      ex &c quodlibet.
+    + intro h.
+      quod idem est.
+Qed.
+
 End equality. (* comparison.equality *)
 
 End comparison. (* comparison *)
@@ -295,6 +342,91 @@ Proof.
     + leibniz &e in &l.
       ipso (order.strict.irreflexivity &m &l).
     + ipso (order.strict.asymmetry &m &n &l &greater).
+Qed.
+
+(* order.strict.reflection *)
+Theorem reflection
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    Comparable.lt compare m n = true <-> lt m n.
+Proof.
+  intros A compare lt C m n.
+  simpl Comparable.lt in |- *.
+  match (compare &m &n) with | | | end |- c.
+  - divide et impera.
+    + intro e.
+      ipso (modus aequans (comparison.strict.specification &m &n), &c).
+    + intro h.
+      quod idem est.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      let proof same := modus aequans (comparison.equality.specification &m &n), &c.
+      leibniz &same in &h.
+      ex (order.strict.irreflexivity &n &h) quodlibet.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      let proof reversed :=
+        modus aequans (comparison.strict.transposition.specification &m &n), &c.
+      ex (order.strict.asymmetry &m &n &h &reversed) quodlibet.
+Qed.
+
+(* order.strict.refutation *)
+Theorem refutation
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    Comparable.lt compare m n = false <-> LessOrEqual lt n m.
+Proof.
+  intros A compare lt C m n.
+  simpl Comparable.lt, LessOrEqual in |- *.
+  match (compare &m &n) with | | | end |- c.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      let proof smaller := modus aequans (comparison.strict.specification &m &n), &c.
+      match &h with | same | greater end.
+      * leibniz &same in &smaller.
+        ex (order.strict.irreflexivity &m &smaller) quodlibet.
+      * ex (order.strict.asymmetry &m &n &smaller &greater) quodlibet.
+  - divide et impera.
+    + intro e.
+      let proof same := modus aequans (comparison.equality.specification &m &n), &c.
+      ipso (disjoin (symm &same), _).
+    + intro h.
+      quod idem est.
+  - divide et impera.
+    + intro e.
+      ipso (disjoin _, (modus aequans (comparison.strict.transposition.specification &m &n), &c)).
+    + intro h.
+      quod idem est.
+Qed.
+
+(* [compare n m] is the transpose of [compare m n], by [antisymmetry], so the
+ * three cases of [compare m n] compute both sides.
+ *)
+(* order.strict.complement *)
+Theorem complement
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    Comparable.lt compare m n = Bool.negate (le compare n m).
+Proof.
+  intros A compare lt C m n.
+  simpl Comparable.lt, le in |- *.
+  leibniz (Comparable.antisymmetry &n &m) in |- *.
+  match (compare &m &n) with | | | end; simpl in |- *; quod idem est.
 Qed.
 
 End strict. (* order.strict *)
@@ -458,6 +590,38 @@ Proof.
         modus aequans s, lt1 |- e.
         leibniz e in c.
         ex c quodlibet.
+Qed.
+
+(* order.refutation *)
+Theorem refutation
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    le compare m n = false <-> lt n m.
+Proof.
+  intros A compare lt C m n.
+  simpl le in |- *.
+  match (compare &m &n) with | | | end |- c.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      let proof smaller := modus aequans (comparison.strict.specification &m &n), &c.
+      ex (order.strict.asymmetry &m &n &smaller &h) quodlibet.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      let proof same := modus aequans (comparison.equality.specification &m &n), &c.
+      leibniz &same in &h.
+      ex (order.strict.irreflexivity &n &h) quodlibet.
+  - divide et impera.
+    + intro e.
+      ipso (modus aequans (comparison.strict.transposition.specification &m &n), &c).
+    + intro h.
+      quod idem est.
 Qed.
 
 End order. (* order *)
