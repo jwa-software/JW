@@ -77,6 +77,46 @@ Definition data_base_all_delivers_kleene3_information_monotonicity_implication
       (Kleene3.implies v1 v2 [= Kleene3.implies v1' v2')%k3
   := @Kleene3.information.monotonicity.implication.
 
+Definition data_base_all_delivers_kleene3_conjunction_truth_specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      (v1 && v2)%k3 = Kleene3.true <-> v1 = Kleene3.true /\ v2 = Kleene3.true
+  := Kleene3.conjunction.truth.specification.
+
+Definition data_base_all_delivers_kleene3_conjunction_falsity_specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      (v1 && v2)%k3 = Kleene3.false <-> v1 = Kleene3.false \/ v2 = Kleene3.false
+  := Kleene3.conjunction.falsity.specification.
+
+Definition data_base_all_delivers_kleene3_disjunction_truth_specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      (v1 || v2)%k3 = Kleene3.true <-> v1 = Kleene3.true \/ v2 = Kleene3.true
+  := Kleene3.disjunction.truth.specification.
+
+Definition data_base_all_delivers_kleene3_disjunction_falsity_specification
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      (v1 || v2)%k3 = Kleene3.false <-> v1 = Kleene3.false /\ v2 = Kleene3.false
+  := Kleene3.disjunction.falsity.specification.
+
+Definition data_base_all_delivers_kleene3_negation_truth_specification
+  : forall (v : Kleene3) . (! v)%k3 = Kleene3.true <-> v = Kleene3.false
+  := Kleene3.negation.truth.specification.
+
+Definition data_base_all_delivers_kleene3_negation_falsity_specification
+  : forall (v : Kleene3) . (! v)%k3 = Kleene3.false <-> v = Kleene3.true
+  := Kleene3.negation.falsity.specification.
+
+Definition data_base_all_delivers_kleene3_negation_unknown_specification
+  : forall (v : Kleene3) . (! v)%k3 = Kleene3.unknown <-> v = Kleene3.unknown
+  := Kleene3.negation.unknown.specification.
+
+Definition data_base_all_delivers_kleene3_conversion_truth_specification
+  : forall (b : Bool) . Kleene3.from_bool b = Kleene3.true <-> b = true
+  := Kleene3.conversion.truth.specification.
+
+Definition data_base_all_delivers_kleene3_conversion_falsity_specification
+  : forall (b : Bool) . Kleene3.from_bool b = Kleene3.false <-> b = false
+  := Kleene3.conversion.falsity.specification.
+
 Definition data_base_all_delivers_unit
   : Unit
   := Unit.introduction.
