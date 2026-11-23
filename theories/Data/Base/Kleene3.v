@@ -9,6 +9,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Option.
 From JW Require Import Relation.Antisymmetric.
 From JW Require Import Relation.Order.PartialOrder.
 From JW Require Import Relation.Reflexive.
@@ -85,6 +86,33 @@ Definition from_bool := fun (b : Bool) .
   match b with
   | Bool.true  => true
   | Bool.false => false
+  end.
+
+(* The decision, when the value is known: the partial inverse of
+ * [from_bool].
+ *)
+(* [Kleene3 -> Option Bool] *)
+Definition to_bool := fun (v : Kleene3) .
+  match v with
+  | true    => Some Bool.true
+  | unknown => None
+  | false   => Some Bool.false
+  end.
+
+(* [Kleene3 -> Bool] *)
+Definition is_true := fun (v : Kleene3) .
+  match v with
+  | true    => Bool.true
+  | unknown => Bool.false
+  | false   => Bool.false
+  end.
+
+(* [Kleene3 -> Bool] *)
+Definition is_not_false := fun (v : Kleene3) .
+  match v with
+  | true    => Bool.true
+  | unknown => Bool.true
+  | false   => Bool.false
   end.
 
 (* The truth order, [false] below [unknown] below [true], read as the answer
@@ -801,7 +829,180 @@ Qed.
 
 End falsity. (* conversion.falsity *)
 
+(* conversion.retraction *)
+Theorem retraction : forall (b : Bool) . to_bool (from_bool b) = Some b.
+Proof.
+  intros b.
+  match &b with | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* A known [v] gives its decision, which [from_bool] puts back; the other
+ * way is [retraction].
+ *)
+(* conversion.inversion *)
+Theorem inversion
+  : forall (v : Kleene3) (b : Bool) . to_bool v = Some b <-> v = from_bool b.
+Proof.
+  intros v b.
+  divide et impera.
+  - intro e.
+    match &v with | | | end.
+    + simpl in &e.
+      leibniz <- (Option.some.injectivity &e) in |- *.
+      simpl in |- *.
+      quod idem est.
+    + simpl in &e.
+      ex &e quodlibet.
+    + simpl in &e.
+      leibniz <- (Option.some.injectivity &e) in |- *.
+      simpl in |- *.
+      quod idem est.
+  - intro e.
+    leibniz &e in |- *.
+    ipso (conversion.retraction &b).
+Qed.
+
+Module unknown. (* conversion.unknown *)
+
+(* conversion.unknown.specification *)
+Theorem specification : forall (v : Kleene3) . to_bool v = None <-> v = unknown.
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; divide et impera; intro e.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - quod idem est.
+  - quod idem est.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+Qed.
+
+End unknown. (* conversion.unknown *)
+
 End conversion. (* conversion *)
+
+Module test. (* test *)
+
+Module truth. (* test.truth *)
+
+(* test.truth.specification *)
+Theorem specification : forall (v : Kleene3) . is_true v = Bool.true <-> v = true.
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; divide et impera; intro e.
+  - quod idem est.
+  - quod idem est.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+Qed.
+
+(* test.truth.conversion *)
+Theorem conversion : forall (b : Bool) . is_true (from_bool b) = b.
+Proof.
+  intros b.
+  match &b with | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* test.truth.conjunction *)
+Theorem conjunction
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      is_true (v1 && v2) = Bool.and (is_true v1) (is_true v2).
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* test.truth.disjunction *)
+Theorem disjunction
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      is_true (v1 || v2) = Bool.or (is_true v1) (is_true v2).
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* test.truth.negation *)
+Theorem negation : forall (v : Kleene3) . is_true (! v) = Bool.negate (is_not_false v).
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+End truth. (* test.truth *)
+
+Module falsity. (* test.falsity *)
+
+(* test.falsity.specification *)
+Theorem specification : forall (v : Kleene3) . is_not_false v = Bool.false <-> v = false.
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; divide et impera; intro e.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - ex &e quodlibet.
+  - quod idem est.
+  - quod idem est.
+Qed.
+
+(* test.falsity.conversion *)
+Theorem conversion : forall (b : Bool) . is_not_false (from_bool b) = b.
+Proof.
+  intros b.
+  match &b with | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* test.falsity.conjunction *)
+Theorem conjunction
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      is_not_false (v1 && v2) = Bool.and (is_not_false v1) (is_not_false v2).
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* test.falsity.disjunction *)
+Theorem disjunction
+  : forall (v1 : Kleene3) (v2 : Kleene3) .
+      is_not_false (v1 || v2) = Bool.or (is_not_false v1) (is_not_false v2).
+Proof.
+  intros v1 v2.
+  match &v1 with | | | end; match &v2 with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+(* test.falsity.negation *)
+Theorem negation : forall (v : Kleene3) . is_not_false (! v) = Bool.negate (is_true v).
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+End falsity. (* test.falsity *)
+
+(* test.weakening *)
+Theorem weakening : forall (v : Kleene3) . is_true v = Bool.true -> is_not_false v = Bool.true.
+Proof.
+  intros v e.
+  match &v with | | | end.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in |- *.
+    quod idem est.
+  - simpl in &e.
+    ex &e quodlibet.
+Qed.
+
+(* test.absorption *)
+Theorem absorption
+  : forall (v : Kleene3) . Bool.and (is_not_false v) (is_true v) = is_true v.
+Proof.
+  intros v.
+  match &v with | | | end; simpl in |- *; quod idem est.
+Qed.
+
+End test. (* test *)
 
 Module truth. (* truth *)
 
