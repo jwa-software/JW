@@ -11,6 +11,7 @@ From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Machine.DWord.
@@ -647,11 +648,23 @@ Abbreviation le := (Comparable.le compare).
 (* [UInt64 -> UInt64 -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [UInt64 -> UInt64 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [UInt64 -> UInt64 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [UInt64 -> UInt64 -> UInt64] *)
 Abbreviation min := (Comparable.min compare).
 
 (* [UInt64 -> UInt64 -> UInt64] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [UInt64 -> UInt64 -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [UInt64 -> UInt64 -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* A literal of 0 to 18446744073709551615, in decimal or hexadecimal, read in
  * binary; any larger is refused.

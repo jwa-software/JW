@@ -37,6 +37,7 @@ SPDX-License-Identifier: MIT
 - **The number of a weekday.** `Weekday.to_b` gives the weekday's place in the week as ISO 8601 numbers it, `Weekday.Monday` being 1 and `Weekday.Sunday` 7, and `Weekday.from_b` goes back, `None` past 7. `Weekday.to_b0` and `Weekday.from_b0` count from 0, `Weekday.Monday` being 0, `None` past 6. The laws are `Weekday.conversion.bin.retraction`, `.specification` and `.injectivity`, and the same under `Weekday.conversion.bin0`.
 - **The length of a week.** `Weekday.days_in_week` is 7.
 - **The next and the previous weekday.** `Weekday.next` and `Weekday.prev` go round the week, `Weekday.Monday` after `Weekday.Sunday`. Each undoes the other: `Weekday.succession.forward.inverse` and `Weekday.succession.backward.inverse`.
+- **The order of the week.** `Weekday.compare` compares the weekdays' numbers, `Weekday.Monday` first, and `Weekday.comparable` makes it an instance of `Comparable`.
 
 ---
 
@@ -170,6 +171,7 @@ ISO 8601 numbers the weeks of a year, Monday first: week 1 is the week that hold
 - **The start of an ISO year.** `IsoWeekDate.january_4th y` is January 4 of `y`, and `IsoWeekDate.week_one_start y` is the day number of the Monday of its week. `IsoWeekDate.start.weekday` states that it is a Monday, and `IsoWeekDate.start.boundedness` that January 4 lies in the week it starts.
 - **52 or 53 weeks.** `IsoWeekDate.weeks_in_year y` is the distance from the start of `y` to the start of `y + 1`, in weeks. `IsoWeekDate.year.length.dichotomy` states that it is 52 or 53, and `IsoWeekDate.year.length.specification` that it is 53 exactly when January 1 is a Thursday, or a Wednesday in a leap year. `IsoWeekDate.year.succession` states that the next ISO year starts that many weeks later.
 - **From a date and back.** `IsoWeekDate.from_date` counts the whole weeks of the day number, 0001-01-01 being a Monday, and takes as the ISO year the year of that week's Thursday; `IsoWeekDate.to_date` goes back. `IsoWeekDate.conversion.date.retraction` and `IsoWeekDate.conversion.date.section` state that each undoes the other, and `IsoWeekDate.weekday.agreement` that the weekday is kept.
+- **The order of ISO week dates.** `IsoWeekDate.compare` compares the dates the two stand for, `Date.compare (IsoWeekDate.to_date x1) (IsoWeekDate.to_date x2)`, and `IsoWeekDate.comparable` makes it an instance of `Comparable`. `IsoWeekDate.conversion.date.injectivity` states that two ISO week dates of one date are equal.
 
 | Date | `IsoWeekDate.from_date` |
 |:---|:---|

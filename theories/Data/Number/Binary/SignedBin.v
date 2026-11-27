@@ -13,6 +13,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Integer.
@@ -285,11 +286,29 @@ Definition compare := fun (x : SignedBin) (y : SignedBin) .
 (* [SignedBin -> SignedBin -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [SignedBin -> SignedBin -> SignedBin] *)
 Abbreviation min := (Comparable.min compare).
 
 (* [SignedBin -> SignedBin -> SignedBin] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Bin0] reads the magnitude, the sign is applied after. [- 0] reads as
  * zero, this type having one zero and [negate] sending it to itself.

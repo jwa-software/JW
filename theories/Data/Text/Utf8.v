@@ -8,6 +8,7 @@ From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Literal.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
@@ -328,11 +329,23 @@ Abbreviation le := (Comparable.le compare).
 (* [Utf8 -> Utf8 -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [Utf8 -> Utf8 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Utf8 -> Utf8 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Utf8 -> Utf8 -> Utf8] *)
 Abbreviation min := (Comparable.min compare).
 
 (* [Utf8 -> Utf8 -> Utf8] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Utf8 -> Utf8 -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Utf8 -> Utf8 -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* The digits [0] to [9], U+0030 to U+0039. *)
 (* [Utf8 -> Bool] *)

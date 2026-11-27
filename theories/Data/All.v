@@ -18,6 +18,7 @@ From JW Require Export Data.Calendar.All.
 From JW Require Export Data.Collection.All.
 From JW Require Export Data.Comparable.
 From JW Require Export Data.Coproduct.
+From JW Require Export Data.Discernible.
 From JW Require Export Data.Functor.
 From JW Require Export Data.Literal.
 From JW Require Export Data.Machine.All.

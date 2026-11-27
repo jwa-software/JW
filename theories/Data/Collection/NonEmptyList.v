@@ -8,6 +8,7 @@ From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Collection.Membership.
 From JW Require Import Data.Collection.Sized.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Functor.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -193,6 +194,25 @@ Fixpoint minimum_of {A : Type} (le : A -> A -> Bool) (x : NonEmptyList A) : A :=
       | false => minimum_of le x'
       end
   end.
+
+(* [x] and [y] are as long as each other, and [tester] passes each element of
+ * [x] with the element of [y] at its place. [tester] is bound outside the
+ * [fix], so the recursion carries the two lists only.
+ *)
+(* [forall {A : Type} . (A -> A -> Bool) -> NonEmptyList A -> NonEmptyList A -> Bool] *)
+Definition test := fun {A : Type} (tester : A -> A -> Bool) .
+  fix go (x : NonEmptyList A) (y : NonEmptyList A) : Bool :=
+    match x, y with
+    | One a,     One b     => tester a b
+    | Cons a x', Cons b y' => (tester a b && go x' y')%bool
+    | _,         _         => false
+    end.
+
+(* [forall {A : Type} . NonEmptyList A -> NonEmptyList A -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} . NonEmptyList A -> NonEmptyList A -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module concatenation. (* concatenation *)
 
@@ -598,9 +618,65 @@ Qed.
 
 End conversion. (* conversion *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} (tester : A -> A -> Bool) .
+      Discernible tester ->
+      forall (x : NonEmptyList A) (y : NonEmptyList A) . test tester x y = true <-> x = y.
+Proof.
+  intros A tester D x y.
+  divide et impera.
+  - extro &y.
+    match &x with | One a | Cons a (x' by IH) end per NonEmptyList.induction.
+    + intros y e.
+      match &y with | b | b y' end.
+      * simpl in &e.
+        let proof ra : tester &a &b = true <-> &a = &b := Discernible.reflection &a &b.
+        leibniz (modus aequans &ra, &e) in |- *.
+        quod idem est.
+      * simpl in &e.
+        ex &e quodlibet.
+    + intros y e.
+      match &y with | b | b y' end.
+      * simpl in &e.
+        ex &e quodlibet.
+      * simpl in &e.
+        modus aequans (Bool.conjunction.truth.specification _ _), &e |- s.
+        match &s with | ea er end.
+        let proof ra : tester &a &b = true <-> &a = &b := Discernible.reflection &a &b.
+        leibniz (modus aequans &ra, &ea), (&IH &y' &er) in |- *.
+        quod idem est.
+  - intro e.
+    leibniz <- &e in |- *.
+    rm &e.
+    match &x with | One a | Cons a (x' by IH) end per NonEmptyList.induction.
+    + let proof ra : tester &a &a = true <-> &a = &a := Discernible.reflection &a &a.
+      ipso (modus aequans &ra, (Identity.reflexivity &a)).
+    + let proof ra : tester &a &a = true <-> &a = &a := Discernible.reflection &a &a.
+      let proof ta := modus aequans &ra, (Identity.reflexivity &a).
+      let proof parts := conjoin &ta, &IH.
+      modus aequans
+        (Bool.conjunction.truth.specification (&tester &a &a) (test &tester &x' &x')),
+        &parts |- whole.
+      ipso &whole.
+Qed.
+
+End test. (* test *)
+
+(* A list tells its values apart when its elements do. *)
+Instance discernible
+  : forall {A : Type} {tester : A -> A -> Bool} .
+      Discernible tester -> Discernible (test tester) :=
+  fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester) .
+    ({| Discernible.reflection := test.reflection tester D |}).
+
 End NonEmptyList. (* NonEmptyList *)
 
 Abbreviation NonEmptyList := NonEmptyList.T.
+
+Existing Instance NonEmptyList.discernible.
 
 Export (notations) NonEmptyList.
 

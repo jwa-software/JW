@@ -3,8 +3,12 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Collection.List.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Machine.Byte.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Local Unset Elimination Schemes.
 
@@ -797,6 +801,17 @@ Definition from_byte := fun (b : Byte) .
   | 0xff%byte => xff
   end.
 
+(* The same byte. *)
+(* [SourceByte -> SourceByte -> Bool] *)
+Definition test := fun (s1 : SourceByte) (s2 : SourceByte) .
+  Byte.test (to_byte s1) (to_byte s2).
+
+(* [SourceByte -> SourceByte -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [SourceByte -> SourceByte -> Bool] *)
+Abbreviation discern := Discernible.discern.
+
 Module conversion. (* conversion *)
 
 Module byte. (* conversion.byte *)
@@ -871,9 +886,39 @@ End bytes. (* conversion.bytes *)
 
 End conversion. (* conversion *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (s1 : SourceByte) (s2 : SourceByte) . test s1 s2 = true <-> s1 = s2.
+Proof.
+  intros s1 s2.
+  divide et impera.
+  - intro e.
+    simpl test in &e.
+    let proof same := modus aequans (Byte.test.reflection (to_byte &s1) (to_byte &s2)), &e.
+    congru from_byte, &same |- f.
+    leibniz (conversion.byte.section &s1), (conversion.byte.section &s2) in &f.
+    ipso &f.
+  - intro e.
+    leibniz <- &e in |- *.
+    simpl test in |- *.
+    ipso
+      (modus aequans (Byte.test.reflection (to_byte &s1) (to_byte &s1)),
+         (Identity.reflexivity (to_byte &s1))).
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End SourceByte. (* SourceByte *)
 
 Abbreviation SourceByte := SourceByte.T.
+
+Existing Instance SourceByte.discernible.
 
 (* The plugin finds the byte type of a string literal by this name. *)
 Register SourceByte.T as core.byte.type.

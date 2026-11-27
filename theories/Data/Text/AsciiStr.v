@@ -8,6 +8,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Literal.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
@@ -115,11 +116,23 @@ Abbreviation le := (Comparable.le compare).
 (* [AsciiStr -> AsciiStr -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [AsciiStr -> AsciiStr -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [AsciiStr -> AsciiStr -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [AsciiStr -> AsciiStr -> AsciiStr] *)
 Abbreviation min := (Comparable.min compare).
 
 (* [AsciiStr -> AsciiStr -> AsciiStr] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [AsciiStr -> AsciiStr -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [AsciiStr -> AsciiStr -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* Reads the UTF-8 bytes of a string literal as characters, one at a time, by
  * [Ascii.from_source_bytes]:

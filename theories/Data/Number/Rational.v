@@ -12,6 +12,7 @@ From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Integer.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -160,6 +161,33 @@ Definition compare := fun (x : Rational) (y : Rational) .
   Integer.compare
     (numerator x * denominator y)%z
     (numerator y * denominator x)%z.
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation eq := (Comparable.eq compare).
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
+(* [Rational -> Rational -> Rational] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [Rational -> Rational -> Rational] *)
+Abbreviation max := (Comparable.max compare).
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Integer -> Rational] *)
 Definition from_integer := fun (n : Integer) . make n Nat.One.
@@ -1912,18 +1940,18 @@ Proof.
            (e * b)%z)
         with | lt | rest end.
 
-  - ipso lt.
+  - ipso &lt.
 
   - match rest with | eq | gt end.
 
-    + leibniz eq in chain.
+    + leibniz &eq in chain.
       let proof ir := Integer.order.strict.irreflexivity
                     (d * (e * b))%z.
       ex (ir chain) quodlibet.
 
     + let proof back := Integer.multiplication.left.order.strict.monotonicity
                     d (e * b)%z
-                      (a * f)%z gt.
+                      (a * f)%z &gt.
       let proof loop := Integer.order.strict.transitivity chain back.
       let proof ir := Integer.order.strict.irreflexivity
                     (d * (a * f))%z.

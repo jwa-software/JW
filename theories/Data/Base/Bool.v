@@ -61,6 +61,22 @@ Definition xor := fun (b1 : Bool) (b2 : Bool) .
 Notation "b1 ^^ b2" := (xor b1 b2) (only parsing)
   : jw_bool_scope.
 
+(* [Bool -> Bool -> Bool] *)
+Definition test := fun (b1 : Bool) (b2 : Bool) .
+  match b1, b2 with
+  | true,  true  => true
+  | false, false => true
+  | _,     _     => false
+  end.
+
+(* [true] when the two are equal. *)
+(* [Bool -> Bool -> Bool] *)
+Definition equivalent := fun (b1 : Bool) (b2 : Bool) . test b1 b2.
+
+(* [true] when the two differ. *)
+(* [Bool -> Bool -> Bool] *)
+Definition discern := fun (b1 : Bool) (b2 : Bool) . negate (test b1 b2).
+
 Local Open Scope jw_bool_scope.
 
 Module distinctness. (* distinctness *)
@@ -156,6 +172,41 @@ Proof.
     simpl in |- *.
     quod idem est.
 Qed.
+
+Module truth. (* conjunction.truth *)
+
+(* conjunction.truth.specification *)
+Theorem specification
+  : forall (b1 : Bool) (b2 : Bool) . b1 && b2 = true <-> b1 = true /\ b2 = true.
+Proof.
+  intros b1 b2.
+  match &b1 with | | end; match &b2 with | | end; simpl in |- *.
+  - divide et impera.
+    + intro e.
+      ipso (conjoin (Identity.reflexivity true), (Identity.reflexivity true)).
+    + intro h.
+      quod idem est.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | _ e end.
+      ex &e quodlibet.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+  - divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro h.
+      match &h with | e _ end.
+      ex &e quodlibet.
+Qed.
+
+End truth. (* conjunction.truth *)
 
 Module left. (* conjunction.left *)
 
@@ -302,6 +353,22 @@ Proof.
 Qed.
 
 End sejunction. (* sejunction *)
+
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (b1 : Bool) (b2 : Bool) . test b1 b2 = true <-> b1 = b2.
+Proof.
+  intros b1 b2.
+  match &b1 with | | end; match &b2 with | | end; simpl in |- *.
+  - divide et impera; intro e; quod idem est.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; quod idem est.
+Qed.
+
+End test. (* test *)
 
 End Bool. (* Bool *)
 

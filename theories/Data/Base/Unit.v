@@ -3,6 +3,8 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 
 Local Unset Elimination Schemes.
 
@@ -24,6 +26,16 @@ Definition induction
        | Unit.introduction => base
        end.
 
+(* The one element is equal to itself, so the answer is always [true]. *)
+(* [Unit -> Unit -> Bool] *)
+Definition test := fun (u1 : Unit) (u2 : Unit) . true.
+
+(* [Unit -> Unit -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Unit -> Unit -> Bool] *)
+Abbreviation discern := Discernible.discern.
+
 (* [Unit.introduction] is surjective: every element is the one ctor. This is
  * the eta rule for [Unit], which an [Inductive] does not compute, so it is
  * proved.
@@ -33,6 +45,25 @@ Proof.
   intros u. match u with end. quod idem est.
 Qed.
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (u1 : Unit) (u2 : Unit) . test u1 u2 = true <-> u1 = u2.
+Proof.
+  intros u1 u2.
+  match &u1 with | end; match &u2 with | end; simpl test in |- *.
+  divide et impera; intro e; quod idem est.
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End Unit.
 
 Abbreviation Unit := Unit.T.
+
+Existing Instance Unit.discernible.

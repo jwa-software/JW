@@ -5,6 +5,7 @@
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Option.
@@ -153,6 +154,33 @@ Definition prev := fun (m : Month) .
 (* [Month -> Month -> Comparison] *)
 Definition compare := fun (m1 : Month) (m2 : Month) .
   Bin.compare (to_b m1) (to_b m2).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation eq := (Comparable.eq compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
+(* [Month -> Month -> Month] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [Month -> Month -> Month] *)
+Abbreviation max := (Comparable.max compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Month -> Month -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Month -> Month -> Prop] *)
 Definition LessThan := fun (m1 : Month) (m2 : Month) .

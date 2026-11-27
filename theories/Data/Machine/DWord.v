@@ -3,7 +3,9 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Collection.List.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Machine.Endian.
@@ -11,6 +13,8 @@ From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
+From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Local Unset Elimination Schemes.
 
@@ -436,6 +440,17 @@ Definition to_bytes := fun (x : DWord) .
       List.Cons b0 (List.Cons b1 (List.Cons b2 (List.Cons b3
         (List.Cons b4 (List.Cons b5 (List.Cons b6 (List.Cons b7 List.Nil)))))))
   end.
+
+(* The same endianness and the same bytes in layout order. *)
+(* [DWord -> DWord -> Bool] *)
+Definition test := fun (x : DWord) (y : DWord) .
+  (Endian.test (endian x) (endian y) && List.test Byte.test (to_bytes x) (to_bytes y))%bool.
+
+(* [DWord -> DWord -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [DWord -> DWord -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* The double word of endianness [e] laid out as the bytes of [l], or [None] for a
  * list of any length but eight.
@@ -1413,9 +1428,53 @@ End bytes. (* conversion.bytes *)
 
 End conversion. (* conversion *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (x : DWord) (y : DWord) . test x y = true <-> x = y.
+Proof.
+  intros x y.
+  divide et impera.
+  - intro e.
+    simpl test in &e.
+    modus aequans (Bool.conjunction.truth.specification _ _), &e |- s.
+    match &s with | ee eb end.
+    let proof same_endian
+      := modus aequans (Endian.test.reflection (endian &x) (endian &y)), &ee.
+    let proof same_bytes
+      := modus aequans
+           (List.test.reflection Byte.test Byte.discernible (to_bytes &x) (to_bytes &y)), &eb.
+    let proof sx := conversion.bytes.section &x.
+    let proof sy := conversion.bytes.section &y.
+    leibniz &same_endian, &same_bytes in &sx.
+    leibniz &sy in &sx.
+    ipso (symm (Option.some.injectivity &sx)).
+  - intro e.
+    leibniz <- &e in |- *.
+    simpl test in |- *.
+    leibniz
+      (modus aequans (Endian.test.reflection (endian &x) (endian &x)),
+         (Identity.reflexivity (endian &x))),
+      (modus aequans
+         (List.test.reflection Byte.test Byte.discernible (to_bytes &x) (to_bytes &x)),
+         (Identity.reflexivity (to_bytes &x)))
+      in |- *.
+    simpl in |- *.
+    quod idem est.
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End DWord. (* DWord *)
 
 Abbreviation DWord := DWord.T.
+
+Existing Instance DWord.discernible.
 
 Export (notations) DWord.
 

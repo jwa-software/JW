@@ -9,6 +9,7 @@ From JW Require Import Data.Collection.List.
 From JW Require Import Data.Collection.Membership.
 From JW Require Import Data.Collection.Sized.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Functor.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -139,6 +140,25 @@ Fixpoint all {A : Type} (p : A -> Bool) (t : BinaryTree A) : Bool :=
   | Leaf       => true
   | Node l a r => Bool.and (all p l) (Bool.and (p a) (all p r))
   end.
+
+(* The same shape, and [tester] passes the two elements at each node.
+ * [tester] is bound outside the [fix], so the recursion carries the two
+ * trees only.
+ *)
+(* [forall {A : Type} . (A -> A -> Bool) -> BinaryTree A -> BinaryTree A -> Bool] *)
+Definition test := fun {A : Type} (tester : A -> A -> Bool) .
+  fix go (t : BinaryTree A) (u : BinaryTree A) : Bool :=
+    match t, u with
+    | Leaf,         Leaf         => true
+    | Node l1 a1 r1, Node l2 a2 r2 => (go l1 l2 && (tester a1 a2 && go r1 r2))%bool
+    | _,            _            => false
+    end.
+
+(* [forall {A : Type} . BinaryTree A -> BinaryTree A -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} . BinaryTree A -> BinaryTree A -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module height. (* height *)
 
@@ -658,9 +678,69 @@ End any. (* quantification.any *)
 
 End quantification. (* quantification *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} (tester : A -> A -> Bool) .
+      Discernible tester ->
+      forall (t : BinaryTree A) (u : BinaryTree A) . test tester t u = true <-> t = u.
+Proof.
+  intros A tester D t u.
+  divide et impera.
+  - extro &u.
+    match &t with | Leaf | Node (l by IHl) a (r by IHr) end per BinaryTree.induction.
+    + intros u e.
+      match &u with | | l2 a2 r2 end.
+      * quod idem est.
+      * simpl in &e.
+        ex &e quodlibet.
+    + intros u e.
+      match &u with | | l2 a2 r2 end.
+      * simpl in &e.
+        ex &e quodlibet.
+      * simpl in &e.
+        modus aequans (Bool.conjunction.truth.specification _ _), &e |- s1.
+        match &s1 with | el rest end.
+        modus aequans (Bool.conjunction.truth.specification _ _), &rest |- s2.
+        match &s2 with | ea er end.
+        let proof ra : tester &a &a2 = true <-> &a = &a2 := Discernible.reflection &a &a2.
+        leibniz (&IHl &l2 &el), (modus aequans &ra, &ea), (&IHr &r2 &er) in |- *.
+        quod idem est.
+  - intro e.
+    leibniz <- &e in |- *.
+    rm &e.
+    match &t with | Leaf | Node (l by IHl) a (r by IHr) end per BinaryTree.induction.
+    + simpl in |- *.
+      quod idem est.
+    + let proof ra : tester &a &a = true <-> &a = &a := Discernible.reflection &a &a.
+      let proof ta := modus aequans &ra, (Identity.reflexivity &a).
+      let proof right_part := conjoin &ta, &IHr.
+      modus aequans
+        (Bool.conjunction.truth.specification (&tester &a &a) (test &tester &r &r)),
+        &right_part |- right_test.
+      let proof both_parts := conjoin &IHl, &right_test.
+      modus aequans
+        (Bool.conjunction.truth.specification
+          (test &tester &l &l) (Bool.and (&tester &a &a) (test &tester &r &r))),
+        &both_parts |- whole.
+      ipso &whole.
+Qed.
+
+End test. (* test *)
+
+(* A tree tells its values apart when its elements do. *)
+Instance discernible
+  : forall {A : Type} {tester : A -> A -> Bool} .
+      Discernible tester -> Discernible (test tester) :=
+  fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester) .
+    ({| Discernible.reflection := test.reflection tester D |}).
+
 End BinaryTree. (* BinaryTree *)
 
 Abbreviation BinaryTree := BinaryTree.T.
+
+Existing Instance BinaryTree.discernible.
 
 Instance BinaryTree_functor
   : Functor BinaryTree :=

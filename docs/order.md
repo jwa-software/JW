@@ -67,7 +67,8 @@ An order is a relation that says which of two values comes first. `Relation/Orde
 
 - **The problem.** The four classes above are propositions: they state that two values compare, and compute nothing. A program has to decide: `Nat0.compare 3 5` answers `Comparison.Lt`. The answer and the proposition must agree, or a proof about `<` says nothing about what the program does.
 - **The class.** `Comparable compare lt` joins a function `compare : A -> A -> Comparison`, which answers `Comparison.Lt`, `Comparison.Eq` or `Comparison.Gt`, to a relation `lt`. It has three fields: `Comparable.transitivity` of `lt`; `Comparable.specification`, `(compare m n = Comparison.Lt <-> lt m n) /\ (compare m n = Comparison.Eq <-> m = n)`; and `Comparable.antisymmetry`, `compare m n = Comparison.transpose (compare n m)`, the answer turned round when the arguments are.
-- **What follows from the three fields.** `Comparable.LessOrEqual lt m n` is `m = n \/ lt m n`. `Comparable.eq`, `Comparable.le` and `Comparable.lt` answer a `Bool`, and `Comparable.min` and `Comparable.max` pick one of two values. A type names them as its own: `Nat0.eq 5 5`, `Nat0.le 3 5` and `Nat0.lt 3 5` are `true`, `Nat0.min 3 5` is `3`, and `Nat0.max 3 5` is `5`.
+- **What follows from the three fields.** `Comparable.LessOrEqual lt m n` is `m = n \/ lt m n`. `Comparable.eq`, `Comparable.le`, `Comparable.lt`, `Comparable.ge` and `Comparable.gt` answer a `Bool`, and `Comparable.min` and `Comparable.max` pick one of two values. **Every type with an instance names all seven as its own**: `Nat0.eq 5 5`, `Nat0.le 3 5`, `Nat0.lt 3 5`, `Nat0.ge 5 3` and `Nat0.gt 5 3` are `true`, `Nat0.min 3 5` is `3`, and `Nat0.max 3 5` is `5`.
+- **The two tests that read from the right are the other two turned round.** `Comparable.order.strict.transposition` states `Comparable.gt compare m n = Comparable.lt compare n m`, and `Comparable.order.transposition` states `Comparable.ge compare m n = Comparable.le compare n m`.
 - **Each test reflects its relation, both ways.** The test's answer `true` is the relation, and `false` its opposite:
 
 | Test | Answers `true` exactly when | Answers `false` exactly when |
@@ -77,10 +78,36 @@ An order is a relation that says which of two values comes first. `Relation/Orde
 | `Comparable.lt compare m n` | `lt m n` (`Comparable.order.strict.reflection`) | `Comparable.LessOrEqual lt n m` (`Comparable.order.strict.refutation`) |
 
 - **The strict test is the complement of the other.** `Comparable.order.strict.complement` states `Comparable.lt compare m n = Bool.negate (Comparable.le compare n m)`. In the laws, a bare `lt` is the order relation the instance decides, so the test is written `Comparable.lt`.
-- **Instances.** One per ordered type: `Nat_comparable`, `Nat0.comparable`, `Integer_comparable`, `Rational_comparable` and those of the binary numbers; `UInt8.comparable` to `Int64.comparable`; `Ascii.comparable`, `AsciiStr.comparable`, `Utf8.comparable` and `Utf8Str.comparable`. From any of them the instances `strict_partial_order`, `strict_total_order` and `total_order` give the four order classes, so every property of [Relations](relations.md) is found for that type's `<` and `<=`.
+- **Instances.** One per ordered type: `Nat_comparable`, `Nat0.comparable`, `Integer_comparable`, `Rational_comparable` and those of the binary numbers; `UInt8.comparable` to `Int64.comparable`; `Ascii.comparable`, `AsciiStr.comparable`, `Utf8.comparable` and `Utf8Str.comparable`; `Kleene3.comparable`; `Month.comparable`, `Weekday.comparable`, `Date.comparable` and `IsoWeekDate.comparable`. From any of them the instances `strict_partial_order`, `strict_total_order` and `total_order` give the four order classes, so every property of [Relations](relations.md) is found for that type's `<` and `<=`.
 - **In a proof.** A computed answer becomes a proposition through the laws: `Comparable.comparison.strict.specification 3 5` states `Nat0.compare 3 5 = Comparison.Lt <-> 3 < 5`, and the left side holds by computation. `Comparable.order.reflection` does the same for `le` and `<=`, and `Comparable.comparison.equality.reflection` for `eq` and `=`. The laws of `min` and `max` are under `Comparable.minimum` and `Comparable.maximum`: `Comparable.maximum.universality` proves `max m n <= k` from `m <= k` and `n <= k`.
 - **Mixing `<` and `<=`.** `Comparable.order.mixed.left.transitivity` gives `l < n` from `l <= m` and `m < n`, and `Comparable.order.mixed.right.transitivity` from `l < m` and `m <= n`; `Comparable.order.strict.weakening` turns `m < n` into `m <= n`, and `Comparable.order.strict.negation` is `~ (m < n) <-> n <= m`. They hold for every instance; the two mixed laws infer their points from the premises.
 - **What it does not say.** Anything of an order that is not total. `Nat0.Divides` has no `Comparable` instance: no `compare` could answer for `2` and `3`. And a container gets no instance by itself: `List.compare cmp` compares two lists, and its laws, such as `List.comparison.specification`, take `Comparable cmp lt` as a premise.
+
+---
+
+## Discernible
+
+- **The problem.** Not every type has an order, yet almost every type can say whether two of its values are the same. `Comparable` cannot serve a type with no order, so the test of equality has an interface of its own.
+- **The class.** `Discernible test`, in `Data/Discernible.v`, has one field: `Discernible.reflection`, `test a b = true <-> a = b`. A `test` is a function `A -> A -> Bool` that answers `true` exactly for two equal values.
+- **The two functions.** `Discernible.equivalent a b` is `true` when the two are equal, and `Discernible.discern a b` is `true` when they differ. Each type names them as its own: `Bool.equivalent true true` is `true`, and `Nat0.discern 3 5` is `true`.
+- **The tester is found for you.** Both functions take the tester as a first argument that is left out: it is found through the type's instance. Write it when you want to name it, as `Discernible.equivalent (test := Nat0.eq) m n`.
+- **An ordered type is discernible already.** Every `Comparable compare lt` gives `Discernible (Comparable.eq compare)`, so a type with an order has `equivalent` beside its `eq`, and the two always agree.
+- **A type with no order supplies its tester.** `Bool`, `Comparison`, `Unit`, `Empty`, `Bit`, `Byte`, `HWord`, `Word`, `DWord`, `QWord`, `Endian` and `SourceByte` each have a `test`, the law `test.reflection`, and an instance `discernible`.
+- **A numeral literal is compared as it is written.** The nine types of `Numeral`, which a literal is read into before it becomes a number, are discernible too, digit by digit: `Numeral.Decimal.Digits.discern` tells `007` from `7`, while the numbers they are read into are equal.
+- **A container asks its elements.** `List.test tester`, `NonEmptyList.test tester`, `Option.test tester`, `BinaryTree.test tester`, `AVL.test tester` and `SortedSet.test tester` take the tester of the elements, and `Product.test` and `Coproduct.test` take one for each side. Each is discernible when its elements are, so `List.equivalent l m` works on a list of lists of numbers with nothing more written.
+
+| Law | States |
+|:---|:---|
+| `Discernible.equivalence.reflection` | `equivalent a b = true <-> a = b` |
+| `Discernible.equivalence.reflexivity` | `equivalent a a = true` |
+| `Discernible.equivalence.refutation` | `equivalent a b = false <-> ~ (a = b)` |
+| `Discernible.equivalence.symmetry` | `equivalent a b = equivalent b a` |
+| `Discernible.discernment.complement` | `discern a b = Bool.negate (equivalent a b)` |
+| `Discernible.discernment.reflection` | `discern a b = true <-> ~ (a = b)` |
+| `Discernible.discernment.refutation` | `discern a b = false <-> a = b` |
+
+- **A type nested under a container.** `List.test.local.reflection` and `Product.test.local.reflection` ask the tester to decide equality only for the elements of the one list, or the components of the one pair. An induction over a type that holds a list of itself has exactly that much to give.
+- **A sorted set is compared as its tree.** `SortedSet.test` compares the trees inside, so two sets of the same elements in trees of two shapes are two values.
 
 ---
 

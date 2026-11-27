@@ -9,6 +9,7 @@ From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Calendar.Month.
 From JW Require Import Data.Calendar.Weekday.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Binary.SignedBin.
@@ -339,6 +340,33 @@ Definition compare := fun (x1 : Date) (x2 : Date) .
       end
   | Comparison.Gt => Comparison.Gt
   end.
+
+(* [Date -> Date -> Bool] *)
+Abbreviation eq := (Comparable.eq compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
+(* [Date -> Date -> Date] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [Date -> Date -> Date] *)
+Abbreviation max := (Comparable.max compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Date -> Date -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [x1] comes before [x2] in the order of time. *)
 (* [Date -> Date -> Prop] *)

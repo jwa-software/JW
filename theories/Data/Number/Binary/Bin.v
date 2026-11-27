@@ -10,6 +10,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
@@ -264,11 +265,29 @@ Definition compare := fun (a : Bin) (b : Bin) .
 (* [Bin -> Bin -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
+(* [Bin -> Bin -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Bin -> Bin -> Bin] *)
 Abbreviation min := (Comparable.min compare).
 
 (* [Bin -> Bin -> Bin] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [a - b], [None] unless it is positive, as [Nat.sub] is. *)
 (* [Bin -> Bin -> Option Bin] *)

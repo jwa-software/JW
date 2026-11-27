@@ -3,8 +3,11 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Functor.
 From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Local Unset Elimination Schemes.
 
@@ -45,6 +48,21 @@ Definition unwrap := fun {A : Type} (o : Option A) .
                 match h (refl None) return A with end
   | Some a => fun (_ : ~ (Some a = None)) . a
   end.
+
+(* Both hold nothing, or both hold values that [tester] passes. *)
+(* [forall {A : Type} . (A -> A -> Bool) -> Option A -> Option A -> Bool] *)
+Definition test := fun {A : Type} (tester : A -> A -> Bool) (o1 : Option A) (o2 : Option A) .
+  match o1, o2 with
+  | None,   None   => true
+  | Some a, Some b => tester a b
+  | _,      _      => false
+  end.
+
+(* [forall {A : Type} . Option A -> Option A -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} . Option A -> Option A -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module some. (* some *)
 
@@ -141,9 +159,42 @@ Qed.
 
 End unwrapping. (* unwrapping *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} (tester : A -> A -> Bool) .
+      Discernible tester ->
+      forall (o1 : Option A) (o2 : Option A) . test tester o1 o2 = true <-> o1 = o2.
+Proof.
+  intros A tester D o1 o2.
+  match &o1 with | | a end; match &o2 with | | b end; simpl in |- *.
+  - divide et impera; intro e; quod idem est.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - let proof r : tester &a &b = true <-> &a = &b := Discernible.reflection &a &b.
+    divide et impera.
+    + intro e.
+      leibniz (modus aequans &r, &e) in |- *.
+      quod idem est.
+    + intro e.
+      ipso (modus aequans &r, (some.injectivity &e)).
+Qed.
+
+End test. (* test *)
+
+(* An option tells its values apart when the values it holds do. *)
+Instance discernible
+  : forall {A : Type} {tester : A -> A -> Bool} .
+      Discernible tester -> Discernible (test tester) :=
+  fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester) .
+    ({| Discernible.reflection := test.reflection tester D |}).
+
 End Option. (* Option *)
 
 Abbreviation Option := Option.T.
+
+Existing Instance Option.discernible.
 
 (* [Some] and [None] stay reachable unprefixed. An abbreviation is the ctor
  * itself, so [Some a] still serves as a [match] pattern, the implicit [A]

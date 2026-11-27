@@ -14,6 +14,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -158,11 +159,23 @@ Abbreviation le := (Comparable.le compare).
 (* [Bin0 -> Bin0 -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [Bin0 -> Bin0 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Bin0 -> Bin0 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Bin0 -> Bin0 -> Bin0] *)
 Abbreviation min := (Comparable.min compare).
 
 (* [Bin0 -> Bin0 -> Bin0] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Bin0 -> Bin0 -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Bin0 -> Bin0 -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [m - n], [None] when [n] is the greater, as [Nat0.sub] is. *)
 (* [Bin0 -> Bin0 -> Option Bin0] *)

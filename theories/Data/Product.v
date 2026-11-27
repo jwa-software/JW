@@ -6,8 +6,11 @@ From JW Require Import Algebra.Commutative.
 From JW Require Import Algebra.Monoid.
 From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Functor.
 From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Local Unset Elimination Schemes.
 
@@ -119,6 +122,23 @@ Definition direct_product := fun {A : Type} {B : Type}
   match p1, p2 return Product A B with
   | (a1, b1), (a2, b2) => (f1 a1 a2, f2 b1 b2)
   end.
+
+(* Each component passes its own tester. *)
+(* [forall {A : Type} {B : Type} .
+ *    (A -> A -> Bool) -> (B -> B -> Bool) -> Product A B -> Product A B -> Bool]
+ *)
+Definition test := fun {A : Type} {B : Type}
+    (first_tester : A -> A -> Bool) (second_tester : B -> B -> Bool)
+    (p : Product A B) (q : Product A B) .
+  match p, q with
+  | (a1, b1), (a2, b2) => (first_tester a1 a2 && second_tester b1 b2)%bool
+  end.
+
+(* [forall {A : Type} {B : Type} . Product A B -> Product A B -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} {B : Type} . Product A B -> Product A B -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module introduction. (* introduction *)
 
@@ -406,9 +426,83 @@ Qed.
 
 End direct. (* direct *)
 
+Module test. (* test *)
+
+Module local. (* test.local *)
+
+(* Each tester has to decide equality only for the component of [p]. *)
+(* test.local.reflection *)
+Theorem reflection
+  : forall {A : Type} {B : Type}
+        (first_tester : A -> A -> Bool) (second_tester : B -> B -> Bool) (p : Product A B) .
+      (forall (a : A) . first_tester (first p) a = true <-> first p = a) ->
+      (forall (b : B) . second_tester (second p) b = true <-> second p = b) ->
+      forall (q : Product A B) . test first_tester second_tester p q = true <-> p = q.
+Proof.
+  intros A B first_tester second_tester p.
+  match &p with | a1 b1 end.
+  simpl in |- *.
+  intros ha hb q.
+  match &q with | a2 b2 end.
+  let proof ra := &ha &a2.
+  let proof rb := &hb &b2.
+  match (first_tester &a1 &a2) with | | end.
+  - simpl in |- *.
+    let proof ea := modus aequans &ra, (Identity.reflexivity true).
+    divide et impera.
+    + intro e.
+      let proof eb := modus aequans &rb, &e.
+      leibniz &ea, &eb in |- *.
+      quod idem est.
+    + intro e.
+      match (introduction.injectivity &e) with | _ eb end.
+      ipso (modus aequans &rb, &eb).
+  - simpl in |- *.
+    divide et impera.
+    + intro e.
+      ex &e quodlibet.
+    + intro e.
+      match (introduction.injectivity &e) with | ea _ end.
+      let proof t := modus aequans &ra, &ea.
+      ex &t quodlibet.
+Qed.
+
+End local. (* test.local *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} {B : Type}
+        (first_tester : A -> A -> Bool) (second_tester : B -> B -> Bool) .
+      Discernible first_tester -> Discernible second_tester ->
+      forall (p : Product A B) (q : Product A B) .
+        test first_tester second_tester p q = true <-> p = q.
+Proof.
+  intros A B first_tester second_tester DA DB p q.
+  ipso
+    (test.local.reflection &first_tester &second_tester &p
+      (fun (a : A) . Discernible.reflection (first &p) a)
+      (fun (b : B) . Discernible.reflection (second &p) b)
+      &q).
+Qed.
+
+End test. (* test *)
+
+(* A product tells its values apart when both components do. *)
+Instance discernible
+  : forall {A : Type} {B : Type}
+        {first_tester : A -> A -> Bool} {second_tester : B -> B -> Bool} .
+      Discernible first_tester -> Discernible second_tester ->
+      Discernible (test first_tester second_tester) :=
+  fun (A : Type) (B : Type)
+      (first_tester : A -> A -> Bool) (second_tester : B -> B -> Bool)
+      (DA : Discernible first_tester) (DB : Discernible second_tester) .
+    ({| Discernible.reflection := test.reflection first_tester second_tester DA DB |}).
+
 End Product. (* Product *)
 
 Abbreviation Product := Product.T.
+
+Existing Instance Product.discernible.
 
 (* Makes the pair notation declared in [Module Product] usable in every file
  * that imports this one, as [(a, b)%product] or under an opened
