@@ -10,6 +10,7 @@ From JW Require Import Algebra.Ring.
 From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -122,6 +123,20 @@ Definition add_with_carry := fun (carry : Bit) (a : Bit) (b : Bit) .
 (* [Bit -> Bit -> Bit -> Product Bit Bit] *)
 Definition sub_with_borrow := fun (borrow : Bit) (a : Bit) (b : Bit) .
   (or (and (flip a) b) (and borrow (flip (xor a b))), xor (xor a b) borrow)%product.
+
+(* [Bit -> Bit -> Bool] *)
+Definition test := fun (b1 : Bit) (b2 : Bit) .
+  match b1, b2 with
+  | Zero, Zero => true
+  | One,  One  => true
+  | _,    _    => false
+  end.
+
+(* [Bit -> Bit -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Bit -> Bit -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* The literals [0] and [1], one decimal digit each; any other is refused. *)
 (* [Numeral.Unsigned -> Option Bit] *)
@@ -1142,9 +1157,31 @@ End binary. (* conversion.binary *)
 
 End conversion. (* conversion *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (b1 : Bit) (b2 : Bit) . test b1 b2 = true <-> b1 = b2.
+Proof.
+  intros b1 b2.
+  match &b1 with | | end; match &b2 with | | end; simpl in |- *.
+  - divide et impera; intro e; quod idem est.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; quod idem est.
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End Bit. (* Bit *)
 
 Abbreviation Bit := Bit.T.
+
+Existing Instance Bit.discernible.
 
 Export (notations) Bit.
 

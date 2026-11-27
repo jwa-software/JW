@@ -11,6 +11,7 @@ From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Machine.Endian.
@@ -452,6 +453,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Int16 -> Int16 -> Int16] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Int16 -> Int16 -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Int16 -> Int16 -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* A literal of -32768 to 32767, in decimal or hexadecimal, read in binary; any
  * wider is refused.

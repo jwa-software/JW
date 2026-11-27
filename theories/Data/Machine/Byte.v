@@ -9,11 +9,14 @@ From JW Require Import Algebra.Monoid.
 From JW Require Import Algebra.Ring.
 From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Machine.Bit.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
+From JW Require Import Tactics.Modus.
 
 Local Unset Elimination Schemes.
 
@@ -29,6 +32,21 @@ Abbreviation Byte := T.
 Definition Zero :=
   Byte.introduction
     0 0 0 0 0 0 0 0.
+
+(* Bit by bit, the MSB first. *)
+(* [Byte -> Byte -> Bool] *)
+Definition test := fun (x : Byte) (y : Byte) .
+  match x, y with
+  | Byte.introduction x7 x6 x5 x4 x3 x2 x1 x0, Byte.introduction y7 y6 y5 y4 y3 y2 y1 y0 =>
+      (Bit.test x7 y7 && (Bit.test x6 y6 && (Bit.test x5 y5 && (Bit.test x4 y4
+        && (Bit.test x3 y3 && (Bit.test x2 y2 && (Bit.test x1 y1 && Bit.test x0 y0)))))))%bool
+  end.
+
+(* [Byte -> Byte -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Byte -> Byte -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Byte -> Byte] *)
 Definition flip := fun (x : Byte) .
@@ -683,9 +701,72 @@ End right. (* rotation.right *)
 
 End rotation. (* rotation *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (x : Byte) (y : Byte) . test x y = true <-> x = y.
+Proof.
+  intros x y.
+  divide et impera.
+  - intro e.
+    match &x with | x7 x6 x5 x4 x3 x2 x1 x0 end.
+    match &y with | y7 y6 y5 y4 y3 y2 y1 y0 end.
+    simpl in &e.
+    modus aequans (Bool.conjunction.truth.specification _ _), &e |- s7.
+    match &s7 with | e7 r7 end.
+    modus aequans (Bool.conjunction.truth.specification _ _), &r7 |- s6.
+    match &s6 with | e6 r6 end.
+    modus aequans (Bool.conjunction.truth.specification _ _), &r6 |- s5.
+    match &s5 with | e5 r5 end.
+    modus aequans (Bool.conjunction.truth.specification _ _), &r5 |- s4.
+    match &s4 with | e4 r4 end.
+    modus aequans (Bool.conjunction.truth.specification _ _), &r4 |- s3.
+    match &s3 with | e3 r3 end.
+    modus aequans (Bool.conjunction.truth.specification _ _), &r3 |- s2.
+    match &s2 with | e2 r2 end.
+    modus aequans (Bool.conjunction.truth.specification _ _), &r2 |- s1.
+    match &s1 with | e1 e0 end.
+    leibniz
+      (modus aequans (Bit.test.reflection &x7 &y7), &e7),
+      (modus aequans (Bit.test.reflection &x6 &y6), &e6),
+      (modus aequans (Bit.test.reflection &x5 &y5), &e5),
+      (modus aequans (Bit.test.reflection &x4 &y4), &e4),
+      (modus aequans (Bit.test.reflection &x3 &y3), &e3),
+      (modus aequans (Bit.test.reflection &x2 &y2), &e2),
+      (modus aequans (Bit.test.reflection &x1 &y1), &e1),
+      (modus aequans (Bit.test.reflection &x0 &y0), &e0)
+      in |- *.
+    quod idem est.
+  - intro e.
+    leibniz <- &e in |- *.
+    match &x with | x7 x6 x5 x4 x3 x2 x1 x0 end.
+    simpl in |- *.
+    leibniz
+      (modus aequans (Bit.test.reflection &x7 &x7), (Identity.reflexivity &x7)),
+      (modus aequans (Bit.test.reflection &x6 &x6), (Identity.reflexivity &x6)),
+      (modus aequans (Bit.test.reflection &x5 &x5), (Identity.reflexivity &x5)),
+      (modus aequans (Bit.test.reflection &x4 &x4), (Identity.reflexivity &x4)),
+      (modus aequans (Bit.test.reflection &x3 &x3), (Identity.reflexivity &x3)),
+      (modus aequans (Bit.test.reflection &x2 &x2), (Identity.reflexivity &x2)),
+      (modus aequans (Bit.test.reflection &x1 &x1), (Identity.reflexivity &x1)),
+      (modus aequans (Bit.test.reflection &x0 &x0), (Identity.reflexivity &x0))
+      in |- *.
+    simpl in |- *.
+    quod idem est.
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End Byte. (* Byte *)
 
 Abbreviation Byte := Byte.T.
+
+Existing Instance Byte.discernible.
 
 Export (notations) Byte.
 
