@@ -13,6 +13,7 @@ From JW Require Import Data.Discernible.
 From JW Require Import Data.Literal.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Number.Nat0.
+From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
 From JW Require Import Data.Text.Ascii.
 From JW Require Import Data.Text.AsciiStr.
@@ -144,6 +145,25 @@ Fixpoint list_to_ascii (l : List Utf8) : Option (List Ascii) :=
 (* [Utf8Str -> Option AsciiStr] *)
 Definition to_ascii_str := fun (s : Utf8Str) .
   Option.map AsciiStr.introduction (list_to_ascii (to_list s)).
+
+(* The digits as the characters [0] to [9], the most significant first. *)
+(* [Numeral.Decimal.Digits -> Utf8Str] *)
+Definition from_decimal := fun (d : Numeral.Decimal.Digits) .
+  Utf8Str.introduction
+    ((fix go (d : Numeral.Decimal.Digits) : List Utf8 :=
+        match d with
+        | Numeral.Decimal.Digits.End      => []
+        | Numeral.Decimal.Digits.Zero d'  => "0"%u8c :: go d'
+        | Numeral.Decimal.Digits.One d'   => "1"%u8c :: go d'
+        | Numeral.Decimal.Digits.Two d'   => "2"%u8c :: go d'
+        | Numeral.Decimal.Digits.Three d' => "3"%u8c :: go d'
+        | Numeral.Decimal.Digits.Four d'  => "4"%u8c :: go d'
+        | Numeral.Decimal.Digits.Five d'  => "5"%u8c :: go d'
+        | Numeral.Decimal.Digits.Six d'   => "6"%u8c :: go d'
+        | Numeral.Decimal.Digits.Seven d' => "7"%u8c :: go d'
+        | Numeral.Decimal.Digits.Eight d' => "8"%u8c :: go d'
+        | Numeral.Decimal.Digits.Nine d'  => "9"%u8c :: go d'
+        end) d).
 
 (* Every character of [s] by [Utf8.to_upper]. *)
 (* [Utf8Str -> Utf8Str] *)

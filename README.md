@@ -71,6 +71,7 @@ Every theory is built with `-noinit`, so **Rocq's prelude is never loaded**: a f
 - [Text](docs/text.md): the characters `Ascii` and `Utf8`, the strings `AsciiStr` and `Utf8Str`, their order and case, the code points of `Utf8`, indexing and substrings of the strings, and how a string literal is read.
 - [Calendar](docs/calendar.md): the months, the weekdays, the proleptic Gregorian `Date` that can only hold a real date, the leap rule, the day number counted from 0001-01-01 and back, the weekday of a date, the order of dates, day, month and year arithmetic, the Unix day, and the ISO 8601 week date.
 - [Collections](docs/collections.md): the containers `List`, `NonEmptyList` and `BinaryTree`, their operations and laws, the conversions to `List`, the search tree `BST`, the balanced search tree `AVL`, the set `SortedSet`, and the interfaces `Functor`, `Sized` and `Membership`.
+- [JSON](docs/json.md): `Json`, a JSON value with numbers as exact decimals and objects as ordered lists of members, its accessors and induction, its equality, and the generator that writes it as JSON text.
 - [Extraction](docs/extraction.md): the library extracted to OCaml, what the extracted code looks like, and the test that runs it.
 - [Layout](docs/layout.md): the layers, their directories and what each depends on.
 

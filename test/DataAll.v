@@ -1222,3 +1222,204 @@ Definition data_all_delivers_numeral_fractional_discernible
       /\ (Numeral.Fractional.discern a b = true <-> ~ (a = b))
   := fun (a : Numeral.Fractional) (b : Numeral.Fractional) .
        conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_json
+  : Json
+  := Json.Object
+       (("a"%u8,
+         Json.Array
+           (Json.Null
+             :: Json.Boolean true
+             :: Json.Number 15%b_decimal (- 1%b0_decimal)%b_signed
+             :: Json.String "b"%u8
+             :: [])%list)%product
+         :: [])%list.
+
+Definition data_all_delivers_json_induction
+  : forall (P : Json -> Prop) .
+      P Json.Null ->
+      (forall (b : Bool) . P (Json.Boolean b)) ->
+      (forall (mantissa : SignedBin) (exponent : SignedBin) .
+        P (Json.Number mantissa exponent)) ->
+      (forall (s : Utf8Str) . P (Json.String s)) ->
+      (forall (l : List Json) . List.All P l -> P (Json.Array l)) ->
+      (forall (l : List (Utf8Str * Json)) .
+        List.All (fun (p : Utf8Str * Json) . P (Product.second p)) l -> P (Json.Object l)) ->
+      (forall (j : Json) . P j)
+  := Json.induction.
+
+Definition data_all_delivers_json_null_specification
+  : forall (j : Json) . Json.is_null j = true <-> j = Json.Null
+  := Json.null.specification.
+
+Definition data_all_delivers_json_boolean_injectivity
+  : forall (b1 : Bool) (b2 : Bool) . Json.Boolean b1 = Json.Boolean b2 -> b1 = b2
+  := @Json.boolean.injectivity.
+
+Definition data_all_delivers_json_boolean_specification
+  : forall (j : Json) (b : Bool) . Json.boolean j = Some b <-> j = Json.Boolean b
+  := Json.boolean.specification.
+
+Definition data_all_delivers_json_number_injectivity
+  : forall (mantissa1 : SignedBin) (exponent1 : SignedBin)
+        (mantissa2 : SignedBin) (exponent2 : SignedBin) .
+      Json.Number mantissa1 exponent1 = Json.Number mantissa2 exponent2 ->
+      mantissa1 = mantissa2 /\ exponent1 = exponent2
+  := @Json.number.injectivity.
+
+Definition data_all_delivers_json_number_specification
+  : forall (j : Json) (mantissa : SignedBin) (exponent : SignedBin) .
+      Json.number j = Some (mantissa, exponent)%product <-> j = Json.Number mantissa exponent
+  := Json.number.specification.
+
+Definition data_all_delivers_json_string_injectivity
+  : forall (s1 : Utf8Str) (s2 : Utf8Str) . Json.String s1 = Json.String s2 -> s1 = s2
+  := @Json.string.injectivity.
+
+Definition data_all_delivers_json_string_specification
+  : forall (j : Json) (s : Utf8Str) . Json.string j = Some s <-> j = Json.String s
+  := Json.string.specification.
+
+Definition data_all_delivers_json_array_injectivity
+  : forall (l1 : List Json) (l2 : List Json) . Json.Array l1 = Json.Array l2 -> l1 = l2
+  := @Json.array.injectivity.
+
+Definition data_all_delivers_json_array_specification
+  : forall (j : Json) (l : List Json) . Json.array j = Some l <-> j = Json.Array l
+  := Json.array.specification.
+
+Definition data_all_delivers_json_object_injectivity
+  : forall (l1 : List (Utf8Str * Json)) (l2 : List (Utf8Str * Json)) .
+      Json.Object l1 = Json.Object l2 -> l1 = l2
+  := @Json.object.injectivity.
+
+Definition data_all_delivers_json_object_specification
+  : forall (j : Json) (l : List (Utf8Str * Json)) .
+      Json.object j = Some l <-> j = Json.Object l
+  := Json.object.specification.
+
+Definition data_all_delivers_json_is_null_of_null
+  : Json.is_null Json.Null = true
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_is_null_of_a_boolean
+  : Json.is_null (Json.Boolean false) = false
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_boolean_of_a_boolean
+  : Json.boolean (Json.Boolean true) = Some true
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_boolean_of_null
+  : Json.boolean Json.Null = None
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_number_of_a_number
+  : Json.number (Json.Number 15%b_decimal (- 1%b0_decimal)%b_signed)
+    = Some (SignedBin.Positive 15%b_decimal, (- 1%b0_decimal)%b_signed)%product
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_string_of_a_string
+  : Json.string (Json.String "b"%u8) = Some "b"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_array_of_an_array
+  : Json.array (Json.Array (Json.Null :: [])%list) = Some (Json.Null :: [])%list
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_array_of_an_object
+  : Json.array (Json.Object []%list) = None
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_object_of_an_object
+  : Json.object (Json.Object (("a"%u8, Json.Null)%product :: [])%list)
+    = Some (("a"%u8, Json.Null)%product :: [])%list
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_json_test_reflection
+  : forall (j : Json) (k : Json) . Json.test j k = true <-> j = k
+  := Json.test.reflection.
+
+Definition data_all_delivers_json_discernible
+  : forall (a : Json) (b : Json) .
+      (Json.equivalent a b = true <-> a = b) /\ (Json.discern a b = true <-> ~ (a = b))
+  := fun (a : Json) (b : Json) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_computes_json_equivalent_of_one_value
+  : Json.equivalent data_all_delivers_json data_all_delivers_json = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_discern_of_two_kinds
+  : Json.discern Json.Null (Json.Boolean false) = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_discern_of_two_forms_of_a_number
+  : Json.discern
+      (Json.Number 15%b_decimal (- 1%b0_decimal)%b_signed)
+      (Json.Number 150%b_decimal (- 2%b0_decimal)%b_signed)
+    = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_discern_of_two_orders_of_members
+  : Json.discern
+      (Json.Object (("a"%u8, Json.Null)%product :: ("b"%u8, Json.Null)%product :: [])%list)
+      (Json.Object (("b"%u8, Json.Null)%product :: ("a"%u8, Json.Null)%product :: [])%list)
+    = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_equivalent_in_a_list
+  : List.equivalent (Json.Null :: Json.Boolean true :: [])%list
+      (Json.Null :: Json.Boolean true :: [])%list
+    = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_utf8_str_from_decimal
+  : Utf8Str.from_decimal (Bin.to_decimal 1111%b) = "15"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str
+  : Json.to_utf8_str data_all_delivers_json = "{""a"":[null,true,15e-1,""b""]}"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_numbers
+  : Json.to_utf8_str
+      (Json.Array
+        (Json.Number 42%b_decimal 0%b_signed
+          :: Json.Number (- 7%b0_decimal)%b_signed 3%b_decimal
+          :: Json.Number 0%b_signed 0%b_signed
+          :: [])%list)
+    = "[42,-7e3,0]"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_empty_containers
+  : Json.to_utf8_str
+      (Json.Object
+        (("x"%u8, Json.Array []%list)%product
+          :: ("y"%u8, Json.Object []%list)%product
+          :: [])%list)
+    = "{""x"":[],""y"":{}}"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_escapes
+  : Json.to_utf8_str (Json.String "a""b\c/"%u8) = """a\""b\\c/"""%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_control_characters
+  : Json.to_utf8_str
+      (Json.String
+        (Utf8Str.from_list
+          (Utf8.from_ascii (Ascii.from_byte 0x0A%byte)
+            :: Utf8.from_ascii (Ascii.from_byte 0x01%byte)
+            :: Utf8.from_ascii (Ascii.from_byte 0x1F%byte)
+            :: [])%list))
+    = """\n\u0001\u001f"""%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_a_character_past_ascii
+  : Json.to_utf8_str
+      (Json.String (Utf8Str.from_list (Utf8.from_ascii (Ascii.from_byte 0xE9%byte) :: [])%list))
+    = (""""
+       ++ Utf8Str.from_list (Utf8.from_ascii (Ascii.from_byte 0xE9%byte) :: [])%list
+       ++ """")%u8
+  := Identity.reflexivity _.

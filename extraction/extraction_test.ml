@@ -127,6 +127,35 @@ let iso_week_date_round_trip y m d =
   | None -> None
 ;;
 
+(* A byte as its eight bits, the most significant first, and back. *)
+let byte_of_char c =
+  let bit i = if (Char.code c lsr i) land 1 = 1 then Bit.One else Bit.Zero in
+  Byte.Coq_introduction (bit 7, bit 6, bit 5, bit 4, bit 3, bit 2, bit 1, bit 0)
+;;
+
+let char_of_byte (Byte.Coq_introduction (b7, b6, b5, b4, b3, b2, b1, b0)) =
+  let bit b = if b = Bit.One then 1 else 0 in
+  Char.chr
+    (Stdlib.List.fold_left
+       (fun n b -> (2 * n) + bit b)
+       0
+       [ b7; b6; b5; b4; b3; b2; b1; b0 ])
+;;
+
+(* An OCaml string as the [Utf8Str] its bytes spell, and back. *)
+let utf8_str s =
+  match
+    Utf8Str.from_bytes
+      (Stdlib.List.map byte_of_char (Stdlib.List.of_seq (String.to_seq s)))
+  with
+  | Some x -> x
+  | None -> failwith ("not UTF-8: " ^ s)
+;;
+
+let string_of_utf8_str s =
+  String.of_seq (Stdlib.List.to_seq (Stdlib.List.map char_of_byte (Utf8Str.to_bytes s)))
+;;
+
 (* [JW] has a [List] module of its own, which [open JW] puts in front of
    OCaml's. *)
 let ints l = Stdlib.List.map int_of_nat0 l
@@ -296,4 +325,31 @@ let () =
   check
     "Int64.add_with_overflow 9223372036854775806 1"
     (flag = Bit.Zero && Int64.to_b_signed sum = SignedBin.Positive (ones 63))
+;;
+
+let () =
+  let value =
+    Json.Object
+      [ ( utf8_str "a"
+        , Json.Array
+            [ Json.Null
+            ; Json.Boolean true
+            ; Json.Number (signed_bin 15, signed_bin (-1))
+            ; Json.String (utf8_str "b")
+            ] )
+      ]
+  in
+  check
+    "Json.to_utf8_str"
+    (string_of_utf8_str (Json.to_utf8_str value) = {|{"a":[null,true,15e-1,"b"]}|});
+  check
+    "Json.to_utf8_str, escapes"
+    (string_of_utf8_str (Json.to_utf8_str (Json.String (utf8_str "a\"b\\c\n")))
+     = {|"a\"b\\c\n"|});
+  check
+    "Json.to_utf8_str, a character past ASCII"
+    (string_of_utf8_str (Json.to_utf8_str (Json.String (utf8_str "\xc3\xa9")))
+     = "\"\xc3\xa9\"");
+  check "Discernible.equivalent Json.test" (Discernible.equivalent Json.test value value);
+  check "Discernible.discern Json.test" (Discernible.discern Json.test value Json.Null)
 ;;
