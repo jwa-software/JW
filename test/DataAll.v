@@ -742,3 +742,386 @@ Definition data_all_delivers_iso_week_date_eq_min_max
   := fun (m : IsoWeekDate) (n : IsoWeekDate) .
        conjoin (Comparable.comparison.equality.reflection m n),
          (conjoin (Comparable.minimum.commutativity m n), (Comparable.maximum.commutativity m n)).
+
+Definition data_all_delivers_discernible_equivalence_reflection
+  : forall (A : Type) (test : A -> A -> Bool) (D : Discernible test) (a : A) (b : A) .
+      Discernible.equivalent a b = true <-> a = b
+  := fun (A : Type) (test : A -> A -> Bool) (D : Discernible test) .
+       Discernible.equivalence.reflection.
+
+Definition data_all_delivers_discernible_equivalence_reflexivity
+  : forall (A : Type) (test : A -> A -> Bool) (D : Discernible test) (a : A) .
+      Discernible.equivalent a a = true
+  := fun (A : Type) (test : A -> A -> Bool) (D : Discernible test) .
+       Discernible.equivalence.reflexivity.
+
+Definition data_all_delivers_discernible_equivalence_refutation
+  : forall (A : Type) (test : A -> A -> Bool) (D : Discernible test) (a : A) (b : A) .
+      Discernible.equivalent a b = false <-> ~ (a = b)
+  := fun (A : Type) (test : A -> A -> Bool) (D : Discernible test) .
+       Discernible.equivalence.refutation.
+
+Definition data_all_delivers_discernible_equivalence_symmetry
+  : forall (A : Type) (test : A -> A -> Bool) (D : Discernible test) (a : A) (b : A) .
+      Discernible.equivalent a b = Discernible.equivalent b a
+  := fun (A : Type) (test : A -> A -> Bool) (D : Discernible test) .
+       Discernible.equivalence.symmetry.
+
+Definition data_all_delivers_discernible_discernment_complement
+  : forall (A : Type) (test : A -> A -> Bool) (D : Discernible test) (a : A) (b : A) .
+      Discernible.discern a b = Bool.negate (Discernible.equivalent a b)
+  := fun (A : Type) (test : A -> A -> Bool) (D : Discernible test) .
+       Discernible.discernment.complement.
+
+Definition data_all_delivers_discernible_discernment_reflection
+  : forall (A : Type) (test : A -> A -> Bool) (D : Discernible test) (a : A) (b : A) .
+      Discernible.discern a b = true <-> ~ (a = b)
+  := fun (A : Type) (test : A -> A -> Bool) (D : Discernible test) .
+       Discernible.discernment.reflection.
+
+Definition data_all_delivers_discernible_discernment_refutation
+  : forall (A : Type) (test : A -> A -> Bool) (D : Discernible test) (a : A) (b : A) .
+      Discernible.discern a b = false <-> a = b
+  := fun (A : Type) (test : A -> A -> Bool) (D : Discernible test) .
+       Discernible.discernment.refutation.
+
+Definition data_all_delivers_bool_conjunction_truth_specification
+  : forall (b1 : Bool) (b2 : Bool) . Bool.and b1 b2 = true <-> b1 = true /\ b2 = true
+  := Bool.conjunction.truth.specification.
+
+Definition data_all_delivers_list_test_local_reflection
+  : forall (A : Type) (tester : A -> A -> Bool) (l : List A) .
+      List.All (fun (a : A) . forall (b : A) . tester a b = true <-> a = b) l ->
+      forall (m : List A) . List.test tester l m = true <-> l = m
+  := @List.test.local.reflection.
+
+Definition data_all_delivers_product_test_local_reflection
+  : forall (A : Type) (B : Type)
+        (first_tester : A -> A -> Bool) (second_tester : B -> B -> Bool) (p : A * B) .
+      (forall (a : A) . first_tester (Product.first p) a = true <-> Product.first p = a) ->
+      (forall (b : B) . second_tester (Product.second p) b = true <-> Product.second p = b) ->
+      forall (q : A * B) . Product.test first_tester second_tester p q = true <-> p = q
+  := @Product.test.local.reflection.
+
+Definition data_all_computes_equivalent_of_two_numbers
+  : Nat0.equivalent Nat0.Zero Nat0.Zero = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_discern_of_two_numbers
+  : Nat0.discern Nat0.Zero (Nat0.Positive Nat.One) = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_equivalent_with_its_tester
+  : Discernible.equivalent (test := Nat0.eq) Nat0.Zero Nat0.Zero = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_equivalent_of_two_lists
+  : List.equivalent (true :: false :: [])%list (true :: false :: [])%list = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_discern_of_two_lists_of_lists
+  : List.discern ((true :: [])%list :: [])%list ((false :: [])%list :: [])%list = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_equivalent_of_two_pairs
+  : Product.equivalent (true, Nat0.Zero)%product (true, Nat0.Zero)%product = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_equivalent_of_two_options
+  : Option.equivalent (Some true) None = false
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_bool_discernible
+  : forall (a : Bool) (b : Bool) .
+      (Bool.equivalent a b = true <-> a = b) /\ (Bool.discern a b = true <-> ~ (a = b))
+  := fun (a : Bool) (b : Bool) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_comparison_discernible
+  : forall (a : Comparison) (b : Comparison) .
+      (Comparison.equivalent a b = true <-> a = b)
+      /\ (Comparison.discern a b = true <-> ~ (a = b))
+  := fun (a : Comparison) (b : Comparison) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_unit_discernible
+  : forall (a : Unit) (b : Unit) .
+      (Unit.equivalent a b = true <-> a = b) /\ (Unit.discern a b = true <-> ~ (a = b))
+  := fun (a : Unit) (b : Unit) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_empty_discernible
+  : forall (a : Empty) (b : Empty) .
+      (Empty.equivalent a b = true <-> a = b) /\ (Empty.discern a b = true <-> ~ (a = b))
+  := fun (a : Empty) (b : Empty) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_endian_discernible
+  : forall (a : Endian) (b : Endian) .
+      (Endian.equivalent a b = true <-> a = b) /\ (Endian.discern a b = true <-> ~ (a = b))
+  := fun (a : Endian) (b : Endian) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_bit_discernible
+  : forall (a : Bit) (b : Bit) .
+      (Bit.equivalent a b = true <-> a = b) /\ (Bit.discern a b = true <-> ~ (a = b))
+  := fun (a : Bit) (b : Bit) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_byte_discernible
+  : forall (a : Byte) (b : Byte) .
+      (Byte.equivalent a b = true <-> a = b) /\ (Byte.discern a b = true <-> ~ (a = b))
+  := fun (a : Byte) (b : Byte) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_hword_discernible
+  : forall (a : HWord) (b : HWord) .
+      (HWord.equivalent a b = true <-> a = b) /\ (HWord.discern a b = true <-> ~ (a = b))
+  := fun (a : HWord) (b : HWord) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_word_discernible
+  : forall (a : Word) (b : Word) .
+      (Word.equivalent a b = true <-> a = b) /\ (Word.discern a b = true <-> ~ (a = b))
+  := fun (a : Word) (b : Word) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_dword_discernible
+  : forall (a : DWord) (b : DWord) .
+      (DWord.equivalent a b = true <-> a = b) /\ (DWord.discern a b = true <-> ~ (a = b))
+  := fun (a : DWord) (b : DWord) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_qword_discernible
+  : forall (a : QWord) (b : QWord) .
+      (QWord.equivalent a b = true <-> a = b) /\ (QWord.discern a b = true <-> ~ (a = b))
+  := fun (a : QWord) (b : QWord) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_source_byte_discernible
+  : forall (a : SourceByte) (b : SourceByte) .
+      (SourceByte.equivalent a b = true <-> a = b)
+      /\ (SourceByte.discern a b = true <-> ~ (a = b))
+  := fun (a : SourceByte) (b : SourceByte) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_nat_discernible
+  : forall (a : Nat) (b : Nat) .
+      (Nat.equivalent a b = true <-> a = b) /\ (Nat.discern a b = true <-> ~ (a = b))
+  := fun (a : Nat) (b : Nat) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_nat0_discernible
+  : forall (a : Nat0) (b : Nat0) .
+      (Nat0.equivalent a b = true <-> a = b) /\ (Nat0.discern a b = true <-> ~ (a = b))
+  := fun (a : Nat0) (b : Nat0) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_integer_discernible
+  : forall (a : Integer) (b : Integer) .
+      (Integer.equivalent a b = true <-> a = b) /\ (Integer.discern a b = true <-> ~ (a = b))
+  := fun (a : Integer) (b : Integer) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_rational_discernible
+  : forall (a : Rational) (b : Rational) .
+      (Rational.equivalent a b = true <-> a = b) /\ (Rational.discern a b = true <-> ~ (a = b))
+  := fun (a : Rational) (b : Rational) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_bin_discernible
+  : forall (a : Bin) (b : Bin) .
+      (Bin.equivalent a b = true <-> a = b) /\ (Bin.discern a b = true <-> ~ (a = b))
+  := fun (a : Bin) (b : Bin) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_bin0_discernible
+  : forall (a : Bin0) (b : Bin0) .
+      (Bin0.equivalent a b = true <-> a = b) /\ (Bin0.discern a b = true <-> ~ (a = b))
+  := fun (a : Bin0) (b : Bin0) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_signed_bin_discernible
+  : forall (a : SignedBin) (b : SignedBin) .
+      (SignedBin.equivalent a b = true <-> a = b) /\ (SignedBin.discern a b = true <-> ~ (a = b))
+  := fun (a : SignedBin) (b : SignedBin) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_uint8_discernible
+  : forall (a : UInt8) (b : UInt8) .
+      (UInt8.equivalent a b = true <-> a = b) /\ (UInt8.discern a b = true <-> ~ (a = b))
+  := fun (a : UInt8) (b : UInt8) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_uint16_discernible
+  : forall (a : UInt16) (b : UInt16) .
+      (UInt16.equivalent a b = true <-> a = b) /\ (UInt16.discern a b = true <-> ~ (a = b))
+  := fun (a : UInt16) (b : UInt16) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_uint32_discernible
+  : forall (a : UInt32) (b : UInt32) .
+      (UInt32.equivalent a b = true <-> a = b) /\ (UInt32.discern a b = true <-> ~ (a = b))
+  := fun (a : UInt32) (b : UInt32) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_uint64_discernible
+  : forall (a : UInt64) (b : UInt64) .
+      (UInt64.equivalent a b = true <-> a = b) /\ (UInt64.discern a b = true <-> ~ (a = b))
+  := fun (a : UInt64) (b : UInt64) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_int8_discernible
+  : forall (a : Int8) (b : Int8) .
+      (Int8.equivalent a b = true <-> a = b) /\ (Int8.discern a b = true <-> ~ (a = b))
+  := fun (a : Int8) (b : Int8) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_int16_discernible
+  : forall (a : Int16) (b : Int16) .
+      (Int16.equivalent a b = true <-> a = b) /\ (Int16.discern a b = true <-> ~ (a = b))
+  := fun (a : Int16) (b : Int16) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_int32_discernible
+  : forall (a : Int32) (b : Int32) .
+      (Int32.equivalent a b = true <-> a = b) /\ (Int32.discern a b = true <-> ~ (a = b))
+  := fun (a : Int32) (b : Int32) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_int64_discernible
+  : forall (a : Int64) (b : Int64) .
+      (Int64.equivalent a b = true <-> a = b) /\ (Int64.discern a b = true <-> ~ (a = b))
+  := fun (a : Int64) (b : Int64) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_ascii_discernible
+  : forall (a : Ascii) (b : Ascii) .
+      (Ascii.equivalent a b = true <-> a = b) /\ (Ascii.discern a b = true <-> ~ (a = b))
+  := fun (a : Ascii) (b : Ascii) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_ascii_str_discernible
+  : forall (a : AsciiStr) (b : AsciiStr) .
+      (AsciiStr.equivalent a b = true <-> a = b) /\ (AsciiStr.discern a b = true <-> ~ (a = b))
+  := fun (a : AsciiStr) (b : AsciiStr) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_utf8_discernible
+  : forall (a : Utf8) (b : Utf8) .
+      (Utf8.equivalent a b = true <-> a = b) /\ (Utf8.discern a b = true <-> ~ (a = b))
+  := fun (a : Utf8) (b : Utf8) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_utf8_str_discernible
+  : forall (a : Utf8Str) (b : Utf8Str) .
+      (Utf8Str.equivalent a b = true <-> a = b) /\ (Utf8Str.discern a b = true <-> ~ (a = b))
+  := fun (a : Utf8Str) (b : Utf8Str) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_kleene3_discernible
+  : forall (a : Kleene3) (b : Kleene3) .
+      (Kleene3.equivalent a b = true <-> a = b) /\ (Kleene3.discern a b = true <-> ~ (a = b))
+  := fun (a : Kleene3) (b : Kleene3) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_month_discernible
+  : forall (a : Month) (b : Month) .
+      (Month.equivalent a b = true <-> a = b) /\ (Month.discern a b = true <-> ~ (a = b))
+  := fun (a : Month) (b : Month) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_weekday_discernible
+  : forall (a : Weekday) (b : Weekday) .
+      (Weekday.equivalent a b = true <-> a = b) /\ (Weekday.discern a b = true <-> ~ (a = b))
+  := fun (a : Weekday) (b : Weekday) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_date_discernible
+  : forall (a : Date) (b : Date) .
+      (Date.equivalent a b = true <-> a = b) /\ (Date.discern a b = true <-> ~ (a = b))
+  := fun (a : Date) (b : Date) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_iso_week_date_discernible
+  : forall (a : IsoWeekDate) (b : IsoWeekDate) .
+      (IsoWeekDate.equivalent a b = true <-> a = b)
+      /\ (IsoWeekDate.discern a b = true <-> ~ (a = b))
+  := fun (a : IsoWeekDate) (b : IsoWeekDate) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_list_discernible
+  : forall (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : List A) (b : List A) .
+      (List.equivalent a b = true <-> a = b) /\ (List.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : List A) (b : List A) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_non_empty_list_discernible
+  : forall (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : NonEmptyList A) (b : NonEmptyList A) .
+      (NonEmptyList.equivalent a b = true <-> a = b)
+      /\ (NonEmptyList.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : NonEmptyList A) (b : NonEmptyList A) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_option_discernible
+  : forall (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : Option A) (b : Option A) .
+      (Option.equivalent a b = true <-> a = b) /\ (Option.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : Option A) (b : Option A) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_binary_tree_discernible
+  : forall (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : BinaryTree A) (b : BinaryTree A) .
+      (BinaryTree.equivalent a b = true <-> a = b)
+      /\ (BinaryTree.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : BinaryTree A) (b : BinaryTree A) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_avl_discernible
+  : forall (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : AVL A) (b : AVL A) .
+      (AVL.equivalent a b = true <-> a = b) /\ (AVL.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester)
+        (a : AVL A) (b : AVL A) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_sorted_set_discernible
+  : forall (A : Type) (cmp : A -> A -> Comparison) (tester : A -> A -> Bool)
+        (D : Discernible tester) (a : SortedSet cmp) (b : SortedSet cmp) .
+      (SortedSet.equivalent a b = true <-> a = b)
+      /\ (SortedSet.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (cmp : A -> A -> Comparison) (tester : A -> A -> Bool)
+        (D : Discernible tester) (a : SortedSet cmp) (b : SortedSet cmp) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_product_discernible
+  : forall (A : Type) (B : Type)
+        (first_tester : A -> A -> Bool) (second_tester : B -> B -> Bool)
+        (DA : Discernible first_tester) (DB : Discernible second_tester)
+        (a : A * B) (b : A * B) .
+      (Product.equivalent a b = true <-> a = b) /\ (Product.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (B : Type)
+        (first_tester : A -> A -> Bool) (second_tester : B -> B -> Bool)
+        (DA : Discernible first_tester) (DB : Discernible second_tester)
+        (a : A * B) (b : A * B) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_coproduct_discernible
+  : forall (A : Type) (B : Type)
+        (left_tester : A -> A -> Bool) (right_tester : B -> B -> Bool)
+        (DA : Discernible left_tester) (DB : Discernible right_tester)
+        (a : Coproduct A B) (b : Coproduct A B) .
+      (Coproduct.equivalent a b = true <-> a = b)
+      /\ (Coproduct.discern a b = true <-> ~ (a = b))
+  := fun (A : Type) (B : Type)
+        (left_tester : A -> A -> Bool) (right_tester : B -> B -> Bool)
+        (DA : Discernible left_tester) (DB : Discernible right_tester)
+        (a : Coproduct A B) (b : Coproduct A B) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
