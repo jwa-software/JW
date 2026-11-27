@@ -9,6 +9,7 @@ From JW Require Import Data.Assert.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Literal.
 From JW Require Import Data.Machine.Byte.
 From JW Require Import Data.Number.Nat0.
@@ -217,6 +218,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Utf8Str -> Utf8Str -> Utf8Str] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Utf8Str -> Utf8Str -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Utf8Str -> Utf8Str -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module conversion. (* conversion *)
 
