@@ -441,6 +441,12 @@ Abbreviation le := (Comparable.le compare).
 (* [Int16 -> Int16 -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [Int16 -> Int16 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Int16 -> Int16 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Int16 -> Int16 -> Int16] *)
 Abbreviation min := (Comparable.min compare).
 

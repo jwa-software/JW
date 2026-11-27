@@ -706,6 +706,12 @@ Abbreviation le := (Comparable.le compare).
 (* [Int64 -> Int64 -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [Int64 -> Int64 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Int64 -> Int64 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Int64 -> Int64 -> Int64] *)
 Abbreviation min := (Comparable.min compare).
 
