@@ -48,6 +48,7 @@ Extraction "JW.ml"
   JW.Data.Calendar.Gregorian.IsoWeekDate.IsoWeekDate
   JW.Data.Comparable.Comparable
   JW.Data.Coproduct.Coproduct
+  JW.Data.Discernible.Discernible
   JW.Data.Option.Option
   JW.Data.Product.Product
   JW.Data.Number.Nat.Nat
@@ -83,4 +84,5 @@ Extraction "JW.ml"
   JW.Data.Text.Ascii.Ascii
   JW.Data.Text.AsciiStr.AsciiStr
   JW.Data.Text.Utf8.Utf8
-  JW.Data.Text.Utf8Str.Utf8Str.
+  JW.Data.Text.Utf8Str.Utf8Str
+  JW.Data.Json.Json.
