@@ -10,6 +10,7 @@ From JW Require Import Data.Calendar.Gregorian.Date.
 From JW Require Import Data.Calendar.Month.
 From JW Require Import Data.Calendar.Weekday.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Option.
@@ -120,6 +121,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [IsoWeekDate -> IsoWeekDate -> IsoWeekDate] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [IsoWeekDate -> IsoWeekDate -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [IsoWeekDate -> IsoWeekDate -> Prop] *)
 Definition LessThan := fun (x1 : IsoWeekDate) (x2 : IsoWeekDate) .

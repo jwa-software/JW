@@ -9,6 +9,7 @@ From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Calendar.Month.
 From JW Require Import Data.Calendar.Weekday.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Number.Binary.SignedBin.
@@ -360,6 +361,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Date -> Date -> Date] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Date -> Date -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [x1] comes before [x2] in the order of time. *)
 (* [Date -> Date -> Prop] *)

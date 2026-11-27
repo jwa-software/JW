@@ -5,6 +5,7 @@
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Option.
@@ -139,6 +140,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Weekday -> Weekday -> Weekday] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Weekday -> Weekday -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Weekday -> Weekday -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Weekday -> Weekday -> Prop] *)
 Definition LessThan := fun (w1 : Weekday) (w2 : Weekday) .
