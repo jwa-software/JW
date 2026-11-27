@@ -122,6 +122,12 @@ Abbreviation le := (Comparable.le compare).
 (* [Ascii -> Ascii -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [Ascii -> Ascii -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Ascii -> Ascii -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Ascii -> Ascii -> Ascii] *)
 Abbreviation min := (Comparable.min compare).
 

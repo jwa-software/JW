@@ -328,6 +328,12 @@ Abbreviation le := (Comparable.le compare).
 (* [Utf8 -> Utf8 -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [Utf8 -> Utf8 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Utf8 -> Utf8 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Utf8 -> Utf8 -> Utf8] *)
 Abbreviation min := (Comparable.min compare).
 
