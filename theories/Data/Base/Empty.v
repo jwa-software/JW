@@ -3,6 +3,8 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 
 Local Unset Elimination Schemes.
 
@@ -31,6 +33,34 @@ Definition induction
 Definition elimination := fun (A : Type) (e : Empty) .
   match e return A with | end.
 
+(* There is no element to compare, so no answer is ever given. *)
+(* [Empty -> Empty -> Bool] *)
+Definition test := fun (e1 : Empty) (e2 : Empty) . elimination Bool e1.
+
+(* [Empty -> Empty -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Empty -> Empty -> Bool] *)
+Abbreviation discern := Discernible.discern.
+
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (e1 : Empty) (e2 : Empty) . test e1 e2 = true <-> e1 = e2.
+Proof.
+  intros e1 e2.
+  ex &e1 quodlibet.
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End Empty.
 
 Abbreviation Empty := Empty.T.
+
+Existing Instance Empty.discernible.

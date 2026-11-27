@@ -3,6 +3,8 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 
 Local Unset Elimination Schemes.
 
@@ -44,6 +46,21 @@ Definition transpose := fun (c : Comparison) .
   | Gt => Lt
   end.
 
+(* [Comparison -> Comparison -> Bool] *)
+Definition test := fun (c1 : Comparison) (c2 : Comparison) .
+  match c1, c2 with
+  | Lt, Lt => true
+  | Eq, Eq => true
+  | Gt, Gt => true
+  | _,  _  => false
+  end.
+
+(* [Comparison -> Comparison -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Comparison -> Comparison -> Bool] *)
+Abbreviation discern := Discernible.discern.
+
 Module transposition. (* transposition *)
 
 (* transposition.involution *)
@@ -56,6 +73,33 @@ Qed.
 
 End transposition. (* transposition *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (c1 : Comparison) (c2 : Comparison) . test c1 c2 = true <-> c1 = c2.
+Proof.
+  intros c1 c2.
+  match &c1 with | | | end; match &c2 with | | | end; simpl in |- *.
+  - divide et impera; intro e; quod idem est.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; quod idem est.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; quod idem est.
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End Comparison. (* Comparison *)
 
 Abbreviation Comparison := Comparison.T.
+
+Existing Instance Comparison.discernible.
