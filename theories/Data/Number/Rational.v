@@ -12,6 +12,7 @@ From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Integer.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -181,6 +182,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Rational -> Rational -> Rational] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Rational -> Rational -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Integer -> Rational] *)
 Definition from_integer := fun (n : Integer) . make n Nat.One.

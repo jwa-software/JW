@@ -12,6 +12,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
@@ -164,6 +165,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Nat0 -> Nat0 -> Nat0] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Nat0 -> Nat0 -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Nat0 -> Nat0 -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Nat0 -> Nat0 -> Nat0] *)
 Definition saturating_sub := fun (m : Nat0) (n : Nat0) .

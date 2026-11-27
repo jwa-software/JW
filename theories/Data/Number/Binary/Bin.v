@@ -10,6 +10,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
@@ -281,6 +282,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Bin -> Bin -> Bin] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [a - b], [None] unless it is positive, as [Nat.sub] is. *)
 (* [Bin -> Bin -> Option Bin] *)

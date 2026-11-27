@@ -13,6 +13,7 @@ From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Number.Numeral.
@@ -269,6 +270,12 @@ Abbreviation min := (Comparable.min compare).
 
 (* [Integer -> Integer -> Integer] *)
 Abbreviation max := (Comparable.max compare).
+
+(* [Integer -> Integer -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Integer -> Integer -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* [Integer -> Integer -> Prop] *)
 Definition Divides := fun (d : Integer) (n : Integer) . forsome (k : Integer) . d * k = n.
