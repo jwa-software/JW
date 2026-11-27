@@ -6,6 +6,8 @@ From JW Require Import Core.All.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Machine.Byte.
 
+Local Unset Elimination Schemes.
+
 Module SourceByte. (* SourceByte *)
 
 (* A byte of the source text, as the plugin behind [String Notation] hands a

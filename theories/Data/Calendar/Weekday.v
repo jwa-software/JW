@@ -8,6 +8,8 @@ From JW Require Import Data.Number.Binary.Bin0.
 From JW Require Import Data.Option.
 From JW Require Import Tactics.Equation.
 
+Local Unset Elimination Schemes.
+
 (* The seven days of the week, numbered as ISO 8601 does. *)
 Module Weekday. (* Weekday *)
 

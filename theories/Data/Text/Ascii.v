@@ -16,6 +16,8 @@ From JW Require Import Data.Text.SourceByte.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 Module Ascii. (* Ascii *)
 
 (* A character of one byte: codes 0 to 127 are ASCII, and 128 to 255 are

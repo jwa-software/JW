@@ -11,6 +11,8 @@ From JW Require Import Data.Option.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 (* The twelve months of the year. *)
 Module Month. (* Month *)
 

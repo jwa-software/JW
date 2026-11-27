@@ -6,6 +6,8 @@ From JW Require Import Core.Logic.Conditional.
 From JW Require Import Core.Notations.
 From JW Require Import Dialect.All.
 
+Local Unset Elimination Schemes.
+
 Module Biconditional. (* Biconditional *)
 
 Inductive T (P : Prop) (Q : Prop) : Prop :=

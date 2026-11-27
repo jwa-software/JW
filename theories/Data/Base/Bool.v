@@ -10,6 +10,8 @@ From JW Require Import Algebra.Ring.
 From JW Require Import Algebra.Semigroup.
 From JW Require Import Core.All.
 
+Local Unset Elimination Schemes.
+
 Module Bool. (* Bool *)
 
 (* [true] first: [if] takes the first constructor as its [then] branch. *)

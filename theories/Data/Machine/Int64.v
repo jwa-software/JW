@@ -30,6 +30,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 (* A signed integer of sixty-four bits: eight [Byte]s read in two's complement,
  * from -9223372036854775808 (-2^63) to 9223372036854775807 (2^63 - 1), its
  * arithmetic wrapping modulo 18446744073709551616 (2^64). In this file

@@ -29,6 +29,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 Module Nat0. (* Nat0 *)
 
 (* [Positive] wraps a [Nat], so an operation here reduces to the [Nat] one

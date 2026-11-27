@@ -4,5 +4,5 @@
 # NOTE: this pin is deliberate. ocamlformat refuses to run when it disagrees
 # with the installed binary, and a bump reformats the whole tree -- raise it
 # when someone decides to, not when a switch drifts, and check what is current.
-version = 0.29.0
+version = 0.30.0
 profile = janestreet

@@ -13,3 +13,7 @@ Definition core_logic_all_delivers
          (_ : ~ A) (_ : A <-> B) (_ : A -/> B)
          (_ : forsome t . Q t)
          (_ : Falsum) . I.
+
+Definition core_logic_all_delivers_falsum_induction
+  : forall (P : Falsum -> Prop) (f : Falsum) . P f
+  := Falsum.induction.

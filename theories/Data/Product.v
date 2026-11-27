@@ -9,6 +9,8 @@ From JW Require Import Core.All.
 From JW Require Import Data.Functor.
 From JW Require Import Tactics.Equation.
 
+Local Unset Elimination Schemes.
+
 (* Opened for the whole file, so that every definition and law below spells
  * a pair the way a client does.
  *)

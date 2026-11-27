@@ -21,6 +21,8 @@ From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Syllogism.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 Module List. (* List *)
 
 (* A list is empty, or one element in front of a list. [A] is a parameter:

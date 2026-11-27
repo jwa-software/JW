@@ -20,6 +20,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 (* A date of the proleptic Gregorian calendar: the Gregorian leap rule holds
  * for every year, the years count from 1, and day 0 is 0001-01-01.
  *)

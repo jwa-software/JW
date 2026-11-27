@@ -75,6 +75,7 @@ Bare, each is a term: `ipso (modus ponens &hab, &a)`. Followed by `as <p>` or `|
    A step that computes is written out first, with `simpl`, or as the term `simpl &h`, which is `&h` with its type reduced: `leibniz (simpl &e) in |- *`.
 2. **Every refusal says what and where**, in the tactic's own words: `simpl: negate does not occur in h`, `rm: the goal depends on n, so it cannot be cleared`.
 3. **A name of the context is written `&h`**: a hypothesis, a local definition or a type introduced by `intros`. A global name is written bare, and a name being introduced takes no `&` (`intro a`, `let proof x`, the names of a `match` branch). A bare name of the context is accepted by default; `Ltac2 Set Local.checking := Strict` makes every tactic refuse it with `<tactic>: h is in the context; write &h`.
+4. **A type has one eliminator, its `induction`, written by hand.** Each file that declares a type opens with `Local Unset Elimination Schemes.`, so Rocq generates none of its own: `Nat.T_ind` does not exist, and `match ... per Nat.induction` names the only one there is. The flag is local to the file, so your own types keep the eliminators Rocq generates for them.
 
 ---
 

@@ -28,6 +28,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 Module Bin0. (* Bin0 *)
 
 (* [Positive] wraps a [Bin], so addition, multiplication, powers, comparison

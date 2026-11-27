@@ -6,6 +6,8 @@ From JW Require Import Core.All.
 From JW Require Import Data.Functor.
 From JW Require Import Tactics.Equation.
 
+Local Unset Elimination Schemes.
+
 Module Coproduct. (* Coproduct *)
 
 (* A coproduct holds one [A] or one [B], tagged by which. Both are

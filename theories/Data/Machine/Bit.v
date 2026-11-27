@@ -20,6 +20,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 (* A bit is a binary digit, a datum, where a [Bool] is a truth value; the two
  * are separate types so that neither stands where the other is meant, and
  * [from_bool] and [to_bool] cross between them.

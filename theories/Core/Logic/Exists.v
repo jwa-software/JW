@@ -5,6 +5,8 @@
 From JW Require Import Core.Logic.Conditional.
 From JW Require Import Core.Notations.
 
+Local Unset Elimination Schemes.
+
 Module Exists. (* Exists *)
 
 (* [P] is a predicate, not a binder: [forsome x . p] is [Exists (fun x . p)],

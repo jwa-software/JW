@@ -11,6 +11,8 @@ From JW Require Import Core.Logic.Negation.
 From JW Require Import Core.Notations.
 From JW Require Import Dialect.All.
 
+Local Unset Elimination Schemes.
+
 Module Sejunction. (* Sejunction *)
 
 (* Sejunction is exclusive disjunction: one side holds and the other does

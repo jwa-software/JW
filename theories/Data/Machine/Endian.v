@@ -4,6 +4,8 @@
 
 From JW Require Import Core.All.
 
+Local Unset Elimination Schemes.
+
 Module Endian. (* Endian *)
 
 (* The order in which the bytes of a word are laid out: [Little] puts the
