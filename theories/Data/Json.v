@@ -7,9 +7,13 @@ From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Comparable.
 From JW Require Import Data.Discernible.
+From JW Require Import Data.Machine.Bit.
+From JW Require Import Data.Machine.Byte.
+From JW Require Import Data.Number.Binary.Bin.
 From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Option.
 From JW Require Import Data.Product.
+From JW Require Import Data.Text.Utf8.
 From JW Require Import Data.Text.Utf8Str.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
@@ -148,6 +152,110 @@ Abbreviation equivalent := Discernible.equivalent.
 
 (* [Json -> Json -> Bool] *)
 Abbreviation discern := Discernible.discern.
+
+(* A character is matched by its byte, so the bits are written as such. *)
+Local Open Scope jw_bit_scope.
+
+(* [s] between quotation marks, each character escaped as RFC 8259 asks: the
+ * quotation mark, the reverse solidus and the control characters U+0000 to
+ * U+001F, the five that have a short form by it and the others as [\u00xx].
+ *)
+(* [Utf8Str -> Utf8Str] *)
+Definition quote := fun (s : Utf8Str) .
+  ("""" ++
+   List.fold_right
+     (fun (c : Utf8) (rest : Utf8Str) .
+       (match c with
+        | Utf8.OneByte (Byte.introduction 0 0 1 0 0 0 1 0) _ => "\"""
+        | Utf8.OneByte (Byte.introduction 0 1 0 1 1 1 0 0) _ => "\\"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 0 0 0) _ => "\b"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 0 0 1) _ => "\t"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 0 1 0) _ => "\n"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 1 0 0) _ => "\f"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 1 0 1) _ => "\r"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 0 0 0) _ => "\u0000"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 0 0 1) _ => "\u0001"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 0 1 0) _ => "\u0002"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 0 1 1) _ => "\u0003"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 1 0 0) _ => "\u0004"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 1 0 1) _ => "\u0005"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 1 1 0) _ => "\u0006"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 0 1 1 1) _ => "\u0007"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 0 1 1) _ => "\u000b"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 1 1 0) _ => "\u000e"
+        | Utf8.OneByte (Byte.introduction 0 0 0 0 1 1 1 1) _ => "\u000f"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 0 0 0) _ => "\u0010"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 0 0 1) _ => "\u0011"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 0 1 0) _ => "\u0012"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 0 1 1) _ => "\u0013"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 1 0 0) _ => "\u0014"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 1 0 1) _ => "\u0015"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 1 1 0) _ => "\u0016"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 0 1 1 1) _ => "\u0017"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 0 0 0) _ => "\u0018"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 0 0 1) _ => "\u0019"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 0 1 0) _ => "\u001a"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 0 1 1) _ => "\u001b"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 1 0 0) _ => "\u001c"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 1 0 1) _ => "\u001d"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 1 1 0) _ => "\u001e"
+        | Utf8.OneByte (Byte.introduction 0 0 0 1 1 1 1 1) _ => "\u001f"
+        | _ => Utf8Str.from_list (c :: [])%list
+        end) ++ rest)
+     Utf8Str.empty
+     (Utf8Str.to_list s)
+   ++ """")%u8.
+
+(* The JSON text of [j], with no whitespace: an array's elements and an
+ * object's members in their order, a number as its mantissa followed, when
+ * the exponent is not zero, by [e] and the exponent.
+ *)
+(* [Json -> Utf8Str] *)
+Fixpoint to_utf8_str (j : Json) : Utf8Str :=
+  let signed := fun (n : SignedBin) .
+    match n with
+    | SignedBin.Negative p => ("-" ++ Utf8Str.from_decimal (Bin.to_decimal p))%u8
+    | SignedBin.Zero       => "0"%u8
+    | SignedBin.Positive p => Utf8Str.from_decimal (Bin.to_decimal p)
+    end in
+  match j with
+  | Json.Null           => "null"%u8
+  | Json.Boolean b      =>
+      match b with
+      | true  => "true"%u8
+      | false => "false"%u8
+      end
+  | Json.Number m x     =>
+      match x with
+      | SignedBin.Zero => signed m
+      | _              => (signed m ++ "e" ++ signed x)%u8
+      end
+  | Json.String s       => quote s
+  | Json.Array []       => "[]"%u8
+  | Json.Array (a :: l) =>
+      ("[" ++ to_utf8_str a ++
+       (fix others (l : List Json) : Utf8Str :=
+          match l with
+          | []      => "]"%u8
+          | b :: l' => ("," ++ to_utf8_str b ++ others l')%u8
+          end) l)%u8
+  | Json.Object []       => "{}"%u8
+  | Json.Object (p :: l) =>
+      ("{" ++
+       match p with
+       | Product.introduction n v => (quote n ++ ":" ++ to_utf8_str v)%u8
+       end ++
+       (fix others (l : List (Utf8Str * Json)) : Utf8Str :=
+          match l with
+          | []      => "}"%u8
+          | q :: l' =>
+              ("," ++
+               match q with
+               | Product.introduction n v => (quote n ++ ":" ++ to_utf8_str v)%u8
+               end ++
+               others l')%u8
+          end) l)%u8
+  end.
 
 Module null. (* null *)
 
