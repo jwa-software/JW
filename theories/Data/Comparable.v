@@ -73,6 +73,22 @@ Definition lt := fun {A : Type} (compare : A -> A -> Comparison) (m : A) (n : A)
   | Comparison.Gt => false
   end.
 
+(* [forall {A : Type} . (A -> A -> Comparison) -> A -> A -> Bool] *)
+Definition ge := fun {A : Type} (compare : A -> A -> Comparison) (m : A) (n : A) .
+  match compare m n with
+  | Comparison.Lt => false
+  | Comparison.Eq => true
+  | Comparison.Gt => true
+  end.
+
+(* [forall {A : Type} . (A -> A -> Comparison) -> A -> A -> Bool] *)
+Definition gt := fun {A : Type} (compare : A -> A -> Comparison) (m : A) (n : A) .
+  match compare m n with
+  | Comparison.Lt => false
+  | Comparison.Eq => false
+  | Comparison.Gt => true
+  end.
+
 (* [forall {A : Type} . (A -> A -> Comparison) -> A -> A -> A] *)
 Definition min := fun {A : Type} (compare : A -> A -> Comparison) (m : A) (n : A) .
   match compare m n with
@@ -429,6 +445,21 @@ Proof.
   match (compare &m &n) with | | | end; simpl in |- *; quod idem est.
 Qed.
 
+(* order.strict.transposition *)
+Theorem transposition
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    gt compare m n = Comparable.lt compare n m.
+Proof.
+  intros A compare lt C m n.
+  simpl gt, Comparable.lt in |- *.
+  leibniz (Comparable.antisymmetry &n &m) in |- *.
+  match (compare &m &n) with | | | end; simpl in |- *; quod idem est.
+Qed.
+
 End strict. (* order.strict *)
 
 (* order.reflexivity *)
@@ -549,7 +580,7 @@ Proof.
   - ipso (disjoin (disjoin _, lt1), _).
   - match rest with | e | gt end.
     + ipso (disjoin (disjoin e, _), _).
-    + ipso (disjoin _, (disjoin _, gt)).
+    + ipso (disjoin _, (disjoin _, &gt)).
 Qed.
 
 (* order.reflection *)
@@ -622,6 +653,21 @@ Proof.
       ipso (modus aequans (comparison.strict.transposition.specification &m &n), &c).
     + intro h.
       quod idem est.
+Qed.
+
+(* order.transposition *)
+Theorem transposition
+  : forall {A : Type}
+      {compare : A -> A -> Comparison}
+      {lt : A -> A -> Prop}
+      {C : Comparable compare lt}
+      (m : A) (n : A) .
+    ge compare m n = le compare n m.
+Proof.
+  intros A compare lt C m n.
+  simpl ge, le in |- *.
+  leibniz (Comparable.antisymmetry &n &m) in |- *.
+  match (compare &m &n) with | | | end; simpl in |- *; quod idem est.
 Qed.
 
 End order. (* order *)
@@ -841,7 +887,7 @@ Proof.
     match (compare m n) with | | | end |- c.
     + match h with | e | gt end.
       * ipso e.
-      * modus aequans (comparison.strict.transposition.specification m n), gt |- e.
+      * modus aequans (comparison.strict.transposition.specification m n), &gt |- e.
         leibniz e in c.
         ex c quodlibet.
     + quod idem est.
