@@ -154,6 +154,27 @@ Definition prev := fun (m : Month) .
 Definition compare := fun (m1 : Month) (m2 : Month) .
   Bin.compare (to_b m1) (to_b m2).
 
+(* [Month -> Month -> Bool] *)
+Abbreviation eq := (Comparable.eq compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Month -> Month -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
+(* [Month -> Month -> Month] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [Month -> Month -> Month] *)
+Abbreviation max := (Comparable.max compare).
+
 (* [Month -> Month -> Prop] *)
 Definition LessThan := fun (m1 : Month) (m2 : Month) .
   (to_b m1 < to_b m2)%b.

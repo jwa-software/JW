@@ -143,6 +143,27 @@ Definition compare := fun (v1 : Kleene3) (v2 : Kleene3) .
       end
   end.
 
+(* [Kleene3 -> Kleene3 -> Bool] *)
+Abbreviation eq := (Comparable.eq compare).
+
+(* [Kleene3 -> Kleene3 -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Kleene3 -> Kleene3 -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Kleene3 -> Kleene3 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Kleene3 -> Kleene3 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
+(* [Kleene3 -> Kleene3 -> Kleene3] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [Kleene3 -> Kleene3 -> Kleene3] *)
+Abbreviation max := (Comparable.max compare).
+
 (* The strict truth order, [false < unknown < true]. [<t] in the bilattice literature. *)
 (* [Kleene3 -> Kleene3 -> Prop] *)
 Definition TruthLessThan := fun (v1 : Kleene3) (v2 : Kleene3) .

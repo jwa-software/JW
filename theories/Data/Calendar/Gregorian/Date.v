@@ -340,6 +340,27 @@ Definition compare := fun (x1 : Date) (x2 : Date) .
   | Comparison.Gt => Comparison.Gt
   end.
 
+(* [Date -> Date -> Bool] *)
+Abbreviation eq := (Comparable.eq compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Date -> Date -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
+(* [Date -> Date -> Date] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [Date -> Date -> Date] *)
+Abbreviation max := (Comparable.max compare).
+
 (* [x1] comes before [x2] in the order of time. *)
 (* [Date -> Date -> Prop] *)
 Definition LessThan := fun (x1 : Date) (x2 : Date) . compare x1 x2 = Comparison.Lt.
