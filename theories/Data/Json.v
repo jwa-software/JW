@@ -5,11 +5,14 @@
 From JW Require Import Core.All.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Collection.List.
+From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Binary.SignedBin.
 From JW Require Import Data.Option.
 From JW Require Import Data.Product.
 From JW Require Import Data.Text.Utf8Str.
 From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Local Unset Elimination Schemes.
 
@@ -124,6 +127,27 @@ Definition object := fun (j : Json) .
   | Json.Object l => Some l
   | _             => None
   end.
+
+(* The same term, not the same value: a number in two forms differs from
+ * itself, and so does an object from the same members in another order.
+ *)
+(* [Json -> Json -> Bool] *)
+Fixpoint test (j : Json) (k : Json) : Bool :=
+  match j, k with
+  | Json.Null,         Json.Null         => true
+  | Json.Boolean b1,   Json.Boolean b2   => Bool.test b1 b2
+  | Json.Number m1 x1, Json.Number m2 x2 => (SignedBin.eq m1 m2 && SignedBin.eq x1 x2)%bool
+  | Json.String s1,    Json.String s2    => Utf8Str.eq s1 s2
+  | Json.Array l1,     Json.Array l2     => List.test test l1 l2
+  | Json.Object l1,    Json.Object l2    => List.test (Product.test Utf8Str.eq test) l1 l2
+  | _,                 _                 => false
+  end.
+
+(* [Json -> Json -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [Json -> Json -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module null. (* null *)
 
@@ -367,6 +391,139 @@ Qed.
 
 End object. (* object *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall (j : Json) (k : Json) . test j k = true <-> j = k.
+Proof.
+  intro j.
+  match &j with
+  | Null | Boolean b | Number mantissa exponent | String s | Array l all | Object l all
+  end per Json.induction.
+  - intro k.
+    match &k with | | b' | mantissa' exponent' | s' | l' | l' end; simpl in |- *.
+    + divide et impera; intro e; quod idem est.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+  - intro k.
+    match &k with | | b' | mantissa' exponent' | s' | l' | l' end; simpl in |- *.
+    + divide et impera; intro e; ex &e quodlibet.
+    + let proof rb := Bool.test.reflection &b &b'.
+      divide et impera.
+      * intro e.
+        leibniz (modus aequans &rb, &e) in |- *.
+        quod idem est.
+      * intro e.
+        ipso (modus aequans &rb, (boolean.injectivity &e)).
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+  - intro k.
+    match &k with | | b' | mantissa' exponent' | s' | l' | l' end; simpl in |- *.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + let proof rm : SignedBin.eq &mantissa &mantissa' = true <-> &mantissa = &mantissa'
+        := Comparable.comparison.equality.reflection &mantissa &mantissa'.
+      let proof rx : SignedBin.eq &exponent &exponent' = true <-> &exponent = &exponent'
+        := Comparable.comparison.equality.reflection &exponent &exponent'.
+      match (SignedBin.eq &mantissa &mantissa') with | | end.
+      * simpl in |- *.
+        let proof em := modus aequans &rm, (Identity.reflexivity true).
+        divide et impera.
+        -- intro e.
+           let proof ee := modus aequans &rx, &e.
+           leibniz &em, &ee in |- *.
+           quod idem est.
+        -- intro e.
+           match (number.injectivity &e) with | _ ee end.
+           ipso (modus aequans &rx, &ee).
+      * simpl in |- *.
+        divide et impera.
+        -- intro e.
+           ex &e quodlibet.
+        -- intro e.
+           match (number.injectivity &e) with | em _ end.
+           let proof t := modus aequans &rm, &em.
+           ex &t quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+  - intro k.
+    match &k with | | b' | mantissa' exponent' | s' | l' | l' end; simpl in |- *.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + let proof rs : Utf8Str.eq &s &s' = true <-> &s = &s'
+        := Comparable.comparison.equality.reflection &s &s'.
+      divide et impera.
+      * intro e.
+        leibniz (modus aequans &rs, &e) in |- *.
+        quod idem est.
+      * intro e.
+        ipso (modus aequans &rs, (string.injectivity &e)).
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+  - intro k.
+    match &k with | | b' | mantissa' exponent' | s' | l' | l' end; simpl in |- *.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + let proof r := List.test.local.reflection test &l &all &l'.
+      divide et impera.
+      * intro e.
+        leibniz (modus aequans &r, &e) in |- *.
+        quod idem est.
+      * intro e.
+        ipso (modus aequans &r, (array.injectivity &e)).
+    + divide et impera; intro e; ex &e quodlibet.
+  - intro k.
+    match &k with | | b' | mantissa' exponent' | s' | l' | l' end; simpl in |- *.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + divide et impera; intro e; ex &e quodlibet.
+    + lemma members
+        : List.All
+            (fun (p : Utf8Str * Json) .
+              forall (q : Utf8Str * Json) . Product.test Utf8Str.eq test p q = true <-> p = q)
+            &l.
+      {
+        ipso
+          (List.quantification.all.monotonicity
+            (fun (p : Utf8Str * Json)
+                (h : forall (k : Json) .
+                       test (Product.second p) k = true <-> Product.second p = k) .
+              Product.test.local.reflection Utf8Str.eq test p
+                (fun (n : Utf8Str) .
+                  Comparable.comparison.equality.reflection (Product.first p) n)
+                h)
+            &all).
+      }
+      let proof r
+        := List.test.local.reflection (Product.test Utf8Str.eq test) &l &members &l'.
+      divide et impera.
+      * intro e.
+        leibniz (modus aequans &r, &e) in |- *.
+        quod idem est.
+      * intro e.
+        ipso (modus aequans &r, (object.injectivity &e)).
+Qed.
+
+End test. (* test *)
+
+Instance discernible
+  : Discernible test :=
+  {| Discernible.reflection := test.reflection |}.
+
 End Json. (* Json *)
 
 Abbreviation Json := Json.T.
+
+Existing Instance Json.discernible.
