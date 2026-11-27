@@ -1373,3 +1373,53 @@ Definition data_all_computes_json_equivalent_in_a_list
       (Json.Null :: Json.Boolean true :: [])%list
     = true
   := Identity.reflexivity _.
+
+Definition data_all_computes_utf8_str_from_decimal
+  : Utf8Str.from_decimal (Bin.to_decimal 1111%b) = "15"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str
+  : Json.to_utf8_str data_all_delivers_json = "{""a"":[null,true,15e-1,""b""]}"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_numbers
+  : Json.to_utf8_str
+      (Json.Array
+        (Json.Number 42%b_decimal 0%b_signed
+          :: Json.Number (- 7%b0_decimal)%b_signed 3%b_decimal
+          :: Json.Number 0%b_signed 0%b_signed
+          :: [])%list)
+    = "[42,-7e3,0]"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_empty_containers
+  : Json.to_utf8_str
+      (Json.Object
+        (("x"%u8, Json.Array []%list)%product
+          :: ("y"%u8, Json.Object []%list)%product
+          :: [])%list)
+    = "{""x"":[],""y"":{}}"%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_escapes
+  : Json.to_utf8_str (Json.String "a""b\c/"%u8) = """a\""b\\c/"""%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_control_characters
+  : Json.to_utf8_str
+      (Json.String
+        (Utf8Str.from_list
+          (Utf8.from_ascii (Ascii.from_byte 0x0A%byte)
+            :: Utf8.from_ascii (Ascii.from_byte 0x01%byte)
+            :: Utf8.from_ascii (Ascii.from_byte 0x1F%byte)
+            :: [])%list))
+    = """\n\u0001\u001f"""%u8
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_to_utf8_str_of_a_character_past_ascii
+  : Json.to_utf8_str
+      (Json.String (Utf8Str.from_list (Utf8.from_ascii (Ascii.from_byte 0xE9%byte) :: [])%list))
+    = (""""
+       ++ Utf8Str.from_list (Utf8.from_ascii (Ascii.from_byte 0xE9%byte) :: [])%list
+       ++ """")%u8
+  := Identity.reflexivity _.
