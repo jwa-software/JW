@@ -10,6 +10,7 @@ From JW Require Import Data.Collection.BST.
 From JW Require Import Data.Collection.BinaryTree.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Option.
 From JW Require Import Data.Product.
@@ -155,6 +156,26 @@ Definition is_ordered := fun {A : Type} (cmp : A -> A -> Comparison) (t : AVL A)
 (* [forall {A : Type} . (A -> A -> Comparison) -> AVL A -> Bool] *)
 Definition is_valid := fun {A : Type} (cmp : A -> A -> Comparison) (t : AVL A) .
   Bool.and (is_measured t) (Bool.and (is_balanced t) (is_ordered cmp t)).
+
+(* The same shape and the same stored heights, and [tester] passes the two
+ * elements at each node. [tester] is bound outside the [fix], so the
+ * recursion carries the two trees only.
+ *)
+(* [forall {A : Type} . (A -> A -> Bool) -> AVL A -> AVL A -> Bool] *)
+Definition test := fun {A : Type} (tester : A -> A -> Bool) .
+  fix go (t : AVL A) (u : AVL A) : Bool :=
+    match t, u with
+    | Leaf,             Leaf             => true
+    | Node l1 a1 r1 h1, Node l2 a2 r2 h2 =>
+        (go l1 l2 && (tester a1 a2 && (go r1 r2 && Nat0.eq h1 h2)))%bool
+    | _,                _                => false
+    end.
+
+(* [forall {A : Type} . AVL A -> AVL A -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} . AVL A -> AVL A -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module rotate. (* rotate *)
 
@@ -3820,6 +3841,81 @@ End size. (* removal.size *)
 
 End removal. (* removal *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} (tester : A -> A -> Bool) .
+      Discernible tester ->
+      forall (t : AVL A) (u : AVL A) . test tester t u = true <-> t = u.
+Proof.
+  intros A tester D t u.
+  divide et impera.
+  - extro &u.
+    match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+    + intros u e.
+      match &u with | | l2 a2 r2 h2 end.
+      * quod idem est.
+      * simpl in &e.
+        ex &e quodlibet.
+    + intros u e.
+      match &u with | | l2 a2 r2 h2 end.
+      * simpl in &e.
+        ex &e quodlibet.
+      * simpl in &e.
+        modus aequans (Bool.conjunction.truth.specification _ _), &e |- s1.
+        match &s1 with | el rest1 end.
+        modus aequans (Bool.conjunction.truth.specification _ _), &rest1 |- s2.
+        match &s2 with | ea rest2 end.
+        modus aequans (Bool.conjunction.truth.specification _ _), &rest2 |- s3.
+        match &s3 with | er eh end.
+        let proof ra : tester &a &a2 = true <-> &a = &a2 := Discernible.reflection &a &a2.
+        let proof rh : Nat0.eq &h &h2 = true <-> &h = &h2
+          := Comparable.comparison.equality.reflection &h &h2.
+        leibniz
+          (&IHl &l2 &el), (modus aequans &ra, &ea), (&IHr &r2 &er), (modus aequans &rh, &eh)
+          in |- *.
+        quod idem est.
+  - intro e.
+    leibniz <- &e in |- *.
+    rm &e.
+    match &t with | Leaf | Node (l by IHl) a (r by IHr) h end per AVL.induction.
+    + simpl in |- *.
+      quod idem est.
+    + let proof ra : tester &a &a = true <-> &a = &a := Discernible.reflection &a &a.
+      let proof ta := modus aequans &ra, (Identity.reflexivity &a).
+      let proof rh : Nat0.eq &h &h = true <-> &h = &h
+        := Comparable.comparison.equality.reflection &h &h.
+      let proof th := modus aequans &rh, (Identity.reflexivity &h).
+      let proof part3 := conjoin &IHr, &th.
+      modus aequans
+        (Bool.conjunction.truth.specification (test &tester &r &r) (Nat0.eq &h &h)),
+        &part3 |- test3.
+      let proof part2 := conjoin &ta, &test3.
+      modus aequans
+        (Bool.conjunction.truth.specification
+          (&tester &a &a) (Bool.and (test &tester &r &r) (Nat0.eq &h &h))),
+        &part2 |- test2.
+      let proof part1 := conjoin &IHl, &test2.
+      modus aequans
+        (Bool.conjunction.truth.specification
+          (test &tester &l &l)
+          (Bool.and (&tester &a &a) (Bool.and (test &tester &r &r) (Nat0.eq &h &h)))),
+        &part1 |- whole.
+      ipso &whole.
+Qed.
+
+End test. (* test *)
+
+(* A tree tells its values apart when its elements do. *)
+Instance discernible
+  : forall {A : Type} {tester : A -> A -> Bool} .
+      Discernible tester -> Discernible (test tester) :=
+  fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester) .
+    ({| Discernible.reflection := test.reflection tester D |}).
+
 End AVL. (* AVL *)
 
 Abbreviation AVL := AVL.T.
+
+Existing Instance AVL.discernible.

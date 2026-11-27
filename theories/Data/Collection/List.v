@@ -10,6 +10,7 @@ From JW Require Import Data.Base.Comparison.
 From JW Require Import Data.Collection.Membership.
 From JW Require Import Data.Collection.Sized.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Functor.
 From JW Require Import Data.Number.Nat.
 From JW Require Import Data.Number.Nat0.
@@ -494,6 +495,25 @@ Fixpoint compare {A : Type} (cmp : A -> A -> Comparison) (l : List A) (m : List 
 (* [forall {A : Type} . (A -> A -> Comparison) -> List A -> List A -> Prop] *)
 Definition LessThan := fun {A : Type} (cmp : A -> A -> Comparison) (l : List A) (m : List A) .
   compare cmp l m = Comparison.Lt.
+
+(* [l] and [m] are as long as each other, and [tester] passes each element of
+ * [l] with the element of [m] at its place. [tester] is bound outside the
+ * [fix], so the recursion carries the two lists only.
+ *)
+(* [forall {A : Type} . (A -> A -> Bool) -> List A -> List A -> Bool] *)
+Definition test := fun {A : Type} (tester : A -> A -> Bool) .
+  fix go (l : List A) (m : List A) : Bool :=
+    match l, m with
+    | [],      []      => true
+    | a :: l', b :: m' => tester a b && go l' m'
+    | _,       _       => false
+    end.
+
+(* [forall {A : Type} . List A -> List A -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} . List A -> List A -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* A law of the type itself rather than of any operation, so it belongs to
  * no topic below.
@@ -3561,9 +3581,87 @@ Qed.
 
 End minimum. (* minimum *)
 
+Module test. (* test *)
+
+Module local. (* test.local *)
+
+(* [tester] has to decide equality only for the elements of [l]. *)
+(* test.local.reflection *)
+Theorem reflection
+  : forall {A : Type} (tester : A -> A -> Bool) (l : List A) .
+      All (fun (a : A) . forall (b : A) . tester a b = true <-> a = b) l ->
+      forall (m : List A) . test tester l m = true <-> l = m.
+Proof.
+  intros A tester l.
+  match &l with | | a l' by IH end per List.induction.
+  - intros all m.
+    match &m with | | b m' end.
+    + simpl in |- *.
+      divide et impera; intro e; quod idem est.
+    + simpl in |- *.
+      divide et impera; intro e; ex &e quodlibet.
+  - intros all m.
+    simpl in &all.
+    match &all with | head rest end.
+    match &m with | | b m' end.
+    + simpl in |- *.
+      divide et impera; intro e; ex &e quodlibet.
+    + simpl in |- *.
+      let proof first := &head &b.
+      let proof others := &IH &rest &m'.
+      match (tester &a &b) with | | end.
+      * simpl in |- *.
+        let proof ab := modus aequans &first, (Identity.reflexivity true).
+        divide et impera.
+        -- intro e.
+           let proof lm := modus aequans &others, &e.
+           leibniz &ab, &lm in |- *.
+           quod idem est.
+        -- intro e.
+           match (cons.injectivity &e) with | _ lm end.
+           ipso (modus aequans &others, &lm).
+      * simpl in |- *.
+        divide et impera.
+        -- intro e.
+           ex &e quodlibet.
+        -- intro e.
+           match (cons.injectivity &e) with | ab _ end.
+           let proof t := modus aequans &first, &ab.
+           ex &t quodlibet.
+Qed.
+
+End local. (* test.local *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} (tester : A -> A -> Bool) .
+      Discernible tester ->
+      forall (l : List A) (m : List A) . test tester l m = true <-> l = m.
+Proof.
+  intros A tester D l m.
+  lemma all : All (fun (a : A) . forall (b : A) . tester a b = true <-> a = b) &l.
+  {
+    ipso
+      (quantification.all.backward.specification
+        (fun (a : A) (c : Contains a &l) . Discernible.reflection a)).
+  }
+  ipso (test.local.reflection &tester &l &all &m).
+Qed.
+
+End test. (* test *)
+
+(* A list tells its values apart when its elements do. *)
+Instance discernible
+  : forall {A : Type} {tester : A -> A -> Bool} .
+      Discernible tester -> Discernible (test tester) :=
+  fun (A : Type) (tester : A -> A -> Bool) (D : Discernible tester) .
+    ({| Discernible.reflection := test.reflection tester D |}).
+
 End List. (* List *)
 
 Abbreviation List := List.T.
+
+Existing Instance List.discernible.
 
 (* Only the notations are exported, not the ctors: [[]] and [::] are the
  * spellings a client wants, while [Nil] and [Cons] are the names a second

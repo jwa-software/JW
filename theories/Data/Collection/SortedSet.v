@@ -10,6 +10,7 @@ From JW Require Import Data.Collection.AVL.
 From JW Require Import Data.Collection.BinaryTree.
 From JW Require Import Data.Collection.List.
 From JW Require Import Data.Comparable.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Number.Nat0.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
@@ -109,6 +110,22 @@ Definition to_list := fun {A : Type} {cmp : A -> A -> Comparison} (s : SortedSet
 (* [forall {A : Type} {cmp : A -> A -> Comparison} . SortedSet cmp -> Nat0] *)
 Definition size := fun {A : Type} {cmp : A -> A -> Comparison} (s : SortedSet cmp) .
   BinaryTree.size (AVL.to_tree (to_avl s)).
+
+(* The same tree inside: two sets of the same elements in trees of two
+ * shapes are two values.
+ *)
+(* [forall {A : Type} {cmp : A -> A -> Comparison} .
+ *    (A -> A -> Bool) -> SortedSet cmp -> SortedSet cmp -> Bool]
+ *)
+Definition test := fun {A : Type} {cmp : A -> A -> Comparison} (tester : A -> A -> Bool)
+    (s1 : SortedSet cmp) (s2 : SortedSet cmp) .
+  AVL.test tester (to_avl s1) (to_avl s2).
+
+(* [forall {A : Type} {cmp : A -> A -> Comparison} . SortedSet cmp -> SortedSet cmp -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} {cmp : A -> A -> Comparison} . SortedSet cmp -> SortedSet cmp -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 Module conversion. (* conversion *)
 
@@ -293,6 +310,36 @@ End size. (* removal.size *)
 
 End removal. (* removal *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} {cmp : A -> A -> Comparison} (tester : A -> A -> Bool) .
+      Discernible tester ->
+      forall (s1 : SortedSet cmp) (s2 : SortedSet cmp) . test tester s1 s2 = true <-> s1 = s2.
+Proof.
+  intros A cmp tester D s1 s2.
+  simpl test in |- *.
+  let proof r := AVL.test.reflection &tester &D (to_avl &s1) (to_avl &s2).
+  divide et impera.
+  - intro e.
+    ipso (conversion.injectivity &s1 &s2 (modus aequans &r, &e)).
+  - intro e.
+    ipso (modus aequans &r, (congru to_avl, &e)).
+Qed.
+
+End test. (* test *)
+
+(* A set tells its values apart when its elements do. *)
+Instance discernible
+  : forall {A : Type} {cmp : A -> A -> Comparison} {tester : A -> A -> Bool} .
+      Discernible tester -> Discernible (@test A cmp tester) :=
+  fun (A : Type) (cmp : A -> A -> Comparison) (tester : A -> A -> Bool)
+      (D : Discernible tester) .
+    ({| Discernible.reflection := test.reflection tester D |}).
+
 End SortedSet. (* SortedSet *)
 
 Abbreviation SortedSet := SortedSet.T.
+
+Existing Instance SortedSet.discernible.
