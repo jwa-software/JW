@@ -20,6 +20,7 @@ From JW Require Export Data.Comparable.
 From JW Require Export Data.Coproduct.
 From JW Require Export Data.Discernible.
 From JW Require Export Data.Functor.
+From JW Require Export Data.Json.
 From JW Require Export Data.Literal.
 From JW Require Export Data.Machine.All.
 From JW Require Export Data.Number.All.
