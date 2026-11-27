@@ -3,8 +3,11 @@
  *)
 
 From JW Require Import Core.All.
+From JW Require Import Data.Base.Bool.
+From JW Require Import Data.Discernible.
 From JW Require Import Data.Functor.
 From JW Require Import Tactics.Equation.
+From JW Require Import Tactics.Modus.
 
 Local Unset Elimination Schemes.
 
@@ -91,6 +94,25 @@ Definition bimap := fun {A : Type} {B : Type} {C : Type} {D : Type}
   | Coproduct.left  a => Coproduct.left  (f a)
   | Coproduct.right b => Coproduct.right (g b)
   end.
+
+(* Both are on one side, and the two values pass that side's tester. *)
+(* [forall {A : Type} {B : Type} .
+ *    (A -> A -> Bool) -> (B -> B -> Bool) -> Coproduct A B -> Coproduct A B -> Bool]
+ *)
+Definition test := fun {A : Type} {B : Type}
+    (left_tester : A -> A -> Bool) (right_tester : B -> B -> Bool)
+    (c1 : Coproduct A B) (c2 : Coproduct A B) .
+  match c1, c2 with
+  | Coproduct.introduction_left a1,  Coproduct.introduction_left a2  => left_tester a1 a2
+  | Coproduct.introduction_right b1, Coproduct.introduction_right b2 => right_tester b1 b2
+  | _,                               _                               => false
+  end.
+
+(* [forall {A : Type} {B : Type} . Coproduct A B -> Coproduct A B -> Bool] *)
+Abbreviation equivalent := Discernible.equivalent.
+
+(* [forall {A : Type} {B : Type} . Coproduct A B -> Coproduct A B -> Bool] *)
+Abbreviation discern := Discernible.discern.
 
 (* A law of the type itself rather than of any operation, so it belongs to
  * no topic below.
@@ -266,9 +288,56 @@ Qed.
 
 End copair. (* copair *)
 
+Module test. (* test *)
+
+(* test.reflection *)
+Theorem reflection
+  : forall {A : Type} {B : Type}
+        (left_tester : A -> A -> Bool) (right_tester : B -> B -> Bool) .
+      Discernible left_tester -> Discernible right_tester ->
+      forall (c1 : Coproduct A B) (c2 : Coproduct A B) .
+        test left_tester right_tester c1 c2 = true <-> c1 = c2.
+Proof.
+  intros A B left_tester right_tester DA DB c1 c2.
+  match &c1 with | a1 | b1 end; match &c2 with | a2 | b2 end; simpl in |- *.
+  - let proof r : left_tester &a1 &a2 = true <-> &a1 = &a2
+      := Discernible.reflection &a1 &a2.
+    divide et impera.
+    + intro e.
+      leibniz (modus aequans &r, &e) in |- *.
+      quod idem est.
+    + intro e.
+      ipso (modus aequans &r, (left.injectivity &e)).
+  - divide et impera; intro e; ex &e quodlibet.
+  - divide et impera; intro e; ex &e quodlibet.
+  - let proof r : right_tester &b1 &b2 = true <-> &b1 = &b2
+      := Discernible.reflection &b1 &b2.
+    divide et impera.
+    + intro e.
+      leibniz (modus aequans &r, &e) in |- *.
+      quod idem est.
+    + intro e.
+      ipso (modus aequans &r, (right.injectivity &e)).
+Qed.
+
+End test. (* test *)
+
+(* A coproduct tells its values apart when both sides do. *)
+Instance discernible
+  : forall {A : Type} {B : Type}
+        {left_tester : A -> A -> Bool} {right_tester : B -> B -> Bool} .
+      Discernible left_tester -> Discernible right_tester ->
+      Discernible (test left_tester right_tester) :=
+  fun (A : Type) (B : Type)
+      (left_tester : A -> A -> Bool) (right_tester : B -> B -> Bool)
+      (DA : Discernible left_tester) (DB : Discernible right_tester) .
+    ({| Discernible.reflection := test.reflection left_tester right_tester DA DB |}).
+
 End Coproduct. (* Coproduct *)
 
 Abbreviation Coproduct := Coproduct.T.
+
+Existing Instance Coproduct.discernible.
 
 Notation "A + B" := (Coproduct A B)
   : jw_type_scope.
