@@ -264,6 +264,18 @@ Definition compare := fun (a : Bin) (b : Bin) .
 (* [Bin -> Bin -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
+(* [Bin -> Bin -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Bin -> Bin -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Bin -> Bin -> Bin] *)
 Abbreviation min := (Comparable.min compare).
 

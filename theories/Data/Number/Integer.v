@@ -252,6 +252,18 @@ Definition compare := fun (m : Integer) (n : Integer) .
 (* [Integer -> Integer -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
+(* [Integer -> Integer -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Integer -> Integer -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Integer -> Integer -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Integer -> Integer -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Integer -> Integer -> Integer] *)
 Abbreviation min := (Comparable.min compare).
 
@@ -443,7 +455,7 @@ Proof.
   let proof t := Nat.order.strict.trichotomy p q.
   match t with | lt | rest end.
   - simpl ( _ < _ )%n in lt.
-    match lt with | k e end.
+    match &lt with | k e end.
     symm in e.
     leibniz e in h |- *.
     leibniz (Nat.addition.commutativity p k) in |- *.
@@ -463,7 +475,7 @@ Proof.
       leibniz (difference.nat.reflexivity r) in |- *.
       quod idem est.
     + simpl ( _ < _ )%n in gt.
-      match gt with | k e end.
+      match &gt with | k e end.
       symm in e.
       leibniz e in h |- *.
       leibniz (Nat.addition.commutativity q k) in |- *.
@@ -485,7 +497,7 @@ Proof.
   let proof t := Nat.order.strict.trichotomy p q.
   match t with | lt | rest end.
   - simpl ( _ < _ )%n in lt.
-    match lt with | k e end.
+    match &lt with | k e end.
     symm in e.
     leibniz e in |- *.
     leibniz (Nat.addition.commutativity p k) in |- *.
@@ -499,7 +511,7 @@ Proof.
       simpl in |- *.
       quod idem est.
     + simpl ( _ < _ )%n in gt.
-      match gt with | k e end.
+      match &gt with | k e end.
       symm in e.
       leibniz e in |- *.
       leibniz (Nat.addition.commutativity q k) in |- *.
@@ -519,7 +531,7 @@ Proof.
   let proof t := Nat.order.strict.trichotomy p q.
   match t with | lt | rest end.
   - simpl ( _ < _ )%n in lt.
-    match lt with | k e end.
+    match &lt with | k e end.
     symm in e.
     leibniz e in |- *.
     leibniz (Nat.addition.commutativity p k) in |- *.
@@ -532,7 +544,7 @@ Proof.
       simpl in |- *.
       quod idem est.
     + simpl ( _ < _ )%n in gt.
-      match gt with | k e end.
+      match &gt with | k e end.
       symm in e.
       leibniz e in |- *.
       leibniz (Nat.addition.commutativity q k) in |- *.
@@ -619,7 +631,7 @@ Proof.
   let proof t := Nat.order.strict.trichotomy p q.
   match t with | lt | rest end.
   - simpl ( _ < _ )%n in lt.
-    match lt with | j e end.
+    match &lt with | j e end.
     symm in e.
     leibniz e in |- *.
     leibniz (Nat.addition.commutativity p j) in |- *.
@@ -636,7 +648,7 @@ Proof.
       simpl in |- *.
       quod idem est.
     + simpl ( _ < _ )%n in gt.
-      match gt with | j e end.
+      match &gt with | j e end.
       symm in e.
       leibniz e in |- *.
       leibniz (Nat.addition.commutativity q j) in |- *.
@@ -1679,7 +1691,7 @@ Proof.
   - intro c.
     let proof lt := Nat.comparison.strict.forward.specification c.
     simpl ( _ < _ )%n in lt.
-    match lt with | k e end.
+    match &lt with | k e end.
     exists k.
     leibniz (Nat.addition.commutativity n' k) in e.
     ipso (modus aequans (difference.nat.negative.specification k m' n'), e).
@@ -1732,7 +1744,7 @@ Proof.
   - intro c.
     let proof lt := Nat.comparison.strict.forward.specification c.
     simpl ( _ < _ )%n in lt.
-    match lt with | k e end.
+    match &lt with | k e end.
     exists k.
     leibniz e in |- *.
     quod idem est.
@@ -2326,7 +2338,7 @@ Proof.
           exists p.
           ipso (addition.left.identity (+ p)).
         }
-        ex (order.strict.irreflexivity 0 (order.strict.transitivity above lt)) quodlibet.
+        ex (order.strict.irreflexivity 0 (order.strict.transitivity above &lt)) quodlibet.
 Qed.
 
 End nat. (* narrowing.nat *)

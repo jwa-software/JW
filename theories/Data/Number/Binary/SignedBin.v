@@ -285,6 +285,18 @@ Definition compare := fun (x : SignedBin) (y : SignedBin) .
 (* [SignedBin -> SignedBin -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [SignedBin -> SignedBin -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [SignedBin -> SignedBin -> SignedBin] *)
 Abbreviation min := (Comparable.min compare).
 

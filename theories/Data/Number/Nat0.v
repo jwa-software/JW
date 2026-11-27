@@ -153,6 +153,12 @@ Abbreviation le := (Comparable.le compare).
 (* [Nat0 -> Nat0 -> Bool] *)
 Abbreviation lt := (Comparable.lt compare).
 
+(* [Nat0 -> Nat0 -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Nat0 -> Nat0 -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Nat0 -> Nat0 -> Nat0] *)
 Abbreviation min := (Comparable.min compare).
 
@@ -2684,7 +2690,7 @@ Proof.
       symm in dist.
       ipso (addition.left.cancellation dist).
     + simpl Comparable.LessOrEqual in ge.
-      match ge with
+      match &ge with
       | eq
       | lt
       end.

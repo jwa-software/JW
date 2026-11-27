@@ -123,6 +123,18 @@ Fixpoint compare (m : Nat) (n : Nat) : Comparison :=
 (* [Nat -> Nat -> Bool] *)
 Abbreviation eq := (Comparable.eq compare).
 
+(* [Nat -> Nat -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [Nat -> Nat -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [Nat -> Nat -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [Nat -> Nat -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
 (* [Nat -> Nat -> Nat] *)
 Abbreviation min := (Comparable.min compare).
 
@@ -720,7 +732,7 @@ Proof.
     let proof t := IH n'.
     match t with | lt | rest end.
     +
-      ipso (disjoin (successor.order.monotonicity lt), _).
+      ipso (disjoin (successor.order.monotonicity &lt), _).
     +
       match rest with | eq | gt end.
       *
@@ -731,7 +743,7 @@ Proof.
         }
         ipso (disjoin _, (disjoin facto, _)).
       *
-        ipso (disjoin _, (disjoin _, (successor.order.monotonicity gt))).
+        ipso (disjoin _, (disjoin _, (successor.order.monotonicity &gt))).
 Qed.
 
 (* Descending from [n] cannot go on for ever, since [One] has nothing below
@@ -886,7 +898,7 @@ Proof.
   let proof t := order.strict.trichotomy n k.
   match t with | lt | rest end.
   - let proof lt'
-      := multiplication.left.order.monotonicity m n k lt.
+      := multiplication.left.order.monotonicity m n k &lt.
     let proof i
       := order.strict.irreflexivity (m * k).
     simpl (~ _) in i.
@@ -895,7 +907,7 @@ Proof.
     ex falso quodlibet.
   - match rest with | eq | gt end.
     + ipso &eq.
-    + let proof gt' := multiplication.left.order.monotonicity m k n gt.
+    + let proof gt' := multiplication.left.order.monotonicity m k n &gt.
       leibniz e in gt'.
       let proof i := order.strict.irreflexivity (m * k).
       simpl (~ _) in i.
@@ -1279,7 +1291,7 @@ Proof.
   match (compare n 1) with | | | end |- c.
   - let proof lt := comparison.strict.forward.specification c.
     simpl ( _ < _ ) in lt.
-    match lt with | k e end.
+    match &lt with | k e end.
     match n with
     |
     | n' end; simpl in e; ex e quodlibet.
@@ -1373,7 +1385,7 @@ Proof.
     + ipso IH.
   -
     simpl ( _ < _ ) in lt.
-    match lt with | k e end.
+    match &lt with | k e end.
     let proof e' := symm e.
     leibniz e' in |- *.
     rm e e'.
