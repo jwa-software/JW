@@ -1335,3 +1335,41 @@ Definition data_all_delivers_json_object_of_an_object
   : Json.object (Json.Object (("a"%u8, Json.Null)%product :: [])%list)
     = Some (("a"%u8, Json.Null)%product :: [])%list
   := Identity.reflexivity _.
+
+Definition data_all_delivers_json_test_reflection
+  : forall (j : Json) (k : Json) . Json.test j k = true <-> j = k
+  := Json.test.reflection.
+
+Definition data_all_delivers_json_discernible
+  : forall (a : Json) (b : Json) .
+      (Json.equivalent a b = true <-> a = b) /\ (Json.discern a b = true <-> ~ (a = b))
+  := fun (a : Json) (b : Json) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_computes_json_equivalent_of_one_value
+  : Json.equivalent data_all_delivers_json data_all_delivers_json = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_discern_of_two_kinds
+  : Json.discern Json.Null (Json.Boolean false) = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_discern_of_two_forms_of_a_number
+  : Json.discern
+      (Json.Number 15%b_decimal (- 1%b0_decimal)%b_signed)
+      (Json.Number 150%b_decimal (- 2%b0_decimal)%b_signed)
+    = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_discern_of_two_orders_of_members
+  : Json.discern
+      (Json.Object (("a"%u8, Json.Null)%product :: ("b"%u8, Json.Null)%product :: [])%list)
+      (Json.Object (("b"%u8, Json.Null)%product :: ("a"%u8, Json.Null)%product :: [])%list)
+    = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_json_equivalent_in_a_list
+  : List.equivalent (Json.Null :: Json.Boolean true :: [])%list
+      (Json.Null :: Json.Boolean true :: [])%list
+    = true
+  := Identity.reflexivity _.
