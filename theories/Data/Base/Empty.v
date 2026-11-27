@@ -4,6 +4,8 @@
 
 From JW Require Import Core.All.
 
+Local Unset Elimination Schemes.
+
 Module Empty.
 
 (* The type with no element, the unit of [Coproduct]. No ctor, so the

@@ -17,6 +17,8 @@ From JW Require Import Dialect.ExFalso.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 (* An AVL tree is a binary tree that stores at each node the height of the
  * subtree there, and keeps the heights of every node's two subtrees within
  * one of each other, so that a path from the root is short.

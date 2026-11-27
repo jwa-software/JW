@@ -25,6 +25,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 Module Integer. (* Integer *)
 
 Inductive T : Type :=

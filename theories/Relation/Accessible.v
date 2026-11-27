@@ -7,6 +7,8 @@ From JW Require Import Dialect.Simpl.
 From JW Require Import Relation.Descent.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 Module Accessible. (* Accessible *)
 
 (* [R] points downwards throughout this file: its first argument is the

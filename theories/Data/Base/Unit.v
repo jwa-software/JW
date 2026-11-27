@@ -4,6 +4,8 @@
 
 From JW Require Import Core.All.
 
+Local Unset Elimination Schemes.
+
 Module Unit.
 
 (* The type with exactly one element, the unit of [Product]: [Unit] is to

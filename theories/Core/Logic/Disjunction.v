@@ -8,6 +8,8 @@ From JW Require Import Core.Logic.Conjunction.
 From JW Require Import Core.Notations.
 From JW Require Import Dialect.All.
 
+Local Unset Elimination Schemes.
+
 Module Disjunction. (* Disjunction *)
 
 Inductive T (A : Prop) (B : Prop) : Prop :=

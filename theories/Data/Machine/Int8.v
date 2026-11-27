@@ -28,6 +28,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 (* A signed integer of eight bits: a [Byte] read in two's complement, from
  * -128 (-2^7) to 127 (2^7 - 1), its arithmetic wrapping modulo 256 (2^8). In
  * this file [100000000] is 2^8, [10000000] is 2^7 and [1111111] is 2^7 - 1,

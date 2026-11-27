@@ -28,6 +28,8 @@ From JW Require Import Data.Product.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 (* An unsigned integer of sixteen bits: two [Byte]s read as a number from 0 to
  * 65535 (2^16 - 1), its arithmetic wrapping modulo 65536 (2^16). In this file
  * [10000000000000000] is 2^16, written in binary digits.

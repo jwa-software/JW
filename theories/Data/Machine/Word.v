@@ -12,6 +12,8 @@ From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
 
+Local Unset Elimination Schemes.
+
 Module Word. (* Word *)
 
 Inductive T : Type :=

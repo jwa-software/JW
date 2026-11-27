@@ -21,6 +21,8 @@ From JW Require Import Dialect.Simpl.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 Module Rational. (* Rational *)
 
 (* A fraction in lowest terms, an [Integer] over a [Nat]: the denominator is

@@ -28,6 +28,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 Module SignedBin. (* SignedBin *)
 
 (* Both sign cases wrap a [Bin], so a nonzero value carries its magnitude in

@@ -22,6 +22,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 Module Bin. (* Bin *)
 
 (* A positive number in binary, its leading bit innermost: [One] is 1, [b0]

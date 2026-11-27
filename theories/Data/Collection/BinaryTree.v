@@ -15,6 +15,8 @@ From JW Require Import Data.Number.Nat0.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 Module BinaryTree. (* BinaryTree *)
 
 (* A binary tree is a leaf, which holds nothing, or a node: one element

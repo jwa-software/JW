@@ -17,6 +17,8 @@ From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 From JW Require Import Tactics.Witness.
 
+Local Unset Elimination Schemes.
+
 (* A date of the ISO 8601 week calendar: an ISO year, a week of it and a day
  * of that week. Week 1 is the week, Monday first, that holds January 4.
  *)

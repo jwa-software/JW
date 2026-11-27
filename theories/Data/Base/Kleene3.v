@@ -16,6 +16,8 @@ From JW Require Import Relation.Reflexive.
 From JW Require Import Relation.Transitive.
 From JW Require Import Tactics.Equation.
 
+Local Unset Elimination Schemes.
+
 (* Kleene's strong three-valued logic. *)
 Module Kleene3. (* Kleene3 *)
 

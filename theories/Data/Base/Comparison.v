@@ -4,6 +4,8 @@
 
 From JW Require Import Core.All.
 
+Local Unset Elimination Schemes.
+
 Module Comparison. (* Comparison *)
 
 (* The answer of a three-way comparison,

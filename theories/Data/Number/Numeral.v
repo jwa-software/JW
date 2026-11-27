@@ -5,6 +5,8 @@
 From JW Require Import Core.All.
 From JW Require Import Data.Literal.
 
+Local Unset Elimination Schemes.
+
 (* The types a numeral literal is read into. The plugin behind
  * [Number Notation] reads the literal into them and hands that to the parsing
  * function a notation names; it finds each type by the name it is registered

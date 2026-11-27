@@ -8,6 +8,8 @@ From JW Require Import Core.Logic.Negation.
 From JW Require Import Core.Notations.
 From JW Require Import Dialect.All.
 
+Local Unset Elimination Schemes.
+
 Module Abjunction. (* Abjunction *)
 
 (* Abjunction is material nonimplication: [A] holds and [B] does not, the

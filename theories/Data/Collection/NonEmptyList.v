@@ -17,6 +17,8 @@ From JW Require Import Dialect.Simpl.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 Module NonEmptyList. (* NonEmptyList *)
 
 (* A non-empty list is one element, or one element in front of a non-empty

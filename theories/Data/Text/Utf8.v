@@ -18,6 +18,8 @@ From JW Require Import Data.Text.SourceByte.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 Module Utf8. (* Utf8 *)
 
 (* The ctors below take only bytes that spell a character, so the checks

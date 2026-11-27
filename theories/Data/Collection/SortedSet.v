@@ -14,6 +14,8 @@ From JW Require Import Data.Number.Nat0.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 (* A set of elements kept in the order [cmp] decides: an AVL tree together
  * with the proof that it passes [AVL.is_valid], so that every value of the
  * type is measured, balanced and ordered, and no law needs those premises.

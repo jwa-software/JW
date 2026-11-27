@@ -18,6 +18,8 @@ From JW Require Import Data.Text.SourceByte.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 Module AsciiStr. (* AsciiStr *)
 
 (* A string of [Ascii] characters, the first character first. *)

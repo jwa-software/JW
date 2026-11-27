@@ -15,6 +15,8 @@ From JW Require Import Data.Number.Nat0.
 From JW Require Import Data.Number.Numeral.
 From JW Require Import Data.Option.
 
+Local Unset Elimination Schemes.
+
 Module Byte. (* Byte *)
 
 (* Eight bits, the MSB first, as a binary number is written. *)

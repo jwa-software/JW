@@ -6,6 +6,8 @@ From JW Require Import Core.All.
 From JW Require Import Data.Functor.
 From JW Require Import Tactics.Equation.
 
+Local Unset Elimination Schemes.
+
 Module Option. (* Option *)
 
 Inductive T (A : Type) : Type :=

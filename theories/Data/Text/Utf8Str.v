@@ -20,6 +20,8 @@ From JW Require Import Data.Text.Utf8.
 From JW Require Import Tactics.Equation.
 From JW Require Import Tactics.Modus.
 
+Local Unset Elimination Schemes.
+
 Module Utf8Str. (* Utf8Str *)
 
 (* A string of [Utf8] characters, the first character first. *)
