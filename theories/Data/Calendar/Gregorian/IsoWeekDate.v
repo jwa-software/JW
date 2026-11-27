@@ -95,6 +95,36 @@ Definition to_date := fun (x : IsoWeekDate) .
     (week_one_start (year x) + Bin0.saturating_sub (week x) 1 * Weekday.days_in_week
      + Weekday.to_b0 (weekday x)).
 
+(* The order of the dates the two stand for. *)
+(* [IsoWeekDate -> IsoWeekDate -> Comparison] *)
+Definition compare := fun (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+  Date.compare (to_date x1) (to_date x2).
+
+(* [IsoWeekDate -> IsoWeekDate -> Bool] *)
+Abbreviation eq := (Comparable.eq compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> Bool] *)
+Abbreviation le := (Comparable.le compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> Bool] *)
+Abbreviation lt := (Comparable.lt compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> Bool] *)
+Abbreviation ge := (Comparable.ge compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> Bool] *)
+Abbreviation gt := (Comparable.gt compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> IsoWeekDate] *)
+Abbreviation min := (Comparable.min compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> IsoWeekDate] *)
+Abbreviation max := (Comparable.max compare).
+
+(* [IsoWeekDate -> IsoWeekDate -> Prop] *)
+Definition LessThan := fun (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+  (to_date x1 < to_date x2)%date.
+
 (* Two proofs of one validity are equal, so an ISO week date is its year,
  * week and weekday.
  *)
@@ -1186,6 +1216,16 @@ Proof.
   ipso (extensionality (from_date (to_date &X)) &X &same_year &same_week &same_weekday).
 Qed.
 
+(* conversion.date.injectivity *)
+Theorem injectivity
+  : forall {x1 : IsoWeekDate} {x2 : IsoWeekDate} . to_date x1 = to_date x2 -> x1 = x2.
+Proof.
+  intros x1 x2 e.
+  congru from_date, &e |- f.
+  leibniz (conversion.date.section &x1), (conversion.date.section &x2) in &f.
+  ipso &f.
+Qed.
+
 End date. (* conversion.date *)
 
 End conversion. (* conversion *)
@@ -1216,6 +1256,65 @@ End agreement. (* weekday.agreement *)
 
 End weekday. (* weekday *)
 
+Module order. (* order *)
+
+Module strict. (* order.strict *)
+
+(* order.strict.transitivity *)
+Theorem transitivity
+  : forall {x1 : IsoWeekDate} {x2 : IsoWeekDate} {x3 : IsoWeekDate} .
+      LessThan x1 x2 -> LessThan x2 x3 -> LessThan x1 x3.
+Proof.
+  intros x1 x2 x3 h1 h2.
+  simpl LessThan in &h1, &h2 |- *.
+  ipso (Date.order.strict.transitivity &h1 &h2).
+Qed.
+
+End strict. (* order.strict *)
+
+End order. (* order *)
+
+Module comparison. (* comparison *)
+
+(* comparison.specification *)
+Theorem specification
+  : forall (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+      (compare x1 x2 = Comparison.Lt <-> LessThan x1 x2)
+      /\ (compare x1 x2 = Comparison.Eq <-> x1 = x2).
+Proof.
+  intros x1 x2.
+  simpl compare, LessThan in |- *.
+  let proof s := Date.comparison.specification (to_date &x1) (to_date &x2).
+  match &s with | strict equality end.
+  divide et impera.
+  - ipso &strict.
+  - divide et impera.
+    + intro c.
+      ipso (conversion.date.injectivity (modus aequans &equality, &c)).
+    + intro e.
+      ipso (modus aequans &equality, (congru to_date, &e)).
+Qed.
+
+(* comparison.antisymmetry *)
+Theorem antisymmetry
+  : forall (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+      compare x1 x2 = Comparison.transpose (compare x2 x1).
+Proof.
+  intros x1 x2.
+  simpl compare in |- *.
+  ipso (Date.antisymmetry (to_date &x1) (to_date &x2)).
+Qed.
+
+End comparison. (* comparison *)
+
+Instance comparable
+  : Comparable compare LessThan :=
+  {| Comparable.transitivity := @order.strict.transitivity
+  ; Comparable.specification := comparison.specification
+  ; Comparable.antisymmetry := comparison.antisymmetry |}.
+
 End IsoWeekDate. (* IsoWeekDate *)
 
 Abbreviation IsoWeekDate := IsoWeekDate.T.
+
+Existing Instance IsoWeekDate.comparable.

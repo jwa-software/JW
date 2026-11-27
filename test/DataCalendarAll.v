@@ -1036,3 +1036,63 @@ Definition data_calendar_all_computes_iso_week_date_to_date_2020_53_7
       (Date.introduction 2021 Month.January 3 I)
     = Comparison.Eq
   := Identity.reflexivity _.
+
+Definition data_calendar_all_delivers_weekday_comparable
+  : Comparable Weekday.compare Weekday.LessThan
+  := _.
+
+Definition data_calendar_all_delivers_weekday_order_strict_transitivity
+  : forall (w1 : Weekday) (w2 : Weekday) (w3 : Weekday) .
+      Weekday.LessThan w1 w2 -> Weekday.LessThan w2 w3 -> Weekday.LessThan w1 w3
+  := @Weekday.order.strict.transitivity.
+
+Definition data_calendar_all_delivers_weekday_comparison_specification
+  : forall (w1 : Weekday) (w2 : Weekday) .
+      (Weekday.compare w1 w2 = Comparison.Lt <-> Weekday.LessThan w1 w2)
+      /\ (Weekday.compare w1 w2 = Comparison.Eq <-> w1 = w2)
+  := Weekday.comparison.specification.
+
+Definition data_calendar_all_delivers_weekday_comparison_antisymmetry
+  : forall (w1 : Weekday) (w2 : Weekday) .
+      Weekday.compare w1 w2 = Comparison.transpose (Weekday.compare w2 w1)
+  := Weekday.comparison.antisymmetry.
+
+Definition data_calendar_all_computes_weekday_compare_monday_sunday
+  : Weekday.compare Weekday.Monday Weekday.Sunday = Comparison.Lt
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_computes_weekday_compare_friday_friday
+  : Weekday.compare Weekday.Friday Weekday.Friday = Comparison.Eq
+  := Identity.reflexivity _.
+
+Definition data_calendar_all_delivers_iso_week_date_comparable
+  : Comparable IsoWeekDate.compare IsoWeekDate.LessThan
+  := _.
+
+Definition data_calendar_all_delivers_iso_week_date_conversion_date_injectivity
+  : forall (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+      IsoWeekDate.to_date x1 = IsoWeekDate.to_date x2 -> x1 = x2
+  := @IsoWeekDate.conversion.date.injectivity.
+
+Definition data_calendar_all_delivers_iso_week_date_order_strict_transitivity
+  : forall (x1 : IsoWeekDate) (x2 : IsoWeekDate) (x3 : IsoWeekDate) .
+      IsoWeekDate.LessThan x1 x2 -> IsoWeekDate.LessThan x2 x3 -> IsoWeekDate.LessThan x1 x3
+  := @IsoWeekDate.order.strict.transitivity.
+
+Definition data_calendar_all_delivers_iso_week_date_comparison_specification
+  : forall (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+      (IsoWeekDate.compare x1 x2 = Comparison.Lt <-> IsoWeekDate.LessThan x1 x2)
+      /\ (IsoWeekDate.compare x1 x2 = Comparison.Eq <-> x1 = x2)
+  := IsoWeekDate.comparison.specification.
+
+Definition data_calendar_all_delivers_iso_week_date_comparison_antisymmetry
+  : forall (x1 : IsoWeekDate) (x2 : IsoWeekDate) .
+      IsoWeekDate.compare x1 x2 = Comparison.transpose (IsoWeekDate.compare x2 x1)
+  := IsoWeekDate.comparison.antisymmetry.
+
+Definition data_calendar_all_computes_iso_week_date_compare_across_a_year
+  : IsoWeekDate.compare
+      (IsoWeekDate.introduction 2020 53 Weekday.Sunday I)
+      (IsoWeekDate.introduction 2021 1 Weekday.Monday I)
+    = Comparison.Lt
+  := Identity.reflexivity _.
