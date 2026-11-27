@@ -93,6 +93,7 @@ An order is a relation that says which of two values comes first. `Relation/Orde
 - **The tester is found for you.** Both functions take the tester as a first argument that is left out: it is found through the type's instance. Write it when you want to name it, as `Discernible.equivalent (test := Nat0.eq) m n`.
 - **An ordered type is discernible already.** Every `Comparable compare lt` gives `Discernible (Comparable.eq compare)`, so a type with an order has `equivalent` beside its `eq`, and the two always agree.
 - **A type with no order supplies its tester.** `Bool`, `Comparison`, `Unit`, `Empty`, `Bit`, `Byte`, `HWord`, `Word`, `DWord`, `QWord`, `Endian` and `SourceByte` each have a `test`, the law `test.reflection`, and an instance `discernible`.
+- **A numeral literal is compared as it is written.** The nine types of `Numeral`, which a literal is read into before it becomes a number, are discernible too, digit by digit: `Numeral.Decimal.Digits.discern` tells `007` from `7`, while the numbers they are read into are equal.
 - **A container asks its elements.** `List.test tester`, `NonEmptyList.test tester`, `Option.test tester`, `BinaryTree.test tester`, `AVL.test tester` and `SortedSet.test tester` take the tester of the elements, and `Product.test` and `Coproduct.test` take one for each side. Each is discernible when its elements are, so `List.equivalent l m` works on a list of lists of numbers with nothing more written.
 
 | Law | States |
