@@ -536,3 +536,209 @@ Definition data_all_delivers_comparable_antisymmetry
   := fun (A : Type) (compare : A -> A -> Comparison) (lt : A -> A -> Prop)
         (c : Comparable compare lt) .
       Comparable.antisymmetry.
+
+Definition data_all_delivers_comparable_strict_transposition
+  : forall (m : Nat) (n : Nat) .
+      Comparable.gt Nat.compare m n = Comparable.lt Nat.compare n m
+  := Comparable.order.strict.transposition.
+
+Definition data_all_delivers_comparable_transposition
+  : forall (m : Nat) (n : Nat) .
+      Comparable.ge Nat.compare m n = Comparable.le Nat.compare n m
+  := Comparable.order.transposition.
+
+Definition data_all_computes_comparable_gt
+  : Nat0.gt (Nat0.Positive (Nat.Successor Nat.One)) (Nat0.Positive Nat.One) = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_comparable_gt_refusal
+  : Nat0.gt Nat0.Zero Nat0.Zero = false
+  := Identity.reflexivity _.
+
+Definition data_all_computes_comparable_ge
+  : Nat0.ge Nat0.Zero Nat0.Zero = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_comparable_ge_refusal
+  : Nat0.ge Nat0.Zero (Nat0.Positive Nat.One) = false
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_nat_tests
+  : forall (m : Nat) (n : Nat) . Nat.gt m n = Nat.lt n m /\ Nat.ge m n = Nat.le n m
+  := fun (m : Nat) (n : Nat) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_nat0_tests
+  : forall (m : Nat0) (n : Nat0) . Nat0.gt m n = Nat0.lt n m /\ Nat0.ge m n = Nat0.le n m
+  := fun (m : Nat0) (n : Nat0) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_integer_tests
+  : forall (m : Integer) (n : Integer) .
+      Integer.gt m n = Integer.lt n m /\ Integer.ge m n = Integer.le n m
+  := fun (m : Integer) (n : Integer) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_rational_tests
+  : forall (m : Rational) (n : Rational) .
+      Rational.gt m n = Rational.lt n m /\ Rational.ge m n = Rational.le n m
+  := fun (m : Rational) (n : Rational) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_bin_tests
+  : forall (m : Bin) (n : Bin) . Bin.gt m n = Bin.lt n m /\ Bin.ge m n = Bin.le n m
+  := fun (m : Bin) (n : Bin) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_bin0_tests
+  : forall (m : Bin0) (n : Bin0) . Bin0.gt m n = Bin0.lt n m /\ Bin0.ge m n = Bin0.le n m
+  := fun (m : Bin0) (n : Bin0) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_signed_bin_tests
+  : forall (m : SignedBin) (n : SignedBin) .
+      SignedBin.gt m n = SignedBin.lt n m /\ SignedBin.ge m n = SignedBin.le n m
+  := fun (m : SignedBin) (n : SignedBin) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_uint8_tests
+  : forall (m : UInt8) (n : UInt8) . UInt8.gt m n = UInt8.lt n m /\ UInt8.ge m n = UInt8.le n m
+  := fun (m : UInt8) (n : UInt8) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_uint16_tests
+  : forall (m : UInt16) (n : UInt16) .
+      UInt16.gt m n = UInt16.lt n m /\ UInt16.ge m n = UInt16.le n m
+  := fun (m : UInt16) (n : UInt16) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_uint32_tests
+  : forall (m : UInt32) (n : UInt32) .
+      UInt32.gt m n = UInt32.lt n m /\ UInt32.ge m n = UInt32.le n m
+  := fun (m : UInt32) (n : UInt32) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_uint64_tests
+  : forall (m : UInt64) (n : UInt64) .
+      UInt64.gt m n = UInt64.lt n m /\ UInt64.ge m n = UInt64.le n m
+  := fun (m : UInt64) (n : UInt64) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_int8_tests
+  : forall (m : Int8) (n : Int8) . Int8.gt m n = Int8.lt n m /\ Int8.ge m n = Int8.le n m
+  := fun (m : Int8) (n : Int8) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_int16_tests
+  : forall (m : Int16) (n : Int16) . Int16.gt m n = Int16.lt n m /\ Int16.ge m n = Int16.le n m
+  := fun (m : Int16) (n : Int16) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_int32_tests
+  : forall (m : Int32) (n : Int32) . Int32.gt m n = Int32.lt n m /\ Int32.ge m n = Int32.le n m
+  := fun (m : Int32) (n : Int32) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_int64_tests
+  : forall (m : Int64) (n : Int64) . Int64.gt m n = Int64.lt n m /\ Int64.ge m n = Int64.le n m
+  := fun (m : Int64) (n : Int64) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_ascii_tests
+  : forall (m : Ascii) (n : Ascii) . Ascii.gt m n = Ascii.lt n m /\ Ascii.ge m n = Ascii.le n m
+  := fun (m : Ascii) (n : Ascii) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_ascii_str_tests
+  : forall (m : AsciiStr) (n : AsciiStr) .
+      AsciiStr.gt m n = AsciiStr.lt n m /\ AsciiStr.ge m n = AsciiStr.le n m
+  := fun (m : AsciiStr) (n : AsciiStr) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_utf8_tests
+  : forall (m : Utf8) (n : Utf8) . Utf8.gt m n = Utf8.lt n m /\ Utf8.ge m n = Utf8.le n m
+  := fun (m : Utf8) (n : Utf8) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_utf8_str_tests
+  : forall (m : Utf8Str) (n : Utf8Str) .
+      Utf8Str.gt m n = Utf8Str.lt n m /\ Utf8Str.ge m n = Utf8Str.le n m
+  := fun (m : Utf8Str) (n : Utf8Str) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_kleene3_tests
+  : forall (m : Kleene3) (n : Kleene3) .
+      Kleene3.gt m n = Kleene3.lt n m /\ Kleene3.ge m n = Kleene3.le n m
+  := fun (m : Kleene3) (n : Kleene3) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_month_tests
+  : forall (m : Month) (n : Month) . Month.gt m n = Month.lt n m /\ Month.ge m n = Month.le n m
+  := fun (m : Month) (n : Month) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_date_tests
+  : forall (m : Date) (n : Date) . Date.gt m n = Date.lt n m /\ Date.ge m n = Date.le n m
+  := fun (m : Date) (n : Date) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_weekday_tests
+  : forall (m : Weekday) (n : Weekday) .
+      Weekday.gt m n = Weekday.lt n m /\ Weekday.ge m n = Weekday.le n m
+  := fun (m : Weekday) (n : Weekday) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_iso_week_date_tests
+  : forall (m : IsoWeekDate) (n : IsoWeekDate) .
+      IsoWeekDate.gt m n = IsoWeekDate.lt n m /\ IsoWeekDate.ge m n = IsoWeekDate.le n m
+  := fun (m : IsoWeekDate) (n : IsoWeekDate) .
+       conjoin (Comparable.order.strict.transposition m n), (Comparable.order.transposition m n).
+
+Definition data_all_delivers_rational_eq_min_max
+  : forall (m : Rational) (n : Rational) .
+      (Rational.eq m n = true <-> m = n)
+      /\ Rational.min m n = Rational.min n m /\ Rational.max m n = Rational.max n m
+  := fun (m : Rational) (n : Rational) .
+       conjoin (Comparable.comparison.equality.reflection m n),
+         (conjoin (Comparable.minimum.commutativity m n), (Comparable.maximum.commutativity m n)).
+
+Definition data_all_delivers_kleene3_eq_min_max
+  : forall (m : Kleene3) (n : Kleene3) .
+      (Kleene3.eq m n = true <-> m = n)
+      /\ Kleene3.min m n = Kleene3.min n m /\ Kleene3.max m n = Kleene3.max n m
+  := fun (m : Kleene3) (n : Kleene3) .
+       conjoin (Comparable.comparison.equality.reflection m n),
+         (conjoin (Comparable.minimum.commutativity m n), (Comparable.maximum.commutativity m n)).
+
+Definition data_all_delivers_month_eq_min_max
+  : forall (m : Month) (n : Month) .
+      (Month.eq m n = true <-> m = n)
+      /\ Month.min m n = Month.min n m /\ Month.max m n = Month.max n m
+  := fun (m : Month) (n : Month) .
+       conjoin (Comparable.comparison.equality.reflection m n),
+         (conjoin (Comparable.minimum.commutativity m n), (Comparable.maximum.commutativity m n)).
+
+Definition data_all_delivers_date_eq_min_max
+  : forall (m : Date) (n : Date) .
+      (Date.eq m n = true <-> m = n)
+      /\ Date.min m n = Date.min n m /\ Date.max m n = Date.max n m
+  := fun (m : Date) (n : Date) .
+       conjoin (Comparable.comparison.equality.reflection m n),
+         (conjoin (Comparable.minimum.commutativity m n), (Comparable.maximum.commutativity m n)).
+
+Definition data_all_delivers_weekday_eq_min_max
+  : forall (m : Weekday) (n : Weekday) .
+      (Weekday.eq m n = true <-> m = n)
+      /\ Weekday.min m n = Weekday.min n m /\ Weekday.max m n = Weekday.max n m
+  := fun (m : Weekday) (n : Weekday) .
+       conjoin (Comparable.comparison.equality.reflection m n),
+         (conjoin (Comparable.minimum.commutativity m n), (Comparable.maximum.commutativity m n)).
+
+Definition data_all_delivers_iso_week_date_eq_min_max
+  : forall (m : IsoWeekDate) (n : IsoWeekDate) .
+      (IsoWeekDate.eq m n = true <-> m = n)
+      /\ IsoWeekDate.min m n = IsoWeekDate.min n m
+      /\ IsoWeekDate.max m n = IsoWeekDate.max n m
+  := fun (m : IsoWeekDate) (n : IsoWeekDate) .
+       conjoin (Comparable.comparison.equality.reflection m n),
+         (conjoin (Comparable.minimum.commutativity m n), (Comparable.maximum.commutativity m n)).
