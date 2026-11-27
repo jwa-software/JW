@@ -62,7 +62,7 @@ jobs:
             endGroup
             # .ocamlformat pins the version, and the image ships none.
             startGroup "Install ocamlformat"
-              opam install --yes ocamlformat.0.29.0
+              opam install --yes ocamlformat.0.30.0
             endGroup
             startGroup "dune and OCaml files formatted"
               make fmt-check

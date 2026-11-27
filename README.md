@@ -41,7 +41,7 @@ make
 | `make test` | Runs the tests that execute: the extracted OCaml on known values. CI runs it after the build. | After `make`, before committing. |
 | `opam exec -- dune build theories/Data` | Compiles one layer and the layers it depends on. | Iterating on a single layer. |
 | `make opam` | Regenerates `opam/JW.opam` from `dune-project`, rewriting it in place. | After changing a field of `dune-project` that ends up in the opam file: version, depends, synopsis, description, authors, maintainers, license, source, tags. |
-| `make fmt-check` | Prints the formatting diff of the `dune` and OCaml files without touching them; CI runs it. The OCaml files need `ocamlformat` 0.29.0, the version `.ocamlformat` pins, which `make deps` does not install. | Before committing, to see what `make fmt` would change. |
+| `make fmt-check` | Prints the formatting diff of the `dune` and OCaml files without touching them; CI runs it. The OCaml files need `ocamlformat` 0.30.0, the version `.ocamlformat` pins, which `make deps` does not install. | Before committing, to see what `make fmt` would change. |
 | `make fmt` | Reformats the `dune` and OCaml files in place. `.v` files are never touched. | When `make fmt-check` reports a diff you agree with. |
 | `opam exec -- dune build @install` | Builds exactly what an opam installation of the package would build. | Before a release, as a self-check. |
 | `make clean` | Deletes `_build/`. | When a build result looks stale or inconsistent. |
