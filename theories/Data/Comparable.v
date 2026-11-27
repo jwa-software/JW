@@ -6,6 +6,7 @@ From JW Require Import Core.All.
 From JW Require Import Core.Class.
 From JW Require Import Data.Base.Bool.
 From JW Require Import Data.Base.Comparison.
+From JW Require Import Data.Discernible.
 From JW Require Import Dialect.ExFalso.
 From JW Require Import Relation.Antisymmetric.
 From JW Require Import Relation.Irreflexive.
@@ -1087,5 +1088,10 @@ Context
             {| Transitive.transitivity    := Comparable.order.transitivity |} |}
    ; TotalOrder.totality :=
        {| Total.totality := Comparable.order.totality |} |}.
+
+(* An ordered type tells its values apart by [Comparable.eq]. *)
+#[export] Instance discernible
+  : Discernible (Comparable.eq compare) :=
+  {| Discernible.reflection := Comparable.comparison.equality.reflection |}.
 
 End Orders.
