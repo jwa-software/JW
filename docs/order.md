@@ -85,6 +85,31 @@ An order is a relation that says which of two values comes first. `Relation/Orde
 
 ---
 
+## Discernible
+
+- **The problem.** Not every type has an order, yet almost every type can say whether two of its values are the same. `Comparable` cannot serve a type with no order, so the test of equality has an interface of its own.
+- **The class.** `Discernible test`, in `Data/Discernible.v`, has one field: `Discernible.reflection`, `test a b = true <-> a = b`. A `test` is a function `A -> A -> Bool` that answers `true` exactly for two equal values.
+- **The two functions.** `Discernible.equivalent a b` is `true` when the two are equal, and `Discernible.discern a b` is `true` when they differ. Each type names them as its own: `Bool.equivalent true true` is `true`, and `Nat0.discern 3 5` is `true`.
+- **The tester is found for you.** Both functions take the tester as a first argument that is left out: it is found through the type's instance. Write it when you want to name it, as `Discernible.equivalent (test := Nat0.eq) m n`.
+- **An ordered type is discernible already.** Every `Comparable compare lt` gives `Discernible (Comparable.eq compare)`, so a type with an order has `equivalent` beside its `eq`, and the two always agree.
+- **A type with no order supplies its tester.** `Bool`, `Comparison`, `Unit`, `Empty`, `Bit`, `Byte`, `HWord`, `Word`, `DWord`, `QWord`, `Endian` and `SourceByte` each have a `test`, the law `test.reflection`, and an instance `discernible`.
+- **A container asks its elements.** `List.test tester`, `NonEmptyList.test tester`, `Option.test tester`, `BinaryTree.test tester`, `AVL.test tester` and `SortedSet.test tester` take the tester of the elements, and `Product.test` and `Coproduct.test` take one for each side. Each is discernible when its elements are, so `List.equivalent l m` works on a list of lists of numbers with nothing more written.
+
+| Law | States |
+|:---|:---|
+| `Discernible.equivalence.reflection` | `equivalent a b = true <-> a = b` |
+| `Discernible.equivalence.reflexivity` | `equivalent a a = true` |
+| `Discernible.equivalence.refutation` | `equivalent a b = false <-> ~ (a = b)` |
+| `Discernible.equivalence.symmetry` | `equivalent a b = equivalent b a` |
+| `Discernible.discernment.complement` | `discern a b = Bool.negate (equivalent a b)` |
+| `Discernible.discernment.reflection` | `discern a b = true <-> ~ (a = b)` |
+| `Discernible.discernment.refutation` | `discern a b = false <-> a = b` |
+
+- **A type nested under a container.** `List.test.local.reflection` and `Product.test.local.reflection` ask the tester to decide equality only for the elements of the one list, or the components of the one pair. An induction over a type that holds a list of itself has exactly that much to give.
+- **A sorted set is compared as its tree.** `SortedSet.test` compares the trees inside, so two sets of the same elements in trees of two shapes are two values.
+
+---
+
 ## Using an order in a proof
 
 A law stated over an order class is proved once and holds of every order of that kind:
