@@ -1125,3 +1125,100 @@ Definition data_all_delivers_coproduct_discernible
         (DA : Discernible left_tester) (DB : Discernible right_tester)
         (a : Coproduct A B) (b : Coproduct A B) .
        conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_decimal_digits_induction
+  : forall (P : Numeral.Decimal.Digits -> Prop) .
+      P Numeral.Decimal.Digits.End ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Zero d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.One d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Two d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Three d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Four d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Five d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Six d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Seven d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Eight d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d -> P (Numeral.Decimal.Digits.Nine d)) ->
+      (forall (d : Numeral.Decimal.Digits) . P d)
+  := Numeral.Decimal.Digits.induction.
+
+Definition data_all_delivers_numeral_hexadecimal_digits_test_reflection
+  : forall (d1 : Numeral.Hexadecimal.Digits) (d2 : Numeral.Hexadecimal.Digits) .
+      Numeral.Hexadecimal.Digits.test d1 d2 = true <-> d1 = d2
+  := Numeral.Hexadecimal.Digits.test.reflection.
+
+Definition data_all_computes_numeral_equivalent_of_one_number
+  : Numeral.Unsigned.equivalent (Bin0.to_numeral 111%b0) (Bin0.to_numeral 111%b0) = true
+  := Identity.reflexivity _.
+
+Definition data_all_computes_numeral_discern_of_two_spellings
+  : Numeral.Decimal.Digits.discern
+      (Numeral.Decimal.Digits.Zero
+        (Numeral.Decimal.Digits.Zero
+          (Numeral.Decimal.Digits.Seven Numeral.Decimal.Digits.End)))
+      (Numeral.Decimal.Digits.Seven Numeral.Decimal.Digits.End)
+    = true
+  := Identity.reflexivity _.
+
+Definition data_all_delivers_numeral_decimal_digits_discernible
+  : forall (a : Numeral.Decimal.Digits) (b : Numeral.Decimal.Digits) .
+      (Numeral.Decimal.Digits.equivalent a b = true <-> a = b)
+      /\ (Numeral.Decimal.Digits.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Decimal.Digits) (b : Numeral.Decimal.Digits) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_decimal_signed_discernible
+  : forall (a : Numeral.Decimal.Signed) (b : Numeral.Decimal.Signed) .
+      (Numeral.Decimal.Signed.equivalent a b = true <-> a = b)
+      /\ (Numeral.Decimal.Signed.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Decimal.Signed) (b : Numeral.Decimal.Signed) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_decimal_fractional_discernible
+  : forall (a : Numeral.Decimal.Fractional) (b : Numeral.Decimal.Fractional) .
+      (Numeral.Decimal.Fractional.equivalent a b = true <-> a = b)
+      /\ (Numeral.Decimal.Fractional.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Decimal.Fractional) (b : Numeral.Decimal.Fractional) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_hexadecimal_digits_discernible
+  : forall (a : Numeral.Hexadecimal.Digits) (b : Numeral.Hexadecimal.Digits) .
+      (Numeral.Hexadecimal.Digits.equivalent a b = true <-> a = b)
+      /\ (Numeral.Hexadecimal.Digits.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Hexadecimal.Digits) (b : Numeral.Hexadecimal.Digits) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_hexadecimal_signed_discernible
+  : forall (a : Numeral.Hexadecimal.Signed) (b : Numeral.Hexadecimal.Signed) .
+      (Numeral.Hexadecimal.Signed.equivalent a b = true <-> a = b)
+      /\ (Numeral.Hexadecimal.Signed.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Hexadecimal.Signed) (b : Numeral.Hexadecimal.Signed) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_hexadecimal_fractional_discernible
+  : forall (a : Numeral.Hexadecimal.Fractional) (b : Numeral.Hexadecimal.Fractional) .
+      (Numeral.Hexadecimal.Fractional.equivalent a b = true <-> a = b)
+      /\ (Numeral.Hexadecimal.Fractional.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Hexadecimal.Fractional) (b : Numeral.Hexadecimal.Fractional) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_unsigned_discernible
+  : forall (a : Numeral.Unsigned) (b : Numeral.Unsigned) .
+      (Numeral.Unsigned.equivalent a b = true <-> a = b)
+      /\ (Numeral.Unsigned.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Unsigned) (b : Numeral.Unsigned) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_signed_discernible
+  : forall (a : Numeral.Signed) (b : Numeral.Signed) .
+      (Numeral.Signed.equivalent a b = true <-> a = b)
+      /\ (Numeral.Signed.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Signed) (b : Numeral.Signed) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
+
+Definition data_all_delivers_numeral_fractional_discernible
+  : forall (a : Numeral.Fractional) (b : Numeral.Fractional) .
+      (Numeral.Fractional.equivalent a b = true <-> a = b)
+      /\ (Numeral.Fractional.discern a b = true <-> ~ (a = b))
+  := fun (a : Numeral.Fractional) (b : Numeral.Fractional) .
+       conjoin (Discernible.equivalence.reflection a b), (Discernible.discernment.reflection a b).
